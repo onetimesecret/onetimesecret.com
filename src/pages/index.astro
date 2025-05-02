@@ -3,6 +3,8 @@ import Layout from '../layouts/Layout.astro';
 import MarketingLayout from '../components/MarketingLayout.vue';
 
 import "../styles/global.css";
+import '../styles/tailwind.css';
+import '../fonts/font-face.css';
 
 // Define page metadata
 const title = "Onetime Secret - Share Sensitive Information Securely";
@@ -12,9 +14,9 @@ const description = "Generate links to secret messages that can only be viewed o
 const navigation = [
   { name: "Home", href: "/" },
   { name: "Features", href: "#features" },
-  { name: "Security", href: "#security" },
+  { name: "About", href: "about" },
   { name: "Pricing", href: "#pricing" },
-  { name: "Login", href: "/login" },
+  { name: "Sign in", href: "/login" },
 ];
 ---
 
@@ -22,7 +24,7 @@ const navigation = [
   <MarketingLayout
     client:load
     navigation={navigation}
-    logoSrc="/logo.svg"
+    logoSrc="/img/onetime-logo-v3-xl.svg"
     logoAlt="Onetime Secret"
     headline="Share sensitive information securely"
     description="Generate links to secret messages that can only be viewed once. Perfect for sending passwords, API keys, or sensitive information that shouldn't be stored in email or chat logs."

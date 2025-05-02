@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
 import { Dialog, DialogPanel } from "@headlessui/vue";
 import { Bars3Icon, XMarkIcon } from "@heroicons/vue/24/outline";
@@ -14,15 +14,15 @@ defineProps({
     default: () => [
       { name: "Product", href: "#" },
       { name: "Features", href: "#" },
-      { name: "Marketplace", href: "#" },
-      { name: "Company", href: "#" },
-      { name: "Log in", href: "#" },
+      { name: "About", href: "#" },
+      { name: "Security", href: "#" },
+      { name: "Login", href: "#" },
     ],
   },
   logoSrc: {
     type: String,
     default:
-      "https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600",
+      "/img/onetime-logo-v3-xl.svg",
   },
   logoAlt: {
     type: String,

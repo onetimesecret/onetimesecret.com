@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import MarketingPage from './MarketingPage.vue';
 
 /**
