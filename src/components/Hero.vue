@@ -112,7 +112,9 @@ defineProps({
         </div>
       </div>
     </div>
-    <div class="bg-gray-50 dark:bg-gray-800 lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
+    <div
+      class="bg-gray-50 dark:bg-gray-800 lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2"
+    >
       <img
         class="aspect-3/2 object-cover lg:aspect-auto lg:size-full"
         :src="imageUrl"
