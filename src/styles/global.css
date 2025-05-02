@@ -5,29 +5,4 @@
   html {
     @apply antialiased;
   }
-
-  /* Dark mode base styles */
-  html.dark {
-    /* Ensure text color is set for dark mode */
-    @apply text-gray-100; /* Or your preferred base dark text color */
-    color-scheme: dark;
-  }
-
-  /* Light mode base styles (optional, but good for clarity) */
-  html:not(.dark) {
-    @apply text-gray-900; /* Or your preferred base light text color */
-    color-scheme: light;
-  }
-
-  /* Smooth transitions when toggling dark mode */
-  /* Apply transitions to relevant properties */
-  html.transitioning,
-  html.transitioning *,
-  html.transitioning *::before,
-  html.transitioning *::after {
-    @apply transition-colors duration-200 ease-in-out;
-    /* transition-property: background-color, border-color, color, fill, stroke, opacity; */
-    /* Be specific about what transitions to avoid performance issues */
-    /* Using transition-colors is often sufficient */
-  }
 }

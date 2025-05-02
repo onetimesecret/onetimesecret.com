@@ -12,7 +12,8 @@ import vue from "@astrojs/vue";
 // https://astro.build/config
 export default defineConfig({
   vite: {
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     plugins: [tailwindcss()],
   },
 

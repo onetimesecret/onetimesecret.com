@@ -44,7 +44,8 @@ export default tseslint.config(
     },
     rules: {
       // Add or override Vue-specific rules here if necessary
-      // e.g., 'vue/html-self-closing': 'off',
+      "vue/html-self-closing": "warn",
+      "vue/multi-word-component-names": "off", // Allow single-word names for test components
     },
   },
 

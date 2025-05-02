@@ -9,31 +9,6 @@
     	description = "Share sensitive information securely with one-time viewable links."
     } = Astro.props;
 
-    // Minimal inline script to set initial dark mode class
-    const darkModeInitializationScript = `
-    (function() {
-      const storageKey = 'darkMode';
-      const className = 'dark';
-      try {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-        const storedMode = localStorage.getItem(storageKey);
-        let useDark = storedMode === 'true' || (storedMode === null && prefersDark.matches);
-        if (useDark) {
-          document.documentElement.classList.add(className);
-        }
-        // Listen for system changes if no preference is stored
-        prefersDark.addEventListener('change', (e) => {
-          if (localStorage.getItem(storageKey) === null) {
-            if (e.matches) {
-              document.documentElement.classList.add(className);
-            } else {
-              document.documentElement.classList.remove(className);
-            }
-          }
-        });
-      } catch (e) { console.error('Error initializing dark mode:', e); }
-    })();
-    `;
     ---
 
     <!doctype html>
@@ -44,13 +19,6 @@
     		<meta name="description" content={description} />
     		<meta name="color-scheme" content="dark light" />
     		<title>{title}</title>
-    		{/* Execute the inline script */}
-    		<script is:inline define:vars={{ darkModeInitializationScript }}>
-    			// Inject the script content here
-    			const script = document.createElement('script');
-    			script.textContent = darkModeInitializationScript;
-    			document.head.appendChild(script);
-    		</script>
     	</head>
     	<body class="h-full bg-white dark:bg-gray-900"> {/* Added base background colors */}
     		<slot />
