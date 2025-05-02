@@ -1,23 +1,28 @@
----
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
+import MarketingLayout from '../components/MarketingLayout.vue';
 
 import "../styles/global.css";
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+// Custom settings for the marketing page
+const navigation = [
+  { name: "Home", href: "/" },
+  { name: "Features", href: "#features" },
+  { name: "Security", href: "#security" },
+  { name: "Pricing", href: "#pricing" },
+  { name: "Login", href: "/login" },
+];
 ---
 
 <Layout>
-  <h1 class="text-3xl font-bold underline">
-    Hello world!
-  </h1>
-  <button id="error-button">Throw test error</button>
-  <script>
-    function handleClick () {
-      throw new Error('This is a test error');
-    }
-    document.querySelector("#error-button")?.addEventListener("click", handleClick);
-  </script>
-	<Welcome />
+  <MarketingLayout
+    client:load
+    navigation={navigation}
+    logoAlt="One Time Secret"
+    headline="Share sensitive information securely"
+    description="Generate links to secret messages that can only be viewed once. Perfect for sending passwords, API keys, or sensitive information that shouldn't be stored in email or chat logs."
+    primaryButtonText="Create a secret"
+    secondaryButtonText="How it works"
+    bannerText="Now with end-to-end encryption and metadata protection."
+    bannerLinkText="Learn about our security"
+  />
 </Layout>
