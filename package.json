@@ -5,7 +5,7 @@
     "build": "astro build",
     "dev": "astro dev",
     "lint": "pnpm run lint:base --cache-location ./node_modules/.cache/eslint --cache 'src/**/*.{mjs,ts,d.ts,vue}' './*.{mjs,ts,js}'",
-    "lint:base": "eslint --quiet --config .eslintrc.js",
+    "lint:base": "eslint --quiet --config eslint.config.ts",
     "lint:fix": "pnpm run lint:base --fix 'src/**/*.{mjs,ts,vue}' './*.{mjs,ts,d.ts,vue}'",
     "lint:quick": "pnpm run lint:base --cache-location ./node_modules/.cache/eslint --cache 'src/**/*.{mjs,ts}' './*.{mjs,ts,js}'",
     "lint:quick:fix": "pnpm run lint:base --fix 'src/**/*.{mjs,ts}' './*.{mjs,ts,d.ts,js}'",
@@ -34,5 +34,8 @@
     "tailwindcss": "4.1.5",
     "typescript-eslint": "8.29.1",
     "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "globals": "^16.0.0"
   }
 }
