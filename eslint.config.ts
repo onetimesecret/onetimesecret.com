@@ -15,6 +15,18 @@ export default defineConfig([
     languageOptions: { globals: globals.browser },
   },
   tseslint.configs.recommended,
+
+  /**
+   * Global Vue Component Rules
+   * Disables multi-word component name requirement for all Vue components
+   */
+  {
+    files: ["**/*.vue"],
+    rules: {
+      "vue/multi-word-component-names": "off", // Allow single-word component names globally
+    },
+  },
+
   pluginVue.configs["flat/essential"],
   {
     files: ["**/*.vue"],

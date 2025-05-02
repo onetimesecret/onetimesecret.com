@@ -3,6 +3,10 @@ import MarketingLayout from '../components/MarketingLayout.vue';
 
 import "../styles/global.css";
 
+// Define page metadata
+const title = "One Time Secret - Share Sensitive Information Securely";
+const description = "Generate links to secret messages that can only be viewed once. Perfect for sending passwords, API keys, or sensitive information that shouldn't be stored in email or chat logs.";
+
 // Custom settings for the marketing page
 const navigation = [
   { name: "Home", href: "/" },
@@ -13,16 +17,22 @@ const navigation = [
 ];
 ---
 
-<Layout>
+<Layout title={title} description={description}>
   <MarketingLayout
     client:load
     navigation={navigation}
+    logoSrc="/logo.svg"
     logoAlt="One Time Secret"
     headline="Share sensitive information securely"
     description="Generate links to secret messages that can only be viewed once. Perfect for sending passwords, API keys, or sensitive information that shouldn't be stored in email or chat logs."
     primaryButtonText="Create a secret"
+    primaryButtonLink="/create"
     secondaryButtonText="How it works"
+    secondaryButtonLink="#how-it-works"
+    imageUrl="/images/security-hero.jpg"
     bannerText="Now with end-to-end encryption and metadata protection."
     bannerLinkText="Learn about our security"
+    bannerLinkUrl="#security"
+    showBanner={true}
   />
 </Layout>

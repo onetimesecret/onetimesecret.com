@@ -1,9 +1,21 @@
+---
+export interface Props {
+	title?: string;
+	description?: string;
+}
+
+const {
+	title = "One Time Secret",
+	description = "Share sensitive information securely with one-time viewable links."
+} = Astro.props;
+---
+
 <!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
-    <meta name="description" content={description} />
+		<meta name="description" content={description} />
 		<title>{title}</title>
 	</head>
 	<body>
