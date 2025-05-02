@@ -5,6 +5,7 @@ import Hero from './Hero.vue';
 /**
  * Marketing Page layout combining Header and Hero components
  * Used for landing pages and other marketing content
+ * Supports dark mode and includes accessibility enhancements
  */
 defineProps({
   // Navigation props
@@ -23,7 +24,7 @@ defineProps({
   },
   logoAlt: {
     type: String,
-    default: "One Time Secret"
+    default: "Onetime Secret"
   },
 
   // Hero props
@@ -75,7 +76,7 @@ defineProps({
 </script>
 
 <template>
-  <div class="bg-white">
+  <div class="bg-white dark:bg-gray-900">
     <Header
       :navigation="navigation"
       :logoSrc="logoSrc"

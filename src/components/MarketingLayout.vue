@@ -5,6 +5,7 @@ import MarketingPage from './MarketingPage.vue';
  * MarketingLayout component
  * This component is a wrapper for MarketingPage to maintain backward compatibility with existing code
  * Simply forwards all props to the MarketingPage component
+ * Supports dark mode and accessibility features
  */
 defineProps({
   navigation: {
@@ -17,7 +18,7 @@ defineProps({
   },
   logoAlt: {
     type: String,
-    default: "One Time Secret"
+    default: "Onetime Secret"
   },
   headline: {
     type: String,

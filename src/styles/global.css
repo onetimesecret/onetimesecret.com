@@ -1,1 +1,21 @@
 @import "tailwindcss";
+
+/* Base styles */
+@layer base {
+  html {
+    @apply antialiased;
+  }
+
+  /* Dark mode base styles */
+  .dark {
+    @apply text-white;
+    color-scheme: dark;
+  }
+
+  /* Smooth transitions when toggling dark mode */
+  html.transitioning * {
+    transition-duration: 200ms;
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
