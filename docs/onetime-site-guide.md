@@ -1,10 +1,10 @@
-# OneTimeSecret Regional Domain Strategy: Unified Implementation Plan
+# Onetime Secret Strategy: Unified Implementation Plan
 
 *Date: 2025-05-02*
 
 ## 1. Executive Summary
 
-This document details the unified regional domain strategy for OneTimeSecret.com, combining the most effective elements from our initial approaches to create a streamlined user experience that balances functionality with educational components. The strategy implements progressive disclosure principles to maintain the core secret-sharing functionality while properly educating users about regional domains and data sovereignty.
+This document details the unified regional domain strategy for OnetimeSecret.com, combining the most effective elements from our initial approaches to create a streamlined user experience that balances functionality with educational components. The strategy implements progressive disclosure principles to maintain the core secret-sharing functionality while properly educating users about regional domains and data sovereignty.
 
 The unified approach integrates region selection directly into the existing interface while providing layered educational elements that users can access based on their interest level. This document provides comprehensive implementation specifications, edge case handling procedures, device-specific guidelines, and measurement criteria to ensure successful deployment.
 
@@ -14,16 +14,16 @@ The unified approach integrates region selection directly into the existing inte
 
 #### 2.1.1 First-Time Visitor Banner
 - **Position**: Fixed position at the top of the page, below site header
-- **Content**: "Welcome to OneTimeSecret! We use regional domains to keep your data in your selected region. You're currently using [detected-region]."
+- **Content**: "Welcome to OnetimeSecret! We use regional domains to keep your data in your selected region. You're currently using [detected-region]."
 - **Actions**: "Learn More" button (expands educational panel) | "Dismiss" button (hides banner, sets cookie)
 - **Persistence**: Shows only for first visit or after clearing cookies
-- **Visual Style**: Light orange background (#fff7ed), dark text (#7c2d12), OneTimeSecret orange accent (#f97316)
+- **Visual Style**: Light orange background (#fff7ed), dark text (#7c2d12), OnetimeSecret orange accent (#f97316)
 
 #### 2.1.2 Region Indicator
 - **Position**: Integrated into introduction text between header and form
-- **Content**: "Create a secret on OneTimeSecret [detected-region] »" with region displayed in a distinctive pill-shaped indicator
+- **Content**: "Create a secret on OnetimeSecret [detected-region] »" with region displayed in a distinctive pill-shaped indicator
 - **Interaction**: Clicking the pill-shaped region indicator opens the region selection dropdown
-- **Visual Style**: Light gray background (#f3f4f6), with region in bold, OneTimeSecret orange border
+- **Visual Style**: Light gray background (#f3f4f6), with region in bold, OnetimeSecret orange border
 
 #### 2.1.3 Domain Dropdown in URL Field
 - **Position**: Integrated into the existing secret URL preview field
@@ -50,7 +50,7 @@ The unified approach integrates region selection directly into the existing inte
 ### 2.2 Visual Design Specifications
 
 #### 2.2.1 Color Palette
-- Primary Brand Color: OneTimeSecret Orange (#f97316)
+- Primary Brand Color: OnetimeSecret Orange (#f97316)
 - Secondary Colors:
   - Light Orange (Background): #fff7ed
   - Dark Orange (Text): #7c2d12
@@ -68,7 +68,7 @@ The unified approach integrates region selection directly into the existing inte
   - Body Text: 14px
 
 #### 2.2.3 Interactive Elements
-- Buttons: OneTimeSecret orange background, white text, 2px border-radius
+- Buttons: OnetimeSecret orange background, white text, 2px border-radius
 - Dropdowns: Light gray background, dark text, subtle shadow on hover
 - Tooltips: Dark background (#1f2937), white text, 4px border-radius, appears on hover
 - Expandable Sections: Light gray header with "+" icon, animates open/closed
@@ -122,13 +122,13 @@ The unified strategy was developed based on the following weighted criteria:
 2. **User Education** (25%): Users should understand the regional model and its benefits
 3. **Technical Feasibility** (15%): Implementation should be straightforward and maintainable
 4. **User Control** (10%): Users should have clear control over their region selection
-5. **Visual Consistency** (10%): The solution should maintain the established OneTimeSecret brand identity
+5. **Visual Consistency** (10%): The solution should maintain the established OnetimeSecret brand identity
 
 ### 3.3 Rationale for Unified Approach
 
 The unified strategy scored highest in our evaluation by:
 
-1. Preserving the familiar OneTimeSecret interface without requiring redirection
+1. Preserving the familiar OnetimeSecret interface without requiring redirection
 2. Implementing progressive disclosure to educate users without overwhelming them
 3. Providing multiple touchpoints for region selection to accommodate different user preferences
 4. Maintaining visual consistency with the existing brand
@@ -438,7 +438,7 @@ The regional domain strategy should be treated as a living system that requires 
 
 ## 9. Conclusion
 
-The unified regional domain strategy for OneTimeSecret provides a balanced approach to introducing regional domains while maintaining the core simplicity of the service. By implementing progressive disclosure principles, users can create secrets without disruption while having access to appropriate educational content about regional domains.
+The unified regional domain strategy for OnetimeSecret provides a balanced approach to introducing regional domains while maintaining the core simplicity of the service. By implementing progressive disclosure principles, users can create secrets without disruption while having access to appropriate educational content about regional domains.
 
 The implementation balances several critical factors:
 - Maintaining the familiar user experience
