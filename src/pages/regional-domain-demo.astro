@@ -1,6 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import RegionalDomainDemoPage from "../components/RegionalDomainDemoPage.vue";
+import RegionalDomainDemoPage from "../components/attempt1/RegionalDomainDemoPage.vue";
 
 import "../styles/global.css";
 import "../styles/tailwind.css";
@@ -8,7 +8,8 @@ import "../fonts/font-face.css";
 
 // Define page metadata
 const title = "Regional Domain Strategy Demo - OneTimeSecret";
-const description = "Demonstration of how OneTimeSecret implements regional domains for data sovereignty and compliance purposes.";
+const description =
+  "Demonstration of how OneTimeSecret implements regional domains for data sovereignty and compliance purposes.";
 
 // Custom settings for the demo page
 const navigation = [
@@ -26,15 +27,19 @@ const navigation = [
 >
   <RegionalDomainDemoPage client:load />
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="border-t border-gray-200 dark:border-gray-700 pt-8 text-center">
-      <a href="/" class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium">
+  <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div class="border-t border-gray-200 pt-8 text-center dark:border-gray-700">
+      <a
+        href="/"
+        class="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+      >
         &larr; Return to Home Page
       </a>
 
       <p class="mt-6 text-sm text-gray-500 dark:text-gray-400">
-        This is a demonstration page showcasing OneTimeSecret's regional domain strategy implementation.
-        All components above would be integrated throughout the application in their appropriate contexts.
+        This is a demonstration page showcasing OneTimeSecret's regional domain
+        strategy implementation. All components above would be integrated
+        throughout the application in their appropriate contexts.
       </p>
     </div>
   </div>

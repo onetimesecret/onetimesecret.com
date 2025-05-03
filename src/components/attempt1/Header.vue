@@ -14,10 +14,7 @@ defineProps({
   navigation: {
     type: Array,
     default: () => [
-      { name: "Product", href: "#" },
-      { name: "Features", href: "#" },
       { name: "About", href: "#" },
-      { name: "Security", href: "#" },
       { name: "Login", href: "#" },
     ],
   },

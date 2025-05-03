@@ -39,8 +39,7 @@ const handleCreateSecret = (data: any) => {
 
 // Navigation menu
 const navigation = [
-  { name: "Home", href: "/" },
-  { name: "Features", href: "#features" },
+  { name: "Regions", href: "/regional-domain-demo" },
   { name: "About", href: "/about" },
   { name: "Pricing", href: "#pricing" },
   { name: "Sign in", href: "/login" },
