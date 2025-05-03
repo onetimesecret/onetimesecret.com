@@ -64,7 +64,7 @@ const mobileMenuOpen = ref(false);
             >
               {{ item.name }}
             </a>
-            <DarkModeToggle class="ml-4" />
+
           </div>
         </nav>
       </div>

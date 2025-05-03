@@ -6,13 +6,15 @@ import * as Sentry from "@sentry/astro";
 // https://github.com/getsentry/spotlight/blob/main/packages/astro/README.md
 
 Sentry.init({
+  // Your Sentry DSN (publicly available)
   dsn: import.meta.env.PUBLIC_SENTRY_DSN || "___DSN___",
-  spotlight: import.meta.env.DEV,
+  // Enable Spotlight in development environment
+  // spotlight: import.meta.env.DEV,
+  // Adjust sample rates as needed for performance monitoring
   tracesSampleRate: 0,
+  // Adjust sample rates for session replay
   replaysSessionSampleRate: 0,
   replaysOnErrorSampleRate: 0,
-  // sourceMapsUploadOptions: {
-  //   project: "homepage",
-  //   authToken: process.env.SENTRY_AUTH_TOKEN,
-  // },
+  // sourceMapsUploadOptions are configured in astro.config.mjs for build time
+  sendDefaultPii: false,
 });
