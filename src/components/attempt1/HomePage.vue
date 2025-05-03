@@ -1,3 +1,5 @@
+<!-- src/components/attempt1/HomePage.vue -->
+
 <script setup lang="ts">
 import { ref } from "vue";
 import FirstTimeVisitorBanner from "./FirstTimeVisitorBanner.vue";
