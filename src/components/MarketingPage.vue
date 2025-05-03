@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import Header from './Header.vue';
-import Hero from './Hero.vue';
+import Header from "./Header.vue";
+import Hero from "./Hero.vue";
 
 /**
  * Marketing Page layout combining Header and Hero components
@@ -12,19 +12,20 @@ defineProps({
   navigation: {
     type: Array,
     default: () => [
-      { name: 'Product', href: '#' },
-      { name: 'Features', href: '#' },
-      { name: 'Marketplace', href: '#' },
-      { name: 'Company', href: '#' },
-    ]
+      { name: "Product", href: "#" },
+      { name: "Features", href: "#" },
+      { name: "Marketplace", href: "#" },
+      { name: "Company", href: "#" },
+    ],
   },
   logoSrc: {
     type: String,
-    default: "https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
+    default:
+      "https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600",
   },
   logoAlt: {
     type: String,
-    default: "Onetime Secret"
+    default: "Onetime Secret",
   },
 
   // Hero props
@@ -34,7 +35,8 @@ defineProps({
   },
   description: {
     type: String,
-    default: "Generate links to secret messages that can only be viewed once. Perfect for sending passwords, API keys, or sensitive information that shouldn't be stored in email or chat logs.",
+    default:
+      "Generate links to secret messages that can only be viewed once. Perfect for sending passwords, API keys, or sensitive information that shouldn't be stored in email or chat logs.",
   },
   primaryButtonText: {
     type: String,
@@ -54,11 +56,12 @@ defineProps({
   },
   imageUrl: {
     type: String,
-    default: "https://images.unsplash.com/photo-1483389127117-b6a2102724ae?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1587&q=80",
+    default:
+      "https://images.unsplash.com/photo-1483389127117-b6a2102724ae?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1587&q=80",
   },
   bannerText: {
     type: String,
-    default: "Now with end-to-end encryption and metadata protection.",
+    default: "Now with unlimited fortune telling.",
   },
   bannerLinkText: {
     type: String,
@@ -76,14 +79,13 @@ defineProps({
 </script>
 
 <template>
+
   <div class="bg-white dark:bg-gray-900">
-    <Header
+     <Header
       :navigation="navigation"
       :logoSrc="logoSrc"
       :logoAlt="logoAlt"
-    />
-
-    <Hero
+    /> <Hero
       :headline="headline"
       :description="description"
       :primaryButtonText="primaryButtonText"
@@ -97,4 +99,5 @@ defineProps({
       :showBanner="showBanner"
     />
   </div>
+
 </template>

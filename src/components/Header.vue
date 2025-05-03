@@ -21,8 +21,7 @@ defineProps({
   },
   logoSrc: {
     type: String,
-    default:
-      "/img/onetime-logo-v3-xl.svg",
+    default: "/img/onetime-logo-v3-xl.svg",
   },
   logoAlt: {
     type: String,
@@ -41,62 +40,82 @@ const mobileMenuOpen = ref(false);
           class="flex items-center justify-between lg:justify-start"
           aria-label="Global"
         >
-          <a href="#" class="-m-1.5 p-1.5">
+          <a
+            href="#"
+            class="-m-1.5 p-1.5"
+          >
             <span class="sr-only">{{ logoAlt }}</span>
-            <img :alt="logoAlt" class="h-8 w-auto" :src="logoSrc" />
+            <img
+              :alt="logoAlt"
+              class="size-10 w-auto rounded-sm"
+              :src="logoSrc"
+            />
           </a>
           <button
             type="button"
-            class="-m-2.5 rounded-md p-2.5 text-gray-700 dark:text-gray-300 lg:hidden"
-            @click="mobileMenuOpen = true"
+            class="-m-2.5 rounded-md p-2.5 text-gray-700 lg:hidden dark:text-gray-300"
             aria-expanded="false"
             aria-controls="mobile-menu"
+            @click="mobileMenuOpen = true"
           >
             <span class="sr-only">Open main menu</span>
-            <Bars3Icon class="size-6" aria-hidden="true" />
+            <Bars3Icon
+              class="size-6"
+              aria-hidden="true"
+            />
           </button>
-          <div class="hidden lg:ml-12 lg:flex lg:gap-x-14 lg:items-center">
+          <div class="hidden lg:ml-12 lg:flex lg:items-center lg:gap-x-14">
             <a
               v-for="item in navigation"
               :key="item.name"
               :href="item.href"
-              class="text-sm/6 font-semibold text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300"
+              class="text-sm/6 font-semibold text-gray-900 hover:text-gray-600 dark:text-white dark:hover:text-gray-300"
             >
               {{ item.name }}
             </a>
-
           </div>
         </nav>
       </div>
     </div>
     <Dialog
+      id="mobile-menu"
       class="lg:hidden"
       :open="mobileMenuOpen"
       @close="mobileMenuOpen = false"
-      id="mobile-menu"
     >
       <div
         class="fixed inset-0 z-50 bg-gray-500/75 dark:bg-gray-900/80"
         aria-hidden="true"
       />
       <DialogPanel
-        class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white dark:bg-gray-900 px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 dark:sm:ring-gray-100/10"
+        class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 dark:bg-gray-900 dark:sm:ring-gray-100/10"
       >
         <div class="flex items-center justify-between">
-          <a href="#" class="-m-1.5 p-1.5">
+          <a
+            href="#"
+            class="-m-1.5 p-1.5"
+          >
             <span class="sr-only">{{ logoAlt }}</span>
-            <img class="h-8 w-auto" :src="logoSrc" :alt="logoAlt" />
+            <img
+              class="h-8 w-auto"
+              :src="logoSrc"
+              :alt="logoAlt"
+            />
           </a>
           <button
             type="button"
             class="-m-2.5 rounded-md p-2.5 text-gray-700 dark:text-gray-300"
-            @click="mobileMenuOpen = false"
             aria-label="Close menu"
+            @click="mobileMenuOpen = false"
           >
             <span class="sr-only">Close menu</span>
-            <XMarkIcon class="size-6" aria-hidden="true" />
+            <XMarkIcon
+              class="size-6"
+              aria-hidden="true"
+            />
           </button>
         </div>
+
         <div class="mt-6 flow-root">
           <div
             class="-my-6 divide-y divide-gray-500/10 dark:divide-gray-500/30"
@@ -106,7 +125,7 @@ const mobileMenuOpen = ref(false);
                 v-for="item in navigation"
                 :key="item.name"
                 :href="item.href"
-                class="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
+                class="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800"
               >
                 {{ item.name }}
               </a>

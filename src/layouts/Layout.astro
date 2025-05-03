@@ -1,26 +1,37 @@
 ---
 export interface Props {
- 	title?: string;
- 	description?: string;
+  title?: string;
+  description?: string;
 }
 
 const {
- 	title = "Onetime Secret",
- 	description = "Share sensitive information securely with one-time viewable links."
+  title = "Onetime Secret",
+  description = "Share sensitive information securely with one-time viewable links.",
 } = Astro.props;
-
 ---
 
 <!doctype html>
-<html lang="en" class="h-full">
- 	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="description" content={description} />
-		<meta name="color-scheme" content="dark light" />
-		<title>{title}</title>
- 	</head>
- 	<body class="h-full bg-white dark:bg-gray-900">
-		<slot />
- 	</body>
+<html
+  lang="en"
+  class="h-full"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width"
+    />
+    <meta
+      name="description"
+      content={description}
+    />
+    <meta
+      name="color-scheme"
+      content="dark light"
+    />
+    <title>{title}</title>
+  </head>
+  <body class="h-full bg-white dark:bg-gray-900">
+    <slot />
+  </body>
 </html>

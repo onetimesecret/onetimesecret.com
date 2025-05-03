@@ -1,14 +1,15 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import MarketingLayout from '../components/MarketingLayout.vue';
+import Layout from "../layouts/Layout.astro";
+import MarketingLayout from "../components/MarketingLayout.vue";
 
 import "../styles/global.css";
-import '../styles/tailwind.css';
-import '../fonts/font-face.css';
+import "../styles/tailwind.css";
+import "../fonts/font-face.css";
 
 // Define page metadata
 const title = "Onetime Secret - Share Sensitive Information Securely";
-const description = "Generate links to secret messages that can only be viewed once. Perfect for sending passwords, API keys, or sensitive information that shouldn't be stored in email or chat logs.";
+const description =
+  "Generate links to secret messages that can only be viewed once. Perfect for sending passwords, API keys, or sensitive information that shouldn't be stored in email or chat logs.";
 
 // Custom settings for the marketing page
 const navigation = [
@@ -20,7 +21,10 @@ const navigation = [
 ];
 ---
 
-<Layout title={title} description={description}>
+<Layout
+  title={title}
+  description={description}
+>
   <MarketingLayout
     client:load
     navigation={navigation}
@@ -33,7 +37,7 @@ const navigation = [
     secondaryButtonText="How it works"
     secondaryButtonLink="#how-it-works"
     imageUrl="https://images.unsplash.com/photo-1483389127117-b6a2102724ae?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1587&q=80"
-    bannerText="Now with end-to-end encryption and metadata protection."
+    bannerText="Now with unlimited fortune telling."
     bannerLinkText="Learn more"
     bannerLinkUrl="#security"
     showBanner={true}

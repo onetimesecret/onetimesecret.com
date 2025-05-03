@@ -1,12 +1,12 @@
 packages:
   - .
 excludeDependencies:
-  - '@sentry/cli'
+  - "@sentry/cli"
   - esbuild
   - sharp
   - unrs-resolver
 onlyBuiltDependencies:
-  - '@sentry/cli'
+  - "@sentry/cli"
   - esbuild
   - sharp
   - unrs-resolver
