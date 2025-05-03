@@ -2,7 +2,7 @@
   "onetime-secret-literal": "Onetime Secret",
   "tagline": "Signed. Sealed. Delivered.",
   "banner": {
-    "regional-domains": "OnetimeSecret now uses regional domains to keep your secrets in your chosen region.",
+    "regional-domains": "Onetime Secret uses regional domains to keep your secrets in your chosen region.",
     "learn-more": "Learn more",
     "dismiss": "Dismiss"
   },
@@ -25,7 +25,10 @@
       "createLink": "Create Link",
       "burnAfterReading": "Burn after reading",
       "addPassphrase": "Add passphrase",
-      "secretPlaceholder": "Type your secret message here..."
+      "secretPlaceholder": "Type your secret message here...",
+      "dataSovereignty": "Data Sovereignty",
+      "regionExplanation": "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR.",
+      "learnMoreRegions": "Learn more about regional domains"
     }
   }
 }
