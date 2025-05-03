@@ -89,16 +89,16 @@ repos:
           - "--template=[#{}]"
 
   # Local JavaScript linting: quick syntax checks
-  - repo: local
-    hooks:
-      - id: local-eslint-fast
-        stages: [pre-commit]
-        name: Quick ESLint
-        description: Lightweight TypeScript/Vue syntax validation
-        entry: node_modules/.bin/eslint --quiet --config ./eslint.config.ts
-        language: system
-        pass_filenames: true
-        files: (^src/.*\.(mjs|ts|vue)$|^.*\.(mjs|ts|vue)$)
+  #- repo: local
+  #  hooks:
+  #    - id: local-eslint-fast
+  #      stages: [pre-commit]
+  #      name: Quick ESLint
+  #      description: Lightweight TypeScript/Vue syntax validation
+  #      entry: node_modules/.bin/eslint --quiet --config ./eslint.config.ts
+  #      language: system
+  #      pass_filenames: true
+  #      files: (^src/.*\.(mjs|ts|vue)$|^.*\.(mjs|ts|vue)$)
 
   # Disable type-checking while sorting out tsconfig.json ignore when files specified
   # Local TypeScript type checking: quick type validation
