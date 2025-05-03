@@ -1,29 +1,20 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import HomePage from "../components/attempt1/HomePage.vue";
-
+import Homepage from "../components/attempt3/Homepage.vue";
 import "../styles/global.css";
 import "../styles/tailwind.css";
 import "../fonts/font-face.css";
+import "../i18n"; // Import i18n configuration
 
 // Define page metadata
 const title = "Onetime Secret - Share Sensitive Information Securely";
 const description =
   "Generate links to secret messages that can only be viewed once. Perfect for sending passwords, API keys, or sensitive information that shouldn't be stored in email or chat logs.";
-
-// Custom settings for the marketing page
-const navigation = [
-  { name: "Home", href: "/" },
-  { name: "Features", href: "#features" },
-  { name: "About", href: "about" },
-  { name: "Pricing", href: "#pricing" },
-  { name: "Sign in", href: "/login" },
-];
 ---
 
 <Layout
   title={title}
   description={description}
 >
-  <HomePage client:load />
+  <Homepage client:only="vue" />
 </Layout>

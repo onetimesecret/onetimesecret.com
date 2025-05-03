@@ -1,0 +1,19 @@
+{
+  "onetime-secret-literal": "Onetime Secret",
+  "tagline": "Signed. Sealed. Delivered.",
+  "banner": {
+    "regional-domains": "OnetimeSecret now uses regional domains to keep your secrets in your chosen region.",
+    "learn-more": "Learn more",
+    "dismiss": "Dismiss"
+  },
+  "navigation": {
+    "home": "Home",
+    "features": "Features",
+    "about": "About",
+    "pricing": "Pricing"
+  },
+  "auth": {
+    "sign-in": "Sign In",
+    "create-account": "Create Account"
+  }
+}

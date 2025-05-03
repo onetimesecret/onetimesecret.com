@@ -8,6 +8,7 @@ import sentry from "@sentry/astro";
 import spotlightjs from "@spotlightjs/astro";
 
 import vue from "@astrojs/vue";
+import vueSetup from "./src/vueSetup";
 
 // https://astro.build/config
 export default defineConfig({
@@ -41,6 +42,9 @@ export default defineConfig({
     spotlightjs({
       debug: false,
     }),
-    vue({ devtools: { launchEditor: "zed" } }),
+    vue({
+      devtools: { launchEditor: "zed" },
+      appEntrypoint: "/src/vueSetup",
+    }),
   ],
 });
