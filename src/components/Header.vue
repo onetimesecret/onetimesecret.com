@@ -3,6 +3,8 @@ import { ref } from "vue";
 import { Dialog, DialogPanel } from "@headlessui/vue";
 import { Bars3Icon, XMarkIcon } from "@heroicons/vue/24/outline";
 
+import RegionIndicator from "./RegionIndicator.vue";
+
 /**
  * Header component with responsive navigation
  * Supports both desktop and mobile navigation with a hamburger menu
@@ -27,13 +29,17 @@ defineProps({
     type: String,
     default: "Your Company",
   },
+  showBanner: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const mobileMenuOpen = ref(false);
 </script>
 
 <template>
-  <header class="absolute inset-x-0 top-0 z-50">
+  <header class="absolute inset-x-0 z-50" :class="[showBanner ? 'top-12' : 'top-0']">
     <div class="mx-auto max-w-7xl">
       <div class="px-6 pt-6 lg:max-w-2xl lg:pr-0 lg:pl-8">
         <nav
@@ -64,6 +70,10 @@ const mobileMenuOpen = ref(false);
               aria-hidden="true"
             />
           </button>
+          <RegionIndicator
+            currentRegion="US"
+            class="mr-4"
+          />
           <div class="hidden lg:ml-12 lg:flex lg:items-center lg:gap-x-14">
             <a
               v-for="item in navigation"
@@ -82,6 +92,7 @@ const mobileMenuOpen = ref(false);
       class="lg:hidden"
       :open="mobileMenuOpen"
       @close="mobileMenuOpen = false"
+      as="div"
     >
       <div
         class="fixed inset-0 z-50 bg-gray-500/75 dark:bg-gray-900/80"
@@ -89,6 +100,7 @@ const mobileMenuOpen = ref(false);
       />
       <DialogPanel
         class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 dark:bg-gray-900 dark:sm:ring-gray-100/10"
+        as="div"
       >
         <div class="flex items-center justify-between">
           <a

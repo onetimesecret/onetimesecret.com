@@ -3,7 +3,7 @@ import js from "@eslint/js";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 import pluginVue from "eslint-plugin-vue";
-import eslintConfigPrettier from "eslint-config-prettier";
+//import eslintConfigPrettier from "eslint-config-prettier";
 // Removed: import { defineConfig } from "eslint/config"; // Use tseslint.config instead
 
 export default tseslint.config(
@@ -47,6 +47,7 @@ export default tseslint.config(
       // Add or override Vue-specific rules here if necessary
       "vue/html-self-closing": "warn",
       "vue/multi-word-component-names": "off", // Allow single-word names for test components
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
 
@@ -62,5 +63,5 @@ export default tseslint.config(
   },
 
   // Add Prettier config last to disable conflicting rules
-  eslintConfigPrettier,
+  // eslintConfigPrettier,
 );

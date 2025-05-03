@@ -1,6 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import MarketingLayout from "../components/MarketingLayout.vue";
+import HomePage from "../components/HomePage.vue";
 
 import "../styles/global.css";
 import "../styles/tailwind.css";
@@ -25,21 +25,5 @@ const navigation = [
   title={title}
   description={description}
 >
-  <MarketingLayout
-    client:load
-    navigation={navigation}
-    logoSrc="/img/onetime-logo-v3-xl.svg"
-    logoAlt="Onetime Secret"
-    headline="Share sensitive information securely"
-    description="Generate links to secret messages that can only be viewed once. Perfect for sending passwords, API keys, or sensitive information that shouldn't be stored in email or chat logs."
-    primaryButtonText="Create a secret"
-    primaryButtonLink="/create"
-    secondaryButtonText="How it works"
-    secondaryButtonLink="#how-it-works"
-    imageUrl="https://images.unsplash.com/photo-1483389127117-b6a2102724ae?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1587&q=80"
-    bannerText="Now with unlimited fortune telling."
-    bannerLinkText="Learn more"
-    bannerLinkUrl="#security"
-    showBanner={true}
-  />
+  <HomePage client:load />
 </Layout>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * Hero component for marketing pages
- * Displays a headline, description, and call-to-action buttons alongside an image
+ * Displays a headline, description, and call-to-action buttons alongside an image or form
  * Supports dark mode and includes accessibility enhancements
  */
 defineProps({
@@ -50,6 +50,14 @@ defineProps({
   showBanner: {
     type: Boolean,
     default: true,
+  },
+  useFormInstead: {
+    type: Boolean,
+    default: false,
+  },
+  hideButtons: {
+    type: Boolean,
+    default: false,
   },
 });
 </script>
@@ -100,7 +108,10 @@ defineProps({
               {{ description }}
             </p>
 
-            <div class="mt-10 flex items-center gap-x-6">
+            <div
+              v-if="!hideButtons"
+              class="mt-10 flex items-center gap-x-6"
+            >
               <a
                 :href="primaryButtonLink"
                 class="bg-brand-600 rounded-md px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-400"
@@ -122,12 +133,19 @@ defineProps({
     <div
       class="bg-gray-50 lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2 dark:bg-gray-800"
     >
-      <img
-        class="aspect-3/2 object-cover lg:aspect-auto lg:size-full"
-        :src="imageUrl"
-        alt="Feature illustration"
-        role="img"
-      />
+      <template v-if="!useFormInstead">
+        <img
+          class="aspect-3/2 object-cover lg:aspect-auto lg:size-full"
+          :src="imageUrl"
+          alt="Feature illustration"
+          role="img"
+        />
+      </template>
+      <template v-else>
+        <div class="h-full w-full flex items-center justify-center p-6 lg:p-8">
+          <slot></slot>
+        </div>
+      </template>
     </div>
   </div>
 </template>
