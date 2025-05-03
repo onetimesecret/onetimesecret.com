@@ -3,6 +3,7 @@ import js from "@eslint/js";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 import pluginVue from "eslint-plugin-vue";
+import eslintConfigPrettier from "eslint-config-prettier";
 // Removed: import { defineConfig } from "eslint/config"; // Use tseslint.config instead
 
 export default tseslint.config(
@@ -59,4 +60,7 @@ export default tseslint.config(
       // Add other patterns to ignore
     ],
   },
+
+  // Add Prettier config last to disable conflicting rules
+  eslintConfigPrettier,
 );
