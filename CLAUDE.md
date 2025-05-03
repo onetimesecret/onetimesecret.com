@@ -18,6 +18,7 @@ DO NOT ADD TEXT unless using the i18n system. Use existing keys or create new on
 - E2E tests: `pnpm playwright` or `pnpm exec playwright test <test-file>`
 
 ## Code Style Guidelines
+- **EOF newlines**: when adding a file, it needs a newline at the end
 - **Commit Messages**: Use imperative mood, prefix with issue number `[#123]`
 - **TypeScript**: Strict mode, explicit types, max 100 chars per line
 - **Vue Components**: Use Composition API with `<script setup>`, camelCase props
