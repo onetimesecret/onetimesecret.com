@@ -29,6 +29,46 @@
       "dataSovereignty": "Data Sovereignty",
       "regionExplanation": "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR.",
       "learnMoreRegions": "Learn more about regional domains"
+    },
+    "homepage": {
+      "howItWorks": {
+        "title": "How It Works",
+        "step1": {
+          "title": "Create a Secret",
+          "description": "Enter your sensitive information and generate a secure one-time link"
+        },
+        "step2": {
+          "title": "Share the Link",
+          "description": "Send the secure link through any messaging platform"
+        },
+        "step3": {
+          "title": "One-Time Access",
+          "description": "Recipient views the secret once with optional passphrase protection"
+        },
+        "step4": {
+          "title": "Auto-Destruction",
+          "description": "After viewing, the secret is permanently deleted from our servers"
+        }
+      },
+      "benefits": {
+        "title": "Key Benefits",
+        "security": {
+          "title": "Enhanced Security",
+          "description": "One-time access means no digital trail which prevents information leaks"
+        },
+        "dataSovereignty": {
+          "title": "Data Sovereignty",
+          "description": "Choose where your data is stored to meet regulatory requirements"
+        },
+        "customDomains": {
+          "title": "Custom Domain & Branding",
+          "description": "Reinforce your brand identity and build trust by using your own domain and logo for a seamless experience."
+        },
+        "simplicity": {
+          "title": "Simple & Fast",
+          "description": "No accounts required - create and share secrets in seconds"
+        }
+      }
     }
   }
 }
