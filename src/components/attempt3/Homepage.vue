@@ -1,7 +1,10 @@
+<!-- src/components/attempt3/Homepage.vue -->
+
 <script setup lang="ts">
 import { ref } from "vue";
 import i18n from "../../i18n";
 import { useI18n } from "vue-i18n";
+import ButtonWithDropdown from "../ButtonWithDropdown.vue";
 
 // Initialize i18n with imported configuration
 const { t } = useI18n({
@@ -14,6 +17,19 @@ const showBanner = ref(true);
 
 // Region info popover state
 const showRegionInfo = ref(false);
+
+// Checkbox states
+const showPassphrase = ref(false);
+const showExpiration = ref(false);
+const passphrase = ref("");
+const expirationTime = ref("1 hour");
+
+// Dropdown options for create link button
+const createOptions = [
+  { name: t("web.secrets.generatePassword") || "Generate Password", href: "#" },
+  { name: t("web.secrets.createPrivateLink") || "Create Private Link", href: "#" },
+  { name: t("web.secrets.clearForm") || "Clear Form", href: "#" },
+];
 
 const closeBanner = () => {
   showBanner.value = false;
@@ -229,36 +245,93 @@ const navigation = [
             ></textarea>
 
             <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
-              <button
-                type="button"
-                class="inline-flex items-center rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-sm font-medium text-white shadow-sm hover:bg-brand-600 focus:outline-none"
-              >
-                {{ t("web.secrets.createLink") || "Create Link" }}
-              </button>
+              <ButtonWithDropdown
+                :buttonText="t('web.secrets.createLink') || 'Create Link'"
+                :items="createOptions"
+                buttonClass="inline-flex items-center rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-sm font-medium text-white shadow-sm hover:bg-brand-600 focus:outline-none"
+                dropdownClass="bg-brand-500 text-white hover:bg-brand-600"
+              />
             </div>
           </div>
 
           <!-- Options area -->
-          <div class="mt-4 grid grid-cols-2 gap-4 text-sm text-gray-600">
-            <div class="flex items-center">
-              <input
-                id="burn-after-reading"
-                type="checkbox"
-                class="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-              />
-              <label for="burn-after-reading" class="ml-2 block text-sm text-gray-600">
-                {{ t("web.secrets.burnAfterReading") || "Burn after reading" }}
-              </label>
+          <div class="mt-4 space-y-4 text-sm text-gray-600">
+            <div>
+              <div class="flex items-center">
+                <input
+                  id="add-passphrase"
+                  v-model="showPassphrase"
+                  type="checkbox"
+                  class="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                />
+                <label for="add-passphrase" class="ml-2 block text-sm text-gray-600">
+                  {{ t("web.secrets.addPassphrase") || "Add passphrase" }}
+                </label>
+              </div>
+              <!-- Passphrase input field (expandable) -->
+              <transition
+                enter-active-class="transition ease-out duration-100"
+                enter-from-class="transform opacity-0 -translate-y-2"
+                enter-to-class="transform opacity-100 translate-y-0"
+                leave-active-class="transition ease-in duration-75"
+                leave-from-class="transform opacity-100 translate-y-0"
+                leave-to-class="transform opacity-0 -translate-y-2"
+              >
+                <div v-if="showPassphrase" class="mt-3 pl-6">
+                  <div class="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-brand-500">
+                    <input
+                      type="password"
+                      v-model="passphrase"
+                      class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-500 sm:text-sm"
+                      :placeholder="t('web.secrets.passphraseHint') || 'Enter a passphrase'"
+                    />
+                  </div>
+                  <p class="mt-1 text-xs text-gray-500">
+                    {{ t('web.secrets.passphraseHelp') || 'Recipients will need this passphrase to view your secret.' }}
+                  </p>
+                </div>
+              </transition>
             </div>
-            <div class="flex items-center">
-              <input
-                id="add-passphrase"
-                type="checkbox"
-                class="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-              />
-              <label for="add-passphrase" class="ml-2 block text-sm text-gray-600">
-                {{ t("web.secrets.addPassphrase") || "Add passphrase" }}
-              </label>
+
+            <div>
+              <div class="flex items-center">
+                <input
+                  id="expiration-time"
+                  v-model="showExpiration"
+                  type="checkbox"
+                  class="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                />
+                <label for="expiration-time" class="ml-2 block text-sm text-gray-600">
+                  {{ t("web.secrets.expirationTime") || "Expiration time" }}
+                </label>
+              </div>
+              <!-- Expiration time selector (expandable) -->
+              <transition
+                enter-active-class="transition ease-out duration-100"
+                enter-from-class="transform opacity-0 -translate-y-2"
+                enter-to-class="transform opacity-100 translate-y-0"
+                leave-active-class="transition ease-in duration-75"
+                leave-from-class="transform opacity-100 translate-y-0"
+                leave-to-class="transform opacity-0 -translate-y-2"
+              >
+                <div v-if="showExpiration" class="mt-3 pl-6">
+                  <div class="flex rounded-md shadow-sm">
+                    <select
+                      v-model="expirationTime"
+                      class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-brand-500 sm:text-sm"
+                    >
+                      <option value="5 minutes">{{ t('web.secrets.expire5min') || '5 minutes' }}</option>
+                      <option value="1 hour">{{ t('web.secrets.expire1hour') || '1 hour' }}</option>
+                      <option value="1 day">{{ t('web.secrets.expire1day') || '1 day' }}</option>
+                      <option value="7 days">{{ t('web.secrets.expire7days') || '7 days' }}</option>
+                      <option value="30 days">{{ t('web.secrets.expire30days') || '30 days' }}</option>
+                    </select>
+                  </div>
+                  <p class="mt-1 text-xs text-gray-500">
+                    {{ t('web.secrets.expirationHelp') || 'The secret will automatically expire after this time period.' }}
+                  </p>
+                </div>
+              </transition>
             </div>
           </div>
         </div>
