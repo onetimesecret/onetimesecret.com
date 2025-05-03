@@ -1,6 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-// Import the new switcher component instead of the individual attempts
+// Import the switcher component which now handles rendering AND the selector UI
 import HomepageSwitcher from "../components/HomepageSwitcher.vue";
 import "../styles/global.css";
 import "../styles/tailwind.css";
@@ -8,18 +8,20 @@ import "../fonts/font-face.css";
 import "../i18n"; // Import i18n configuration
 import { Debug } from "astro:components";
 
-// Define page metadata
-const title = "Onetime Secret - Share Sensitive Information Securely";
-const description =
-  "Generate links to secret messages that can only be viewed once. Perfect for sending passwords, API keys, or sensitive information that shouldn't be stored in email or chat logs.";
-
-// Get the version from URL query parameter on the server.
+// Get the version from URL query parameter on the server. We do this simply to
+// show how the Debug component can be used to inspect the server-side context.
+//
 // In Astro's default static (SSG) mode, this value is determined at build time
 // and won't reflect runtime query parameters added by the user in their browser.
 // It's primarily used here to correctly highlight the active version link below
 // on the initial server render. The actual component switching logic based on
 // the runtime URL parameter happens client-side within HomepageSwitcher.
 const serverVersion = Astro.url.searchParams.get("version") || "1";
+
+// Define page metadata
+const title = "Onetime Secret - Share Sensitive Information Securely";
+const description =
+  "Generate links to secret messages that can only be viewed once. Perfect for sending passwords, API keys, or sensitive information that shouldn't be stored in email or chat logs.";
 ---
 
 <Layout
@@ -28,44 +30,15 @@ const serverVersion = Astro.url.searchParams.get("version") || "1";
 >
   {
     /*
-    Dynamically render HomepageAttempt1 or HomepageAttempt3 based on the 'version'
-    URL query parameter (?version=...).
-    Since Astro generates static HTML at build time by default (SSG), it cannot
-    react to runtime query parameters directly in the template logic here.
-    Therefore, we delegate the version checking and component selection to the
-    `HomepageSwitcher` Vue component, which runs on the client (`client:load`).
-    This component reads `window.location.search` after mounting in the browser
-    and renders the appropriate underlying homepage component.
-  */
+        Dynamically render HomepageAttempt1 or HomepageAttempt3 based on the 'version'
+        URL query parameter (?version=...).
+        The `HomepageSwitcher` Vue component handles reading the URL parameter
+        client-side (`client:load`), rendering the correct homepage version,
+        AND displaying the version selector UI with accurate link highlighting.
+      */
   }
   <HomepageSwitcher client:load />
-
-  {/* Version selector - fixed at bottom of screen */}
-  <div
-    class="fixed right-0 bottom-0 left-0 z-30 bg-indigo-700 p-3 text-white shadow-lg"
-  >
-    <div class="mx-auto flex max-w-7xl items-center justify-between">
-      {/* Display text uses serverVersion for initial render */}
-      <p class="text-sm font-medium md:text-base">
-        Viewing: <span class="font-bold">Homepage Attempt {serverVersion}</span>
-      </p>
-      <!-- This will always show "1" b/c it runs only one when the page is compiled into a static file. -->
-      <Debug version={serverVersion ?? "n/a"} />
-      <div class="flex space-x-3">
-        {/* Links use standard hrefs, highlighting uses serverVersion */}
-        <a
-          href="/?version=1"
-          class={`px-3 py-1 rounded text-sm font-medium transition-colors ${serverVersion === "1" ? "bg-white text-indigo-700" : "bg-indigo-600 hover:bg-indigo-500"}`}
-        >
-          Attempt 1
-        </a>
-        <a
-          href="/?version=3"
-          class={`px-3 py-1 rounded text-sm font-medium transition-colors ${serverVersion === "3" ? "bg-white text-indigo-700" : "bg-indigo-600 hover:bg-indigo-500"}`}
-        >
-          Attempt 3
-        </a>
-      </div>
-    </div>
-  </div>
+  <!-- This will always show "1" b/c it runs only one when the page is compiled into a static file. -->
+  <Debug version={serverVersion ?? "n/a"} />
+  {/* The version selector div has been moved into HomepageSwitcher.vue */}
 </Layout>
