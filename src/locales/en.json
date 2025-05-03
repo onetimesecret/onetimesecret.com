@@ -15,5 +15,17 @@
   "auth": {
     "sign-in": "Sign In",
     "create-account": "Create Account"
+  },
+  "web": {
+    "secrets": {
+      "pasteSecret": "Paste a password, secret message or private link below.",
+      "keepSensitiveInfo": "Keep sensitive info out of your email and chat logs.",
+      "securelyStored": "Securely stored in",
+      "europe": "Europe",
+      "createLink": "Create Link",
+      "burnAfterReading": "Burn after reading",
+      "addPassphrase": "Add passphrase",
+      "secretPlaceholder": "Type your secret message here..."
+    }
   }
 }
