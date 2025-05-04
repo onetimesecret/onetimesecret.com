@@ -4,14 +4,14 @@ import { useI18n } from "vue-i18n";
 
 // Define the options model
 interface SecretOptions {
-  burnAfterReading: boolean;
+  expirationTime: boolean;
   addPassphrase: boolean;
 }
 
 const props = withDefaults(defineProps<{
   modelValue?: SecretOptions;
 }>(), {
-  modelValue: () => ({ burnAfterReading: false, addPassphrase: false })
+  modelValue: () => ({ expirationTime: false, addPassphrase: false })
 });
 
 const emit = defineEmits<{
@@ -27,7 +27,7 @@ const { t } = useI18n({
 
 // Create reactive options that sync with props
 const options = ref<SecretOptions>({
-  burnAfterReading: props.modelValue?.burnAfterReading ?? false,
+  expirationTime: props.modelValue?.expirationTime ?? false,
   addPassphrase: props.modelValue?.addPassphrase ?? false,
 });
 
@@ -48,11 +48,11 @@ const updateOption = (option: keyof SecretOptions, value: boolean) => {
         id="burn-after-reading"
         type="checkbox"
         class="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-        :checked="options.burnAfterReading"
-        @change="updateOption('burnAfterReading', $event.target.checked)"
+        :checked="options.expirationTime"
+        @change="updateOption('expirationTime', $event.target.checked)"
       />
       <label for="burn-after-reading" class="ml-2 block text-sm text-gray-600">
-        {{ t("web.secrets.burnAfterReading") || "Burn after reading" }}
+        {{ t("web.secrets.expirationTime") || "Burn after reading" }}
       </label>
     </div>
     <div class="flex items-center">

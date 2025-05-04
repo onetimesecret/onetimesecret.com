@@ -22,7 +22,7 @@ const secretText = ref("");
 
 // Secret options state
 const secretOptions = ref({
-  burnAfterReading: false,
+  expirationTime: false,
   addPassphrase: false,
 });
 

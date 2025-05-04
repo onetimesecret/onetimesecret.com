@@ -1,6 +1,10 @@
 {
   "onetime-secret-literal": "Onetime Secret",
-  "tagline": "Signed. Sealed. Delivered.",
+  "tagline": {
+    "signed": "Signed",
+    "sealed": "Sealed",
+    "delivered": "Delivered"
+  },
   "banner": {
     "regional-domains": "We use regional domains to keep your secrets in your chosen region.",
     "learn-more": "Learn more",
@@ -25,6 +29,7 @@
       "europe": "Europe",
       "createLink": "Create Link",
       "burnAfterReading": "Burn after reading",
+      "expirationTime": "Extend lifetime",
       "optionsHeading": "Privacy Options",
       "addPassphrase": "Add passphrase",
       "secretPlaceholder": "Type your secret message here...",
