@@ -67,7 +67,7 @@ defineProps({
     <div class="mx-auto max-w-7xl">
       <div class="relative z-10 pt-14 lg:w-full lg:max-w-2xl">
         <svg
-          class="absolute inset-y-0 right-8 hidden h-full w-80 translate-x-1/2 transform fill-white lg:block dark:fill-gray-900"
+          class="absolute inset-y-0 right-8 hidden h-full w-80 translate-x-1/2 transform fill-white lg:block dark:fill-gray-900/80"
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
           aria-hidden="true"

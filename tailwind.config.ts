@@ -22,7 +22,7 @@ export default {
     "rounded-l-full",
     "rounded-r-full",
   ],
-  darkMode: "light",
+  darkMode: "class",
   theme: {
     extend: {
       fontFamily: {

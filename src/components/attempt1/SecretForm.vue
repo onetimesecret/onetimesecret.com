@@ -109,12 +109,9 @@ function createSecret() {
 
 <template>
   <div class="w-full max-w-3xl">
-    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-      Paste a password, secret message or private link below.
-    </h2>
 
     <p class="text-gray-600 dark:text-gray-300 mb-6">
-      Keep sensitive info out of your email and chat logs.
+
       <span class="inline-flex items-center ml-3">
         Securely stored in
         <button
