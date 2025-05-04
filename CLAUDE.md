@@ -6,6 +6,8 @@ The default english translation is provided in the `src/locales/en.json` file.
 Look at the heirarchical keys in the JSON file to understand the structure and
 how properly reference them in Vue components (e.g. `$t('web.secrets.enterPassphrase')`).
 
+Proper stylization of project name: "Onetime Secret".
+
 DO NOT ADD TEXT unless using the i18n system. Use existing keys or create new ones.
 
 ## Build/Lint/Test Commands

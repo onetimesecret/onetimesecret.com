@@ -36,4 +36,4 @@ Rather than explaining how it works, show it happening:
 
 This transforms abstract security concepts into a tangible, visceral experience that builds trust while engaging users emotionally with the product's core value.
 
-The combination creates a dynamic, educational experience that's both practical and novel, while maintaining focus on the regional domain strategy that distinguishes OneTimeSecret from competitors.
+The combination creates a dynamic, educational experience that's both practical and novel, while maintaining focus on the regional domain strategy that distinguishes OnetimeSecret from competitors.

@@ -169,12 +169,12 @@ function resetForm() {
 
 <template>
   <div class="w-full max-w-3xl">
-    <p class="text-gray-600 dark:text-gray-300 mb-6">
+    <p class="text-gray-600 mb-6">
       <span class="inline-flex items-center ml-3">
         Securely stored in
         <button
           type="button"
-          class="inline-flex items-center ml-1 text-sm text-gray-700 dark:text-gray-300 font-medium"
+          class="inline-flex items-center ml-1 text-sm text-gray-700 font-medium"
           @click="toggleRegionSelector">
           <span class="mr-1">{{ selectedRegion.flag }}</span>
           {{ selectedRegion.name }}
@@ -195,11 +195,11 @@ function resetForm() {
     <!-- Region Selector Panel -->
     <div
       v-if="showRegionSelector"
-      class="mb-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+      class="mb-6 bg-white border border-gray-200 rounded-lg p-4">
+      <h3 class="text-lg font-medium text-gray-900 mb-2">
         Select your region
       </h3>
-      <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+      <p class="text-sm text-gray-600 mb-4">
         Choose where your sensitive information will be stored:
       </p>
 
@@ -210,24 +210,24 @@ function resetForm() {
           class="flex items-center p-3 rounded-md cursor-pointer"
           :class="
             selectedRegion.code === region.code
-              ? 'bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700'
-              : 'hover:bg-gray-50 dark:hover:bg-gray-700/30 border border-gray-200 dark:border-gray-700'
+              ? 'bg-orange-50 border border-orange-200'
+              : 'hover:bg-gray-50 border border-gray-200'
           "
           @click="changeRegion(region)">
           <div class="flex items-center flex-1">
             <span class="text-xl mr-3">{{ region.flag }}</span>
             <div>
-              <h4 class="font-medium text-gray-900 dark:text-white">
+              <h4 class="font-medium text-gray-900">
                 {{ region.name }}
               </h4>
-              <p class="text-sm text-gray-500 dark:text-gray-400">
+              <p class="text-sm text-gray-500">
                 {{ region.domain }}
               </p>
             </div>
           </div>
           <div
             v-if="selectedRegion.code === region.code"
-            class="text-orange-600 dark:text-orange-400">
+            class="text-orange-600">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-5 w-5"
@@ -246,8 +246,8 @@ function resetForm() {
         v-if="detectedRegion && detectedRegion !== selectedRegion.code"
         class="mt-4 flex items-start text-sm">
         <GlobeAltIcon
-          class="h-5 w-5 text-orange-500 dark:text-orange-400 mt-0.5 mr-2 flex-shrink-0" />
-        <p class="text-gray-600 dark:text-gray-300">
+          class="h-5 w-5 text-orange-500 mt-0.5 mr-2 flex-shrink-0" />
+        <p class="text-gray-600">
           We detected your location as <strong>{{ detectedRegion }}</strong
           >. You can change your region at any time.
         </p>
@@ -262,7 +262,7 @@ function resetForm() {
         <textarea
           v-model="secretText"
           rows="5"
-          class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 dark:bg-gray-800 sm:text-sm"
+          class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm"
           placeholder="Type or paste your secret here..."
           autofocus
           :disabled="isCreating || secretLink"></textarea>
@@ -272,7 +272,7 @@ function resetForm() {
       <div>
         <label
           for="passphrase"
-          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          class="block text-sm font-medium text-gray-700 mb-1">
           Passphrase
         </label>
         <div class="relative">
@@ -280,7 +280,7 @@ function resetForm() {
             :type="showPassword ? 'text' : 'password'"
             id="passphrase"
             v-model="passphrase"
-            class="block w-full rounded-md border-0 py-2 pl-3 pr-10 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 dark:bg-gray-800 sm:text-sm"
+            class="block w-full rounded-md border-0 py-2 pl-3 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm"
             placeholder="Enter Passphrase" />
           <button
             type="button"
@@ -288,10 +288,10 @@ function resetForm() {
             class="absolute inset-y-0 right-0 flex items-center px-3 focus:outline-none">
             <EyeIcon
               v-if="showPassword"
-              class="h-5 w-5 text-gray-400 dark:text-gray-500" />
+              class="h-5 w-5 text-gray-400" />
             <EyeSlashIcon
               v-else
-              class="h-5 w-5 text-gray-400 dark:text-gray-500" />
+              class="h-5 w-5 text-gray-400" />
           </button>
         </div>
       </div>
@@ -300,13 +300,13 @@ function resetForm() {
       <div>
         <label
           for="expiration"
-          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          class="block text-sm font-medium text-gray-700 mb-1">
           Expiration Time
         </label>
         <select
           id="expiration"
           v-model="selectedExpiration"
-          class="block w-full rounded-md border-0 py-2 pl-3 pr-10 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-orange-600 dark:bg-gray-800 sm:text-sm">
+          class="block w-full rounded-md border-0 py-2 pl-3 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm">
           <option
             v-for="option in expirationOptions"
             :key="option.value"
@@ -318,10 +318,10 @@ function resetForm() {
 
       <!-- Info message -->
       <div
-        class="flex items-start rounded-md bg-blue-50 dark:bg-blue-900/20 p-3">
+        class="flex items-start rounded-md bg-blue-50 p-3">
         <InformationCircleIcon
-          class="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-2 flex-shrink-0" />
-        <p class="text-sm text-blue-700 dark:text-blue-300">
+          class="h-5 w-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
+        <p class="text-sm text-blue-700">
           Your message will self-destruct after being viewed. The link can only
           be accessed once.
         </p>
@@ -331,11 +331,11 @@ function resetForm() {
       <div
         v-if="successMessage"
         class="pt-2 mb-4">
-        <div class="rounded-md bg-green-50 dark:bg-green-900/20 p-4">
+        <div class="rounded-md bg-green-50 p-4">
           <div class="flex">
             <div class="flex-shrink-0">
               <svg
-                class="h-5 w-5 text-green-600 dark:text-green-400"
+                class="h-5 w-5 text-green-600"
                 viewBox="0 0 20 20"
                 fill="currentColor"
                 aria-hidden="true">
@@ -347,7 +347,7 @@ function resetForm() {
             </div>
             <div class="ml-3">
               <h3
-                class="text-sm font-medium text-green-700 dark:text-green-300">
+                class="text-sm font-medium text-green-700">
                 {{ successMessage }}
               </h3>
             </div>
@@ -360,17 +360,17 @@ function resetForm() {
         v-if="secretLink"
         class="pt-2">
         <label
-          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          class="block text-sm font-medium text-gray-700 mb-1">
           Secret URL
         </label>
         <div class="flex flex-col space-y-2">
           <div
-            class="flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-3 py-2 text-sm">
-            <span class="font-medium text-gray-900 dark:text-white break-all">{{
+            class="flex items-center rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm">
+            <span class="font-medium text-gray-900 break-all">{{
               secretLink
             }}</span>
           </div>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
+          <p class="text-sm text-gray-500">
             Share this link securely. It will self-destruct after being viewed
             once.
           </p>
@@ -387,11 +387,11 @@ function resetForm() {
       <div
         v-if="hasError"
         class="pt-2">
-        <div class="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
+        <div class="rounded-md bg-red-50 p-4">
           <div class="flex">
             <div class="flex-shrink-0">
               <svg
-                class="h-5 w-5 text-red-600 dark:text-red-400"
+                class="h-5 w-5 text-red-600"
                 viewBox="0 0 20 20"
                 fill="currentColor"
                 aria-hidden="true">
@@ -402,7 +402,7 @@ function resetForm() {
               </svg>
             </div>
             <div class="ml-3">
-              <h3 class="text-sm font-medium text-red-700 dark:text-red-300">
+              <h3 class="text-sm font-medium text-red-700">
                 {{ errorMessage }}
               </h3>
             </div>
@@ -418,7 +418,7 @@ function resetForm() {
           type="button"
           @click="createSecret"
           :disabled="isCreating || !secretText.trim()"
-          class="flex w-full justify-center rounded-md bg-orange-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 dark:bg-orange-700 dark:hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed">
+          class="flex w-full justify-center rounded-md bg-orange-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 disabled:opacity-50 disabled:cursor-not-allowed">
           <svg
             v-if="isCreating"
             class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
@@ -448,7 +448,7 @@ function resetForm() {
         <button
           type="button"
           @click="resetForm"
-          class="flex w-full justify-center rounded-md bg-gray-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600">
+          class="flex w-full justify-center rounded-md bg-gray-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600">
           Create New Secret
         </button>
       </div>

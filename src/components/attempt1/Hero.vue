@@ -67,7 +67,7 @@ defineProps({
     <div class="mx-auto max-w-7xl">
       <div class="relative z-10 pt-14 lg:w-full lg:max-w-2xl">
         <svg
-          class="absolute inset-y-0 right-8 hidden h-full w-80 translate-x-1/2 transform fill-white lg:block dark:fill-gray-900/80"
+          class="absolute inset-y-0 right-8 hidden h-full w-80 translate-x-1/2 transform fill-white lg:block"
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
           aria-hidden="true">
@@ -80,11 +80,11 @@ defineProps({
               v-if="showBanner"
               class="hidden sm:mb-10 sm:flex">
               <div
-                class="relative rounded-full px-3 py-1 text-sm/6 text-gray-500 ring-1 ring-gray-900/10 hover:ring-gray-900/20 dark:text-gray-400 dark:ring-gray-100/20 dark:hover:ring-gray-100/40">
+                class="relative rounded-full px-3 py-1 text-sm/6 text-gray-500 ring-1 ring-gray-900/10 hover:ring-gray-900/20">
                 {{ bannerText }}
                 <a
                   :href="bannerLinkUrl"
-                  class="font-semibold whitespace-nowrap text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                  class="font-semibold whitespace-nowrap text-indigo-600 hover:text-indigo-500"
                   ><span
                     class="absolute inset-0"
                     aria-hidden="true" />{{ bannerLinkText }}
@@ -94,12 +94,12 @@ defineProps({
             </div>
 
             <h1
-              class="text-3xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-4xl md:text-5xl lg:text-6xl dark:text-white">
+              class="text-3xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-4xl md:text-5xl lg:text-6xl">
               {{ headline }}
             </h1>
 
             <p
-              class="mt-4 md:mt-6 text-sm font-medium text-pretty text-gray-500 sm:text-base md:text-lg/8 dark:text-gray-300">
+              class="mt-4 md:mt-6 text-sm font-medium text-pretty text-gray-500 sm:text-base md:text-lg/8">
               {{ description }}
             </p>
 
@@ -108,13 +108,13 @@ defineProps({
               class="mt-10 flex items-center gap-x-6">
               <a
                 :href="primaryButtonLink"
-                class="bg-brand-600 rounded-md px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-400"
+                class="bg-brand-600 rounded-md px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 aria-label="Primary action button"
                 >{{ primaryButtonText }}</a
               >
               <a
                 :href="secondaryButtonLink"
-                class="text-sm/6 font-semibold text-gray-900 hover:text-gray-600 dark:text-white dark:hover:text-gray-300"
+                class="text-sm/6 font-semibold text-gray-900 hover:text-gray-600"
                 aria-label="Secondary action button"
                 >{{ secondaryButtonText }} <span aria-hidden="true">→</span></a
               >
@@ -125,7 +125,7 @@ defineProps({
     </div>
 
     <div
-      class="bg-gray-50 mt-8 sm:mt-10 md:mt-0 lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2 dark:bg-gray-800 overflow-auto">
+      class="bg-gray-50 mt-8 sm:mt-10 md:mt-0 lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2 overflow-auto">
       <template v-if="!useFormInstead">
         <img
           class="aspect-3/2 object-cover lg:aspect-auto lg:size-full"

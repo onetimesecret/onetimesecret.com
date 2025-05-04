@@ -81,7 +81,7 @@ const navigation = [
 </script>
 
 <template>
-  <div class="bg-white dark:bg-gray-900">
+  <div class="bg-white">
     <!-- First Time Visitor Banner -->
     <FirstTimeVisitorBanner
       :detected-region="detectedRegion"
@@ -109,7 +109,7 @@ const navigation = [
         primary-button-link="/create"
         secondary-button-text="How it works"
         secondary-button-link="#how-it-works"
-        banner-text="OneTimeSecret now uses regional domains to keep your secrets in your chosen region."
+        banner-text="OnetimeSecret now uses regional domains to keep your secrets in your chosen region."
         banner-link-text="Learn more"
         banner-link-url="#security"
         :show-banner="false"
@@ -133,12 +133,12 @@ const navigation = [
         <div class="text-center">
           <h2
             id="features"
-            class="text-3xl font-extrabold text-gray-900 dark:text-white sm:text-4xl">
+            class="text-3xl font-extrabold text-gray-900 sm:text-4xl">
             How it works
           </h2>
           <p
-            class="mt-4 max-w-2xl mx-auto text-xl text-gray-500 dark:text-gray-300">
-            OneTimeSecret creates links to secrets that self-destruct after
+            class="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
+            OnetimeSecret creates links to secrets that self-destruct after
             being viewed once.
           </p>
         </div>
