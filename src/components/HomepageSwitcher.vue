@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from "vue";
 import HomepageAttempt1 from "./attempt1/Homepage.vue";
 import HomepageAttempt3 from "./attempt3/Homepage.vue";
-import HomepageWithUseCaseSelector from "./homepage/HomepageWithUseCaseSelector.vue"
+import HomepageAttempt4 from "./homepage/HomepageWithUseCaseSelector.vue"
 
 // Initialize with default version - this works server-side
 const version = ref("1");
@@ -38,7 +38,7 @@ const ActiveComponent = computed(() => {
   if (version.value === "3") {
     return HomepageAttempt3;
   } else if (version.value === "4") {
-    return HomepageWithUseCaseSelector;
+    return HomepageAttempt4;
   } else {
     return HomepageAttempt1;
   }
