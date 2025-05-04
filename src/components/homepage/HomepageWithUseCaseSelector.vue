@@ -2,10 +2,29 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
+import { ref } from 'vue';
 import FirstTimeVisitorBannerAlt from "./FirstTimeVisitorBannerAlt.vue";
 import UseCaseSelector from './UseCaseSelector.vue';
 
 const { t } = useI18n();
+
+// Add the missing properties
+const detectedRegion = ref('US');
+const suggestedDomain = ref('onetimesecret.com');
+const showRegionBanner = ref(true);
+
+// Add the missing methods
+const dismissBanner = () => {
+  showRegionBanner.value = false;
+};
+
+const switchRegion = (region: string) => {
+  // Implement region switching logic here
+  console.log(`Switching to region: ${region}`);
+  // You could redirect to a different domain based on the region
+  // window.location.href = `https://${region.toLowerCase()}.onetimesecret.com`;
+  showRegionBanner.value = false;
+};
 </script>
 
 <template>

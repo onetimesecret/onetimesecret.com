@@ -4,20 +4,33 @@ import HomepageAttempt1 from "./attempt1/Homepage.vue";
 import HomepageAttempt3 from "./attempt3/Homepage.vue";
 import HomepageWithUseCaseSelector from "./homepage/HomepageWithUseCaseSelector.vue"
 
-// Ref to store the version determined on the client
-const version = ref("1"); // Default version
+// Initialize with default version - this works server-side
+const version = ref("1");
 
-// This code runs only in the browser after the component mounts
-onMounted(() => {
+// Function to get version from URL params - only called client-side
+const getVersionFromURL = () => {
+  if (typeof window === 'undefined') return "1"; // Handle server-side rendering
+
   const urlParams = new URLSearchParams(window.location.search);
   const paramVersion = urlParams.get("version");
   if (paramVersion === "3") {
-    version.value = "3";
+    return "3";
   } else if (paramVersion === "4") {
-    version.value = "4";
+    return "4";
   } else {
-    version.value = "1"; // Default to '1' if param is missing or invalid
+    return "1"; // Default to '1' if param is missing or invalid
   }
+};
+
+// Setup client-side behavior after mounting
+onMounted(() => {
+  // Update version once we're in the browser
+  version.value = getVersionFromURL();
+
+  // Listen for popstate events (browser back/forward)
+  window.addEventListener('popstate', () => {
+    version.value = getVersionFromURL();
+  });
 });
 
 // Dynamically compute which component to render
@@ -38,6 +51,19 @@ const linkClass = (linkVersion: string) => {
   const inactiveClasses = "bg-indigo-600 hover:bg-indigo-500";
   return `${baseClasses} ${version.value === linkVersion ? activeClasses : inactiveClasses}`;
 };
+
+// Handle version switching without page reload - client-side only
+const switchVersion = (newVersion: string) => {
+  if (typeof window === 'undefined') return; // Safety check for SSR
+
+  // Update URL without reloading the page
+  const url = new URL(window.location.href);
+  url.searchParams.set("version", newVersion);
+  window.history.pushState({}, '', url);
+
+  // Update the version ref
+  version.value = newVersion;
+};
 </script>
 
 <template>
@@ -53,19 +79,22 @@ const linkClass = (linkVersion: string) => {
           Viewing: <span class="font-bold">Homepage Attempt {{ version }}</span>
         </p>
         <div class="flex space-x-3">
-          <!-- Links use standard hrefs, highlighting uses the reactive 'version' ref -->
+          <!-- Use @click instead of href to prevent page reloads -->
           <a
-            href="/?version=1"
+            href="javascript:void(0)"
+            @click="switchVersion('1')"
             :class="linkClass('1')">
             Attempt 1
           </a>
           <a
-            href="/?version=3"
+            href="javascript:void(0)"
+            @click="switchVersion('3')"
             :class="linkClass('3')">
             Attempt 3
           </a>
           <a
-            href="/?version=4"
+            href="javascript:void(0)"
+            @click="switchVersion('4')"
             :class="linkClass('4')">
             Attempt 4
           </a>
