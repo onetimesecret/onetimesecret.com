@@ -29,14 +29,46 @@ const switchRegion = (region: string) => {
   currentRegion.value = region;
 };
 
+// Secret creation state
+const isCreatingSecret = ref(false);
+const secretLink = ref("");
+const successMessage = ref("");
+const hasError = ref(false);
+const errorMessage = ref("");
+
 // Form event handlers
 const handleRegionChange = (region: any) => {
   currentRegion.value = region.code;
 };
 
-const handleCreateSecret = (data: any) => {
-  console.log("Creating secret with data:", data);
-  // Would handle API call here
+const handleResetForm = () => {
+  secretLink.value = "";
+  successMessage.value = "";
+  hasError.value = false;
+  errorMessage.value = "";
+};
+
+const handleCreateSecret = async (data: any) => {
+  // Reset states
+  isCreatingSecret.value = true;
+  hasError.value = false;
+  errorMessage.value = "";
+
+  try {
+    console.log("Creating secret with data:", data);
+    // Mock API call (replace with actual implementation in production)
+    await new Promise((resolve) => setTimeout(resolve, 800)); // Simulate network delay
+
+    // For demo purposes - would be replaced with actual API response
+    secretLink.value = `https://${currentRegion.value.toLowerCase()}.onetimesecret.com/secret/${Math.random().toString(36).substring(2, 10)}`;
+    successMessage.value = "Secret created successfully!";
+  } catch (error) {
+    console.error("Error creating secret:", error);
+    hasError.value = true;
+    errorMessage.value = "Failed to create secret. Please try again.";
+  } finally {
+    isCreatingSecret.value = false;
+  }
 };
 
 // Navigation menu
@@ -56,21 +88,18 @@ const navigation = [
       :suggested-domain="suggestedDomain"
       :show-banner="showRegionBanner"
       @dismiss="dismissBanner"
-      @switch-region="switchRegion"
-    />
+      @switch-region="switchRegion" />
 
     <!-- Main content with proper padding when banner is visible -->
     <div
       class="relative"
-      :class="{ 'pt-12': showRegionBanner }"
-    >
+      :class="{ 'pt-12': showRegionBanner }">
       <!-- Header -->
       <Header
         :navigation="navigation"
         logo-src="/img/onetime-logo-v3-xl.svg"
         logo-alt="Onetime Secret"
-        :show-banner="showRegionBanner"
-      />
+        :show-banner="showRegionBanner" />
 
       <!-- Hero with Form -->
       <Hero
@@ -85,14 +114,18 @@ const navigation = [
         banner-link-url="#security"
         :show-banner="false"
         :use-form-instead="true"
-        :hide-buttons="true"
-      >
+        :hide-buttons="true">
         <SecretForm
           :initial-region="currentRegion"
           :detected-region="detectedRegion"
+          :is-creating="isCreatingSecret"
+          :secret-link="secretLink"
+          :success-message="successMessage"
+          :has-error="hasError"
+          :error-message="errorMessage"
           @regionChange="handleRegionChange"
           @create="handleCreateSecret"
-        />
+          @reset="handleResetForm" />
       </Hero>
 
       <!-- Additional content sections would go here -->
@@ -100,13 +133,11 @@ const navigation = [
         <div class="text-center">
           <h2
             id="features"
-            class="text-3xl font-extrabold text-gray-900 dark:text-white sm:text-4xl"
-          >
+            class="text-3xl font-extrabold text-gray-900 dark:text-white sm:text-4xl">
             How it works
           </h2>
           <p
-            class="mt-4 max-w-2xl mx-auto text-xl text-gray-500 dark:text-gray-300"
-          >
+            class="mt-4 max-w-2xl mx-auto text-xl text-gray-500 dark:text-gray-300">
             OneTimeSecret creates links to secrets that self-destruct after
             being viewed once.
           </p>
