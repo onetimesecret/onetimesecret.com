@@ -1,0 +1,21 @@
+---
+import Layout from "../layouts/Layout.astro";
+import HomepageSwitcher from "../components/HomepageSwitcher.vue"; // Import the switcher
+import "../styles/global.css";
+import "../styles/tailwind.css";
+import "../fonts/font-face.css";
+import "../i18n"; // Import i18n configuration
+
+const pageTitle = "Share Secrets Securely | Onetime Secret";
+const pageDescription =
+  "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever.";
+---
+
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+>
+  <!-- Render the HomepageSwitcher component -->
+  <!-- client:load ensures the Vue component hydrates and runs client-side -->
+  <HomepageSwitcher client:load />
+</Layout>

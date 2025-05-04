@@ -2,7 +2,8 @@
 import { ref, computed, onMounted } from "vue";
 import HomepageAttempt1 from "./attempt1/Homepage.vue";
 import HomepageAttempt3 from "./attempt3/Homepage.vue";
-import HomepageAttempt4 from "./homepage/HomepageWithUseCaseSelector.vue"
+import HomepageAttempt4 from "./homepage/HomepageWithUseCaseSelector.vue";
+import HomepageCombined from "./homepage/HomepageCombined.vue"; // Import the new component
 
 // Initialize with default version - this works server-side
 const version = ref("1");
@@ -17,6 +18,8 @@ const getVersionFromURL = () => {
     return "3";
   } else if (paramVersion === "4") {
     return "4";
+  } else if (paramVersion === "5") { // Add check for version 5
+    return "5";
   } else {
     return "1"; // Default to '1' if param is missing or invalid
   }
@@ -39,6 +42,8 @@ const ActiveComponent = computed(() => {
     return HomepageAttempt3;
   } else if (version.value === "4") {
     return HomepageAttempt4;
+  } else if (version.value === "5") { // Add case for version 5
+    return HomepageCombined;
   } else {
     return HomepageAttempt1;
   }
@@ -97,6 +102,12 @@ const switchVersion = (newVersion: string) => {
             @click="switchVersion('4')"
             :class="linkClass('4')">
             Attempt 4
+          </a>
+          <a
+            href="javascript:void(0)"
+            @click="switchVersion('5')"
+            :class="linkClass('5')"> <!-- Add link for Attempt 5 -->
+            Attempt 5
           </a>
         </div>
       </div>
