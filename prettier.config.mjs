@@ -9,8 +9,8 @@ const config = {
   trailingComma: "all",
   // Force one attribute per line in HTML, Vue, and JSX
   singleAttributePerLine: true,
-  // Place the > of a multi-line element on a new line
-  bracketSameLine: false,
+  // Place the > of a multi-line element on the same line
+  bracketSameLine: true,
   plugins: [
     "prettier-plugin-astro",
     "prettier-plugin-tailwindcss",
