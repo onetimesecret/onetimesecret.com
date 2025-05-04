@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
+import SecretOptions from "./SecretOptions.vue";
 
 const props = defineProps<{
   placeholder?: string;
 }>();
 
 const emit = defineEmits<{
-  createLink: [secretText: string];
+  createLink: [secretText: string, options: any];
 }>();
 
 // Initialize i18n
@@ -19,10 +20,21 @@ const { t } = useI18n({
 // Secret text state
 const secretText = ref("");
 
+// Secret options state
+const secretOptions = ref({
+  burnAfterReading: false,
+  addPassphrase: false,
+});
+
+// Handle options change
+const handleOptionsChange = (option, value) => {
+  console.log(`Option ${option} changed to ${value}`);
+};
+
 // Handle create link button click
 const handleCreateLink = () => {
   if (secretText.value.trim()) {
-    emit("createLink", secretText.value);
+    emit("createLink", secretText.value, secretOptions.value);
   }
 };
 </script>
@@ -46,6 +58,14 @@ const handleCreateLink = () => {
           {{ t("web.secrets.createLink") || "Create Link" }}
         </button>
       </div>
+    </div>
+
+    <!-- Secret Options Component -->
+    <div class="mt-3 mb-6">
+      <SecretOptions
+        v-model="secretOptions"
+        @option-changed="handleOptionsChange"
+      />
     </div>
   </div>
 </template>

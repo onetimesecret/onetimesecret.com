@@ -7,7 +7,6 @@ import NotificationBanner from "./NotificationBanner.vue";
 import AppHeader from "./AppHeader.vue";
 import HeroSection from "./HeroSection.vue";
 import SecretInput from "./SecretInput.vue";
-import SecretOptions from "./SecretOptions.vue";
 
 // Initialize i18n
 const { t } = useI18n({
@@ -64,9 +63,7 @@ const handleOptionChange = (option: string, value: boolean) => {
         <SecretInput
           :placeholder="t('web.secrets.secretPlaceholder')"
           @createLink="handleCreateLink" />
-        <SecretOptions
-          v-model="secretOptions"
-          @optionChanged="handleOptionChange" />
+
       </HeroSection>
     </main>
   </div>

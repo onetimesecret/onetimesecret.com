@@ -40,7 +40,9 @@ const updateOption = (option: keyof SecretOptions, value: boolean) => {
 </script>
 
 <template>
-  <div class="mt-4 grid grid-cols-2 gap-4 text-sm text-gray-600">
+  <div class="bg-gray-50 rounded-md p-3">
+    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{{ t("web.secrets.optionsHeading") || "Secret Options" }}</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-sm text-gray-600">
     <div class="flex items-center">
       <input
         id="burn-after-reading"
@@ -59,11 +61,11 @@ const updateOption = (option: keyof SecretOptions, value: boolean) => {
         type="checkbox"
         class="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
         :checked="options.addPassphrase"
-        @change="updateOption('addPassphrase', $event.target.checked)"
-      />
+        @change="updateOption('addPassphrase', $event.target.checked)">
       <label for="add-passphrase" class="ml-2 block text-sm text-gray-600">
         {{ t("web.secrets.addPassphrase") || "Add passphrase" }}
       </label>
+    </div>
     </div>
   </div>
 </template>

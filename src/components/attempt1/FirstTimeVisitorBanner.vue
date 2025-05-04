@@ -44,7 +44,7 @@ const switchToSuggestedRegion = () => {
             <InformationCircleIcon class="h-5 w-5 text-brand-600" aria-hidden="true" />
           </span>
           <p class="ml-3 truncate font-medium text-brand-700 text-sm">
-            We uses regional domains to keep your secrets in your chosen region.
+            We use regional domains to keep your secrets in your chosen region.
           </p>
         </div>
         <div class="flex-shrink-0 sm:order-3 sm:ml-3">

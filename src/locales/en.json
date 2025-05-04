@@ -2,7 +2,7 @@
   "onetime-secret-literal": "Onetime Secret",
   "tagline": "Signed. Sealed. Delivered.",
   "banner": {
-    "regional-domains": "Onetime Secret uses regional domains to keep your secrets in your chosen region.",
+    "regional-domains": "We use regional domains to keep your secrets in your chosen region.",
     "learn-more": "Learn more",
     "dismiss": "Dismiss"
   },
@@ -25,6 +25,7 @@
       "europe": "Europe",
       "createLink": "Create Link",
       "burnAfterReading": "Burn after reading",
+      "optionsHeading": "Privacy Options",
       "addPassphrase": "Add passphrase",
       "secretPlaceholder": "Type your secret message here...",
       "dataSovereignty": "Data Sovereignty",

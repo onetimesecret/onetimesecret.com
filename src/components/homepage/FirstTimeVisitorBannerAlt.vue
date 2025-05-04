@@ -44,7 +44,7 @@ const switchToSuggestedRegion = () => {
             <InformationCircleIcon class="h-5 w-5 text-brand-400 dark:text-brand-800" aria-hidden="true" />
 
           <p class="ml-3 truncate font-medium text-brand-700 dark:text-slate-900 text-sm">
-            OnetimeSecret now uses regional domains to keep your secrets in your chosen region.
+            OnetimeSecret uses regional domains to keep your secrets in your chosen region.
           </p>
         </div>
         <div class="flex-shrink-0 sm:order-3 sm:ml-3">
