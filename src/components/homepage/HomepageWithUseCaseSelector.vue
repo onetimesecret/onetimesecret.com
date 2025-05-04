@@ -2,7 +2,7 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import FirstTimeVisitorBanner from "../attempt1/FirstTimeVisitorBanner.vue";
+import FirstTimeVisitorBannerAlt from "./FirstTimeVisitorBannerAlt.vue";
 import UseCaseSelector from './UseCaseSelector.vue';
 
 const { t } = useI18n();
@@ -11,7 +11,7 @@ const { t } = useI18n();
 <template>
   <div class="bg-white">
     <!-- First Time Visitor Banner -->
-    <FirstTimeVisitorBanner
+    <FirstTimeVisitorBannerAlt
       :detected-region="detectedRegion"
       :suggested-domain="suggestedDomain"
       :show-banner="showRegionBanner"

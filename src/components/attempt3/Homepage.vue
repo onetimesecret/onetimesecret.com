@@ -25,7 +25,7 @@ const secretOptions = ref({
 // Navigation configuration
 const navigation = [
   { name: "home", href: "/" },
-  { name: "features", href: "#features" },
+  { name: "regions", href: "/data-centres" },
   { name: "about", href: "/about" },
   { name: "pricing", href: "#pricing" },
 ];
