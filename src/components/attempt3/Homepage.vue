@@ -53,8 +53,7 @@ const handleOptionChange = (option: string, value: boolean) => {
     <!-- Banner -->
     <NotificationBanner
       :initiallyShown="showBanner"
-      @close="handleBannerClose"
-    />
+      @close="handleBannerClose" />
 
     <!-- Header/Navigation -->
     <AppHeader :navigationItems="navigation" />
@@ -64,12 +63,10 @@ const handleOptionChange = (option: string, value: boolean) => {
       <HeroSection>
         <SecretInput
           :placeholder="t('web.secrets.secretPlaceholder')"
-          @createLink="handleCreateLink"
-        />
+          @createLink="handleCreateLink" />
         <SecretOptions
           v-model="secretOptions"
-          @optionChanged="handleOptionChange"
-        />
+          @optionChanged="handleOptionChange" />
       </HeroSection>
     </main>
   </div>

@@ -16,6 +16,9 @@ const { t } = useI18n({
   inheritLocale: true,
   useScope: "global",
 });
+
+const logoSrc = "/img/onetime-logo-v3-xl.svg";
+const logoAlt = "Onetime Secret";
 </script>
 
 <template>
@@ -28,11 +31,11 @@ const { t } = useI18n({
               href="/"
               class="flex items-center"
             >
-              <div
-                class="flex h-10 w-10 items-center justify-center rounded-md bg-brand-500 text-white"
-              >
-                <span class="text-xl font-bold font-brand">S</span>
-              </div>
+              <img
+                :alt="logoAlt"
+                class="size-10 w-auto rounded-sm"
+                :src="logoSrc"
+              />
               <div class="ml-3">
                 <div
                   class="text-lg font-semibold text-gray-900 font-brand leading-none"

@@ -36,21 +36,21 @@ const switchToSuggestedRegion = () => {
 </script>
 
 <template>
-  <div v-if="showBanner" class="w-full bg-blue-50 dark:bg-blue-900/30 border-b border-blue-200 dark:border-blue-700 fixed top-0 left-0 right-0 z-[100]">
+  <div v-if="showBanner" class="w-full bg-brand-50 dark:bg-brand-900/30 border-b border-brand-200 dark:border-brand-700 fixed top-0 left-0 right-0 z-[100]">
     <div class="mx-auto max-w-7xl px-3 py-3 sm:px-6 lg:px-8">
       <div class="flex flex-wrap items-center justify-between">
         <div class="flex w-0 flex-1 items-center">
-          <span class="flex rounded-lg bg-blue-100 dark:bg-blue-800 p-2">
-            <InformationCircleIcon class="h-5 w-5 text-blue-600 dark:text-blue-300" aria-hidden="true" />
+          <span class="flex rounded-lg bg-brand-100 dark:bg-brand-800 p-2">
+            <InformationCircleIcon class="h-5 w-5 text-brand-600 dark:text-brand-300" aria-hidden="true" />
           </span>
-          <p class="ml-3 truncate font-medium text-blue-700 dark:text-blue-200 text-sm">
+          <p class="ml-3 truncate font-medium text-brand-700 dark:text-brand-200 text-sm">
             OneTimeSecret now uses regional domains to keep your secrets in your chosen region.
           </p>
         </div>
         <div class="flex-shrink-0 sm:order-3 sm:ml-3">
           <button
             type="button"
-            class="mr-1 flex rounded-md bg-blue-50 dark:bg-blue-800 p-1.5 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="mr-1 flex rounded-md bg-brand-50 dark:bg-brand-800 p-1.5 text-brand-600 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
             @click="dismissBanner"
           >
             <span class="sr-only">Dismiss</span>
@@ -61,7 +61,7 @@ const switchToSuggestedRegion = () => {
           <a
             href="#"
             @click.prevent="switchToSuggestedRegion"
-            class="flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+            class="flex items-center justify-center rounded-md border border-transparent bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600"
           >
             Learn more
           </a>
