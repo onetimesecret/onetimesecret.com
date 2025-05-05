@@ -34,23 +34,23 @@
 # Once configured, the workflow will automatically build and deploy the
 # site to BunnyCDN whenever you push to the main branch.
 
-name: (staging) Build and Deploy to BunnyCDN
+name: (production) Build and Deploy to BunnyCDN
 
 concurrency:
-  group: staging
+  group: production
   cancel-in-progress: true
 
 # Run this workflow on pushes to main branch or manually via workflow_dispatch
 on:
   push:
-    branches: [main]
+    branches: [live]
   workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    environment: staging
-    concurrency: staging
+    environment: production
+    concurrency: production
 
     env:
       # Configure any environment variables needed during build
