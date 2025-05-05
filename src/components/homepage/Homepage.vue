@@ -31,7 +31,7 @@ const switchRegion = () => {
 
 // Updated handler for the 'createLink' event from SecretFormLite
 const handleSecretCreationResult = (result: ApiResult) => {
-  console.log("Secret creation result received:", result);
+  // console.log("Secret creation result received:", result);
   if (result.success) {
     apiCallResult.value = result;
     apiCallError.value = null;
