@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useI18n } from "vue-i18n"; // Added import
+import { useI18n } from "vue-i18n";
 
-const { t } = useI18n(); // Added i18n setup
+const { t } = useI18n();
 </script>
 
 <template>
@@ -22,8 +22,8 @@ const { t } = useI18n(); // Added i18n setup
         <!-- Step 1 -->
         <div class="relative">
           <div
-            class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-brand-500 text-white">
-            <span class="text-lg font-bold">1</span>
+            class="absolute flex items-center justify-center size-12 rounded-md bg-brand-500/80 text-white">
+            <span class="text-xl font-bold">1</span>
           </div>
           <div class="ml-16">
             <h3 class="text-xl font-medium text-gray-900">
@@ -38,8 +38,8 @@ const { t } = useI18n(); // Added i18n setup
         <!-- Step 2 -->
         <div class="relative">
           <div
-            class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-brand-500 text-white">
-            <span class="text-lg font-bold">2</span>
+            class="absolute flex items-center justify-center size-12 rounded-md bg-brand-500/80 text-white">
+            <span class="text-xl font-bold ">2</span>
           </div>
           <div class="ml-16">
             <h3 class="text-xl font-medium text-gray-900">
@@ -54,8 +54,8 @@ const { t } = useI18n(); // Added i18n setup
         <!-- Step 3 -->
         <div class="relative">
           <div
-            class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-brand-500 text-white">
-            <span class="text-lg font-bold">3</span>
+            class="absolute flex items-center justify-center size-12 rounded-md bg-brand-500/80 text-white">
+            <span class="text-xl font-bold">3</span>
           </div>
           <div class="ml-16">
             <h3 class="text-xl font-medium text-gray-900">

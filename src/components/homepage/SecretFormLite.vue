@@ -37,14 +37,18 @@ interface ApiResult {
   };
 }
 
+interface Props {
+  placeholder?: string;
+  apiBaseUrl?: string;
+  withOptions?: boolean;
+}
+
 const props = withDefaults(
-  defineProps<{
-    placeholder?: string;
-    apiBaseUrl?: string;
-  }>(),
+  defineProps<Props>(),
   {
     placeholder: "",
     apiBaseUrl: "https://dev.onetime.dev/api",
+    withOptions: false,
   },
 );
 
@@ -83,10 +87,12 @@ const isTyping = ref(false);
 const typingTimerId = ref<number | null>(null);
 
 const showOptions = computed(() => {
-  return !isTyping.value && secretText.value.trim().length > 0;
+  return props.withOptions && !isTyping.value && secretText.value.trim().length > 0;
 });
 
 watch(secretText, () => {
+  if (!props.withOptions) return;
+
   // Set typing state to true immediately
   isTyping.value = true;
 
@@ -127,12 +133,8 @@ const handleCreateLink = async () => {
   }
 
   const apiUrl = `${props.apiBaseUrl}/api/v2/secret/conceal`;
-  // const apiUrl = `${props.apiBaseUrl}/v1/share`;
-  const custId = "YOUR_CUST_ID";
-  const apiKey = "YOUR_API_KEY";
   const headers = new Headers();
   headers.append("Content-Type", "application/json");
-  // headers.append('Authorization', 'Basic ' + btoa(`${custId}:${apiKey}`));
 
   try {
     const response = await fetch(apiUrl, {

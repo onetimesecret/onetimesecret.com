@@ -96,6 +96,7 @@ const apiBaseUrl =
           <SecretFormLite class="-mt-16 relative z-0"
           :placeholder="t('web.secrets.secretPlaceholder')"
           :api-base-url="apiBaseUrl"
+          :with-options="false"
           @createLink="handleSecretCreationResult"  />
           <!-- Optional: Display error from homepage perspective if needed -->
           <!--
