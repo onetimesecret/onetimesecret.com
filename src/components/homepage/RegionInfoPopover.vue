@@ -75,7 +75,7 @@ const closeRegionInfo = () => {
     <!-- Educational popover -->
     <div
       v-if="showRegionInfo"
-      class="absolute top-full mt-2 z-10 w-72 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 p-4 text-left"
+      class="absolute top-full mt-2 z-40 w-72 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 p-4 text-left"
       role="tooltip"
       @click.stop
     >

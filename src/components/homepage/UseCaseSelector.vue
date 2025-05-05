@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import {
-  Listbox,
-  ListboxButton,
-  ListboxOption,
-  ListboxOptions,
+Listbox,
+ListboxButton,
+ListboxOption,
+ListboxOptions,
 } from "@headlessui/vue";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
 import { ref } from "vue";
@@ -34,7 +34,7 @@ const useCases: UseCase[] = [
       "Securely share credentials and access information with your team",
     ),
     exampleSecret:
-      "Server: app-prod-03\nUsername: admin\nPassword: K8jL2$pQ9rT!",
+      "Username: oracle\nPassword: tiger",
     benefits: [
       t(
         "web.useCases.it.benefits.1",

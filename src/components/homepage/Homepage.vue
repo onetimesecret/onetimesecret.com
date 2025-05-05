@@ -46,8 +46,8 @@ const europeanRegion: RegionInfo = { // Use RegionInfo type
     </header>
     <main class="flex-grow">
       <!-- Section 1: Branding and Benefits (from Attempt 4 structure) -->
-      <!-- Hero Section - Removed top-12 class -->
-      <section class="relative bg-gradient-to-b from-brand-50 to-white pt-26 pb-10 overflow-hidden">
+      <!-- Hero Section - Removed z-10 -->
+      <section class="relative bg-gradient-to-b from-brand-50 to-white pt-26 pb-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="text-center">
             <h1 class="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
@@ -69,10 +69,12 @@ const europeanRegion: RegionInfo = { // Use RegionInfo type
       </section>
 
       <!-- Section 2: Secret Form Input Area (from Attempt 3 structure) -->
-      <!-- Negative margin pulls this section up to overlap the hero's bottom gradient -->
-      <div class="container mx-auto relative z-10 px-4 sm:px-6 lg:px-8">
+      <!-- Container for max-width and padding -->
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="mx-auto max-w-3xl">
+          <!-- Apply negative margin, relative, and z-0 directly to SecretInput -->
           <SecretInput
+            class="-mt-16 relative z-0"
             :placeholder="t('web.secrets.secretPlaceholder')"
             @createLink="handleCreateLink" />
         </div>
