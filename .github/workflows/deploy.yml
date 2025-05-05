@@ -15,6 +15,7 @@
 # have created the following required secrets:
 #
 # - STORAGE_NAME: Your BunnyCDN storage zone name
+# - STORAGE_DESTINATION: The directory within the storage zone (leave empty for root)
 # - STORAGE_PASSWORD_RW: Your BunnyCDN storage zone password
 # - STORAGE_KEY: Your BunnyCDN API key
 # - PULL_ZONE_ID: Your BunnyCDN pull zone ID
