@@ -1,0 +1,124 @@
+# .github/workflows/deploy.yml
+
+# This workflow:
+#
+#   1. Triggers on pushes to the main branch or manual dispatch
+#   2. Sets up a Node.js environment with pnpm
+#   3. Implements dependency caching for faster builds
+#   4. Builds the Astro site
+#   5. Deploys the built files to BunnyCDN
+#
+# Setup Instructions:
+#
+# This workflow requires configuration of BunnyCDN-related secrets in the
+# GitHub repository settings. Before using this workflow, please ensure you
+# have created the following required secrets:
+#
+# - STORAGE_NAME: Your BunnyCDN storage zone name
+# - STORAGE_PASSWORD: Your BunnyCDN storage zone password
+# - STORAGE_KEY: Your BunnyCDN API key
+# - ZONE_ID: Your BunnyCDN pull zone ID
+#
+# If the project uses Sentry for error tracking, you'll also need to
+# configure these additional secrets:
+#
+# - SENTRY_DSN: Your Sentry data source name
+# - SENTRY_ORG: Your Sentry organization slug
+# - SENTRY_PROJECT: Your Sentry project slug
+# - SENTRY_AUTH_TOKEN: Your Sentry authentication token
+#
+# Ensure the repository has a main branch, or modify the workflow trigger
+# to match the primary branch name.
+#
+# Once configured, the workflow will automatically build and deploy the
+# site to BunnyCDN whenever you push to the main branch.
+
+name: Build and Deploy to BunnyCDN
+
+# Run this workflow on pushes to main branch or manually via workflow_dispatch
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      # Configure any environment variables needed during build
+      PUBLIC_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Setup Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Step 3: Setup pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+          run_install: false
+
+      # Step 4: Get pnpm store directory
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      # Step 5: Setup pnpm cache
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      # Step 6: Install dependencies
+      - name: Install dependencies
+        run: pnpm install
+
+      # Step 7: Build Astro site
+      - name: Build site
+        run: pnpm build
+
+      # Step 8: Deploy to BunnyCDN
+      - name: Deploy to BunnyCDN
+        uses: ayeressian/bunnycdn-storage-deploy@v2.2.5
+        with:
+          source: "dist" # The local folder containing build output (Astro's default is 'dist')
+          destination: "www" # The directory within your storage zone
+          storageZoneName: "${{ secrets.STORAGE_NAME }}" # Your BunnyCDN storage zone name
+          storagePassword: "${{ secrets.STORAGE_PASSWORD }}" # Password for storage zone access
+          accessKey: "${{ secrets.STORAGE_KEY }}" # BunnyCDN API key
+          pullZoneId: "${{ secrets.ZONE_ID }}" # Your BunnyCDN pull zone ID
+          upload: "true" # Upload new files
+          remove: "true" # Remove files that don't exist locally
+          purgePullZone: "true" # Purge the CDN cache after deployment
+
+# Setup Instructions:
+# 1. Create the following secrets in your GitHub repository:
+#    - STORAGE_NAME: Your BunnyCDN storage zone name
+#    - STORAGE_PASSWORD: Your BunnyCDN storage zone password
+#    - STORAGE_KEY: Your BunnyCDN API key
+#    - ZONE_ID: Your BunnyCDN pull zone ID
+#
+# 2. (Optional) If using Sentry:
+#    - SENTRY_DSN: Your Sentry DSN
+#    - SENTRY_ORG: Your Sentry organization slug
+#    - SENTRY_PROJECT: Your Sentry project slug
+#    - SENTRY_AUTH_TOKEN: Your Sentry auth token
+#
+# 3. Ensure your repository has a main branch or adjust the branch trigger accordingly
