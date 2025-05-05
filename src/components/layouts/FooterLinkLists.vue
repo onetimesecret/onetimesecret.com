@@ -2,20 +2,12 @@
 <script setup lang="ts">
   interface LayoutProps {
     windowProps?: {
-      plans_enabled?: boolean;
-      plan?: null; // Assuming plan can be null or some object type if applicable
       support_host?: string;
-      authentication?: { enabled: boolean };
     };
   }
 
-  // Remove hardcoded windowProps, rely on props passed from parent
-  // const windowProps = { ... };
-
   // Define props using defineProps
   const props = defineProps<LayoutProps>();
-
-  // Use props directly in the template, e.g., props.windowProps?.support_host
 </script>
 
 <template>
@@ -118,6 +110,5 @@
         </div>
       </div>
     </div>
-    <!-- Removed the extra border div, incorporated into the top div -->
   </div>
 </template>

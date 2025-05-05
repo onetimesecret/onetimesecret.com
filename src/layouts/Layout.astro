@@ -7,23 +7,16 @@ export interface Props {
   description?: string;
   // Define windowProps structure if needed, or pass it dynamically
   windowProps?: {
-    plans_enabled?: boolean;
-    plan?: null;
     support_host?: string;
-    authentication?: { enabled: boolean };
   };
 }
 
 const {
   title = "Onetime Secret",
   description = "Share sensitive information securely with one-time viewable links.",
-  // Example: Define default or fetch actual windowProps here
   windowProps = {
-    plans_enabled: true,
-    plan: null,
-    support_host: 'https://support.onetimesecret.com',
-    authentication: { enabled: true }
-  }
+    support_host: "https://support.onetimesecret.com",
+  },
 } = Astro.props;
 ---
 
@@ -47,12 +40,17 @@ const {
     />
     <title>{title}</title>
   </head>
-  <body class="flex flex-col h-full bg-white dark:bg-gray-900">
-    <main class="flex-grow"> <!-- Added flex-grow to push footer down -->
+  <body class="flex h-full flex-col bg-white dark:bg-gray-900">
+    <main class="flex-grow">
       <slot />
     </main>
 
-    <FooterLinkLists windowProps={windowProps} client:load /> <!-- Pass windowProps -->
-    <FooterSignOff client:load />
+    <footer class="bg-white dark:bg-gray-900">
+      <FooterLinkLists
+        windowProps={windowProps}
+        client:load
+      />
+      <FooterSignOff client:load />
+    </footer>
   </body>
 </html>
