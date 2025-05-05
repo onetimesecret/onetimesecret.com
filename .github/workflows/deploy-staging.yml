@@ -15,7 +15,7 @@ jobs:
   # Job to call the reusable deployment workflow
   call-deploy-workflow:
     name: Deploy Staging
-    uses: ./.github/workflows/reusable-deploy.yml@main # Or use a specific commit SHA/tag
+    uses: ./.github/workflows/reusable-deploy.yml
     # Define the target environment for this specific workflow run
     environment: staging
     concurrency: staging
