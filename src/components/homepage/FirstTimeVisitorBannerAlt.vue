@@ -6,20 +6,11 @@ import { InformationCircleIcon, XMarkIcon } from "@heroicons/vue/24/outline";
  * Displays important information about regional data sovereignty
  * for new visitors to the site
  */
-const props = defineProps({
-  detectedRegion: {
-    type: String,
-    default: "US"
-  },
-  suggestedDomain: {
-    type: String,
-    default: "onetimesecret.com"
-  },
-  showBanner: {
-    type: Boolean,
-    default: true
-  }
-});
+const props = defineProps<{
+  detectedRegion: string;
+  suggestedDomain: string;
+  showBanner: boolean;
+}>();
 
 const emit = defineEmits<{
   (e: 'dismiss'): void,

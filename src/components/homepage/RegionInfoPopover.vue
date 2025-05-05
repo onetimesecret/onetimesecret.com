@@ -11,10 +11,7 @@ const props = defineProps<{
   region: RegionInfo;
 }>();
 
-const emit = defineEmits<{
-  open: [];
-  close: [];
-}>();
+const emit = defineEmits<{}>();
 
 // Initialize i18n
 const { t } = useI18n({
@@ -27,16 +24,10 @@ const showRegionInfo = ref(false);
 
 const toggleRegionInfo = () => {
   showRegionInfo.value = !showRegionInfo.value;
-  if (showRegionInfo.value) {
-    emit("open");
-  } else {
-    emit("close");
-  }
 };
 
 const closeRegionInfo = () => {
   showRegionInfo.value = false;
-  emit("close");
 };
 </script>
 
@@ -86,6 +77,7 @@ const closeRegionInfo = () => {
       v-if="showRegionInfo"
       class="absolute top-full mt-2 z-10 w-72 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 p-4 text-left"
       role="tooltip"
+      @click.stop
     >
       <div class="flex justify-between items-start">
         <h3 class="text-sm font-medium text-gray-900">{{ t("web.secrets.dataSovereignty") }}</h3>

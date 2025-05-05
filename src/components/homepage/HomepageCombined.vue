@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-// Corrected path based on previous context, assuming SecretForm is in forms directory
-import SecretInput from './SecretInput.vue';
-// import HowItWorks from './HowItWorks.vue'; // Reusing HowItWorks component
-import UseCaseSelector from './UseCaseSelector.vue'; // Reusing UseCaseSelector component
 import FirstTimeVisitorBannerAlt from "./FirstTimeVisitorBannerAlt.vue";
+import HowItWorks from './HowItWorks.vue'; // Import HowItWorks component
+import type { RegionInfo } from "./RegionInfoPopover.vue"; // Import RegionInfo type
 import RegionInfoPopover from "./RegionInfoPopover.vue";
+import SecretInput from './SecretInput.vue';
+import type { SecretOptions as SecretOptionsType } from "./SecretOptions.vue"; // Import SecretOptions type
+import UseCaseSelector from './UseCaseSelector.vue';
 
 const { t } = useI18n();
 
@@ -17,16 +18,15 @@ const showRegionBanner = ref(true);
 const dismissBanner = () => { showRegionBanner.value = false; };
 const switchRegion = () => { /* Add logic */ };
 
-
-const handleCreateLink = (secretText: string) => {
+const handleCreateLink = (secretText: string, options: SecretOptionsType) => { // Added options parameter with type
   // Implementation would handle secret creation
   console.log("Creating secret with:", {
     text: secretText,
-    options: secretOptions.value,
+    options: options, // Log received options
   });
 };
 
-const europeanRegion = {
+const europeanRegion: RegionInfo = { // Use RegionInfo type
   flag: "🇪🇺",
   name: t("web.secrets.europe") || "Europe"
 };
@@ -79,66 +79,7 @@ const europeanRegion = {
       </div>
 
       <!-- Section 3: How It Works (from Attempt 4) -->
-      <!-- <HowItWorks /> -->
-      <!-- How It Works Section -->
-      <section class="py-16 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="text-center">
-            <h2 class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-              {{ t('web.homepage.howItWorks.title') }}
-            </h2>
-            <p class="mt-4 max-w-2xl text-xl text-gray-500 mx-auto">
-              {{ t('web.secrets.pasteSecret') }}
-            </p>
-          </div>
-
-          <div class="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            <!-- Step 1 -->
-            <div class="relative">
-              <div class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-brand-500 text-white">
-                <span class="text-lg font-bold">1</span>
-              </div>
-              <div class="ml-16">
-                <h3 class="text-xl font-medium text-gray-900">{{ t('web.homepage.howItWorks.step1.title') }}</h3>
-                <p class="mt-2 text-base text-gray-500">{{ t('web.homepage.howItWorks.step1.description') }}</p>
-              </div>
-            </div>
-
-            <!-- Step 2 -->
-            <div class="relative">
-              <div class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-brand-500 text-white">
-                <span class="text-lg font-bold">2</span>
-              </div>
-              <div class="ml-16">
-                <h3 class="text-xl font-medium text-gray-900">{{ t('web.homepage.howItWorks.step2.title') }}</h3>
-                <p class="mt-2 text-base text-gray-500">{{ t('web.homepage.howItWorks.step2.description') }}</p>
-              </div>
-            </div>
-
-            <!-- Step 3 -->
-            <div class="relative">
-              <div class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-brand-500 text-white">
-                <span class="text-lg font-bold">3</span>
-              </div>
-              <div class="ml-16">
-                <h3 class="text-xl font-medium text-gray-900">{{ t('web.homepage.howItWorks.step3.title') }}</h3>
-                <p class="mt-2 text-base text-gray-500">{{ t('web.homepage.howItWorks.step3.description') }}</p>
-              </div>
-            </div>
-
-            <!-- Step 4 -->
-            <div class="relative">
-              <div class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-brand-500 text-white">
-                <span class="text-lg font-bold">4</span>
-              </div>
-              <div class="ml-16">
-                <h3 class="text-xl font-medium text-gray-900">{{ t('web.homepage.howItWorks.step4.title') }}</h3>
-                <p class="mt-2 text-base text-gray-500">{{ t('web.homepage.howItWorks.step4.description') }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HowItWorks /> <!-- Use HowItWorks component -->
 
       <!-- Section 4: How Can We Help You? / Use Cases (from Attempt 4) -->
       <UseCaseSelector />

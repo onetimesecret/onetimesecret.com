@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
+import type { SecretOptions as SecretOptionsType } from "./SecretOptions.vue"; // Import the type
 import SecretOptions from "./SecretOptions.vue";
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{ // Use withDefaults
   placeholder?: string;
-}>();
+}>(), {
+  placeholder: '', // Provide a default value
+});
 
 const emit = defineEmits<{
-  createLink: [secretText: string, options: any];
+  createLink: [secretText: string, options: SecretOptionsType]; // Use imported type
 }>();
 
 // Initialize i18n
@@ -21,15 +24,10 @@ const { t } = useI18n({
 const secretText = ref("");
 
 // Secret options state
-const secretOptions = ref({
+const secretOptions = ref<SecretOptionsType>({ // Use imported type
   expirationTime: false,
   addPassphrase: false,
 });
-
-// Handle options change
-const handleOptionsChange = (option, value) => {
-  console.log(`Option ${option} changed to ${value}`);
-};
 
 // Handle create link button click
 const handleCreateLink = () => {
@@ -64,7 +62,6 @@ const handleCreateLink = () => {
     <div class="mt-3 mb-6">
       <SecretOptions
         v-model="secretOptions"
-        @option-changed="handleOptionsChange"
       />
     </div>
   </div>

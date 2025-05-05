@@ -16,7 +16,6 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [value: SecretOptions];
-  'optionChanged': [option: keyof SecretOptions, value: boolean];
 }>();
 
 // Initialize i18n
@@ -35,7 +34,6 @@ const options = ref<SecretOptions>({
 const updateOption = (option: keyof SecretOptions, value: boolean) => {
   options.value[option] = value;
   emit('update:modelValue', { ...options.value });
-  emit('optionChanged', option, value);
 };
 </script>
 

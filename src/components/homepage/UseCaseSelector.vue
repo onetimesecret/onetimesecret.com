@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { useI18n } from "vue-i18n";
 import {
-  Listbox,
-  ListboxButton,
-  ListboxOptions,
-  ListboxOption,
+Listbox,
+ListboxButton,
+ListboxOption,
+ListboxOptions,
 } from "@headlessui/vue";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
+import { ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
 
@@ -62,7 +62,7 @@ const useCases: UseCase[] = [
       "Share API keys and credentials securely during development",
     ),
     exampleSecret:
-      "API_KEY=sk_test_51JFkGfLkMnO2BqwZXYZ\nAPI_SECRET=xpKLmNz9oPqRsTuVwXyZ",
+      "API_KEY=sk_test_EXAMPLE_KEY\nAPI_SECRET=5Up0rS3kRu7",
     benefits: [
       t(
         "web.useCases.developer.benefits.1",
@@ -150,16 +150,6 @@ const useCases: UseCase[] = [
 
 // State for selected use case
 const selectedUseCase = ref(useCases[0]);
-
-// Animation classes for content changes
-const contentClasses = {
-  enter: "transform transition duration-300 ease-out",
-  enterFrom: "opacity-0 translate-y-4",
-  enterTo: "opacity-100 translate-y-0",
-  leave: "transform transition duration-200 ease-in",
-  leaveFrom: "opacity-100 translate-y-0",
-  leaveTo: "opacity-0 translate-y-4",
-};
 </script>
 
 <template>

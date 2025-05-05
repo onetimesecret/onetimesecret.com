@@ -53,7 +53,7 @@ To customize the component:
 
 ## Integration Example
 
-See `HomepageWithUseCaseSelector.vue` for a complete example of integrating this component into a homepage layout.
+See `HomepageCombined.vue` for a complete example of integrating this component into a homepage layout.
 
 ## Accessibility
 
