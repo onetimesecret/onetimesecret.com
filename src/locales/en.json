@@ -60,11 +60,15 @@
       "secretPlaceholder": "Type your secret message here...",
       "dataSovereignty": "Data Sovereignty",
       "regionExplanation": "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR.",
-      "learnMoreRegions": "Learn more about regional domains"
+      "learnMoreRegions": "Learn more about regional domains",
+      "successTitle": "Success!",
+      "shareLinkDescription": "Share your secret link with others."
     },
     "useCases": {
-      "sectionTitle": "How can we help you?",
-      "sectionSubtitle": "Select your role to see how Onetime Secret can address your specific needs",
+      "sectionTitle": "Security for Professionals",
+      "sectionTitleAlt": "Secure sharing at work",
+      "sectionSubtitle": "See how professionals use secure links in their daily workflows",
+      "sectionSubtitleAlt": "Practical examples of secure sharing across different jobs",
       "iAm": "I am a...",
       "exampleSecret": "Example Secret",
       "keyBenefits": "Key Benefits",
@@ -118,6 +122,8 @@
     "homepage": {
       "howItWorks": {
         "title": "How It Works",
+        "subtitle": "Share your information once, then permanently deleted",
+        "subtitleAlt": "Secure, single-use links that self-destruct after viewing",
         "step1": {
           "title": "Create a Secret",
           "description": "Enter your sensitive information and generate a secure one-time link"
@@ -127,12 +133,8 @@
           "description": "Send the secure link through any messaging platform"
         },
         "step3": {
-          "title": "One-Time Access",
-          "description": "Recipient views the secret once with optional passphrase protection"
-        },
-        "step4": {
-          "title": "Auto-Destruction",
-          "description": "After viewing, the secret is permanently deleted from our servers"
+          "title": "Works only Once",
+          "description": "Recipient views the secret, then it's permanently deleted"
         }
       },
       "benefits": {

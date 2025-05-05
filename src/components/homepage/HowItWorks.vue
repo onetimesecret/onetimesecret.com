@@ -14,11 +14,11 @@ const { t } = useI18n(); // Added i18n setup
           {{ t("web.homepage.howItWorks.title") }}
         </h2>
         <p class="mt-4 max-w-2xl text-xl text-gray-500 mx-auto">
-          {{ t("web.secrets.pasteSecret") }}
+          {{ t("web.homepage.howItWorks.subtitle") }}
         </p>
       </div>
 
-      <div class="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
         <!-- Step 1 -->
         <div class="relative">
           <div
@@ -67,21 +67,6 @@ const { t } = useI18n(); // Added i18n setup
           </div>
         </div>
 
-        <!-- Step 4 -->
-        <div class="relative">
-          <div
-            class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-brand-500 text-white">
-            <span class="text-lg font-bold">4</span>
-          </div>
-          <div class="ml-16">
-            <h3 class="text-xl font-medium text-gray-900">
-              {{ t("web.homepage.howItWorks.step4.title") }}
-            </h3>
-            <p class="mt-2 text-base text-gray-500">
-              {{ t("web.homepage.howItWorks.step4.description") }}
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   </section>
