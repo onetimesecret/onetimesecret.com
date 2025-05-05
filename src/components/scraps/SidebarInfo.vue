@@ -9,25 +9,25 @@
       <ul class="space-y-2 text-sm text-gray-600">
         <li class="flex items-start">
           <CheckCircle
-            class="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0"
+            class="size-4 text-green-500 mt-0.5 mr-2 flex-shrink-0"
           />
           <span>Your data stays in your chosen region</span>
         </li>
         <li class="flex items-start">
           <CheckCircle
-            class="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0"
+            class="size-4 text-green-500 mt-0.5 mr-2 flex-shrink-0"
           />
           <span>Improved compliance with local regulations</span>
         </li>
         <li class="flex items-start">
           <CheckCircle
-            class="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0"
+            class="size-4 text-green-500 mt-0.5 mr-2 flex-shrink-0"
           />
           <span>Faster access from your location</span>
         </li>
         <li class="flex items-start">
           <CheckCircle
-            class="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0"
+            class="size-4 text-green-500 mt-0.5 mr-2 flex-shrink-0"
           />
           <span>Protection against impostor sites</span>
         </li>
