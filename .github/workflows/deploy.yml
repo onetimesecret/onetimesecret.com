@@ -15,9 +15,9 @@
 # have created the following required secrets:
 #
 # - STORAGE_NAME: Your BunnyCDN storage zone name
-# - STORAGE_PASSWORD: Your BunnyCDN storage zone password
+# - STORAGE_PASSWORD_RW: Your BunnyCDN storage zone password
 # - STORAGE_KEY: Your BunnyCDN API key
-# - ZONE_ID: Your BunnyCDN pull zone ID
+# - PULL_ZONE_ID: Your BunnyCDN pull zone ID
 #
 # If the project uses Sentry for error tracking, you'll also need to
 # configure these additional secrets:
@@ -99,11 +99,11 @@ jobs:
         uses: ayeressian/bunnycdn-storage-deploy@v2.2.5
         with:
           source: "dist" # The local folder containing build output (Astro's default is 'dist')
-          destination: "" # The directory within your storage zone
+          destination: "${{ secrets.STORAGE_DESTINATION }}" # The directory within your storage zone
           storageZoneName: "${{ secrets.STORAGE_NAME }}" # Your BunnyCDN storage zone name
-          storagePassword: "${{ secrets.STORAGE_PASSWORD }}" # Password for storage zone access
+          storagePassword: "${{ secrets.STORAGE_PASSWORD_RW }}" # Password for storage zone access
           accessKey: "${{ secrets.STORAGE_KEY }}" # BunnyCDN API key
-          pullZoneId: "${{ secrets.ZONE_ID }}" # Your BunnyCDN pull zone ID
+          pullZoneId: "${{ secrets.PULL_ZONE_ID }}" # Your BunnyCDN pull zone ID
           upload: "true" # Upload new files
           remove: "true" # Remove files that don't exist locally
           purgePullZone: "false" # Purge the CDN cache after deployment
@@ -111,9 +111,9 @@ jobs:
 # Setup Instructions:
 # 1. Create the following secrets in your GitHub repository:
 #    - STORAGE_NAME: Your BunnyCDN storage zone name
-#    - STORAGE_PASSWORD: Your BunnyCDN storage zone password
+#    - STORAGE_PASSWORD_RW: Your BunnyCDN storage zone password
 #    - STORAGE_KEY: Your BunnyCDN API key
-#    - ZONE_ID: Your BunnyCDN pull zone ID
+#    - PULL_ZONE_ID: Your BunnyCDN pull zone ID
 #
 # 2. (Optional) If using Sentry:
 #    - SENTRY_DSN: Your Sentry DSN
