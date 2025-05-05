@@ -34,7 +34,11 @@
 # Once configured, the workflow will automatically build and deploy the
 # site to BunnyCDN whenever you push to the main branch.
 
-name: Build and Deploy to BunnyCDN
+name: (staging) Build and Deploy to BunnyCDN
+
+concurrency:
+  group: staging
+  cancel-in-progress: true
 
 # Run this workflow on pushes to main branch or manually via workflow_dispatch
 on:
@@ -45,6 +49,8 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: staging
+    concurrency: staging
 
     env:
       # Configure any environment variables needed during build
@@ -62,7 +68,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       # Step 3: Setup pnpm
       - name: Setup pnpm
@@ -100,26 +106,11 @@ jobs:
         uses: ayeressian/bunnycdn-storage-deploy@v2.2.5
         with:
           source: "dist" # The local folder containing build output (Astro's default is 'dist')
-          destination: "${{ secrets.STORAGE_DESTINATION }}" # The directory within your storage zone
-          storageZoneName: "${{ secrets.STORAGE_NAME }}" # Your BunnyCDN storage zone name
-          storagePassword: "${{ secrets.STORAGE_PASSWORD_RW }}" # Password for storage zone access
           accessKey: "${{ secrets.STORAGE_KEY }}" # BunnyCDN API key
-          pullZoneId: "${{ secrets.PULL_ZONE_ID }}" # Your BunnyCDN pull zone ID
+          destination: "${{ secrets.STORAGE_DESTINATION }}" # The directory within your storage zone
+          storageZoneName: "${{ environment.STORAGE_NAME }}" # Your BunnyCDN storage zone name
+          storagePassword: "${{ environment.STORAGE_PASSWORD_RW }}" # Password for storage zone access
+          pullZoneId: "${{ environment.PULL_ZONE_ID }}" # Your BunnyCDN pull zone ID
           upload: "true" # Upload new files
           remove: "true" # Remove files that don't exist locally
-          purgePullZone: "false" # Purge the CDN cache after deployment
-
-# Setup Instructions:
-# 1. Create the following secrets in your GitHub repository:
-#    - STORAGE_NAME: Your BunnyCDN storage zone name
-#    - STORAGE_PASSWORD_RW: Your BunnyCDN storage zone password
-#    - STORAGE_KEY: Your BunnyCDN API key
-#    - PULL_ZONE_ID: Your BunnyCDN pull zone ID
-#
-# 2. (Optional) If using Sentry:
-#    - SENTRY_DSN: Your Sentry DSN
-#    - SENTRY_ORG: Your Sentry organization slug
-#    - SENTRY_PROJECT: Your Sentry project slug
-#    - SENTRY_AUTH_TOKEN: Your Sentry auth token
-#
-# 3. Ensure your repository has a main branch or adjust the branch trigger accordingly
+          purgePullZone: "true" # Purge the CDN cache after deployment
