@@ -327,8 +327,20 @@ const copyUrlToClipboard = async () => {
       <div
         v-else-if="apiResult?.success && apiResult.record"
         class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
-        <strong class="font-bold">{{ t("web.secrets.successTitle") }}</strong>
-        <p class="text-sm">
+        <!-- Open in New Tab Icon Button -->
+        <a
+          :href="buildSecretUrl(apiResult)"
+          target="_blank"
+          rel="noopener noreferrer"
+          type="button"
+          class="absolute top-2 right-2 p-1 text-green-600 hover:text-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 rounded"
+          :title="t('web.actions.openNewTab') || 'Open in new tab'">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+          </svg>
+        </a>
+        <strong class="font-bold block mb-1">{{ t("web.secrets.successTitle") }}</strong>
+        <p class="text-sm pr-8">
           {{ t("web.secrets.shareLinkDescription") }}
         </p>
         <div class="mt-1 flex rounded-md shadow-sm">
