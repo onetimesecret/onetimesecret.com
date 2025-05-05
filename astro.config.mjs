@@ -1,14 +1,32 @@
 // astro.config.mjs
 // @ts-check
+/**
+ * Astro Configuration
+ *
+ * This file configures the Astro build process, integrations, and Vite settings.
+ * It includes critical configuration for Vue.js, i18n support, and environment variables.
+ *
+ * IMPORTANT: This file contains fixes for the "__VUE_PROD_DEVTOOLS__" reference error
+ * that occurs during SSR when vue-i18n tries to access this global variable.
+ *
+ * Key components:
+ * - viteSSRGlobals plugin: Ensures global variables are defined in SSR context
+ * - Vite define settings: Properly sets __VUE_PROD_DEVTOOLS__ as a boolean (not string)
+ * - Vue integration: Configured with custom entry point for i18n support
+ */
 import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
+// import bunny from "bunny-astro";
 
 // See sentry.config.ts for configuration details
 import sentry from "@sentry/astro";
 import spotlightjs from "@spotlightjs/astro";
 
 import vue from "@astrojs/vue";
+import viteSSRGlobals from "./vite-ssr-globals.js";
 
+// Controls debug settings throughout the configuration
+// Also used for __VUE_PROD_DEVTOOLS__ to enable Vue devtools in production
 const DEBUG = true;
 
 // Remember, for security reasons, only variables prefixed with VITE_ are
@@ -30,8 +48,13 @@ const viteAdditionalServerAllowedHosts =
 
 // https://astro.build/config
 export default defineConfig({
+  site: process.env.VITE_BASE_URL,
+  // https://docs.astro.build/en/reference/configuration-reference/#output
+  output: "static",
+  // https://bunny-launcher.net/frameworks/astro/
+  // adapter: bunny(),
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss(), viteSSRGlobals()],
     server: {
       allowedHosts: (() => {
         // NOTE: This is an Immediately Invoked Function Expression (IIFE)
@@ -65,6 +88,15 @@ export default defineConfig({
       "process.env.VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS": JSON.stringify(
         viteAdditionalServerAllowedHosts,
       ),
+
+      /**
+       * CRITICAL: This global variable must be defined as a boolean (not string)
+       * Vue i18n expects this variable during installation and will throw:
+       * "ReferenceError: __VUE_PROD_DEVTOOLS__ is not defined"
+       * if not properly set. The viteSSRGlobals plugin ensures it's also
+       * defined in SSR contexts where this define setting doesn't apply.
+       */
+      __VUE_PROD_DEVTOOLS__: false,
     },
   },
 
@@ -91,11 +123,18 @@ export default defineConfig({
       // Spotlight configuration can also be potentially moved here if preferred,
       // but keeping runtime config in sentry.config.ts is fine.
     }),
+
     spotlightjs({
       debug: false,
     }),
+
     vue({
       devtools: { launchEditor: "zed" },
+      /**
+       * Custom Vue entry point where we ensure globals are defined
+       * This entry point imports and runs setupGlobalVars() from src/env.ts
+       * before initializing vue-i18n to prevent the reference error.
+       */
       appEntrypoint: "/src/vueSetup",
     }),
   ],
