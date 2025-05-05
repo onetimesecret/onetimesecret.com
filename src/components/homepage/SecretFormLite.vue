@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useI18n } from "vue-i18n";
 
 // Define the options model
@@ -8,14 +8,26 @@ interface SecretOptions {
   addPassphrase: boolean;
 }
 
-const props = withDefaults(defineProps<{ // Use withDefaults
+// API Response interface
+interface ApiResult {
+  success: boolean;
+  record?: {
+    share_url?: string;
+    metadata_url?: string;
+  };
+  message?: string;
+}
+
+const props = withDefaults(defineProps<{
   placeholder?: string;
+  apiBaseUrl?: string;
 }>(), {
-  placeholder: '', // Provide a default value
+  placeholder: '',
+  apiBaseUrl: 'https://dev.onetime.dev/api',
 });
 
 const emit = defineEmits<{
-  createLink: [secretText: string, options: SecretOptions]; // Use imported type
+  createLink: [result: ApiResult];
 }>();
 
 // Initialize i18n
@@ -24,53 +36,110 @@ const { t } = useI18n({
   useScope: "global",
 });
 
-// Secret text state
+// --- State ---
 const secretText = ref("");
-
-// Secret options state
-const secretOptions = ref<SecretOptions>({ // Use imported type
+const secretOptions = ref<SecretOptions>({
   expirationTime: false,
   addPassphrase: false,
 });
+const passphrase = ref("");
+const isLoading = ref(false);
+const apiResult = ref<ApiResult | null>(null);
+const apiError = ref<string | null>(null);
 
-// Update options and emit events (from SecretOptions.vue logic)
+// --- Computed ---
+const showPassphraseInput = computed(() => secretOptions.value.addPassphrase);
+
+// --- Methods ---
 const updateOption = (option: keyof SecretOptions, value: boolean) => {
   secretOptions.value[option] = value;
-  // No need to emit update:modelValue here, it's internal state now
+  if (option === 'addPassphrase' && !value) {
+    passphrase.value = "";
+  }
 };
 
-// Handle create link button click
-const handleCreateLink = () => {
-  if (secretText.value.trim()) {
-    emit("createLink", secretText.value, secretOptions.value);
+const handleCreateLink = async () => {
+  if (!secretText.value.trim() || isLoading.value) {
+    return;
+  }
+  if (secretOptions.value.addPassphrase && !passphrase.value.trim()) {
+    apiError.value = t('web.errors.passphraseRequired') || "Passphrase is required when the option is selected.";
+    return;
+  }
+
+  isLoading.value = true;
+  apiResult.value = null;
+  apiError.value = null;
+
+  const payload: any = {
+    secret: secretText.value,
+    ttl: secretOptions.value.expirationTime ? 0 : 604800,
+  };
+
+  if (secretOptions.value.addPassphrase) {
+    payload.passphrase = passphrase.value;
+  }
+
+  const apiUrl = `${props.apiBaseUrl}/v2/secret/generate`;
+  const custId = 'YOUR_CUST_ID';
+  const apiKey = 'YOUR_API_KEY';
+  const headers = new Headers();
+  headers.append('Content-Type', 'application/json');
+  headers.append('Authorization', 'Basic ' + btoa(`${custId}:${apiKey}`));
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(payload),
+    });
+
+    const resultData: ApiResult = await response.json();
+
+    if (!response.ok || !resultData.success) {
+      throw new Error(resultData.message || `API Error: ${response.statusText}`);
+    }
+
+    apiResult.value = resultData;
+    emit('createLink', resultData);
+
+  } catch (error: any) {
+    console.error("API call failed:", error);
+    apiError.value = error.message || t('web.errors.apiGenericError') || "An unexpected error occurred.";
+    emit('createLink', { success: false, message: apiError.value });
+  } finally {
+    isLoading.value = false;
   }
 };
 </script>
 
 <template>
   <div class="mt-8 mx-auto max-w-xl">
-    <!-- Text Area Input (from SecretInput.vue) -->
+    <!-- Text Area Input -->
     <div class="relative">
       <textarea
         v-model="secretText"
         rows="3"
-        class="block w-full rounded-md border-0 py-3 pl-4 pr-16 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-500 sm:text-sm"
+        class="block w-full rounded-md border-0 py-3 pl-4 pr-16 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-500 sm:text-sm disabled:opacity-50"
         :placeholder="props.placeholder || t('web.secrets.secretPlaceholder')"
+        :disabled="isLoading"
       ></textarea>
 
       <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
         <button
           type="button"
-          class="inline-flex items-center rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-sm font-medium text-white shadow-sm hover:bg-brand-600 focus:outline-none"
+          class="inline-flex items-center rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-sm font-medium text-white shadow-sm hover:bg-brand-600 focus:outline-none disabled:opacity-50"
           @click="handleCreateLink"
+          :disabled="isLoading || !secretText.trim()"
         >
-          {{ t("web.secrets.createLink") || "Create Link" }}
+          <span v-if="!isLoading">{{ t("web.secrets.createLink") || "Create Link" }}</span>
+          <span v-else>{{ t("web.general.loading") || "Loading..." }}</span>
         </button>
       </div>
     </div>
 
-    <!-- Secret Options (from SecretOptions.vue) -->
-    <div class="mt-3 mb-10">
+    <!-- Secret Options -->
+    <div class="mt-3 mb-4">
        <div class="bg-gray-50 rounded-md p-3">
         <h3
           class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
@@ -78,26 +147,30 @@ const handleCreateLink = () => {
         </h3>
         <div
           class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-sm text-gray-600">
+          <!-- Expiration Time Option -->
           <div class="flex items-center">
             <input
               id="burn-after-reading"
               type="checkbox"
-              class="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+              class="size-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500 disabled:opacity-50"
               :checked="secretOptions.expirationTime"
-              @change="updateOption('expirationTime', ($event.target as HTMLInputElement).checked)" />
+              @change="updateOption('expirationTime', ($event.target as HTMLInputElement).checked)"
+              :disabled="isLoading" />
             <label
               for="burn-after-reading"
               class="ml-2 block text-sm text-gray-600">
               {{ t("web.secrets.expirationTime") || "Burn after reading" }}
             </label>
           </div>
+          <!-- Add Passphrase Option -->
           <div class="flex items-center">
             <input
               id="add-passphrase"
               type="checkbox"
-              class="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+              class="size-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500 disabled:opacity-50"
               :checked="secretOptions.addPassphrase"
-              @change="updateOption('addPassphrase', ($event.target as HTMLInputElement).checked)" />
+              @change="updateOption('addPassphrase', ($event.target as HTMLInputElement).checked)"
+              :disabled="isLoading" />
             <label
               for="add-passphrase"
               class="ml-2 block text-sm text-gray-600">
@@ -105,7 +178,44 @@ const handleCreateLink = () => {
             </label>
           </div>
         </div>
+        <!-- Passphrase Input (Conditional) -->
+        <div v-if="showPassphraseInput" class="mt-3">
+          <label for="passphrase-input" class="block text-sm font-medium text-gray-700">
+            {{ t("web.secrets.passphraseLabel") || "Passphrase" }}
+          </label>
+          <input
+            type="password"
+            id="passphrase-input"
+            v-model="passphrase"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm disabled:opacity-50"
+            :placeholder="t('web.secrets.passphrasePlaceholder') || 'Enter passphrase'"
+            :disabled="isLoading"
+          />
+        </div>
       </div>
     </div>
+
+    <!-- API Result/Error Display -->
+    <div class="mt-4 mb-10 min-h-[4rem]">
+      <div v-if="isLoading" class="text-center text-gray-500">
+        {{ t("web.general.processing") || "Processing..." }}
+      </div>
+      <div v-else-if="apiError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <strong class="font-bold">{{ t("web.errors.errorTitle") || "Error!" }}</strong>
+        <span class="block sm:inline"> {{ apiError }}</span>
+      </div>
+      <div v-else-if="apiResult?.success && apiResult.record?.share_url" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+        <strong class="font-bold">{{ t("web.secrets.successTitle") || "Success!" }}</strong>
+        <p class="text-sm">{{ t("web.secrets.shareLinkDescription") || "Share this link:" }}</p>
+        <input
+          type="text"
+          :value="apiResult.record.share_url"
+          readonly
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm bg-white p-2"
+          @focus="($event.target as HTMLInputElement).select()"
+        />
+      </div>
+    </div>
+
   </div>
 </template>
