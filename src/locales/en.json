@@ -21,6 +21,30 @@
     "sign-in": "Sign In",
     "create-account": "Create Account"
   },
+  "LABELS": {
+    "aria": {
+      "view-our-subscription-pricing": "View our subscription pricing"
+    },
+
+    "about": "About",
+    "pricing": "Pricing",
+    "blog": "Blog",
+
+    "github": "View our source code on GitHub",
+    "docs": "Documentation",
+    "api": "API Documentation",
+    "status": "Service Status",
+
+    "privacy": "Privacy Policy",
+    "terms": "Terms and Conditions",
+    "security": "Security Measures",
+
+    "company": "Company",
+    "resources": "Resources",
+
+    "legals": "Legals",
+    "contact": "Contact Us"
+  },
   "web": {
     "secrets": {
       "pasteSecret": "Paste a password, secret message or private link below.",

@@ -1,4 +1,6 @@
 ---
+import FooterLinkLists from "../components/layouts/FooterLinkLists.vue";
+
 export interface Props {
   title?: string;
   description?: string;
@@ -13,8 +15,7 @@ const {
 <!doctype html>
 <html
   lang="en"
-  class="light h-full"
->
+  class="light h-full">
   <head>
     <meta charset="UTF-8" />
     <meta
@@ -33,5 +34,7 @@ const {
   </head>
   <body class="h-full bg-white">
     <slot />
+
+    <FooterLinkLists />
   </body>
 </html>
