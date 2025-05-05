@@ -91,23 +91,11 @@ const europeanRegion: RegionInfo = {
 
       <!-- Section 3: How It Works (from Attempt 4) -->
       <HowItWorks />
-      <!-- Use HowItWorks component -->
 
       <!-- Section 4: How Can We Help You? / Use Cases (from Attempt 4) -->
       <UseCaseSelector />
 
       <!-- Section 5: Screenshot ViewHole -->
-      <!-- Add a title for this section -->
-      <div class="text-center pt-16 pb-8 sm:pt-24 sm:pb-12">
-        <h2
-          class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-          {{ t("web.homepage.visualExamples.title") }}
-        </h2>
-        <!-- Optional: Add a short description if needed -->
-        <!-- <p class="mt-4 text-lg leading-6 text-gray-600">
-          A quick look at the Onetime Secret interface.
-        </p> -->
-      </div>
       <ScreenshotViewHole />
     </main>
   </div>
