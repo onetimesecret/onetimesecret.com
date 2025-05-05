@@ -108,9 +108,9 @@ jobs:
           source: "dist" # The local folder containing build output (Astro's default is 'dist')
           accessKey: "${{ secrets.STORAGE_KEY }}" # BunnyCDN API key
           destination: "${{ secrets.STORAGE_DESTINATION }}" # The directory within your storage zone
-          storageZoneName: "${{ environment.STORAGE_NAME }}" # Your BunnyCDN storage zone name
-          storagePassword: "${{ environment.STORAGE_PASSWORD_RW }}" # Password for storage zone access
-          pullZoneId: "${{ environment.PULL_ZONE_ID }}" # Your BunnyCDN pull zone ID
+          storageZoneName: "${{ secrets.STORAGE_NAME }}" # Your BunnyCDN storage zone name
+          storagePassword: "${{ secrets.STORAGE_PASSWORD_RW }}" # Password for storage zone access
+          pullZoneId: "${{ secrets.PULL_ZONE_ID }}" # Your BunnyCDN pull zone ID
           upload: "true" # Upload new files
           remove: "true" # Remove files that don't exist locally
           purgePullZone: "true" # Purge the CDN cache after deployment
