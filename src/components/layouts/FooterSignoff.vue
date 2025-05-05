@@ -60,7 +60,7 @@ const currentYear = computed(() => new Date().getFullYear());
         </div>
         <p class="text-xs leading-5 text-gray-500 dark:text-gray-400">
           &copy; {{ currentYear }} {{ t("onetime-secret-literal") }}.
-          {{t('all-rights-reserved') }}.
+          {{ t("all-rights-reserved") }}.
         </p>
       </div>
     </div>

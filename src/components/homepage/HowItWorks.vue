@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'; // Added import
+import { useI18n } from "vue-i18n"; // Added import
 
 const { t } = useI18n(); // Added i18n setup
 </script>

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import {
-Listbox,
-ListboxButton,
-ListboxOption,
-ListboxOptions,
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
 } from "@headlessui/vue";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
 import { ref } from "vue";
@@ -33,8 +33,7 @@ const useCases: UseCase[] = [
       "web.useCases.it.description",
       "Securely share credentials and access information with your team",
     ),
-    exampleSecret:
-      "Username: oracle\nPassword: tiger",
+    exampleSecret: "Username: oracle\nPassword: tiger",
     benefits: [
       t(
         "web.useCases.it.benefits.1",
@@ -61,8 +60,7 @@ const useCases: UseCase[] = [
       "web.useCases.developer.description",
       "Share API keys and credentials securely during development",
     ),
-    exampleSecret:
-      "API_KEY=sk_test_EXAMPLE_KEY\nAPI_SECRET=5Up0rS3kRu7",
+    exampleSecret: "API_KEY=sk_test_EXAMPLE_KEY\nAPI_SECRET=5Up0rS3kRu7",
     benefits: [
       t(
         "web.useCases.developer.benefits.1",
@@ -173,11 +171,7 @@ const selectedUseCase = ref(useCases[0]);
         <Listbox v-model="selectedUseCase">
           <div class="relative">
             <ListboxButton
-              class="
-                relative w-full cursor-default rounded-lg bg-white py-3 pl-4 pr-10
-                text-left border border-gray-300 shadow-sm
-                focus:outline-none focus-visible:border-brand-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-300
-                text-base">
+              class="relative w-full cursor-default rounded-lg bg-white py-3 pl-4 pr-10 text-left border border-gray-300 shadow-sm focus:outline-none focus-visible:border-brand-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-300 text-base">
               <span class="block truncate font-medium text-slate-800">
                 {{ selectedUseCase.title }}
               </span>
