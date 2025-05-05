@@ -1,0 +1,139 @@
+<script setup lang="ts"></script>
+
+<template>
+  <div class="max-xl:line-t relative max-xl:h-84">
+    <div
+      class="absolute inset-0 -mx-px bg-gray-950/5 py-2 pr-[calc(--spacing(2)+1px)] pl-2 xl:border-l xl:border-gray-950/5">
+      <div
+        class="overflow-hidden rounded-2xl bg-gray-50 outline outline-gray-950/5 [--right:45%] flex size-full items-center justify-center">
+        <div class="size-430 shrink-0 scale-50 sm:scale-75 lg:scale-100">
+          <div
+            class="relative top-(--top,30%) right-(--right,54%) grid size-full origin-top-left rotate-x-55 rotate-y-0 -rotate-z-45 grid-cols-4 gap-8 transform-3d">
+            <div
+              class="flex flex-col gap-8"
+              style="transform: translateY(750px)">
+              <img
+                src="/examples/homepage-attemp1.png"
+                class="aspect-[1058/1036] ring ring-gray-950/5"
+                width="1058"
+                height="1036"
+                alt="" /><img
+                src="/examples/homepage-attempt4.png"
+                class="aspect-[1189/1892] ring ring-gray-950/5"
+                width="1189"
+                height="1892"
+                alt="" /><img
+                src="/examples/homepage-attempt5.png"
+                class="aspect-[1189/1892] ring ring-gray-950/5"
+                width="1189"
+                height="1892"
+                alt="" /><img
+                src="/examples/homepage-expanded.png"
+                class="aspect-[1954/2124] ring ring-gray-950/5"
+                width="1954"
+                height="2124"
+                alt="" />
+            </div>
+            <div
+              class="flex flex-col gap-8"
+              style="transform: translateY(750px)">
+              <img
+                src="/examples/homepage-slice-taglines.png"
+                class="aspect-[825/237] ring ring-gray-950/5"
+                width="825"
+                height="237"
+                alt="" /><img
+                src="/examples/homepage-slice-top.png"
+                class="aspect-[962/136] ring ring-gray-950/5"
+                width="962"
+                height="136"
+                alt="" /><img
+                src="/examples/homepage.png"
+                class="aspect-[1970/2108] ring ring-gray-950/5"
+                width="1970"
+                height="2108"
+                alt="" /><img
+                src="/examples/homepage-attemp1.png"
+                class="aspect-[1058/1036] ring ring-gray-950/5"
+                width="1058"
+                height="1036"
+                alt="" /><img
+                src="/examples/homepage-attempt4.png"
+                class="aspect-[1189/1892] ring ring-gray-950/5"
+                width="1189"
+                height="1892"
+                alt="" /><img
+                src="/examples/homepage-attempt5.png"
+                class="aspect-[1189/1892] ring ring-gray-950/5"
+                width="1189"
+                height="1892"
+                alt="" />
+            </div>
+            <div
+              class="flex flex-col gap-8"
+              style="transform: translateY(750px)">
+              <img
+                src="/examples/homepage-expanded.png"
+                class="aspect-[1954/2124] ring ring-gray-950/5"
+                width="1954"
+                height="2124"
+                alt="" /><img
+                src="/examples/homepage-slice-taglines.png"
+                class="aspect-[825/237] ring ring-gray-950/5"
+                width="825"
+                height="237"
+                alt="" /><img
+                src="/examples/homepage-slice-top.png"
+                class="aspect-[962/136] ring ring-gray-950/5"
+                width="962"
+                height="136"
+                alt="" /><img
+                src="/examples/homepage.png"
+                class="aspect-[1970/2108] ring ring-gray-950/5"
+                width="1970"
+                height="2108"
+                alt="" /><img
+                src="/examples/homepage-attemp1.png"
+                class="aspect-[1058/1036] ring ring-gray-950/5"
+                width="1058"
+                height="1036"
+                alt="" /><img
+                src="/examples/homepage-attempt4.png"
+                class="aspect-[1189/1892] ring ring-gray-950/5"
+                width="1189"
+                height="1892"
+                alt="" /><img
+                src="/examples/homepage-attempt5.png"
+                class="aspect-[1189/1892] ring ring-gray-950/5"
+                width="1189"
+                height="1892"
+                alt="" />
+            </div>
+            <div
+              class="flex flex-col gap-8"
+              style="transform: translateY(1400px)">
+              <img
+                src="/examples/homepage-expanded.png"
+                class="aspect-[1954/2124] ring ring-gray-950/5"
+                width="1954"
+                height="2124"
+                alt="" /><img
+                src="/examples/homepage-slice-taglines.png"
+                class="aspect-[825/237] ring ring-gray-950/5"
+                width="825"
+                height="237"
+                alt="" /><img
+                src="/examples/homepage-slice-top.png"
+                class="aspect-[962/136] ring ring-gray-950/5"
+                width="962"
+                height="136"
+                alt="" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped></style>
