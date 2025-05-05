@@ -45,9 +45,24 @@ export default tseslint.config(
     },
     rules: {
       // Add or override Vue-specific rules here if necessary
-      "vue/html-self-closing": "warn",
       "vue/multi-word-component-names": "off", // Allow single-word names for test components
       "@typescript-eslint/no-explicit-any": "off",
+
+      // Ensure valid template root
+      "vue/valid-template-root": "error",
+      // Configure self-closing tag behavior
+      "vue/html-self-closing": [
+        "error",
+        {
+          html: {
+            void: "always",
+            normal: "never",
+            component: "always",
+          },
+          svg: "always",
+          math: "always",
+        },
+      ],
     },
   },
 
