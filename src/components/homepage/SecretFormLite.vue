@@ -1,0 +1,54 @@
+<script setup lang="ts">
+import { useI18n } from "vue-i18n";
+import type { ApiResult } from "../shared/BaseSecretFormLite.vue"; // Import type from base
+import BaseSecretFormLite from "../shared/BaseSecretFormLite.vue"; // Import base component
+
+interface Props {
+  placeholder?: string;
+  apiBaseUrl?: string;
+  withOptions?: boolean;
+}
+
+// Define props again for this wrapper component
+const props = withDefaults(
+  defineProps<Props>(),
+  {
+    placeholder: "",
+    apiBaseUrl: "https://dev.onetime.dev/api", // Default API base URL
+    withOptions: false,
+  },
+);
+
+// Define emits again to relay from the base component
+const emit = defineEmits<{
+  createLink: [result: ApiResult];
+}>();
+
+// Initialize i18n for any potential text in this wrapper
+const { t } = useI18n({
+  inheritLocale: true,
+  useScope: "global",
+});
+
+// Handler to relay the event from the base component
+const handleCreateLinkRelay = (result: ApiResult) => {
+  emit("createLink", result);
+};
+</script>
+
+<template>
+  <!-- Section structure moved from Homepage.vue -->
+  <section class="bg-gradient-to-b from-brandcomp-0 to-white">
+    <div class="container mx-auto px-2 sm:px-4 lg:px-6 mb-2">
+      <div class="mx-auto max-w-3xl">
+        <!-- Use the BaseSecretFormLite component -->
+        <BaseSecretFormLite
+          class="z-0"
+          :placeholder="props.placeholder"
+          :api-base-url="props.apiBaseUrl"
+          :with-options="props.withOptions"
+          @createLink="handleCreateLinkRelay" />
+      </div>
+    </div>
+  </section>
+</template>
