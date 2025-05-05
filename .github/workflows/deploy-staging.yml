@@ -13,12 +13,14 @@ on:
 
 jobs:
   # Job to call the reusable deployment workflow
-  call-deploy-workflow:
+  build-and-deploy:
     name: Deploy Staging
     uses: ./.github/workflows/reusable-deploy.yml
-    # Define the target environment for this specific workflow run
-    environment: staging
     concurrency: staging
+    # Define the target environment for this specific workflow run
+    # environment:
+    #   name: staging
+    #   url: ${{ steps.deploy.outputs.url }}
 
     with:
       # Pass environment-specific inputs to the reusable workflow
