@@ -1,21 +1,36 @@
 ---
 import FooterLinkLists from "../components/layouts/FooterLinkLists.vue";
+import FooterSignOff from "../components/layouts/FooterSignOff.vue";
 
 export interface Props {
   title?: string;
   description?: string;
+  // Define windowProps structure if needed, or pass it dynamically
+  windowProps?: {
+    plans_enabled?: boolean;
+    plan?: null;
+    support_host?: string;
+    authentication?: { enabled: boolean };
+  };
 }
 
 const {
   title = "Onetime Secret",
   description = "Share sensitive information securely with one-time viewable links.",
+  // Example: Define default or fetch actual windowProps here
+  windowProps = {
+    plans_enabled: true,
+    plan: null,
+    support_host: 'https://support.onetimesecret.com',
+    authentication: { enabled: true }
+  }
 } = Astro.props;
 ---
 
 <!doctype html>
 <html
   lang="en"
-  class="light h-full">
+  class="h-full">
   <head>
     <meta charset="UTF-8" />
     <meta
@@ -32,9 +47,12 @@ const {
     />
     <title>{title}</title>
   </head>
-  <body class="h-full bg-white">
-    <slot />
+  <body class="flex flex-col h-full bg-white dark:bg-gray-900">
+    <main class="flex-grow"> <!-- Added flex-grow to push footer down -->
+      <slot />
+    </main>
 
-    <FooterLinkLists />
+    <FooterLinkLists windowProps={windowProps} client:load /> <!-- Pass windowProps -->
+    <FooterSignOff client:load />
   </body>
 </html>

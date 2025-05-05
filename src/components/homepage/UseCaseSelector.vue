@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import {
-Listbox,
-ListboxButton,
-ListboxOption,
-ListboxOptions,
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
 } from "@headlessui/vue";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
 import { ref } from "vue";
@@ -173,9 +173,12 @@ const selectedUseCase = ref(useCases[0]);
         <Listbox v-model="selectedUseCase">
           <div class="relative">
             <ListboxButton
-              class="relative w-full cursor-default rounded-lg bg-white py-3 pl-4 pr-10 text-left border border-gray-300 shadow-sm focus:outline-none focus-visible:border-brand-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-300 text-base">
-              <span class="block truncate font-medium">
-                {{ t("web.useCases.iAm", "I am a...") }}
+              class="
+                relative w-full cursor-default rounded-lg bg-white py-3 pl-4 pr-10
+                text-left border border-gray-300 shadow-sm
+                focus:outline-none focus-visible:border-brand-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-300
+                text-base">
+              <span class="block truncate font-medium text-slate-800">
                 {{ selectedUseCase.title }}
               </span>
               <span
