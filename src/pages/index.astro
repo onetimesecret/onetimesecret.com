@@ -1,6 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import HomepageSwitcher from "../components/HomepageSwitcher.vue"; // Import the switcher
+import Homepage from "../components/homepage/Homepage.vue"; // Import the switcher
 import "../styles/global.css";
 import "../styles/tailwind.css";
 import "../fonts/font-face.css";
@@ -13,9 +13,8 @@ const pageDescription =
 
 <Layout
   title={pageTitle}
-  description={pageDescription}
->
-  <!-- Render the HomepageSwitcher component -->
+  description={pageDescription}>
+  <!-- Render the Homepage component -->
   <!-- client:load ensures the Vue component hydrates and runs client-side -->
-  <HomepageSwitcher client:load />
+  <Homepage client:load />
 </Layout>
