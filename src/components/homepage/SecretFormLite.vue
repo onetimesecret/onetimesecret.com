@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
 // Define the options model
@@ -79,6 +79,28 @@ const updateOption = (option: keyof SecretOptions, value: boolean) => {
     passphrase.value = "";
   }
 };
+const isTyping = ref(false);
+const typingTimerId = ref<number | null>(null);
+
+const showOptions = computed(() => {
+  return !isTyping.value && secretText.value.trim().length > 0;
+});
+
+watch(secretText, () => {
+  // Set typing state to true immediately
+  isTyping.value = true;
+
+  // Clear any existing timer
+  if (typingTimerId.value !== null) {
+    clearTimeout(typingTimerId.value);
+  }
+
+  // Set a new timer to turn off the typing state after 600ms of inactivity
+  typingTimerId.value = window.setTimeout(() => {
+    isTyping.value = false;
+    typingTimerId.value = null;
+  }, 600);
+});
 
 const handleCreateLink = async () => {
   if (!secretText.value.trim() || isLoading.value) {
@@ -181,7 +203,7 @@ const buildSecretUrl = (result: ApiResult): string => {
     </div>
 
     <!-- Secret Options -->
-    <div class="mt-3 mb-4">
+    <div v-if="showOptions" class="mt-3 mb-4">
       <div class="bg-gray-50 rounded-md p-3">
         <h3
           class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
