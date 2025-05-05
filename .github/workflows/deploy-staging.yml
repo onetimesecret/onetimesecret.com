@@ -1,0 +1,42 @@
+# .github/workflows/deploy-staging.yml
+
+name: (staging) Build and Deploy to BunnyCDN
+
+concurrency:
+  group: staging
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  # Job to call the reusable deployment workflow
+  call-deploy-workflow:
+    name: Deploy Staging
+    uses: ./.github/workflows/reusable-deploy.yml
+    # Define the target environment for this specific workflow run
+    environment: staging
+    concurrency: staging
+
+    with:
+      # Pass environment-specific inputs to the reusable workflow
+      environment_name: "staging"
+      storage_destination: ${{ vars.STAGING_STORAGE_DESTINATION || '' }} # Use variable or empty string
+      storage_name: ${{ vars.STAGING_STORAGE_NAME }} # Use variable for storage name
+      pull_zone_id: ${{ vars.STAGING_PULL_ZONE_ID }} # Use variable for pull zone ID
+      # You could override install/build commands here if needed for staging
+      # install_command: 'pnpm install --staging-flag'
+      # build_command: 'pnpm build:staging'
+
+    secrets:
+      # Pass required secrets to the reusable workflow
+      # Secrets defined in the 'staging' environment are automatically available here
+      # Repository secrets are also available
+      STORAGE_KEY: ${{ secrets.STORAGE_KEY }} # Repository secret (or could be environment secret)
+      STORAGE_PASSWORD_RW: ${{ secrets.STORAGE_PASSWORD_RW }} # Environment secret for staging
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }} # Repository or Environment secret
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }} # Repository or Environment secret
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }} # Repository or Environment secret
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }} # Repository or Environment secret
