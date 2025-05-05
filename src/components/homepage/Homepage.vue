@@ -6,10 +6,10 @@ import HowItWorks from "./HowItWorks.vue"; // Import HowItWorks component
 import type { RegionInfo } from "./RegionInfoPopover.vue"; // Import RegionInfo type
 import RegionInfoPopover from "./RegionInfoPopover.vue";
 // Removed SecretOptions type import as it's now internal to SecretFormLite
-import SecretFormLite from "./SecretFormLite.vue"; // Import the new component
-import type { ApiResult } from "./SecretFormLite.vue"; // Import the result type
-import UseCaseSelector from "./UseCaseSelector.vue";
 import ScreenshotViewHole from "./ScreenshotViewHole.vue";
+import type { ApiResult } from "./SecretFormLite.vue"; // Import the result type
+import SecretFormLite from "./SecretFormLite.vue"; // Import the new component
+import UseCaseSelector from "./UseCaseSelector.vue";
 
 const { t } = useI18n();
 
@@ -51,7 +51,7 @@ const europeanRegion: RegionInfo = {
 
 // Define API Base URL (could come from env vars)
 const apiBaseUrl =
-  import.meta.env.VITE_API_BASE_URL || "https://dev.onetime.dev/api";
+  "https://dev.onetime.dev";
 </script>
 
 <template>
@@ -91,7 +91,7 @@ const apiBaseUrl =
       </section>
 
       <!-- Section 2: Secret Form Lite -->
-      <div class="container mx-auto px-4 sm:px-6 lg:px-8 mb-20">
+      <div class="container mx-auto px-2 sm:px-4 lg:px-6 mb-2">
         <div class="mx-auto max-w-3xl">
           <SecretFormLite class="-mt-16 relative z-0"
           :placeholder="t('web.secrets.secretPlaceholder')"
