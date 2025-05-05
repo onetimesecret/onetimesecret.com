@@ -106,7 +106,7 @@ jobs:
           pullZoneId: "${{ secrets.ZONE_ID }}" # Your BunnyCDN pull zone ID
           upload: "true" # Upload new files
           remove: "true" # Remove files that don't exist locally
-          purgePullZone: "true" # Purge the CDN cache after deployment
+          purgePullZone: "false" # Purge the CDN cache after deployment
 
 # Setup Instructions:
 # 1. Create the following secrets in your GitHub repository:
