@@ -6,7 +6,7 @@ const { t } = useI18n(); // Added i18n setup
 
 <template>
   <!-- How It Works Section -->
-  <section class="py-16 bg-gray-50">
+  <section class="pt-20 pb-16 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center">
         <h2
@@ -18,7 +18,7 @@ const { t } = useI18n(); // Added i18n setup
         </p>
       </div>
 
-      <div class="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
         <!-- Step 1 -->
         <div class="relative">
           <div

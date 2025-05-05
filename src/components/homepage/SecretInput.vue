@@ -59,7 +59,7 @@ const handleCreateLink = () => {
     </div>
 
     <!-- Secret Options Component -->
-    <div class="mt-3 mb-6">
+    <div class="mt-3 mb-10">
       <SecretOptions
         v-model="secretOptions"
       />

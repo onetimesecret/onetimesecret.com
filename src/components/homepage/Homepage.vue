@@ -52,9 +52,9 @@ const europeanRegion: RegionInfo = {
     </header>
     <main class="flex-grow">
       <!-- Section 1: Branding and Benefits (from Attempt 4 structure) -->
-      <!-- Hero Section - Removed z-10 -->
+      <!-- Hero Section - Adjusted padding -->
       <section
-        class="relative bg-gradient-to-b from-brand-50 to-white pt-26 pb-10">
+        class="relative bg-gradient-to-b from-brand-50 to-white pt-20 pb-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="text-center">
             <h1
@@ -78,7 +78,7 @@ const europeanRegion: RegionInfo = {
 
       <!-- Section 2: Secret Form Input Area (from Attempt 3 structure) -->
       <!-- Container for max-width and padding -->
-      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8 mb-20">
         <div class="mx-auto max-w-3xl">
           <!-- Apply negative margin, relative, and z-0 directly to SecretInput -->
           <SecretInput

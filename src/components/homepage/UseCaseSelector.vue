@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import {
-  Listbox,
-  ListboxButton,
-  ListboxOption,
-  ListboxOptions,
+Listbox,
+ListboxButton,
+ListboxOption,
+ListboxOptions,
 } from "@headlessui/vue";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
 import { ref } from "vue";
@@ -151,7 +151,7 @@ const selectedUseCase = ref(useCases[0]);
 </script>
 
 <template>
-  <section class="py-12 bg-gray-50 rounded-xl shadow-sm mx-auto max-w-7xl">
+  <section class="py-20 bg-gray-50 rounded-xl shadow-sm mx-auto max-w-7xl">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:max-w-5xl lg:px-8">
       <h2 class="text-3xl font-bold text-center text-gray-900 mb-8">
         {{ t("web.useCases.sectionTitle", "How can we help you?") }}
@@ -167,7 +167,7 @@ const selectedUseCase = ref(useCases[0]);
       </p>
 
       <!-- Role Selector -->
-      <div class="relative w-full max-w-md mx-auto mb-12">
+      <div class="relative w-full max-w-md mx-auto mb-16">
         <Listbox v-model="selectedUseCase">
           <div class="relative">
             <ListboxButton
