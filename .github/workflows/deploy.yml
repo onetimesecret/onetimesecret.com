@@ -99,7 +99,7 @@ jobs:
         uses: ayeressian/bunnycdn-storage-deploy@v2.2.5
         with:
           source: "dist" # The local folder containing build output (Astro's default is 'dist')
-          destination: "www" # The directory within your storage zone
+          destination: "" # The directory within your storage zone
           storageZoneName: "${{ secrets.STORAGE_NAME }}" # Your BunnyCDN storage zone name
           storagePassword: "${{ secrets.STORAGE_PASSWORD }}" # Password for storage zone access
           accessKey: "${{ secrets.STORAGE_KEY }}" # BunnyCDN API key
