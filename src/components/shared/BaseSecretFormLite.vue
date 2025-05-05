@@ -156,6 +156,16 @@ const handleCreateLink = async () => {
 
     apiResult.value = resultData;
     emit("createLink", resultData);
+
+    // Obscure the secret text on success by replacing it with a variable number of asterisks.
+    // This visually confirms success while hiding the content and obfuscating its original length.
+    if (resultData.success) {
+      const minLen = 6;
+      const maxLen = 32;
+      const fuzzyLen = Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
+      secretText.value = "*".repeat(fuzzyLen);
+    }
+
   } catch (error: any) {
     console.error("API call failed:", error);
     apiError.value =
