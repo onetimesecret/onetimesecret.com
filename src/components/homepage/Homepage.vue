@@ -8,6 +8,7 @@ import RegionInfoPopover from "./RegionInfoPopover.vue";
 import SecretInput from "./SecretInput.vue";
 import type { SecretOptions as SecretOptionsType } from "./SecretOptions.vue"; // Import SecretOptions type
 import UseCaseSelector from "./UseCaseSelector.vue";
+import ScreenshotViewHole from "./ScreenshotViewHole.vue";
 
 const { t } = useI18n();
 
@@ -94,6 +95,20 @@ const europeanRegion: RegionInfo = {
 
       <!-- Section 4: How Can We Help You? / Use Cases (from Attempt 4) -->
       <UseCaseSelector />
+
+      <!-- Section 5: Screenshot ViewHole -->
+      <!-- Add a title for this section -->
+      <div class="text-center pt-16 pb-8 sm:pt-24 sm:pb-12">
+        <h2
+          class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          {{ t("web.homepage.visualExamples.title") }}
+        </h2>
+        <!-- Optional: Add a short description if needed -->
+        <!-- <p class="mt-4 text-lg leading-6 text-gray-600">
+          A quick look at the Onetime Secret interface.
+        </p> -->
+      </div>
+      <ScreenshotViewHole />
     </main>
   </div>
 </template>

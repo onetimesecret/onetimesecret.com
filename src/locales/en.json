@@ -153,6 +153,9 @@
           "title": "Simple & Fast",
           "description": "No accounts required - create and share secrets in seconds"
         }
+      },
+      "visualExamples": {
+        "title": "Visual Examples"
       }
     }
   }
