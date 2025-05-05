@@ -1,6 +1,14 @@
 # .github/workflows/reusable-deploy.yml
 #
 # Reusable workflow for building and deploying the Astro site to BunnyCDN.
+#
+# Caller Workflows (e.g., deploy-staging.yml, deploy-production.yml):
+# - Specify the target environment using the `environment:` key at the job level.
+# - Access environment-specific configuration variables (defined in GitHub Environment settings)
+#   using the `vars.` context (e.g., `vars.STAGING_STORAGE_NAME`).
+# - Pass these variables to this reusable workflow via the `with:` block, mapping them
+#   to the corresponding `inputs` defined below.
+# - Pass secrets defined for the target environment via the `secrets:` block.
 
 name: Reusable Deploy Workflow
 
@@ -13,15 +21,15 @@ on:
         required: true
         type: string
       storage_destination:
-        description: "The directory within the BunnyCDN storage zone"
+        description: "The directory within the BunnyCDN storage zone (read from caller env var)"
         required: true
         type: string
       storage_name:
-        description: "The BunnyCDN storage zone name for the environment"
+        description: "The BunnyCDN storage zone name for the environment (read from caller env var)"
         required: true
         type: string
       pull_zone_id:
-        description: "The BunnyCDN pull zone ID for the environment"
+        description: "The BunnyCDN pull zone ID for the environment (read from caller env var)"
         required: true
         type: string
       node_version:
@@ -128,11 +136,11 @@ jobs:
         uses: ayeressian/bunnycdn-storage-deploy@v2.2.5
         with:
           source: "dist"
-          accessKey: "${{ secrets.STORAGE_KEY }}" # Passed secret
-          destination: "${{ inputs.storage_destination }}" # Passed input
-          storageZoneName: "${{ inputs.storage_name }}" # Passed input
-          storagePassword: "${{ secrets.STORAGE_PASSWORD_RW }}" # Passed secret
-          pullZoneId: "${{ inputs.pull_zone_id }}" # Passed input
+          accessKey: "${{ secrets.STORAGE_KEY }}"
+          destination: "${{ inputs.storage_destination }}"
+          storageZoneName: "${{ inputs.storage_name }}"
+          storagePassword: "${{ secrets.STORAGE_PASSWORD_RW }}"
+          pullZoneId: "${{ inputs.pull_zone_id }}"
           upload: "true"
           remove: "true"
           purgePullZone: "true"
