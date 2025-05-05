@@ -1,0 +1,138 @@
+# .github/workflows/reusable-deploy.yml
+#
+# Reusable workflow for building and deploying the Astro site to BunnyCDN.
+
+name: Reusable Deploy Workflow
+
+on:
+  workflow_call:
+    inputs:
+      # Environment-specific configuration passed from the caller
+      environment_name:
+        description: "Name of the deployment environment (e.g., staging, production)"
+        required: true
+        type: string
+      storage_destination:
+        description: "The directory within the BunnyCDN storage zone"
+        required: true
+        type: string
+      storage_name:
+        description: "The BunnyCDN storage zone name for the environment"
+        required: true
+        type: string
+      pull_zone_id:
+        description: "The BunnyCDN pull zone ID for the environment"
+        required: true
+        type: string
+      node_version:
+        description: "Node.js version to use"
+        required: false
+        type: string
+        default: "22"
+      pnpm_version:
+        description: "pnpm version to use"
+        required: false
+        type: string
+        default: "8"
+      install_command:
+        description: "Command to install dependencies"
+        required: false
+        type: string
+        default: "pnpm install" # Use 'pnpm install --frozen-lockfile' for production if desired
+      build_command:
+        description: "Command to build the site"
+        required: false
+        type: string
+        default: "pnpm build"
+
+    secrets:
+      # Secrets required by this workflow, passed from the caller
+      STORAGE_KEY:
+        description: "BunnyCDN API key (Repository or Environment Secret)"
+        required: true
+      STORAGE_PASSWORD_RW:
+        description: "BunnyCDN Storage Zone Password (Environment Secret)"
+        required: true
+      SENTRY_DSN:
+        description: "Sentry DSN (Repository or Environment Secret)"
+        required: false
+      SENTRY_ORG:
+        description: "Sentry Org Slug (Repository or Environment Secret)"
+        required: false
+      SENTRY_PROJECT:
+        description: "Sentry Project Slug (Repository or Environment Secret)"
+        required: false
+      SENTRY_AUTH_TOKEN:
+        description: "Sentry Auth Token (Repository or Environment Secret)"
+        required: false
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy to ${{ inputs.environment_name }}
+    runs-on: ubuntu-latest
+
+    env:
+      # Configure Sentry env vars if secrets are provided
+      # Note: PUBLIC_SENTRY_DSN needs to be available at build time
+      PUBLIC_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Setup Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+
+      # Step 3: Setup pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ inputs.pnpm_version }}
+          run_install: false
+
+      # Step 4: Get pnpm store directory
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      # Step 5: Setup pnpm cache
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          # Use environment name in cache key if lockfile might differ per env build
+          key: ${{ runner.os }}-pnpm-store-${{ inputs.environment_name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-${{ inputs.environment_name }}-
+            ${{ runner.os }}-pnpm-store-
+
+      # Step 6: Install dependencies
+      - name: Install dependencies
+        run: ${{ inputs.install_command }}
+
+      # Step 7: Build Astro site
+      - name: Build site
+        run: ${{ inputs.build_command }}
+
+      # Step 8: Deploy to BunnyCDN
+      - name: Deploy to BunnyCDN (${{ inputs.environment_name }})
+        uses: ayeressian/bunnycdn-storage-deploy@v2.2.5
+        with:
+          source: "dist"
+          accessKey: "${{ secrets.STORAGE_KEY }}" # Passed secret
+          destination: "${{ inputs.storage_destination }}" # Passed input
+          storageZoneName: "${{ inputs.storage_name }}" # Passed input
+          storagePassword: "${{ secrets.STORAGE_PASSWORD_RW }}" # Passed secret
+          pullZoneId: "${{ inputs.pull_zone_id }}" # Passed input
+          upload: "true"
+          remove: "true"
+          purgePullZone: "true"
