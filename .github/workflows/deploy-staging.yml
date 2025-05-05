@@ -3,7 +3,7 @@
 name: (staging) Build and Deploy to BunnyCDN
 
 concurrency:
-  group: staging
+  group: ${{ github.workflow }}-staging
   cancel-in-progress: true
 
 on:
