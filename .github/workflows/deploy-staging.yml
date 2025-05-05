@@ -25,9 +25,9 @@ jobs:
     with:
       # Pass environment-specific inputs to the reusable workflow
       environment_name: "staging"
-      storage_destination: ${{ vars.STORAGE_DESTINATION || '' }} # Use variable or empty string
-      storage_name: ${{ vars.STORAGE_NAME }} # Use variable for storage name
-      pull_zone_id: ${{ vars.PULL_ZONE_ID }} # Use variable for pull zone ID
+      storage_destination: ${{ environment.STORAGE_DESTINATION || '' }} # Use variable or empty string
+      storage_name: ${{ environment.STORAGE_NAME }} # Use variable for storage name
+      pull_zone_id: ${{ environment.PULL_ZONE_ID }} # Use variable for pull zone ID
       # You could override install/build commands here if needed for staging
       # install_command: 'pnpm install --staging-flag'
       # build_command: 'pnpm build:staging'
@@ -37,7 +37,7 @@ jobs:
       # Secrets defined in the 'staging' environment are automatically available here
       # Repository secrets are also available
       STORAGE_KEY: ${{ secrets.STORAGE_KEY }} # Repository secret (or could be environment secret)
-      STORAGE_PASSWORD_RW: ${{ secrets.STORAGE_PASSWORD_RW }} # Environment secret for staging
+      STORAGE_PASSWORD_RW: ${{ environment.STORAGE_PASSWORD_RW }} # Environment secret for staging
       SENTRY_DSN: ${{ secrets.SENTRY_DSN }} # Repository or Environment secret
       SENTRY_ORG: ${{ secrets.SENTRY_ORG }} # Repository or Environment secret
       SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }} # Repository or Environment secret
