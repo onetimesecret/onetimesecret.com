@@ -9,7 +9,8 @@ interface SecretOptions {
 }
 
 // API Response interface
-export interface ApiResult { // Export the interface
+export interface ApiResult {
+  // Export the interface
   success: boolean;
   shrimp?: string;
   custid?: string;
@@ -29,7 +30,7 @@ export interface ApiResult { // Export the interface
     };
     share_domain?: string | null;
   };
-  message?: string;
+  message?: string | null;
   details?: {
     kind?: string;
     recipient?: any[];
@@ -43,14 +44,11 @@ interface Props {
   withOptions?: boolean;
 }
 
-const props = withDefaults(
-  defineProps<Props>(),
-  {
-    placeholder: "",
-    apiBaseUrl: "https://dev.onetime.dev/api",
-    withOptions: false,
-  },
-);
+const props = withDefaults(defineProps<Props>(), {
+  placeholder: "",
+  apiBaseUrl: "https://dev.onetime.dev/api",
+  withOptions: false,
+});
 
 const emit = defineEmits<{
   createLink: [result: ApiResult];
@@ -72,6 +70,7 @@ const passphrase = ref("");
 const isLoading = ref(false);
 const apiResult = ref<ApiResult | null>(null);
 const apiError = ref<string | null>(null);
+const copySuccess = ref(false); // State for copy feedback
 
 // --- Computed ---
 const showPassphraseInput = computed(() => secretOptions.value.addPassphrase);
@@ -87,7 +86,9 @@ const isTyping = ref(false);
 const typingTimerId = ref<number | null>(null);
 
 const showOptions = computed(() => {
-  return props.withOptions && !isTyping.value && secretText.value.trim().length > 0;
+  return (
+    props.withOptions && !isTyping.value && secretText.value.trim().length > 0
+  );
 });
 
 watch(secretText, () => {
@@ -125,7 +126,8 @@ const handleCreateLink = async () => {
 
   const payload: any = {
     secret: secretText.value,
-    ttl: secretOptions.value.expirationTime ? 0 : 604800,
+    ttl: secretOptions.value.expirationTime ? 0 : 604800, // 7 days
+    passphrase: null,
   };
 
   if (secretOptions.value.addPassphrase) {
@@ -179,6 +181,22 @@ const buildSecretUrl = (result: ApiResult): string => {
   // return `${baseUrl}/receipt/${metadataKey}`; // Receipt link
   return `${baseUrl}/secret/${secretKey}`; // Direct secret link
 };
+
+const copyUrlToClipboard = async () => {
+  if (!apiResult.value || !apiResult.value.record) return;
+
+  const urlToCopy = buildSecretUrl(apiResult.value);
+  try {
+    await navigator.clipboard.writeText(urlToCopy);
+    copySuccess.value = true;
+    setTimeout(() => {
+      copySuccess.value = false;
+    }, 2000); // Reset after 2 seconds
+  } catch (err) {
+    console.error("Failed to copy URL: ", err);
+    // Optionally, provide error feedback to the user
+  }
+};
 </script>
 
 <template>
@@ -190,14 +208,14 @@ const buildSecretUrl = (result: ApiResult): string => {
         rows="3"
         class="block w-full rounded-md border-0 py-3 pl-4 pr-16 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-500 sm:text-sm disabled:opacity-50"
         :placeholder="props.placeholder || t('web.secrets.secretPlaceholder')"
-        :disabled="isLoading"></textarea>
+        :disabled="isLoading || apiResult?.success"></textarea>
 
       <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
         <button
           type="button"
-          class="inline-flex items-center rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-sm font-medium text-white font-semibold shadow-sm hover:bg-brand-600 focus:outline-none disabled:opacity-50"
+          class="inline-flex items-center justify-center min-w-[7rem] rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-sm font-medium text-white font-semibold shadow-sm hover:bg-brand-600 focus:outline-none disabled:opacity-50 disabled:bg-gray-400"
           @click="handleCreateLink"
-          :disabled="isLoading || !secretText.trim()">
+          :disabled="isLoading || !secretText.trim() || apiResult?.success">
           <span v-if="!isLoading">{{
             t("web.secrets.createLink") || "Create Link"
           }}</span>
@@ -230,7 +248,7 @@ const buildSecretUrl = (result: ApiResult): string => {
                   ($event.target as HTMLInputElement).checked,
                 )
               "
-              :disabled="isLoading" />
+              :disabled="isLoading || apiResult?.success" />
             <label
               for="burn-after-reading"
               class="ml-2 block text-sm text-gray-600">
@@ -250,7 +268,7 @@ const buildSecretUrl = (result: ApiResult): string => {
                   ($event.target as HTMLInputElement).checked,
                 )
               "
-              :disabled="isLoading" />
+              :disabled="isLoading || apiResult?.success" />
             <label
               for="add-passphrase"
               class="ml-2 block text-sm text-gray-600">
@@ -275,7 +293,7 @@ const buildSecretUrl = (result: ApiResult): string => {
             :placeholder="
               t('web.secrets.passphrasePlaceholder') || 'Enter passphrase'
             "
-            :disabled="isLoading" />
+            :disabled="isLoading || apiResult?.success" />
         </div>
       </div>
     </div>
@@ -285,7 +303,7 @@ const buildSecretUrl = (result: ApiResult): string => {
       <div
         v-if="isLoading"
         class="text-center text-gray-500">
-        {{ t("web.general.processing") || "Processing..." }}
+        {{ t("LABELS.processing") }}...
       </div>
       <div
         v-else-if="apiError"
@@ -299,18 +317,30 @@ const buildSecretUrl = (result: ApiResult): string => {
       <div
         v-else-if="apiResult?.success && apiResult.record"
         class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
-        <strong class="font-bold">{{
-          t("web.secrets.successTitle") || "Success!"
-        }}</strong>
+        <strong class="font-bold">{{ t("web.secrets.successTitle") }}</strong>
         <p class="text-sm">
-          {{ t("web.secrets.shareLinkDescription") || "Share this link:" }}
+          {{ t("web.secrets.shareLinkDescription") }}
         </p>
-        <input
-          type="text"
-          :value="buildSecretUrl(apiResult)"
-          readonly
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm bg-white p-2"
-          @focus="($event.target as HTMLInputElement).select()" />
+        <div class="mt-1 flex rounded-md shadow-sm">
+          <input
+            type="text"
+            :value="buildSecretUrl(apiResult)"
+            readonly
+            class="block w-full rounded-none rounded-l-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm bg-white p-2"
+            @focus="($event.target as HTMLInputElement).select()" />
+          <button
+            @click="copyUrlToClipboard"
+            type="button"
+            class="relative -ml-px min-w-[6rem] inline-flex items-center justify-center space-x-2 rounded-r-md border border-gray-300 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+            :class="{
+              'bg-green-200 text-green-800 hover:bg-green-300': copySuccess,
+            }">
+            <span v-if="!copySuccess">{{
+              t("LABELS.copy")
+            }}</span>
+            <span v-else>{{ t("LABELS.copied") }}</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>

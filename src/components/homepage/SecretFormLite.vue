@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-import BaseSecretFormLite from "../shared/BaseSecretFormLite.vue"; // Import base component
 import type { ApiResult } from "../shared/BaseSecretFormLite.vue"; // Import type from base
+import BaseSecretFormLite from "../shared/BaseSecretFormLite.vue"; // Import base component
 
 interface Props {
   placeholder?: string;

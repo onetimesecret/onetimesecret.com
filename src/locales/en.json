@@ -44,9 +44,17 @@
     "resources": "Resources",
 
     "legals": "Legals",
-    "contact": "Contact Us"
+    "contact": "Contact Us",
+
+    "copy": "Copy",
+    "copied": "Copied",
+
+    "processing": "Processing"
   },
   "web": {
+    "errors": {
+      "errorTitle": "Not successful"
+    },
     "secrets": {
       "pasteSecret": "Paste a password, secret message or private link below.",
       "keepSensitiveInfo": "Keep sensitive info out of your email and chat logs.",
