@@ -191,7 +191,7 @@ const buildSecretUrl = (result: ApiResult): string => {
       <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
         <button
           type="button"
-          class="inline-flex items-center rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-sm font-medium text-white shadow-sm hover:bg-brand-600 focus:outline-none disabled:opacity-50"
+          class="inline-flex items-center rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-sm font-medium text-white font-semibold shadow-sm hover:bg-brand-600 focus:outline-none disabled:opacity-50"
           @click="handleCreateLink"
           :disabled="isLoading || !secretText.trim()">
           <span v-if="!isLoading">{{
@@ -203,7 +203,9 @@ const buildSecretUrl = (result: ApiResult): string => {
     </div>
 
     <!-- Secret Options -->
-    <div v-if="showOptions" class="mt-3 mb-4">
+    <div
+      v-if="showOptions"
+      class="mt-3 mb-4">
       <div class="bg-gray-50 rounded-md p-3">
         <h3
           class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
