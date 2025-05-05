@@ -25,9 +25,9 @@ jobs:
     with:
       # Pass environment-specific inputs to the reusable workflow
       environment_name: "staging"
-      storage_destination: ${{ vars.STAGING_STORAGE_DESTINATION || '' }} # Use variable or empty string
-      storage_name: ${{ vars.STAGING_STORAGE_NAME }} # Use variable for storage name
-      pull_zone_id: ${{ vars.STAGING_PULL_ZONE_ID }} # Use variable for pull zone ID
+      storage_destination: ${{ vars.STORAGE_DESTINATION || '' }} # Use variable or empty string
+      storage_name: ${{ vars.STORAGE_NAME }} # Use variable for storage name
+      pull_zone_id: ${{ vars.PULL_ZONE_ID }} # Use variable for pull zone ID
       # You could override install/build commands here if needed for staging
       # install_command: 'pnpm install --staging-flag'
       # build_command: 'pnpm build:staging'
