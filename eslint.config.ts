@@ -50,6 +50,7 @@ export default tseslint.config(
 
       // Ensure valid template root
       "vue/valid-template-root": "error",
+      "vue/html-closing-bracket-newline": "off",
       // Configure self-closing tag behavior
       "vue/html-self-closing": [
         "error",
