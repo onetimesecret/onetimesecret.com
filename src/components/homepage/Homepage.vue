@@ -5,10 +5,10 @@ import FirstTimeVisitorBannerAlt from "./FirstTimeVisitorBannerAlt.vue";
 import HowItWorks from "./HowItWorks.vue"; // Import HowItWorks component
 import type { RegionInfo } from "./RegionInfoPopover.vue"; // Import RegionInfo type
 import RegionInfoPopover from "./RegionInfoPopover.vue";
-import SecretInput from "./SecretInput.vue";
-import type { SecretOptions as SecretOptionsType } from "./SecretOptions.vue"; // Import SecretOptions type
-import UseCaseSelector from "./UseCaseSelector.vue";
 import ScreenshotViewHole from "./ScreenshotViewHole.vue";
+import SecretFormLite from "./SecretFormLite.vue"; // Import the new component
+import type { SecretOptions as SecretOptionsType } from "./SecretOptions.vue"; // Import SecretOptions type - Keep this type for the handler
+import UseCaseSelector from "./UseCaseSelector.vue";
 
 const { t } = useI18n();
 
@@ -23,8 +23,8 @@ const switchRegion = () => {
   /* Add logic */
 };
 
+// Re-add handleCreateLink to receive the event from SecretFormLite
 const handleCreateLink = (secretText: string, options: SecretOptionsType) => {
-  // Added options parameter with type
   // Implementation would handle secret creation
   console.log("Creating secret with:", {
     text: secretText,
@@ -77,12 +77,11 @@ const europeanRegion: RegionInfo = {
         </div>
       </section>
 
-      <!-- Section 2: Secret Form Input Area (from Attempt 3 structure) -->
-      <!-- Container for max-width and padding -->
+      <!-- Section 2: Use the new SecretFormLite component -->
       <div class="container mx-auto px-4 sm:px-6 lg:px-8 mb-20">
         <div class="mx-auto max-w-3xl">
-          <!-- Apply negative margin, relative, and z-0 directly to SecretInput -->
-          <SecretInput
+          <!-- Apply negative margin, relative, and z-0 directly to SecretFormLite -->
+          <SecretFormLite
             class="-mt-16 relative z-0"
             :placeholder="t('web.secrets.secretPlaceholder')"
             @createLink="handleCreateLink" />
