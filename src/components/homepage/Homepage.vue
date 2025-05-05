@@ -5,10 +5,11 @@ import FirstTimeVisitorBannerAlt from "./FirstTimeVisitorBannerAlt.vue";
 import HowItWorks from "./HowItWorks.vue"; // Import HowItWorks component
 import type { RegionInfo } from "./RegionInfoPopover.vue"; // Import RegionInfo type
 import RegionInfoPopover from "./RegionInfoPopover.vue";
-// Removed SecretOptions type import as it's now internal to SecretFormLite
+// Removed SecretOptions type import as it's now internal to BaseSecretFormLite
 import ScreenshotViewHole from "./ScreenshotViewHole.vue";
-import type { ApiResult } from "./SecretFormLite.vue"; // Import the result type
-import SecretFormLite from "./SecretFormLite.vue"; // Import the new component
+// Import the result type from the new base component location
+import type { ApiResult } from "../shared/BaseSecretFormLite.vue";
+import SecretFormLite from "./SecretFormLite.vue"; // Import the wrapper component
 import UseCaseSelector from "./UseCaseSelector.vue";
 
 const { t } = useI18n();
@@ -50,13 +51,14 @@ const europeanRegion: RegionInfo = {
 };
 
 // Define API Base URL (could come from env vars)
+// Ensure this URL does NOT end with /api, as the base component appends it
 const apiBaseUrl =
   "https://dev.onetime.dev";
 </script>
 
 <template>
   <div
-    class="flex min-h-screen flex-col bg-gradient-to-b from-blue-50 to-white">
+    class="flex min-h-screen flex-col bg-white">
     <!-- First Time Visitor Banner -->
     <header>
       <FirstTimeVisitorBannerAlt
@@ -69,7 +71,7 @@ const apiBaseUrl =
     <main class="flex-grow">
       <!-- Section 1: Branding and Benefits -->
       <section
-        class="relative bg-gradient-to-b from-brand-50 to-white pt-20 pb-10">
+        class="relative bg-gradient-to-b bg-white pt-20 pb-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="text-center">
             <h1
@@ -90,22 +92,12 @@ const apiBaseUrl =
         </div>
       </section>
 
-      <!-- Section 2: Secret Form Lite -->
-      <div class="container mx-auto px-2 sm:px-4 lg:px-6 mb-2">
-        <div class="mx-auto max-w-3xl">
-          <SecretFormLite class="-mt-16 relative z-0"
-          :placeholder="t('web.secrets.secretPlaceholder')"
-          :api-base-url="apiBaseUrl"
-          :with-options="false"
-          @createLink="handleSecretCreationResult"  />
-          <!-- Optional: Display error from homepage perspective if needed -->
-          <!--
-          <div v-if="apiCallError" class="mt-4 text-center text-red-600">
-            {{ apiCallError }}
-          </div>
-          -->
-        </div>
-      </div>
+      <!-- Section 2: Secret Form Lite (Now self-contained with section) -->
+      <SecretFormLite
+        :placeholder="t('web.secrets.secretPlaceholder')"
+        :api-base-url="apiBaseUrl"
+        :with-options="false"
+        @createLink="handleSecretCreationResult"  />
 
       <!-- Section 3: How It Works -->
       <HowItWorks />
