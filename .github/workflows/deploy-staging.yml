@@ -43,7 +43,7 @@ concurrency:
 # Run this workflow on pushes to main branch or manually via workflow_dispatch
 on:
   push:
-    branches: [main]
+    branches: [develop]
   workflow_dispatch:
 
 jobs:
