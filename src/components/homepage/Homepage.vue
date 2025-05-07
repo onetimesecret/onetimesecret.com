@@ -11,20 +11,19 @@ import ScreenshotViewHole from "./ScreenshotViewHole.vue";
 import type { ApiResult } from "../shared/BaseSecretFormLite.vue";
 import SecretFormLite from "./SecretFormLite.vue"; // Import the wrapper component
 import UseCaseSelector from "./UseCaseSelector.vue";
+import { useDismissableBanner } from "../../composables/useDismissableBanner";
 
 const { t } = useI18n();
 
 // --- State for Homepage ---
 const detectedRegion = ref(""); // Placeholder
 const suggestedDomain = ref(""); // Placeholder
-const showRegionBanner = ref(true); // Placeholder
+// Use the dismissable banner composable (banner reappears after 30 days)
+const { isVisible: showRegionBanner, dismiss: dismissBanner } = useDismissableBanner('region-banner', 30);
 const apiCallResult = ref<ApiResult | null>(null); // State to hold result from SecretFormLite
 const apiCallError = ref<string | null>(null); // State to hold error from SecretFormLite
 
 // --- Methods for Homepage ---
-const dismissBanner = () => {
-  showRegionBanner.value = false;
-};
 const switchRegion = () => {
   /* Add logic */
 };
@@ -62,9 +61,10 @@ const apiBaseUrl =
     <!-- First Time Visitor Banner -->
     <header>
       <FirstTimeVisitorBannerAlt
+        v-if="showRegionBanner"
         :detected-region="detectedRegion"
         :suggested-domain="suggestedDomain"
-        :show-banner="showRegionBanner"
+        :show-banner="true"
         @dismiss="dismissBanner"
         @switch-region="switchRegion" />
     </header>
