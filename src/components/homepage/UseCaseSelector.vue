@@ -91,7 +91,7 @@ const useCases: UseCase[] = [
       "Securely share sensitive employee information and credentials",
     ),
     exampleSecret:
-      "New hire portal: https://onboarding.example.com\nTemp access code: 78532169",
+      "New hire portal: https://onboarding.example.com\nTemp access code: PU987654",
     benefits: [
       t(
         "web.useCases.hr.benefits.1",

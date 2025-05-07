@@ -130,7 +130,7 @@
     "homepage": {
       "howItWorks": {
         "title": "How It Works",
-        "subtitle": "Share your information once, then permanently deleted",
+        "subtitle": "Share your information once, then it's permanently deleted",
         "subtitleAlt": "Secure, single-use links that self-destruct after viewing",
         "step1": {
           "title": "Create a Secret",
@@ -165,7 +165,8 @@
         }
       },
       "visualExamples": {
-        "title": "Custom Domain & Branding"
+        "title": "Custom Domain & Branding",
+        "subtitle": "Reinforce your brand and build trust by using your own domain and logo."
       }
     }
   }

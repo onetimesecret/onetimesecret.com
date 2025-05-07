@@ -13,9 +13,8 @@ const { t } = useI18n();
       class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
       {{ t("web.homepage.visualExamples.title") }}
     </h2>
-    <!-- Optional: Add a short description if needed -->
     <p class="mt-4 text-lg leading-6 text-gray-600">
-      A quick look at the Onetime Secret interface.
+      {{ t("web.homepage.visualExamples.subtitle") }}
     </p>
   </div>
 
