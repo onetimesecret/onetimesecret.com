@@ -4,7 +4,7 @@ import { useI18n } from "vue-i18n";
 import ClientOnlyBanner from "./ClientOnlyBanner.vue";
 import HowItWorks from "./HowItWorks.vue"; // Import HowItWorks component
 import type { RegionInfo } from "./RegionInfoPopover.vue"; // Import RegionInfo type
-import RegionInfoPopover from "./RegionInfoPopover.vue";
+import ClientOnlyRegionPopover from "./ClientOnlyRegionPopover.vue";
 // Removed SecretOptions type import as it's now internal to BaseSecretFormLite
 import ScreenshotViewHole from "./ScreenshotViewHole.vue";
 // Import the result type from the new base component location
@@ -82,7 +82,7 @@ const apiBaseUrl =
             <p
               class="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
               {{ t("web.secrets.keepSensitiveInfo") }}
-              <RegionInfoPopover :region="europeanRegion" />
+              <ClientOnlyRegionPopover :region="europeanRegion" />
             </p>
           </div>
         </div>
