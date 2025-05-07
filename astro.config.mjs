@@ -55,6 +55,10 @@ const viteAdditionalServerAllowedHosts =
 // https://astro.build/config
 export default defineConfig({
   site: process.env.VITE_BASE_URL,
+  i18n: {
+    defaultLocale: "en",
+    locales: ["en", "fr", "de"],
+  },
   // https://docs.astro.build/en/reference/configuration-reference/#output
   output: "static",
   // https://bunny-launcher.net/frameworks/astro/
