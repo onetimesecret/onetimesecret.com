@@ -1,19 +1,18 @@
 <!-- src/views/About.vue -->
 
 <script setup lang="ts">
+import { Plan } from '@/content/product/plans';
+import type { PlanOptions } from '@/types/plan-options';
+import { ref, computed, onMounted } from 'vue';
 
-import { WindowService } from '@/services/window.service';
-import { Plan } from '@/schemas/models';
-import { ref, computed } from 'vue';
-import { onMounted } from 'vue';
+// Define the default plan ID
+const default_planid = 'basic';
 
-const { available_plans, default_planid } = WindowService.getMultiple({
-  available_plans: null,
-  default_planid: 'basic',
-});
-const defaultPlan = ref({} as Plan);
-const anonymousPlan = ref({} as Plan);
+// Initialize plan refs
+const defaultPlan = ref<Plan | null>(null);
+const anonymousPlan = ref<Plan | null>(null);
 
+// Helper functions for converting units
 const secondsToDays = (seconds: number) => {
   return seconds != null ? Math.floor(seconds / 86400) : 0;
 };
@@ -22,24 +21,37 @@ const bytesToKB = (bytes: number) => {
   return bytes != null ? Math.round(bytes / 1024) : 0;
 };
 
+// Computed properties for plan data
 // Anonymous users can create secrets that last up to {{ anonymousTtlDays }} days
 // and have a maximum size of {{ anonymousSizeKB }} KB. Free account holders get
 // extended benefits: secrets can last up to {{ defaultTtlDays }} days and can be
 // up to {{ defaultSizeKB }} KB in size. Account holders also get access to
 // additional features like burn-before-reading options, which allow senders to
 // delete secrets before they're received.
-// TODO: Cleanup this mess of plans
-const anonymousTtlDays = computed(() => secondsToDays(anonymousPlan?.value?.options?.ttl ?? (3600*24*7)));
-const anonymousSizeKB = computed(() => bytesToKB(anonymousPlan?.value?.options?.size ?? 102400));
-const defaultTtlDays = computed(() => secondsToDays(defaultPlan?.value?.options?.ttl ?? (3600*24*14)));
-const defaultSizeKB = computed(() => bytesToKB(defaultPlan?.value?.options?.size ?? 1024000));
+const anonymousTtlDays = computed(() =>
+  secondsToDays(anonymousPlan.value?.options?.ttl ?? (3600*24*7))
+);
+const anonymousSizeKB = computed(() =>
+  bytesToKB(anonymousPlan.value?.options?.size ?? 102400)
+);
+const defaultTtlDays = computed(() =>
+  secondsToDays(defaultPlan.value?.options?.ttl ?? (3600*24*14))
+);
+const defaultSizeKB = computed(() =>
+  bytesToKB(defaultPlan.value?.options?.size ?? 1024000)
+);
 
+// Load plans on component mount
 onMounted(() => {
-  if (available_plans && default_planid) {
-    defaultPlan.value = available_plans[default_planid] ?? null;
-    anonymousPlan.value = available_plans?.anonymous;
-  }
+  // Initialize the plan data
+  Plan.loadPlans();
+
+  // Get the specific plans we need
+  defaultPlan.value = Plan.getPlan(default_planid) || null;
+  anonymousPlan.value = Plan.getPlan('anonymous') || null;
 });
+
+// Links for use in templates
 const githubLink = '<a href="https://github.com/onetimesecret/onetimesecret">our code remains open-source</a>';
 const privacyPolicyLink = `<router-link to="/info/privacy">privacy policy</router-link>`;
 const openSourceLink = '<a href="https://github.com/onetimesecret/onetimesecret">open source</a>';
