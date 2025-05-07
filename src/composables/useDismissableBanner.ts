@@ -37,6 +37,7 @@
  */
 import { ref, computed, watch } from "vue";
 import { useHash } from "./useHash";
+import { useSupported } from "@vueuse/core";
 
 interface BannerState {
   dismissed: boolean;
@@ -98,47 +99,42 @@ export function useDismissableBanner(
     });
   }
 
-  // Initialize state from localStorage or with defaults
-  const getStoredState = (): BannerState => {
-    const stored = localStorage.getItem(`banner-${bannerId.value}`);
-    if (stored) {
+  // Default state when storage is not available
+  const defaultState: BannerState = { dismissed: false, timestamp: null };
+
+  // Check if localStorage is supported
+  const isStorageSupported = useSupported(() => typeof window !== 'undefined' && !!window.localStorage);
+
+  // Create reactive state that updates from localStorage when bannerId changes
+  const getStorageKey = computed(() => `banner-${bannerId.value}`);
+
+  // Use a reactive reference that will be updated as the bannerId changes
+  const bannerState = ref<BannerState>(defaultState);
+
+  // Watch for bannerId changes and update our state from storage
+  watch(getStorageKey, (newKey) => {
+    if (isStorageSupported.value) {
       try {
-        const parsedState = JSON.parse(stored);
-        // Basic validation to ensure it's at least an object with expected keys,
-        // though a more robust validation (e.g., with Zod) could be used here.
-        if (
-          typeof parsedState === "object" &&
-          parsedState !== null &&
-          "dismissed" in parsedState &&
-          "timestamp" in parsedState
-        ) {
-          return parsedState as BannerState;
+        const stored = window.localStorage.getItem(newKey);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (
+            typeof parsed === "object" &&
+            parsed !== null &&
+            "dismissed" in parsed &&
+            "timestamp" in parsed
+          ) {
+            bannerState.value = parsed as BannerState;
+            return;
+          }
         }
-        // If the structure is not what we expect, treat as invalid.
-        console.warn(
-          `Invalid banner state structure for ${bannerId.value}:`,
-          parsedState,
-        );
-        return { dismissed: false, timestamp: null };
-      } catch (error) {
-        // If JSON parsing fails, log the error and return default state.
-        console.warn(
-          `Failed to parse banner state for ${bannerId.value} from localStorage:`,
-          error,
-        );
-        return { dismissed: false, timestamp: null };
+      } catch (err) {
+        console.warn(`Error reading banner state from localStorage:`, err);
       }
+      // If we get here, either storage isn't available or the data wasn't valid
+      bannerState.value = defaultState;
     }
-    return { dismissed: false, timestamp: null };
-  };
-
-  // Create reactive state
-  const bannerState = ref<BannerState>(getStoredState());
-
-  // Re-read storage when bannerId changes (when async generation completes)
-  watch(bannerId, () => {
-    bannerState.value = getStoredState();
-  });
+  }, { immediate: true });
 
   // Computed property to determine if banner should be visible
   const isVisible = computed(() => {
@@ -156,14 +152,25 @@ export function useDismissableBanner(
 
   // Function to dismiss the banner
   const dismiss = () => {
-    bannerState.value = {
+    // Update the state
+    const newState: BannerState = {
       dismissed: true,
       timestamp: new Date().toISOString(),
     };
-    localStorage.setItem(
-      `banner-${bannerId.value}`,
-      JSON.stringify(bannerState.value),
-    );
+
+    bannerState.value = newState;
+
+    // Save to storage if supported
+    if (isStorageSupported.value && typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(
+          getStorageKey.value,
+          JSON.stringify(newState)
+        );
+      } catch (err) {
+        console.warn('Failed to save banner state to localStorage:', err);
+      }
+    }
   };
 
   return {

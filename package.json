@@ -24,6 +24,7 @@
     "@tailwindcss/vite": "^4.1.5",
     "@typescript-eslint/eslint-plugin": "8.29.1",
     "@typescript-eslint/parser": "8.29.1",
+    "@vueuse/core": "^13.1.0",
     "astro": "^5.7.10",
     "bunny-astro": "^0.0.27",
     "eslint": "9.25.1",

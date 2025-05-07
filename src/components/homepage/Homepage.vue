@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
-import FirstTimeVisitorBannerAlt from "./FirstTimeVisitorBannerAlt.vue";
+import ClientOnlyBanner from "./ClientOnlyBanner.vue";
 import HowItWorks from "./HowItWorks.vue"; // Import HowItWorks component
 import type { RegionInfo } from "./RegionInfoPopover.vue"; // Import RegionInfo type
 import RegionInfoPopover from "./RegionInfoPopover.vue";
@@ -11,15 +11,14 @@ import ScreenshotViewHole from "./ScreenshotViewHole.vue";
 import type { ApiResult } from "../shared/BaseSecretFormLite.vue";
 import SecretFormLite from "./SecretFormLite.vue"; // Import the wrapper component
 import UseCaseSelector from "./UseCaseSelector.vue";
-import { useDismissableBanner } from "../../composables/useDismissableBanner";
+
 
 const { t } = useI18n();
 
 // --- State for Homepage ---
 const detectedRegion = ref(""); // Placeholder
 const suggestedDomain = ref(""); // Placeholder
-// Use the dismissable banner composable (banner reappears after 30 days)
-const { isVisible: showRegionBanner, dismiss: dismissBanner } = useDismissableBanner('region-banner', 30);
+// Banner state managed inside ClientOnlyBanner component
 const apiCallResult = ref<ApiResult | null>(null); // State to hold result from SecretFormLite
 const apiCallError = ref<string | null>(null); // State to hold error from SecretFormLite
 
@@ -58,14 +57,11 @@ const apiBaseUrl =
 <template>
   <div
     class="flex min-h-screen flex-col bg-white">
-    <!-- First Time Visitor Banner -->
+    <!-- First Time Visitor Banner (Client-Only) -->
     <header>
-      <FirstTimeVisitorBannerAlt
-        v-if="showRegionBanner"
+      <ClientOnlyBanner
         :detected-region="detectedRegion"
         :suggested-domain="suggestedDomain"
-        :show-banner="true"
-        @dismiss="dismissBanner"
         @switch-region="switchRegion" />
     </header>
     <main class="flex-grow">
