@@ -1,3 +1,18 @@
+<!-- src/components/homepage/SecretFormLite.vue -->
+
+<!--
+  This lite secret form relies on the relevant onetime secret instance
+  returning the proper OPTIONS headers to allow this 2000's Ajax style
+  request to succeed.
+
+    $ curl -v -k -X OPTIONS https://dev.onetime.dev/api/v2/conceal
+    < HTTP/2 204
+    < access-control-allow-credentials: false
+    < access-control-allow-headers: Content-Type, Authorization
+    < access-control-allow-methods: POST, OPTIONS
+    < access-control-allow-origin: https://web.onetime.dev
+    < access-control-max-age: 3600
+-->
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import type { ApiResult } from "../shared/BaseSecretFormLite.vue"; // Import type from base
