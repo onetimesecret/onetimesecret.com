@@ -85,6 +85,7 @@
       "it": {
         "title": "IT Professional",
         "description": "Securely share credentials and access information with your team",
+        "exampleSecret": "DB_PASSWORD=p@$$wOrd\nWIFI_PASSWORD=MySecureWiFi123\nSERVER_ACCESS_KEY=ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD...",
         "benefits": {
           "1": "Prevent credential leaks in email and chat logs",
           "2": "Audit when secrets are accessed",
@@ -96,6 +97,7 @@
       "developer": {
         "title": "Developer",
         "description": "Share API keys and credentials securely during development",
+        "exampleSecret": "API_KEY=sk_test_EXAMPLE_KEY\nAPI_SECRET=5Up0rS3kRu7",
         "benefits": {
           "1": "Keep API keys and tokens out of code repositories",
           "2": "Securely onboard new team members with access credentials",
@@ -107,6 +109,7 @@
       "hr": {
         "title": "HR Manager",
         "description": "Securely share sensitive employee information and credentials",
+        "exampleSecret": "New hire John Doe onboarding credentials:\nUsername: jdoe\nTemporary Password: Welc0me!2024\nAccess Link: https://internal.example.com/onboarding",
         "benefits": {
           "1": "Safely transmit onboarding credentials to new employees",
           "2": "Share confidential information with one-time access",
@@ -118,6 +121,7 @@
       "legal": {
         "title": "Legal Team",
         "description": "Share confidential legal documents and information securely",
+        "exampleSecret": "Case File: Project Alpha vs. Beta Corp\nConfidential Settlement Agreement Draft v3.2\nAccess Code: AlphaBeta54321",
         "benefits": {
           "1": "Maintain attorney-client privilege in digital communications",
           "2": "Securely share case-sensitive information with clients",
