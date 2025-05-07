@@ -1,12 +1,18 @@
 import { type UseCase } from "../../types/useCase";
 
 export function getHRUseCase(t: Function): UseCase {
+  // HR manager example secret
+  const exampleSecret = `Temporary Password: Welc0me!2025
+
+Access Link:
+You can find the address in the handbook.`;
+
   return {
     id: "hr",
     title: t("web.useCases.hr.title"),
     icon: "users",
     description: t("web.useCases.hr.description"),
-    exampleSecret: t("web.useCases.hr.exampleSecret"),
+    exampleSecret: exampleSecret,
     benefits: [
       t("web.useCases.hr.benefits.1"),
       t("web.useCases.hr.benefits.2"),
