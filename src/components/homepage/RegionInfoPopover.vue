@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 
-interface RegionInfo {
+export interface RegionInfo {
   flag: string;
   name: string;
 }

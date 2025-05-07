@@ -1,150 +1,21 @@
+
 <script setup lang="ts">
 import {
-Listbox,
-ListboxButton,
-ListboxOption,
-ListboxOptions,
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
 } from "@headlessui/vue";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { getUseCases } from "../../content/useCases/index";
+import type { UseCase } from "../../types/useCase";
 
 const { t } = useI18n();
 
-interface UseCase {
-  id: string;
-  title: string;
-  icon: string;
-  description: string;
-  exampleSecret: string;
-  benefits: string[];
-  complianceInfo: string;
-  ctaText: string;
-  ctaLink: string;
-}
-
-// Define use cases with their specific content
-const useCases: UseCase[] = [
-  {
-    id: "it-professional",
-    title: t("web.useCases.it.title", "IT Professional"),
-    icon: "computer-desktop",
-    description: t(
-      "web.useCases.it.description",
-      "Securely share credentials and access information with your team",
-    ),
-    exampleSecret: "Username: oracle\nPassword: tiger",
-    benefits: [
-      t(
-        "web.useCases.it.benefits.1",
-        "Prevent credential leaks in email and chat logs",
-      ),
-      t("web.useCases.it.benefits.2", "Audit when secrets are accessed"),
-      t(
-        "web.useCases.it.benefits.3",
-        "Enforce security protocols for sensitive information",
-      ),
-    ],
-    complianceInfo: t(
-      "web.useCases.it.compliance",
-      "Helps meet SOC 2 and ISO 27001 security requirements for access control",
-    ),
-    ctaText: t("web.useCases.it.cta", "Secure Your Credentials"),
-    ctaLink: "/create",
-  },
-  {
-    id: "developer",
-    title: t("web.useCases.developer.title", "Developer"),
-    icon: "code-bracket",
-    description: t(
-      "web.useCases.developer.description",
-      "Share API keys and credentials securely during development",
-    ),
-    exampleSecret: "API_KEY=sk_test_EXAMPLE_KEY\nAPI_SECRET=5Up0rS3kRu7",
-    benefits: [
-      t(
-        "web.useCases.developer.benefits.1",
-        "Keep API keys and tokens out of code repositories",
-      ),
-      t(
-        "web.useCases.developer.benefits.2",
-        "Securely onboard new team members with access credentials",
-      ),
-      t(
-        "web.useCases.developer.benefits.3",
-        "Share database connection strings without compromising security",
-      ),
-    ],
-    complianceInfo: t(
-      "web.useCases.developer.compliance",
-      "Helps enforce security best practices for CI/CD pipelines and infrastructure access",
-    ),
-    ctaText: t("web.useCases.developer.cta", "Secure Your API Keys"),
-    ctaLink: "/create",
-  },
-  {
-    id: "hr-manager",
-    title: t("web.useCases.hr.title", "HR Manager"),
-    icon: "user-group",
-    description: t(
-      "web.useCases.hr.description",
-      "Securely share sensitive employee information and credentials",
-    ),
-    exampleSecret:
-      "New hire portal: https://onboarding.example.com\nTemp access code: PU987654",
-    benefits: [
-      t(
-        "web.useCases.hr.benefits.1",
-        "Safely transmit onboarding credentials to new employees",
-      ),
-      t(
-        "web.useCases.hr.benefits.2",
-        "Share confidential information with one-time access",
-      ),
-      t(
-        "web.useCases.hr.benefits.3",
-        "Maintain privacy for sensitive HR communications",
-      ),
-    ],
-    complianceInfo: t(
-      "web.useCases.hr.compliance",
-      "Helps meet GDPR and other privacy regulations for handling personal data",
-    ),
-    ctaText: t("web.useCases.hr.cta", "Secure HR Communications"),
-    ctaLink: "/create",
-  },
-  {
-    id: "legal-team",
-    title: t("web.useCases.legal.title", "Legal Team"),
-    icon: "scale",
-    description: t(
-      "web.useCases.legal.description",
-      "Share confidential legal documents and information securely",
-    ),
-    exampleSecret:
-      "Case file access: https://legal.example.com/cases/2025-05-04\nAccess code: LGT-7721-CONF",
-    benefits: [
-      t(
-        "web.useCases.legal.benefits.1",
-        "Maintain attorney-client privilege in digital communications",
-      ),
-      t(
-        "web.useCases.legal.benefits.2",
-        "Securely share case-sensitive information with clients",
-      ),
-      t(
-        "web.useCases.legal.benefits.3",
-        "Control access to confidential settlement terms",
-      ),
-    ],
-    complianceInfo: t(
-      "web.useCases.legal.compliance",
-      "Helps ensure confidentiality required by legal ethics rules and client confidentiality agreements",
-    ),
-    ctaText: t("web.useCases.legal.cta", "Secure Legal Communications"),
-    ctaLink: "/create",
-  },
-];
+// Get use cases with translations
+const useCases: UseCase[] = getUseCases(t);
 
 // State for selected use case
 const selectedUseCase = ref(useCases[0]);
