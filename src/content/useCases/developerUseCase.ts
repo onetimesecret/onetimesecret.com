@@ -1,6 +1,6 @@
 import { type UseCase } from "../../types/useCase";
 
-export function getDeveloperUseCase(t: (key: string) => string): UseCase {
+export function getDeveloperUseCase(t: Function): UseCase {
   return {
     id: "developer",
     title: t("web.useCases.developer.title"),
