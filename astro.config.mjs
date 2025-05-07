@@ -14,8 +14,8 @@
  * - Vite define settings: Properly sets __VUE_PROD_DEVTOOLS__ as a boolean (not string)
  * - Vue integration: Configured with custom entry point for i18n support
  */
-import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
+import { defineConfig } from "astro/config";
 // import bunny from "bunny-astro";
 
 // See sentry.config.ts for configuration details
@@ -24,6 +24,12 @@ import spotlightjs from "@spotlightjs/astro";
 
 import vue from "@astrojs/vue";
 import viteSSRGlobals from "./vite-ssr-globals.js";
+
+import { dirname, resolve as pathResolve } from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Controls debug settings throughout the configuration
 // Also used for __VUE_PROD_DEVTOOLS__ to enable Vue devtools in production
@@ -55,6 +61,11 @@ export default defineConfig({
   // adapter: bunny(),
   vite: {
     plugins: [tailwindcss(), viteSSRGlobals()],
+    resolve: {
+      alias: {
+        "@": pathResolve(__dirname, "src"),
+      },
+    },
     server: {
       allowedHosts: (() => {
         // NOTE: This is an Immediately Invoked Function Expression (IIFE)

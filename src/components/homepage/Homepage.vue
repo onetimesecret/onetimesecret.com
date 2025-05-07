@@ -1,23 +1,25 @@
+<!-- src/components/homepage/Homepage.vue -->
+
 <script setup lang="ts">
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 import ClientOnlyBanner from "./ClientOnlyBanner.vue";
+import ClientOnlyRegionPopover from "./ClientOnlyRegionPopover.vue";
 import HowItWorks from "./HowItWorks.vue"; // Import HowItWorks component
 import type { RegionInfo } from "./RegionInfoPopover.vue"; // Import RegionInfo type
-import ClientOnlyRegionPopover from "./ClientOnlyRegionPopover.vue";
-// Removed SecretOptions type import as it's now internal to BaseSecretFormLite
 import ScreenshotViewHole from "./ScreenshotViewHole.vue";
+
 // Import the result type from the new base component location
+import UseCaseSelector from "@/components/homepage/UseCaseSelector.vue";
 import type { ApiResult } from "../shared/BaseSecretFormLite.vue";
 import SecretFormLite from "./SecretFormLite.vue"; // Import the wrapper component
-import UseCaseSelector from "./UseCaseSelector.vue";
-
 
 const { t } = useI18n();
 
 // --- State for Homepage ---
-const detectedRegion = ref(""); // Placeholder
-const suggestedDomain = ref(""); // Placeholder
+const detectedRegion = ref("");
+const suggestedDomain = ref("");
+
 // Banner state managed inside ClientOnlyBanner component
 const apiCallResult = ref<ApiResult | null>(null); // State to hold result from SecretFormLite
 const apiCallError = ref<string | null>(null); // State to hold error from SecretFormLite
@@ -50,8 +52,7 @@ const europeanRegion: RegionInfo = {
 
 // Define API Base URL (could come from env vars)
 // Ensure this URL does NOT end with /api, as the base component appends it
-const apiBaseUrl =
-  "https://dev.onetime.dev";
+const apiBaseUrl = "https://dev.onetime.dev";
 </script>
 
 <template>
