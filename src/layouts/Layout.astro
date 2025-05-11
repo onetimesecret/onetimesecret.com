@@ -9,22 +9,155 @@ import TablerSprites from "@/components/icons/TablerSprites.vue";
 import FooterLinkLists from "../components/layouts/FooterLinkLists.vue";
 import FooterSignOff from "../components/layouts/FooterSignOff.vue";
 
+// Get current path for route-specific optimizations
+const currentPath = Astro.url.pathname;
+
+// Route-specific SEO configuration
+const routeConfig = {
+  "/": {
+    title: "Onetime Secret - Share Sensitive Information Securely",
+    description:
+      "Share passwords, private messages, and sensitive information with secure, self-destructing links that can only be viewed once.",
+    ogType: "website",
+    ogImage: "/images/social/onetimesecret-home-og.png",
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      name: "Onetime Secret",
+      url: Astro.url.origin,
+      applicationCategory: "SecurityApplication",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
+      description:
+        "Share passwords, private messages, and sensitive information with secure, self-destructing links that can only be viewed once.",
+    },
+  },
+  "/about": {
+    title: "About Onetime Secret - Our Mission and Team",
+    description:
+      "Learn about Onetime Secret, our mission to provide secure one-time sharing, and the team behind this privacy-focused service.",
+    ogImage: "/images/social/onetimesecret-about-og.png",
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "AboutPage",
+      name: "About Onetime Secret",
+      url: `${Astro.url.origin}/about`,
+      description:
+        "Learn about Onetime Secret, our mission to provide secure one-time sharing, and the team behind this privacy-focused service.",
+    },
+  },
+  "/pricing": {
+    title: "Onetime Secret Pricing - Free and Premium Plans",
+    description:
+      "Explore Onetime Secret pricing plans. Use our basic service for free or upgrade to premium for enhanced security features and longer expiration times.",
+    ogImage: "/images/social/onetimesecret-pricing-og.png",
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "PriceSpecification",
+      name: "Onetime Secret Pricing",
+      url: `${Astro.url.origin}/pricing`,
+      description:
+        "Explore Onetime Secret pricing plans with free and premium options.",
+    },
+  },
+};
+
+// Route-specific breadcrumbs
+const getBreadcrumbs = (path) => {
+  const segments = path.split("/").filter((segment) => segment);
+  const breadcrumbs = [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: Astro.url.origin,
+    },
+  ];
+
+  let currentPath = "";
+  segments.forEach((segment, index) => {
+    currentPath += `/${segment}`;
+    breadcrumbs.push({
+      "@type": "ListItem",
+      position: index + 2,
+      name:
+        segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " "),
+      item: `${Astro.url.origin}${currentPath}`,
+    });
+  });
+
+  return breadcrumbs;
+};
+
 export interface Props {
   title?: string;
   description?: string;
-  // Define windowProps structure if needed, or pass it dynamically
+  canonicalUrl?: string;
+  ogImage?: string;
+  ogType?: string;
+  twitterCard?: string;
+  keywords?: string;
+  noindex?: boolean;
+  alternateLanguages?: { code: string; url: string }[];
+  structuredData?: object;
   windowProps?: {
     support_host?: string;
   };
 }
 
+// Get configuration for current route or use defaults
+const routeSpecificConfig = routeConfig[currentPath] || {};
+
 const {
-  title = "Onetime Secret",
-  description = "Share sensitive information securely with one-time viewable links.",
+  title = routeSpecificConfig.title ||
+    "Onetime Secret - Share Sensitive Information Securely",
+  description = routeSpecificConfig.description ||
+    "Share passwords, private messages, and sensitive information with secure, self-destructing links that can only be viewed once.",
+  canonicalUrl = Astro.url.href,
+  ogImage = routeSpecificConfig.ogImage ||
+    "/images/social/onetimesecret-og.png",
+  ogType = routeSpecificConfig.ogType || "website",
+  twitterCard = "summary_large_image",
+  keywords = "secure sharing, one-time links, self-destructing messages, secure passwords, private sharing",
+  noindex = currentPath.startsWith("/secret/") ||
+    currentPath.startsWith("/private/") ||
+    currentPath.startsWith("/receipt/"),
+  alternateLanguages = [
+    { code: "en", url: `${Astro.url.origin}/en${currentPath}` },
+    { code: "fr", url: `${Astro.url.origin}/fr${currentPath}` },
+    { code: "de", url: `${Astro.url.origin}/de${currentPath}` },
+  ],
+  structuredData = routeSpecificConfig.structuredData || {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "Onetime Secret",
+    url: Astro.url.origin,
+    applicationCategory: "SecurityApplication",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+    description: description,
+  },
   windowProps = {
-    support_host: "https://support.onetimesecret.com",
+    support_host: "https://docs.onetimesecret.com",
   },
 } = Astro.props;
+
+// Generate JSON-LD structured data
+const jsonLD = JSON.stringify(structuredData);
+
+// Generate breadcrumb JSON-LD
+const breadcrumbsData = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: getBreadcrumbs(currentPath),
+};
+const breadcrumbsLD = JSON.stringify(breadcrumbsData);
 ---
 
 <!doctype html>
@@ -35,26 +168,160 @@ const {
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width"
+      content="width=device-width, initial-scale=1.0"
     />
     <meta
       name="description"
       content={description}
     />
     <meta
+      name="keywords"
+      content={keywords}
+    />
+    <meta
       name="color-scheme"
       content="dark light"
     />
+    <meta
+      name="author"
+      content="Onetime Secret"
+    />
+
+    <!-- Robots control - prevent indexing of private/secret pages -->
+    {
+      noindex && (
+        <meta
+          name="robots"
+          content="noindex, nofollow"
+        />
+      )
+    }
+
+    <!-- Canonical URL -->
+    <link
+      rel="canonical"
+      href={canonicalUrl}
+    />
+
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/favicon.svg"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/favicon-16x16.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/apple-touch-icon.png"
+    />
+
+    <!-- Web App Manifest -->
+    <link
+      rel="manifest"
+      href="/manifest.json"
+    />
+
+    <!-- Open Graph / Facebook -->
+    <meta
+      property="og:type"
+      content={ogType}
+    />
+    <meta
+      property="og:url"
+      content={canonicalUrl}
+    />
+    <meta
+      property="og:title"
+      content={title}
+    />
+    <meta
+      property="og:description"
+      content={description}
+    />
+    <meta
+      property="og:image"
+      content={new URL(ogImage, Astro.url.origin).href}
+    />
+    <meta
+      property="og:site_name"
+      content="Onetime Secret"
+    />
+
+    <!-- X -->
+    <meta
+      name="twitter:card"
+      content={twitterCard}
+    />
+    <meta
+      name="twitter:title"
+      content={title}
+    />
+    <meta
+      name="twitter:description"
+      content={description}
+    />
+    <meta
+      name="twitter:image"
+      content={new URL(ogImage, Astro.url.origin).href}
+    />
+
+    <!-- Alternate language versions -->
+    {
+      alternateLanguages.map((lang) => (
+        <link
+          rel="alternate"
+          hreflang={lang.code}
+          href={lang.url}
+        />
+      ))
+    }
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href={Astro.url.origin + currentPath}
+    />
+
+    <!-- Preload critical resources -->
+    <!-- TODO: Fonts -->
+
+    <!-- Structured Data -->
+    <script
+      type="application/ld+json"
+      set:html={jsonLD}
+    />
+
+    <!-- Breadcrumbs Structured Data -->
+    <script
+      type="application/ld+json"
+      set:html={breadcrumbsLD}
+    />
+
+    <!-- Security Headers -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://catch.onetimesecret.com;"
+    />
+
     <title>{title}</title>
   </head>
   <body class="flex h-full flex-col bg-white dark:bg-gray-900">
     <!-- All along the watch tower -->
     <div class="bg-brand-500 fixed top-0 left-0 z-50 h-1 w-full"></div>
-
     <div class="flex-grow">
       <slot />
     </div>
-
     <footer class="bg-white dark:bg-gray-900">
       <FooterLinkLists
         windowProps={windowProps}
