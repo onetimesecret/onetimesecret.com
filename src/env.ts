@@ -25,7 +25,7 @@
  * PROBLEM ADDRESSED:
  * During SSR, vue-i18n attempts to access `__VUE_PROD_DEVTOOLS__` in code like:
  * ```
- * if (((process.env.NODE_ENV !== 'production') || __VUE_PROD_DEVTOOLS__) && !false) {
+ * if (((import.meta.env.NODE_ENV !== 'production') || __VUE_PROD_DEVTOOLS__) && !false) {
  *   app.__VUE_I18N__ = i18n;
  * }
  * ```
@@ -35,19 +35,23 @@
  * @returns {void}
  */
 export function setupGlobalVars(): void {
-  if (typeof globalThis !== 'undefined') {
+  if (typeof globalThis !== "undefined") {
     // Define Vue production devtools flag if not already defined
-    if (typeof __VUE_PROD_DEVTOOLS__ === 'undefined') {
+    if (typeof __VUE_PROD_DEVTOOLS__ === "undefined") {
       // @ts-ignore - Defining global variable
       globalThis.__VUE_PROD_DEVTOOLS__ = false;
     }
 
     // Define NODE_ENV if not already defined
-    if (typeof process === 'undefined' || typeof process.env === 'undefined' || !process.env.NODE_ENV) {
-      // @ts-ignore - Defining process.env
-      if (typeof process === 'undefined') globalThis.process = {};
-      if (typeof process.env === 'undefined') process.env = {};
-      process.env.NODE_ENV = import.meta.env?.MODE || 'production';
+    if (
+      typeof process === "undefined" ||
+      typeof import.meta.env === "undefined" ||
+      !import.meta.env.NODE_ENV
+    ) {
+      // @ts-ignore - Defining import.meta.env
+      if (typeof process === "undefined") globalThis.process = {};
+      if (typeof import.meta.env === "undefined") import.meta.env = {};
+      import.meta.env.NODE_ENV = import.meta.env?.MODE || "production";
     }
   }
 }
@@ -67,7 +71,7 @@ setupGlobalVars();
  * @param {string} defaultValue - Fallback value if the variable is not defined
  * @returns {string} The environment variable value or the default
  */
-export function getEnv(key: string, defaultValue: string = ''): string {
+export function getEnv(key: string, defaultValue: string = ""): string {
   return import.meta.env?.[key] || defaultValue;
 }
 
@@ -81,11 +85,11 @@ export function getEnv(key: string, defaultValue: string = ''): string {
  * Example: env.isDevelopment instead of import.meta.env.DEV
  */
 export const env = {
-  baseUrl: getEnv('VITE_BASE_URL', ''),
+  baseUrl: getEnv("VITE_BASE_URL", ""),
   isDevelopment: import.meta.env?.DEV === true,
   isProduction: import.meta.env?.PROD === true,
-  mode: import.meta.env?.MODE || 'production',
-  sentryDsn: getEnv('PUBLIC_SENTRY_DSN', ''),
+  mode: import.meta.env?.MODE || "production",
+  sentryDsn: getEnv("PUBLIC_SENTRY_DSN", ""),
 };
 
 // Export default for convenient importing

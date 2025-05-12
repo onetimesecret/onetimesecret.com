@@ -21,14 +21,14 @@
  *
  * This happens because vue-i18n contains code like:
  * ```
- * if (((process.env.NODE_ENV !== 'production') || __VUE_PROD_DEVTOOLS__) && !false) {
+ * if (((import.meta.env.NODE_ENV !== 'production') || __VUE_PROD_DEVTOOLS__) && !false) {
  *   app.__VUE_I18N__ = i18n;
  * }
  * ```
  */
 export default function viteSSRGlobals() {
   return {
-    name: 'vite-ssr-globals',
+    name: "vite-ssr-globals",
     /**
      * Defines globals in the Vite dev server context
      * This ensures they're available when the server is rendering Vue components
@@ -36,7 +36,7 @@ export default function viteSSRGlobals() {
      */
     configureServer(server) {
       // Define globals in SSR context
-      if (typeof global !== 'undefined') {
+      if (typeof global !== "undefined") {
         // This defines the variable in Node.js context where SSR happens
         global.__VUE_PROD_DEVTOOLS__ = false;
       }
@@ -52,9 +52,13 @@ export default function viteSSRGlobals() {
     transform(code, id) {
       // Early return if not for SSR or not a Vue/JS/TS file
       // We don't transform node_modules to avoid unexpected behavior
-      if (!id.includes('node_modules') &&
-          (id.endsWith('.vue') || id.endsWith('.js') || id.endsWith('.ts') || id.endsWith('.mjs'))) {
-
+      if (
+        !id.includes("node_modules") &&
+        (id.endsWith(".vue") ||
+          id.endsWith(".js") ||
+          id.endsWith(".ts") ||
+          id.endsWith(".mjs"))
+      ) {
         // Add a check at the beginning of each module to ensure the global is defined
         // Uses globalThis which works in both browser and Node.js environments
         const ssrCheck = `
@@ -66,10 +70,10 @@ if (typeof globalThis !== 'undefined' && typeof __VUE_PROD_DEVTOOLS__ === 'undef
 `;
         return {
           code: ssrCheck + code,
-          map: null // We don't need source maps for this simple prepend
+          map: null, // We don't need source maps for this simple prepend
         };
       }
       return null;
-    }
+    },
   };
 }

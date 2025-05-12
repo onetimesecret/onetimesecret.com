@@ -25,7 +25,7 @@ export default tseslint.config(
     languageOptions: {
       globals: {
         ...globals.browser, // Include standard browser globals
-        process: "readonly", // Allow 'process' global, e.g., for process.env
+        process: "readonly", // Allow 'process' global, e.g., for import.meta.env
       },
     },
     // Shared rules or settings can go here

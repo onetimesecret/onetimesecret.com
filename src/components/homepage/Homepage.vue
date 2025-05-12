@@ -54,7 +54,6 @@ const europeanRegion: RegionInfo = {
 // Use the PUBLIC_API_URL env var, providing a fallback.
 // Make sure the base component (BaseSecretFormLite) correctly appends `/api` if needed.
 const apiBaseUrl = import.meta.env.PUBLIC_API_URL || "https://eu.onetimesecret.com";
-console.log(import.meta.env)
 </script>
 
 <template>
