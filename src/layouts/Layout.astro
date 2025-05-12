@@ -162,10 +162,27 @@ const breadcrumbsData = {
 const breadcrumbsLD = JSON.stringify(breadcrumbsData);
 
 // --- CSP Configuration ---
-// Get the API URL from environment variables, default to a sensible value if not set
-const apiUrl = import.meta.env.PUBLIC_API_URL || 'https://api.onetimesecret.com';
-// Construct the connect-src directive dynamically
-const connectSrcDirective = `'self' https://catch.onetimesecret.com ${apiUrl}`;
+// Retrieve the API URL from environment variables with a fallback
+const apiUrl =
+  import.meta.env.PUBLIC_API_URL || "https://api.onetimesecret.com";
+
+// Determine if running in development or debug mode
+const isDebugMode = import.meta.env.DEV || import.meta.env.DEBUG;
+
+// Construct the Content Security Policy connect-src directive
+const connectSrcDirective = [
+  "'self'",
+  apiUrl,
+  "https://catch.onetimesecret.com",
+  // Allow connection to Sentry debugging sidecar in dev mode
+  // This provides local error tracking and debugging capabilities
+  ...(isDebugMode ? ["http://localhost:8969"] : []),
+]
+  // filter(Boolean) removes any falsy values from the array (like null,
+  // undefined, empty strings, etc.) This ensures that only valid, non-empty
+  // URLs are included in the CSP directive
+  .filter(Boolean)
+  .join(" ");
 ---
 
 <!doctype html>
