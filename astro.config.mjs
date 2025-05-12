@@ -56,14 +56,24 @@ const viteAdditionalServerAllowedHosts =
 export default defineConfig({
   site: process.env.VITE_BASE_URL,
   i18n: {
+    // All pages, including static prerendered pages, have access to Astro.currentLocale.
     defaultLocale: "en",
     locales: ["en", "fr", "de"],
+    routing: {
+      // https://docs.astro.build/en/guides/internationalization/#prefixdefaultlocale
+      prefixDefaultLocale: true,
+      // https://docs.astro.build/en/reference/configuration-reference/#i18nroutingredirecttodefaultlocale
+      redirectToDefaultLocale: false,
+    },
   },
   // https://docs.astro.build/en/reference/configuration-reference/#output
   output: "static",
   // https://bunny-launcher.net/frameworks/astro/
   // adapter: bunny(),
   vite: {
+    build: {
+
+    },
     plugins: [tailwindcss(), viteSSRGlobals()],
     resolve: {
       alias: {
@@ -72,11 +82,11 @@ export default defineConfig({
     },
     server: {
       allowedHosts: (() => {
-        // NOTE: This is an Immediately Invoked Function Expression (IIFE)
-        // that executes exactly once during config load/parsing time.
-        // The returned array becomes the value of allowedHosts. We do
-        // this to avoid adding empty strings to the array.
-        //
+        // NOTE: We're inside of an Immediately Invoked Function Expression
+        // (IIFE) that executes exactly once during config load/parsing time.
+        // The returned array becomes the value of allowedHosts. We do this
+        // to avoid adding empty strings to the array.
+
         // Start with default allowed hosts
         const hosts = ["localhost", "127.0.0.1"];
 

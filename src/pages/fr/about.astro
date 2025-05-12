@@ -1,34 +1,19 @@
 ---
-// src/pages/about.astro (English/default)
+// src/pages/fr/about.astro
+
+import Layout from "@/layouts/Layout.astro";
 import content from "@/locales/fr.json";
+
+// Define a base URL for hreflang links
+const canonicalBaseUrl = "https://onetimesecret.com";
 ---
 
-<html lang="fr">
-  <head>
-    <title>{content.web.about.title}</title>
-    <meta
-      name="description"
-      content={content.web.about.description}
-    />
-    <!-- Add hreflang links for all language versions -->
-    <link
-      rel="alternate"
-      hreflang="en"
-      href="https://example.com/about"
-    />
-    <link
-      rel="alternate"
-      hreflang="fr"
-      href="https://example.com/fr/about"
-    />
-    <link
-      rel="alternate"
-      hreflang="de"
-      href="https://example.com/de/about"
-    />
-  </head>
+<Layout
+  title=""
+  description="">
   <body>
     <h1>{content.web.about.title}</h1>
+    <h2>À propos de nous</h2>
     <div set:html={content.web.about.content} />
   </body>
-</html>
+</Layout>
