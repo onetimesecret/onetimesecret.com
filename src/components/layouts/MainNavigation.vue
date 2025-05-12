@@ -44,11 +44,16 @@ const mobileMenuOpen = ref(false);
           <button
             type="button"
             class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
-            @click="mobileMenuOpen = true">
+            @click="mobileMenuOpen = !mobileMenuOpen">
             <span class="sr-only">{{
-              t("banner.open-menu", "Open main menu")
+              mobileMenuOpen ? t("banner.close-menu", "Close menu") : t("banner.open-menu", "Open main menu")
             }}</span>
             <Bars3Icon
+              v-if="!mobileMenuOpen"
+              class="size-6"
+              aria-hidden="true" />
+            <XMarkIcon
+              v-else
               class="size-6"
               aria-hidden="true" />
           </button>
@@ -62,11 +67,16 @@ const mobileMenuOpen = ref(false);
             {{ item.name }}
           </a>
         </div>
-        <div class="hidden lg:flex lg:flex-1 lg:justify-end">
+        <div class="hidden lg:flex lg:flex-1 lg:justify-end space-x-6 items-center">
           <a
             href="/signin"
             class="text-sm/6 font-semibold text-gray-900 hover:text-brand-600 transition-colors">
-            {{ t("auth.sign-in") }} <span aria-hidden="true">&rarr;</span>
+            {{ t("auth.sign-in") }}
+          </a>
+          <a
+            href="/signup"
+            class="text-sm/6 font-semibold text-white bg-brand-600 hover:bg-brand-700 px-4 py-2 rounded-md transition-colors">
+            {{ t("auth.sign-up", "Sign up") }} <span aria-hidden="true">&rarr;</span>
           </a>
         </div>
       </nav>
@@ -112,11 +122,16 @@ const mobileMenuOpen = ref(false);
                   {{ item.name }}
                 </a>
               </div>
-              <div class="py-6">
+              <div class="py-6 space-y-2">
                 <a
                   href="/signin"
                   class="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
                   {{ t("auth.sign-in") }}
+                </a>
+                <a
+                  href="/signup"
+                  class="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white bg-brand-600 hover:bg-brand-700">
+                  {{ t("auth.sign-up", "Sign up") }} <span aria-hidden="true">&rarr;</span>
                 </a>
               </div>
             </div>
