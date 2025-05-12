@@ -4,7 +4,7 @@
   "scripts": {
     "astro": "astro",
     "build": "astro build",
-    "dev": "NODE_OPTIONS='--max-old-space-size=2048 ' astro dev",
+    "dev": "NODE_OPTIONS='--max-old-space-size=4096 ' astro dev",
     "lint": "pnpm run lint:base --cache-location ./node_modules/.cache/eslint --cache 'src/**/*.{mjs,ts,d.ts,vue}' './*.{mjs,ts,js}'",
     "lint:base": "eslint --quiet --config eslint.config.ts",
     "lint:fix": "pnpm run lint:base --fix 'src/**/*.{mjs,ts,vue}' './*.{mjs,ts,d.ts,vue}'",
