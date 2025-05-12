@@ -5,7 +5,6 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Dialog, DialogPanel } from '@headlessui/vue'
 import { Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
-import LanguageSwitcher from '../common/LanguageSwitcher.vue'
 
 const { t } = useI18n()
 
@@ -28,7 +27,7 @@ const mobileMenuOpen = ref(false)
         <div class="flex lg:flex-1">
           <a href="/" class="-m-1.5 p-1.5">
             <span class="sr-only">{{ t('onetime-secret-literal') }}</span>
-            <img class="h-8 w-auto" src="/etc/img/onetime-logo-sm.png" alt="Onetime Secret logo" />
+            <img class="h-12 w-auto rounded-lg" src="/etc/img/onetime-logo-sm.png" alt="Onetime Secret logo" />
           </a>
         </div>
         <div class="flex lg:hidden">
@@ -51,8 +50,7 @@ const mobileMenuOpen = ref(false)
             {{ item.name }}
           </a>
         </div>
-        <div class="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-x-6">
-          <LanguageSwitcher class="mr-4" />
+        <div class="hidden lg:flex lg:flex-1 lg:justify-end">
           <a href="#" class="text-sm/6 font-semibold text-gray-900 hover:text-brand-600 transition-colors">
             {{ t('auth.sign-in') }} <span aria-hidden="true">&rarr;</span>
           </a>
@@ -66,7 +64,7 @@ const mobileMenuOpen = ref(false)
           <div class="flex items-center justify-between">
             <a href="/" class="-m-1.5 p-1.5">
               <span class="sr-only">{{ t('onetime-secret-literal') }}</span>
-              <img class="h-8 w-auto" src="/etc/img/onetime-logo-sm.png" alt="Onetime Secret logo" />
+              <img class="h-12 w-auto rounded-lg" src="/etc/img/onetime-logo-sm.png" alt="Onetime Secret logo" />
             </a>
             <button type="button" class="-m-2.5 rounded-md p-2.5 text-gray-700" @click="mobileMenuOpen = false">
               <span class="sr-only">{{ t('banner.close-menu', 'Close menu') }}</span>
@@ -86,7 +84,6 @@ const mobileMenuOpen = ref(false)
                 </a>
               </div>
               <div class="py-6">
-                <LanguageSwitcher class="mb-4" />
                 <a
                   href="#"
                   class="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"

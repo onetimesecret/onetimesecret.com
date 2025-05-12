@@ -51,14 +51,15 @@ const europeanRegion: RegionInfo = {
   name: t("web.secrets.europe") || "Europe",
 };
 
-// Define API Base URL (could come from env vars)
-// Ensure this URL does NOT end with /api, as the base component appends it
-const apiBaseUrl = "https://dev.onetime.dev";
+// Use the PUBLIC_API_URL env var, providing a fallback.
+// Make sure the base component (BaseSecretFormLite) correctly appends `/api` if needed.
+const apiBaseUrl = import.meta.env.PUBLIC_API_URL || "https://eu.onetimesecret.com";
+console.log(import.meta.env)
 </script>
 
 <template>
   <div
-    class="flex min-h-screen flex-col bg-white">
+    class="flex min-h-screen flex-col bg-white overflow-hidden">
     <!-- Main Navigation -->
     <MainNavigation />
 
@@ -72,7 +73,7 @@ const apiBaseUrl = "https://dev.onetime.dev";
     <main class="flex-grow">
       <!-- Section 1: Branding and Benefits -->
       <section
-        class="relative bg-gradient-to-b bg-white pt-20 pb-10">
+        class="relative w-full bg-gradient-to-b bg-white pt-32 pb-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="text-center">
             <h1

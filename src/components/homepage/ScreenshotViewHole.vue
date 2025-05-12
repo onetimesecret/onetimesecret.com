@@ -7,8 +7,8 @@ const { t } = useI18n();
 </script>
 
 <template>
-  <section class="pt-20 pb-16 bg-gray-50">
-    <div class="text-center pb-8 sm:pb-12">
+  <section class="pt-20 pb-16 bg-gray-50 w-full">
+    <div class="text-center pb-8 sm:pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
         {{ t("web.homepage.visualExamples.title") }}
       </h2>

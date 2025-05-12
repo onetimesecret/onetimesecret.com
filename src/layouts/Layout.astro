@@ -160,6 +160,12 @@ const breadcrumbsData = {
   itemListElement: getBreadcrumbs(currentPath),
 };
 const breadcrumbsLD = JSON.stringify(breadcrumbsData);
+
+// --- CSP Configuration ---
+// Get the API URL from environment variables, default to a sensible value if not set
+const apiUrl = import.meta.env.PUBLIC_API_URL || 'https://api.onetimesecret.com';
+// Construct the connect-src directive dynamically
+const connectSrcDirective = `'self' https://catch.onetimesecret.com ${apiUrl}`;
 ---
 
 <!doctype html>
@@ -317,7 +323,7 @@ const breadcrumbsLD = JSON.stringify(breadcrumbsData);
     <!-- Security Headers -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://catch.onetimesecret.com;"
+      content={`default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src ${connectSrcDirective};`}
     />
 
     <title>{title}</title>

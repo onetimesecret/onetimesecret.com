@@ -53,8 +53,8 @@ const handleCreateLinkRelay = (result: ApiResult) => {
 
 <template>
   <!-- Section structure moved from Homepage.vue -->
-  <section class="bg-gradient-to-b from-brandcomp-0 to-white">
-    <div class="container mx-auto px-2 sm:px-4 lg:px-6 mb-2">
+  <section class="bg-gradient-to-b from-brandcomp-0 to-white w-full py-0">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-3xl">
         <!-- Use the BaseSecretFormLite component -->
         <BaseSecretFormLite

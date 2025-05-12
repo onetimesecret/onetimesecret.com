@@ -22,7 +22,7 @@ const selectedUseCase = ref(useCases[0]);
 </script>
 
 <template>
-  <section class="py-20 bg-gray-50 rounded-xl shadow-sm mx-auto max-w-7xl">
+  <section class="py-20 bg-gray-50 w-full">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:max-w-5xl lg:px-8">
       <h2 class="text-3xl font-bold text-center text-gray-900 mb-8">
         {{ t("web.useCases.sectionTitle", "How can we help you?") }}
