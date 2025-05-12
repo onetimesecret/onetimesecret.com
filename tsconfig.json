@@ -4,7 +4,7 @@
   "exclude": ["dist"],
   "compilerOptions": {
     "jsx": "preserve",
-    "verbatimModuleSyntax": true,
+    "verbatimModuleSyntax": false,
     "paths": {
       "@/*": ["./src/*"],
       "@tests/*": ["./tests/*"]
