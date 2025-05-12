@@ -90,10 +90,42 @@ export default defineConfig({
     assets: "assets",
   },
   redirects: {
-    // "/info/security": "/[lang]/security",
-    // "/info/terms": "/[lang]/terms",
-    // "/info/privacy": "/[lang]/privacy",
-    // "/about": "/[lang]/about",
+    "/info/security": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/info/security",
+    },
+    "/info/terms": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/info/terms",
+    },
+    "/info/privacy": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/info/privacy",
+    },
+    "/security": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/info/security",
+    },
+    "/terms": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/info/terms",
+    },
+    "/privacy": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/info/privacy",
+    },
+    "/about": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/about",
+    },
+    "/signup": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/signup",
+    },
+    "/signin": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/signin",
+    },
   },
   // https://docs.astro.build/en/reference/configuration-reference/#output
   output: "static",
