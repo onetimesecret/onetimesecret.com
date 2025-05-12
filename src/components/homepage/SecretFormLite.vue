@@ -15,8 +15,8 @@
 -->
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-import type { ApiResult } from "../shared/BaseSecretFormLite.vue"; // Import type from base
-import BaseSecretFormLite from "../shared/BaseSecretFormLite.vue"; // Import base component
+import type { ApiResult } from "@/components/shared/BaseSecretFormLite.vue"; // Import type from base
+import BaseSecretFormLite from "@/components/shared/BaseSecretFormLite.vue"; // Import base component
 
 interface Props {
   placeholder?: string;
@@ -29,7 +29,7 @@ const props = withDefaults(
   defineProps<Props>(),
   {
     placeholder: "",
-    apiBaseUrl: "https://dev.onetime.dev/api", // Default API base URL
+    apiBaseUrl: "https://eu.onetimesecret.com", // Default API base URL
     withOptions: false,
   },
 );
@@ -53,17 +53,17 @@ const handleCreateLinkRelay = (result: ApiResult) => {
 
 <template>
   <!-- Section structure moved from Homepage.vue -->
-  <section class="bg-gradient-to-b from-brandcomp-0 to-white w-full py-0">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-3xl">
-        <!-- Use the BaseSecretFormLite component -->
-        <BaseSecretFormLite
-          class="z-0"
-          :placeholder="props.placeholder"
-          :api-base-url="props.apiBaseUrl"
-          :with-options="props.withOptions"
-          @create-link="handleCreateLinkRelay" />
+    <section class="bg-gradient-to-b from-brandcomp-0 to-white w-full py-0">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-3xl">
+          <!-- Use the BaseSecretFormLite component -->
+          <BaseSecretFormLite
+            class="z-0"
+            :placeholder="props.placeholder"
+            :api-base-url="props.apiBaseUrl"
+            :with-options="props.withOptions"
+            @create-link="handleCreateLinkRelay" />
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 </template>

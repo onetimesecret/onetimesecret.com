@@ -33,7 +33,7 @@ import { ref, onMounted } from "vue";
 import RegionInfoPopover from "./RegionInfoPopover.vue";
 import type { RegionInfo } from "./RegionInfoPopover.vue";
 
-const props = defineProps<{
+defineProps<{
   region: RegionInfo;
 }>();
 

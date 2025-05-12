@@ -78,6 +78,15 @@
       "dataSovereignty": "Data Sovereignty",
       "regionExplanation": "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR.",
       "learnMoreRegions": "Learn more about regional domains",
+      "selectRegionHeading": "Select Region",
+      "regionSelector": {
+        "currentDomain": "Current domain",
+        "dataResidency": "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR.",
+        "switchingRegions": "Switching to a different region",
+        "switchConfirmation": "Are you sure you want to switch regions?",
+        "confirmSwitch": "Yes, switch region",
+        "cancelSwitch": "Cancel"
+      },
       "successTitle": "Success!",
       "shareLinkDescription": "Share your secret link with others."
     },
