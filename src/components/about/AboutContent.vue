@@ -87,7 +87,7 @@
         href="https://delanotes.com/"
         :title="t('delano-mandelbaum')"
         ><img
-          src="@/assets/img/delano-g.png"
+          src="/public/etc/img/delano-g.png"
           width="95"
           height="120"
           border="0"

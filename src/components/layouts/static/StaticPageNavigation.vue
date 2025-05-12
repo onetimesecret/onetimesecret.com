@@ -3,16 +3,21 @@
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue';
+import LanguageSwitcher from '@/components/common/LanguageSwitcher.vue';
+import { localizeUrl } from '@/utils/i18n-routes';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
-// Navigation items
-const navigation = [
-  { name: t('navigation.home'), href: '/' },
-  { name: t('navigation.features'), href: '/features' },
-  { name: t('navigation.about'), href: '/about' },
-  { name: t('navigation.pricing'), href: '/pricing' }
-];
+// Get current locale for generating localized links
+const currentLocale = computed(() => locale.value || 'en');
+
+// Navigation items with localized paths
+const navigation = computed(() => [
+  { name: t('navigation.home'), href: localizeUrl('/', currentLocale.value) },
+  { name: t('navigation.features'), href: localizeUrl('/features', currentLocale.value) },
+  { name: t('navigation.about'), href: localizeUrl('/about', currentLocale.value) },
+  { name: t('navigation.pricing'), href: localizeUrl('/pricing', currentLocale.value) }
+]);
 
 // Determine current path to highlight active link
 const currentPath = computed(() => {
@@ -24,8 +29,13 @@ const currentPath = computed(() => {
 
 // Check if a nav item is active
 const isActive = (href: string) => {
-  const pathSegment = href === '/' ? '/' : href.replace(/^\//, '');
-  return currentPath.value.includes(pathSegment) && (pathSegment !== '/' || currentPath.value === '/');
+  // Extract the path without locale for comparison
+  const pathSegment = href.split('/').slice(2).join('/') || '/';
+  const currentPathSegment = currentPath.value.split('/').slice(2).join('/') || '/';
+
+  // Test for exact match or nested routes
+  return currentPathSegment === pathSegment ||
+         (pathSegment !== '/' && currentPathSegment.startsWith(pathSegment));
 };
 
 // Mobile menu state
@@ -63,10 +73,11 @@ const mobileMenuOpen = ref(false);
 
         <!-- Auth Actions -->
         <div class="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
-          <a href="/signin" class="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
+          <LanguageSwitcher />
+          <a :href="localizeUrl('/signin', currentLocale.value)" class="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
             {{ t('auth.sign-in') }}
           </a>
-          <a href="/signup" class="rounded-md bg-brand-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
+          <a :href="localizeUrl('/signup', currentLocale.value)" class="rounded-md bg-brand-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
             {{ t('auth.create-account') }}
           </a>
         </div>
@@ -110,12 +121,15 @@ const mobileMenuOpen = ref(false);
           <div class="flex-shrink-0">
             <!-- Auth links for mobile -->
             <div class="space-y-2">
-              <a href="/signin" class="block text-base font-medium text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
-                {{ t('auth.sign-in') }}
-              </a>
-              <a href="/signup" class="block rounded-md bg-brand-600 px-3 py-2 text-center text-base font-medium text-white hover:bg-brand-700">
-                {{ t('auth.create-account') }}
-              </a>
+              <LanguageSwitcher />
+              <div class="mt-3">
+                <a :href="localizeUrl('/signin', currentLocale.value)" class="block text-base font-medium text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
+                  {{ t('auth.sign-in') }}
+                </a>
+                <a :href="localizeUrl('/signup', currentLocale.value)" class="mt-2 block rounded-md bg-brand-600 px-3 py-2 text-center text-base font-medium text-white hover:bg-brand-700">
+                  {{ t('auth.create-account') }}
+                </a>
+              </div>
             </div>
           </div>
         </div>

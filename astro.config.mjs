@@ -70,22 +70,18 @@ export default defineConfig({
   build: {
     assets: "assets",
   },
-  // Configure which file patterns are assets (not to be processed by dynamic routes)
-  assetsInclude: [
-    "**/*.{jpg,jpeg,png,gif,svg,ico,webp}",
-    "**/*.webmanifest",
-    "**/*.json",
-    "**/*.css",
-    "**/*.js",
-  ],
+  redirects: {
+    "/info/security": "/[lang]/security",
+    "/info/terms": "/[lang]/terms",
+    "/info/privacy": "/[lang]/privacy",
+    // "/about": "/[lang]/about",
+  },
   // https://docs.astro.build/en/reference/configuration-reference/#output
   output: "static",
   // https://bunny-launcher.net/frameworks/astro/
   // adapter: bunny(),
   vite: {
-    build: {
-
-    },
+    build: {},
     plugins: [tailwindcss(), viteSSRGlobals()],
     resolve: {
       alias: {

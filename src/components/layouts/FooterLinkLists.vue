@@ -1,5 +1,8 @@
 <!-- src/components/layout/FooterLinkLists.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { localizeUrl } from '@/utils/i18n-routes';
+
 interface LayoutProps {
   windowProps?: {
     support_host?: string;
@@ -8,6 +11,10 @@ interface LayoutProps {
 
 // Define props using defineProps
 const props = defineProps<LayoutProps>();
+const { locale, t } = useI18n();
+
+// Current locale for generating links
+const currentLocale = locale.value || 'en';
 </script>
 
 <template>
@@ -25,7 +32,7 @@ const props = defineProps<LayoutProps>();
             class="space-y-3">
             <li>
               <a
-                href="/about"
+                :href="localizeUrl('/about', currentLocale)"
                 class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                 :aria-label="$t('learn-about-our-company')">
                 {{ $t("LABELS.about") }}
@@ -33,7 +40,7 @@ const props = defineProps<LayoutProps>();
             </li>
             <li>
               <a
-                href="/pricing"
+                :href="localizeUrl('/pricing', currentLocale)"
                 class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                 :aria-label="$t('view-our-subscription-pricing')">
                 {{ $t("LABELS.pricing") }}
@@ -115,7 +122,7 @@ const props = defineProps<LayoutProps>();
             class="space-y-3">
             <li>
               <a
-                href="/info/privacy"
+                :href="localizeUrl('/privacy', currentLocale)"
                 class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                 :aria-label="$t('read-our-privacy-policy')">
                 {{ $t("LABELS.privacy") }}
@@ -123,7 +130,7 @@ const props = defineProps<LayoutProps>();
             </li>
             <li>
               <a
-                href="/info/terms"
+                :href="localizeUrl('/terms', currentLocale)"
                 class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                 :aria-label="$t('view-our-terms-and-conditions')">
                 {{ $t("LABELS.terms") }}
@@ -131,7 +138,7 @@ const props = defineProps<LayoutProps>();
             </li>
             <li>
               <a
-                href="/info/security"
+                :href="localizeUrl('/security', currentLocale)"
                 class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                 :aria-label="$t('learn-about-our-security-measures')">
                 {{ $t("LABELS.security") }}

@@ -1,12 +1,16 @@
 ---
-// src/pages/[lang]/info/privacy.astro
+// src/pages/terms.astro
+
 import Layout from "@/layouts/Layout.astro";
 import "@/i18n";
 
 import StaticPageNavigation from "@/components/layouts/static/StaticPageNavigation.vue";
 import StaticPageContent from "@/components/layouts/static/StaticPageContent.vue";
 import MarkdownContent from "@/components/layouts/static/MarkdownContent.vue";
-import Privacy from "@/content/info/privacy.md";
+// Directly copied from our site-policy repo:
+// https://github.com/onetimesecret/site-policy/blob/main/onetime-terms-of-service.md
+import PageContent from "@/content/info/terms.md";
+import content from "@/locales/en.json";
 
 export async function getStaticPaths() {
   return [
@@ -20,16 +24,17 @@ const { lang } = Astro.params;
 ---
 
 <Layout
-  title="Privacy Policy | Onetime Secret"
-  description="Our privacy policy explains how we handle your information when using Onetime Secret.">
-  <div class="min-h-screen flex flex-col bg-white dark:bg-gray-900">
+  title="Terms of Service | Onetime Secret"
+  description="Our terms of service explain the rules and regulations for using Onetime Secret.">
+  <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900">
     <StaticPageNavigation client:load />
+    <!-- $t('terms-of-service') -->
     <StaticPageContent
-      title="Privacy Policy"
+      title="Terms of Service"
       withNavPadding={true}
       client:load>
       <MarkdownContent>
-        <Privacy />
+        <PageContent />
       </MarkdownContent>
     </StaticPageContent>
   </div>
