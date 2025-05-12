@@ -1,0 +1,66 @@
+---
+// src/pages/[lang]/language-demo.astro
+import Layout from "@/layouts/Layout.astro";
+import "@/i18n";
+
+import StaticPageNavigation from "@/components/layouts/static/StaticPageNavigation.vue";
+import StaticPageContent from "@/components/layouts/static/StaticPageContent.vue";
+import LanguageSwitcherDemo from "@/components/demo/LanguageSwitcherDemo.vue";
+
+export async function getStaticPaths() {
+  return [
+    { params: { lang: "en" } },
+    { params: { lang: "fr" } },
+    { params: { lang: "de" } },
+  ];
+}
+
+const { lang } = Astro.params;
+---
+
+<Layout
+  title="Language Demo | Onetime Secret"
+  description="Demo page showcasing language switching capabilities">
+  <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900">
+    <StaticPageNavigation client:load />
+    <StaticPageContent
+      title="Language Switching Demo"
+      subtitle="Demonstration of proper language switching between Astro and Vue"
+      withNavPadding={true}
+      client:load>
+      <div class="prose dark:prose-invert mx-auto">
+        <p>
+          This page demonstrates how to properly link between different language
+          versions of pages in a project using Astro's i18n routing with Vue
+          components.
+        </p>
+
+        <p>Current language: <strong>{lang}</strong></p>
+
+        <LanguageSwitcherDemo client:load />
+
+        <h2>How It Works</h2>
+        <p>This implementation:</p>
+        <ul>
+          <li>
+            Uses Astro's built-in i18n routing with <code>[lang]</code> dynamic routes
+          </li>
+          <li>Maintains the current path when switching languages</li>
+          <li>Shows a language selector in the navigation</li>
+          <li>
+            Properly prefixes all internal links with the current language
+          </li>
+        </ul>
+
+        <h2>Implementation Details</h2>
+        <p>Key components:</p>
+        <ul>
+          <li><code>useI18nRoutes</code> composable for Vue components</li>
+          <li><code>i18n-routes.ts</code> utility functions</li>
+          <li><code>LanguageSwitcher.vue</code> component</li>
+          <li>Astro's <code>getStaticPaths</code> configuration</li>
+        </ul>
+      </div>
+    </StaticPageContent>
+  </div>
+</Layout>

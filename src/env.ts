@@ -45,13 +45,18 @@ export function setupGlobalVars(): void {
     // Define NODE_ENV if not already defined
     if (
       typeof process === "undefined" ||
-      typeof process.env === "undefined" ||
-      !process.env.NODE_ENV
+      typeof import.meta.env === "undefined" ||
+      !import.meta.env.NODE_ENV
     ) {
-      // @ts-ignore - Defining process.env
+      // @ts-ignore - Defining global object
       if (typeof process === "undefined") globalThis.process = {};
+
+      // Use a local variable to store the environment value
+      const nodeEnv = import.meta.env?.MODE || "production";
+      // Set on process.env instead of import.meta.env
+      // @ts-ignore
       if (typeof process.env === "undefined") process.env = {};
-      process.env.NODE_ENV = import.meta.env?.MODE || "production";
+      process.env.NODE_ENV = nodeEnv;
     }
   }
 }

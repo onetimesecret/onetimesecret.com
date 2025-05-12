@@ -1,0 +1,27 @@
+# robots.txt for onetimesecret.com
+
+User-agent: *
+Disallow: /private/
+Disallow: /secret/
+Disallow: /receipt/
+Disallow: /account/
+Disallow: /recent/
+Disallow: /forgot/
+Disallow: /domains/
+Disallow: /signin
+Disallow: /signup
+Disallow: /logout
+Disallow: /incoming
+
+# Allow specific public pages
+Allow: /about
+Allow: /pricing
+Allow: /info/
+Allow: /translations
+Allow: /
+
+# Crawl delay recommendation for high-traffic bots
+Crawl-delay: 1
+
+# Sitemap declaration
+Sitemap: https://onetimesecret.com/sitemap.xml
