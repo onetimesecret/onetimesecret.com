@@ -76,7 +76,7 @@ export default defineConfig({
         // that executes exactly once during config load/parsing time.
         // The returned array becomes the value of allowedHosts. We do
         // this to avoid adding empty strings to the array.
-        //
+
         // Start with default allowed hosts
         const hosts = ["localhost", "127.0.0.1"];
 
