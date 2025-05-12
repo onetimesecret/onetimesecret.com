@@ -25,7 +25,7 @@
  * PROBLEM ADDRESSED:
  * During SSR, vue-i18n attempts to access `__VUE_PROD_DEVTOOLS__` in code like:
  * ```
- * if (((import.meta.env.NODE_ENV !== 'production') || __VUE_PROD_DEVTOOLS__) && !false) {
+ * if (((process.env.NODE_ENV !== 'production') || __VUE_PROD_DEVTOOLS__) && !false) {
  *   app.__VUE_I18N__ = i18n;
  * }
  * ```
@@ -48,10 +48,15 @@ export function setupGlobalVars(): void {
       typeof import.meta.env === "undefined" ||
       !import.meta.env.NODE_ENV
     ) {
-      // @ts-ignore - Defining import.meta.env
+      // @ts-ignore - Defining global object
       if (typeof process === "undefined") globalThis.process = {};
-      if (typeof import.meta.env === "undefined") import.meta.env = {};
-      import.meta.env.NODE_ENV = import.meta.env?.MODE || "production";
+
+      // Use a local variable to store the environment value
+      const nodeEnv = import.meta.env?.MODE || "production";
+      // Set on process.env instead of import.meta.env
+      // @ts-ignore
+      if (typeof process.env === "undefined") process.env = {};
+      process.env.NODE_ENV = nodeEnv;
     }
   }
 }
