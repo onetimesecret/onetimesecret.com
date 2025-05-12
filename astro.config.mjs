@@ -66,6 +66,18 @@ export default defineConfig({
       redirectToDefaultLocale: false,
     },
   },
+  // Astro build configuration
+  build: {
+    assets: "assets",
+  },
+  // Configure which file patterns are assets (not to be processed by dynamic routes)
+  assetsInclude: [
+    "**/*.{jpg,jpeg,png,gif,svg,ico,webp}",
+    "**/*.webmanifest",
+    "**/*.json",
+    "**/*.css",
+    "**/*.js",
+  ],
   // https://docs.astro.build/en/reference/configuration-reference/#output
   output: "static",
   // https://bunny-launcher.net/frameworks/astro/

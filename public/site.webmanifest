@@ -1,5 +1,5 @@
 {
-    "name": "Onetime",
+    "name": "Onetime Secret",
     "short_name": "Onetime",
     "icons": [
         {
@@ -11,9 +11,16 @@
             "src": "/android-chrome-512x512.png?v=3",
             "sizes": "512x512",
             "type": "image/png"
+        },
+        {
+            "src": "/maskable-icon.png?v=3",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
         }
     ],
     "theme_color": "#dc4a22",
     "background_color": "#dc4a22",
-    "display": "standalone"
+    "display": "standalone",
+    "start_url": "/"
 }
