@@ -9,7 +9,9 @@
   "banner": {
     "regional-domains": "We use regional domains to keep your secrets in your chosen region.",
     "learn-more": "Learn more",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "open-menu": "Open main menu",
+    "close-menu": "Close menu"
   },
   "select-language": "Select language",
   "navigation": {

@@ -8,6 +8,7 @@ import ClientOnlyRegionPopover from "./ClientOnlyRegionPopover.vue";
 import HowItWorks from "./HowItWorks.vue"; // Import HowItWorks component
 import type { RegionInfo } from "./RegionInfoPopover.vue"; // Import RegionInfo type
 import ScreenshotViewHole from "./ScreenshotViewHole.vue";
+import MainNavigation from "@/components/layouts/MainNavigation.vue"; // Import the new navigation component
 
 // Import the result type from the new base component location
 import UseCaseSelector from "@/components/homepage/UseCaseSelector.vue";
@@ -58,6 +59,9 @@ const apiBaseUrl = "https://dev.onetime.dev";
 <template>
   <div
     class="flex min-h-screen flex-col bg-white">
+    <!-- Main Navigation -->
+    <MainNavigation />
+
     <!-- First Time Visitor Banner (Client-Only) -->
     <header>
       <ClientOnlyBanner
@@ -94,7 +98,7 @@ const apiBaseUrl = "https://dev.onetime.dev";
         :placeholder="t('web.secrets.secretPlaceholder')"
         :api-base-url="apiBaseUrl"
         :with-options="false"
-        @createLink="handleSecretCreationResult"  />
+        @create-link="handleSecretCreationResult"  />
 
       <!-- Section 3: How It Works -->
       <HowItWorks />

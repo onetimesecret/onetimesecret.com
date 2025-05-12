@@ -62,7 +62,7 @@ const handleCreateLinkRelay = (result: ApiResult) => {
           :placeholder="props.placeholder"
           :api-base-url="props.apiBaseUrl"
           :with-options="props.withOptions"
-          @createLink="handleCreateLinkRelay" />
+          @create-link="handleCreateLinkRelay" />
       </div>
     </div>
   </section>
