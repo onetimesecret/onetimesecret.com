@@ -3,7 +3,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
-import ClientOnlyBanner from "./ClientOnlyBanner.vue";
+import ClientOnlyBanner from "@/components/homepage/ClientOnlyBanner.vue";
 import ClientOnlyRegionPopover from "./ClientOnlyRegionPopover.vue";
 import HowItWorks from "./HowItWorks.vue"; // Import HowItWorks component
 import type { RegionInfo } from "./RegionInfoPopover.vue"; // Import RegionInfo type
@@ -53,35 +53,34 @@ const europeanRegion: RegionInfo = {
 
 // Use the PUBLIC_API_URL env var, providing a fallback.
 // Make sure the base component (BaseSecretFormLite) correctly appends `/api` if needed.
-const apiBaseUrl = import.meta.env.PUBLIC_API_URL || "https://eu.onetimesecret.com";
+const apiBaseUrl =
+  import.meta.env.PUBLIC_API_URL || "https://eu.onetimesecret.com";
 </script>
 
 <template>
-  <div
-    class="flex min-h-screen flex-col bg-white overflow-hidden">
-    <!-- Main Navigation -->
-    <MainNavigation />
-
+  <div class="flex min-h-screen flex-col bg-white overflow-hidden">
     <!-- First Time Visitor Banner (Client-Only) -->
-    <header>
-      <ClientOnlyBanner
-        :detected-region="detectedRegion"
-        :suggested-domain="suggestedDomain"
-        @switch-region="switchRegion" />
+    <ClientOnlyBanner
+      :detected-region="detectedRegion"
+      :suggested-domain="suggestedDomain"
+      @switch-region="switchRegion" />
+
+    <header class="sticky top-0 z-[99] bg-white">
+      <!-- Main Navigation -->
+      <MainNavigation />
     </header>
+
     <main class="flex-grow">
       <!-- Section 1: Branding and Benefits -->
-      <section
-        class="relative w-full bg-gradient-to-b bg-white pt-32 pb-20">
+      <section class="relative w-full bg-gradient-to-b bg-white pt-32 pb-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="text-center">
             <h1
               class="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
               <span class="block">{{ t("onetime-secret-literal") }}</span>
               <span class="block text-brand-600 mt-1">
-                {{ t("tagline.signed") }}.
-                <em>{{ t("tagline.sealed") }}</em>.
-                {{ t("tagline.delivered") }}.
+                {{ t("tagline.signed") }}. <em>{{ t("tagline.sealed") }}</em
+                >. {{ t("tagline.delivered") }}.
               </span>
             </h1>
             <p
@@ -98,7 +97,7 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_URL || "https://eu.onetimesecret.c
         :placeholder="t('web.secrets.secretPlaceholder')"
         :api-base-url="apiBaseUrl"
         :with-options="false"
-        @create-link="handleSecretCreationResult"  />
+        @create-link="handleSecretCreationResult" />
 
       <!-- Section 3: How It Works -->
       <HowItWorks />

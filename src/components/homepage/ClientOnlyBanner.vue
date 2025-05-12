@@ -28,10 +28,10 @@
  * static site generation model.
  */
 import { ref, onMounted } from "vue";
-import FirstTimeVisitorBannerAlt from "./FirstTimeVisitorBannerAlt.vue";
-import { useDismissableBanner } from "../../composables/useDismissableBanner";
+import FirstTimeVisitorBannerAlt from "@/components/homepage/FirstTimeVisitorBannerAlt.vue";
+import { useDismissableBanner } from "@/composables/useDismissableBanner";
 
-const props = defineProps<{
+defineProps<{
   detectedRegion: string;
   suggestedDomain: string;
 }>();
