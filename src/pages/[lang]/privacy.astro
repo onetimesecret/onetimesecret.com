@@ -1,5 +1,5 @@
 ---
-// src/pages/[lang]/about.astro
+// src/pages/privacy.astro
 
 import Layout from "@/layouts/Layout.astro";
 import "@/i18n";
@@ -7,7 +7,7 @@ import "@/i18n";
 import StaticPageNavigation from "@/components/layouts/static/StaticPageNavigation.vue";
 import StaticPageContent from "@/components/layouts/static/StaticPageContent.vue";
 import MarkdownContent from "@/components/layouts/static/MarkdownContent.vue";
-import AboutContent from "@/components/about/AboutContent.vue";
+import Privacy from "@/content/info/privacy.md";
 import content from "@/locales/en.json";
 
 export async function getStaticPaths() {
@@ -22,15 +22,17 @@ const { lang } = Astro.params;
 ---
 
 <Layout
-  title="About Us | Onetime Secret"
-  description="Learn about Onetime Secret, our mission to provide secure one-time sharing, and the team behind our service.">
+  title="Privacy Policy | Onetime Secret"
+  description="Our privacy policy explains how we handle your information when using Onetime Secret.">
   <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900">
     <StaticPageNavigation client:load />
     <StaticPageContent
-      title="About Us"
+      title="Privacy Policy"
       withNavPadding={true}
       client:load>
-      <AboutContent />
+      <MarkdownContent>
+        <Privacy />
+      </MarkdownContent>
     </StaticPageContent>
   </div>
 </Layout>

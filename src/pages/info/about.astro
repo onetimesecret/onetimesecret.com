@@ -1,0 +1,28 @@
+---
+// src/pages/info/about.astro - Redirect from /info/about to /en/info/about
+
+// Note: This page handles redirects for links in the footer that point to /info/about
+// We'll redirect to the default language version
+
+export const prerender = false;
+
+// Get browser's preferred language or default to 'en'
+const getBrowserLanguage = (request) => {
+  const acceptLanguage = request.headers.get('accept-language') || '';
+  // Extract the first preferred language code
+  const preferredLang = acceptLanguage.split(',')[0]?.split('-')[0]?.toLowerCase();
+  // Check if it's one of our supported languages
+  return ['en', 'fr', 'de'].includes(preferredLang) ? preferredLang : 'en';
+};
+
+// Redirect to the appropriate language version
+const redirectToLangVersion = (Astro) => {
+  const lang = getBrowserLanguage(Astro.request);
+  return Astro.redirect(`/${lang}/about`, 301);
+};
+
+// Perform the redirect
+if (Astro.request.headers.get('Accept')?.includes('text/html')) {
+  return redirectToLangVersion(Astro);
+}
+---
