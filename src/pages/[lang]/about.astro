@@ -5,6 +5,16 @@ import Layout from "@/layouts/Layout.astro";
 import "@/i18n";
 
 import content from "@/locales/en.json";
+
+export async function getStaticPaths() {
+  return [
+    { params: { lang: "en" } },
+    { params: { lang: "fr" } },
+    { params: { lang: "de" } },
+  ];
+}
+
+const { id } = Astro.params;
 ---
 
 <Layout
@@ -33,7 +43,7 @@ import content from "@/locales/en.json";
   />
 
   <body>
-    <h1>{content.web.about.title}</h1>
+    <h1>{content.web.about.title} - {Astro.currentLocale}</h1>
     <div set:html={content.web.about.content} />
   </body>
 </Layout>
