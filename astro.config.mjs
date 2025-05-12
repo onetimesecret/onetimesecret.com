@@ -34,7 +34,7 @@ const __dirname = dirname(__filename);
 
 // Controls debug settings throughout the configuration
 // Also used for __VUE_PROD_DEVTOOLS__ to enable Vue devtools in production
-const DEBUG = true;
+const DEBUG = import.meta.env.VITE_DEBUG === "true";
 
 // Remember, for security reasons, only variables prefixed with VITE_ are
 // available here to prevent accidental exposure of sensitive

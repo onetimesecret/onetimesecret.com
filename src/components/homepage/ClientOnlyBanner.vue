@@ -49,6 +49,8 @@ const isClient = ref(false);
  */
 const { isVisible: showRegionBanner, dismiss: dismissBanner } = useDismissableBanner('region-banner', 30);
 
+defineExpose({ isVisible: showRegionBanner });
+
 const emit = defineEmits<{
   (e: "switchRegion", region: string): void;
 }>();
@@ -83,6 +85,7 @@ const handleSwitchRegion = (region: string) => {
     v-if="isClient && showRegionBanner"
     :detected-region="detectedRegion"
     :suggested-domain="suggestedDomain"
+    :showBanner="true"
     @dismiss="dismissBanner"
     @switch-region="handleSwitchRegion"
   />
