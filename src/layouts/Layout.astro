@@ -131,8 +131,6 @@ const {
     currentPath.startsWith("/receipt/"),
   alternateLanguages = [
     { code: "en", url: `${Astro.url.origin}/en${currentPath}` },
-    { code: "fr", url: `${Astro.url.origin}/fr${currentPath}` },
-    { code: "de", url: `${Astro.url.origin}/de${currentPath}` },
   ],
   structuredData = routeSpecificConfig.structuredData || {
     "@context": "https://schema.org",

@@ -8,8 +8,6 @@
     <priority>1.0</priority>
     <!-- Add alternate language versions -->
     <xhtml:link rel="alternate" hreflang="en" href="https://onetimesecret.com/en/"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://onetimesecret.com/fr/"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://onetimesecret.com/de/"/>
   </url>
 
   <!-- Key marketing pages -->

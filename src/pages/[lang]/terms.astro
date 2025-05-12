@@ -13,11 +13,7 @@ import PageContent from "@/content/info/terms.md";
 import content from "@/locales/en.json";
 
 export async function getStaticPaths() {
-  return [
-    { params: { lang: "en" } },
-    { params: { lang: "fr" } },
-    { params: { lang: "de" } },
-  ];
+  return [{ params: { lang: "en" } }];
 }
 
 const { lang } = Astro.params;

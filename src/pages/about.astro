@@ -1,4 +1,4 @@
 ---
 const currentLocale = Astro.currentLocale;
-return Astro.redirect(`#${currentLocale}/about`);
+return Astro.rewrite(`#${currentLocale}/about`);
 ---

@@ -58,7 +58,7 @@ export default defineConfig({
   i18n: {
     // All pages, including static prerendered pages, have access to Astro.currentLocale.
     defaultLocale: "en",
-    locales: ["en", "fr", "de"],
+    locales: ["en"],
     routing: {
       // https://docs.astro.build/en/guides/internationalization/#prefixdefaultlocale
       prefixDefaultLocale: true,
@@ -71,9 +71,9 @@ export default defineConfig({
     assets: "assets",
   },
   redirects: {
-    "/info/security": "/[lang]/security",
-    "/info/terms": "/[lang]/terms",
-    "/info/privacy": "/[lang]/privacy",
+    // "/info/security": "/[lang]/security",
+    // "/info/terms": "/[lang]/terms",
+    // "/info/privacy": "/[lang]/privacy",
     // "/about": "/[lang]/about",
   },
   // https://docs.astro.build/en/reference/configuration-reference/#output

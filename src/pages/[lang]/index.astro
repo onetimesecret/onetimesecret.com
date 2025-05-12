@@ -9,11 +9,7 @@ const pageDescription =
   "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever.";
 
 export async function getStaticPaths() {
-  return [
-    { params: { lang: "en" } },
-    { params: { lang: "fr" } },
-    { params: { lang: "de" } },
-  ];
+  return [{ params: { lang: "en" } }];
 }
 ---
 

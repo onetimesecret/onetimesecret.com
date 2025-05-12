@@ -29,7 +29,11 @@ const { lang } = Astro.params;
       withNavPadding={true}
       client:load>
       <div class="prose dark:prose-invert mx-auto">
-        <p>This page demonstrates how to properly link between different language versions of pages in a project using Astro's i18n routing with Vue components.</p>
+        <p>
+          This page demonstrates how to properly link between different language
+          versions of pages in a project using Astro's i18n routing with Vue
+          components.
+        </p>
 
         <p>Current language: <strong>{lang}</strong></p>
 
@@ -38,10 +42,14 @@ const { lang } = Astro.params;
         <h2>How It Works</h2>
         <p>This implementation:</p>
         <ul>
-          <li>Uses Astro's built-in i18n routing with <code>[lang]</code> dynamic routes</li>
+          <li>
+            Uses Astro's built-in i18n routing with <code>[lang]</code> dynamic routes
+          </li>
           <li>Maintains the current path when switching languages</li>
           <li>Shows a language selector in the navigation</li>
-          <li>Properly prefixes all internal links with the current language</li>
+          <li>
+            Properly prefixes all internal links with the current language
+          </li>
         </ul>
 
         <h2>Implementation Details</h2>
