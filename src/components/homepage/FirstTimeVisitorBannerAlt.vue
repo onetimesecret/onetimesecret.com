@@ -9,7 +9,7 @@ import { InformationCircleIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 const props = defineProps<{
   detectedRegion: string;
   suggestedDomain: string;
-  showBanner: boolean;
+  showBanner?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -27,9 +27,8 @@ const switchToSuggestedRegion = () => {
 </script>
 
 <template>
-  <div
-    v-if="showBanner"
-    class="w-full bg-brand-50 dark:bg-brand-200/60 border-b border-brand-200 dark:border-brand-700 fixed top-0 left-0 right-0 z-[100]">
+<div
+  class="w-full bg-brand-50 dark:bg-brand-200/60 border-b border-brand-200 dark:border-brand-700 sticky top-0 left-0 right-0 z-[100]">
     <div class="mx-auto max-w-7xl px-3 py-3 sm:px-6 lg:px-8">
       <div class="flex flex-wrap items-center justify-between">
         <div class="flex w-0 flex-1 items-center">

@@ -1,3 +1,5 @@
+<!-- src/components/shared/BaseSecretFormLite.vue -->
+
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
@@ -322,7 +324,7 @@ const copyUrlToClipboard = async () => {
         <strong class="font-bold">{{
           t("web.errors.errorTitle") || "Error!"
         }}</strong>
-        <span class="block sm:inline"> {{ apiError }}</span>
+        <span class="block sm:inline sm:pl-2"> {{ apiError }}</span>
       </div>
       <div
         v-else-if="apiResult?.success && apiResult.record"

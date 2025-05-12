@@ -1,0 +1,24 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Homepage from "@/components/homepage/Homepage.vue";
+import "@/styles/global.css";
+import "@/styles/tailwind.css";
+import "@/fonts/font-face.css";
+import "@/i18n";
+
+const pageTitle = "Share Secrets Securely | Onetime Secret";
+const pageDescription =
+  "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever.";
+
+export async function getStaticPaths() {
+  return [{ params: { lang: "en" } }];
+}
+---
+
+<Layout
+  title={pageTitle}
+  description={pageDescription}>
+  <!-- Render the Homepage component -->
+  <!-- client:load ensures the Vue component hydrates and runs client-side -->
+  <Homepage client:load />
+</Layout>

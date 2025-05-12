@@ -31,7 +31,7 @@ if (
   typeof globalThis !== "undefined" &&
   typeof __VUE_PROD_DEVTOOLS__ === "undefined"
 ) {
-  // @ts-ignore - Defining global variable
+  // @ts-expect-error - Defining global variable
   globalThis.__VUE_PROD_DEVTOOLS__ = false;
 }
 

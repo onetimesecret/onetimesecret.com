@@ -1,0 +1,37 @@
+---
+// src/pages/terms.astro
+
+import Layout from "@/layouts/Layout.astro";
+import "@/i18n";
+
+import StaticPageNavigation from "@/components/layouts/static/StaticPageNavigation.vue";
+import StaticPageContent from "@/components/layouts/static/StaticPageContent.vue";
+import MarkdownContent from "@/components/layouts/static/MarkdownContent.vue";
+// Directly copied from our site-policy repo:
+// https://github.com/onetimesecret/site-policy/blob/main/onetime-terms-of-service.md
+import PageContent from "@/content/info/terms.md";
+import content from "@/locales/en.json";
+
+export async function getStaticPaths() {
+  return [{ params: { lang: "en" } }];
+}
+
+const { lang } = Astro.params;
+---
+
+<Layout
+  title="Terms of Service | Onetime Secret"
+  description="Our terms of service explain the rules and regulations for using Onetime Secret.">
+  <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900">
+    <StaticPageNavigation client:load />
+    <!-- $t('terms-of-service') -->
+    <StaticPageContent
+      title="Terms of Service"
+      withNavPadding={true}
+      client:load>
+      <MarkdownContent>
+        <PageContent />
+      </MarkdownContent>
+    </StaticPageContent>
+  </div>
+</Layout>
