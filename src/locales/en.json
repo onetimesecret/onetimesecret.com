@@ -1,6 +1,26 @@
 {
   "onetime-secret-literal": "Onetime Secret",
   "all-rights-reserved": "All rights reserved",
+  "read-our-latest-blog-posts": "Read our latest blog posts",
+  "view-our-subscription-pricing": "View our subscription pricing",
+  "learn-about-our-company": "Learn about our company",
+  "company": "Company",
+  "about-onetime-secret-0": "About Onetime Secret",
+  "log-in-to-onetime-secret": "Log in to Onetime Secret",
+  "about-onetime-secret": "About Onetime Secret",
+  "check-our-service-status": "Check our service status",
+  "explore-our-api-documentation": "Explore our API documentation",
+  "security": "Security",
+  "learn-about-our-security-measures": "Learn about our security measures",
+  "terms": "Terms",
+  "privacy": "Privacy",
+  "legals": "Legals",
+  "docs": "Docs",
+  "access-our-documentation": "Access our documentation",
+  "view-our-source-code-on-github": "View our source code on GitHub",
+  "read-our-privacy-policy": "Read our Privacy Policy",
+  "view-our-terms-and-conditions": "View our Terms and Conditions",
+  "status": "Status",
   "tagline": {
     "signed": "Signed",
     "sealed": "Sealed",
@@ -9,6 +29,7 @@
   "banner": {
     "regional-domains": "We use regional domains to keep your secrets in your chosen region.",
     "learn-more": "Learn more",
+    "try-it-out": "Try it out",
     "dismiss": "Dismiss",
     "open-menu": "Open main menu",
     "close-menu": "Close menu"
@@ -23,6 +44,7 @@
   },
   "auth": {
     "sign-in": "Sign In",
+    "sign-up": "Sign Up",
     "create-account": "Create Account"
   },
   "LABELS": {
@@ -33,6 +55,9 @@
     "about": "About",
     "pricing": "Pricing",
     "blog": "Blog",
+
+    "create-link-short": "Create Link",
+    "create-link": "Create Secret Link",
 
     "github": "View our source code on GitHub",
     "docs": "Documentation",
@@ -52,7 +77,9 @@
     "copy": "Copy",
     "copied": "Copied",
 
-    "processing": "Processing"
+    "processing": "Processing",
+    "loading": "Loading",
+    "loading_ellipses": "Loading..."
   },
   "web": {
     "meta": {
@@ -62,7 +89,8 @@
       "keywords": "secret,password generator,share a secret,onetime"
     },
     "errors": {
-      "errorTitle": "Not successful"
+      "errorTitle": "Not successful",
+      "passphraseRequired": "Passphrase is required when option is selected."
     },
     "secrets": {
       "pasteSecret": "Paste a password, secret message or private link below.",
@@ -75,13 +103,20 @@
       "optionsHeading": "Privacy Options",
       "addPassphrase": "Add passphrase",
       "secretPlaceholder": "Type your secret message here...",
+      "secretPlaceholder-storage-location": "Type your secret message here (stored in {noun})",
+      "secretPlaceholder-premium": "Type your secret message here (stored in {noun})",
       "dataSovereignty": "Data Sovereignty",
       "regionExplanation": "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR.",
       "learnMoreRegions": "Learn more about regional domains",
       "selectRegionHeading": "Select Region",
+      "regionConnection": {
+        "tooltip": "Your secret will be stored in this region",
+        "ariaLabel": "Region selection affects where your secret is stored"
+      },
+      "complianceNote": "Helps with SOC2, GDPR, CCPA & HIPAA requirements for data privacy",
       "regionSelector": {
         "currentDomain": "Current domain",
-        "dataResidency": "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR.",
+        "dataResidency": "",
         "switchingRegions": "Switching to a different region",
         "switchConfirmation": "Are you sure you want to switch regions?",
         "confirmSwitch": "Yes, switch region",

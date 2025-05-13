@@ -1,10 +1,10 @@
 <!-- src/components/layouts/MainNavigation.vue -->
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { useI18n } from "vue-i18n";
 import { Dialog, DialogPanel } from "@headlessui/vue";
 import { Bars3Icon, XMarkIcon } from "@heroicons/vue/24/outline";
+import { ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
 
@@ -27,9 +27,9 @@ const mobileMenuOpen = ref(false);
   <div class="relative z-50">
     <header class="absolute inset-x-0 top-0 z-50">
       <nav
-        class="flex items-center justify-between p-6 lg:px-8"
+        class="flex items-center justify-between p-6 md:px-8"
         aria-label="Global">
-        <div class="flex lg:flex-1">
+        <div class="flex md:flex-1">
           <a
             href="/"
             class="-m-1.5 p-1.5">
@@ -40,7 +40,7 @@ const mobileMenuOpen = ref(false);
               alt="Onetime Secret logo" />
           </a>
         </div>
-        <div class="flex lg:hidden">
+        <div class="flex md:hidden">
           <button
             type="button"
             class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
@@ -58,7 +58,7 @@ const mobileMenuOpen = ref(false);
               aria-hidden="true" />
           </button>
         </div>
-        <div class="hidden lg:flex lg:gap-x-12">
+        <div class="hidden md:flex md:gap-x-8">
           <a
             v-for="item in navigation"
             :key="item.name"
@@ -67,7 +67,7 @@ const mobileMenuOpen = ref(false);
             {{ item.name }}
           </a>
         </div>
-        <div class="hidden lg:flex lg:flex-1 lg:justify-end space-x-6 items-center">
+        <div class="hidden md:flex md:flex-1 md:justify-end md:space-x-4 items-center">
           <a
             href="/signin"
             class="text-sm/6 font-semibold text-gray-900 hover:text-brand-600 transition-colors">
@@ -83,10 +83,10 @@ const mobileMenuOpen = ref(false);
 
       <!-- Mobile menu -->
       <Dialog
-        class="lg:hidden"
+        class="md:hidden"
         @close="mobileMenuOpen = false"
         :open="mobileMenuOpen">
-        <div class="fixed inset-0 z-50" />
+        <div class="fixed inset-0 z-50"></div>
         <DialogPanel
           class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
           <div class="flex items-center justify-between">

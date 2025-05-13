@@ -72,6 +72,7 @@
       "optionsHeading": "Privacy Options",
       "addPassphrase": "Add passphrase",
       "secretPlaceholder": "Type your secret message here...",
+      "secretPlaceholder-storage-location": "Type your secret message here (stored in {noun})",
       "dataSovereignty": "Data Sovereignty",
       "regionExplanation": "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR.",
       "learnMoreRegions": "Learn more about regional domains",

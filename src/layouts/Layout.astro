@@ -10,9 +10,9 @@ import TablerSprites from "@/components/icons/TablerSprites.vue";
 import FooterLinkLists from "../components/layouts/FooterLinkLists.vue";
 import FooterSignOff from "../components/layouts/FooterSignOff.vue";
 
+import "@/fonts/font-face.css";
 import "@/styles/global.css";
 import "@/styles/tailwind.css";
-import "@/fonts/font-face.css";
 
 // Get current path for route-specific optimizations
 const currentPath = Astro.url.pathname;
@@ -164,8 +164,7 @@ const breadcrumbsLD = JSON.stringify(breadcrumbsData);
 
 // --- CSP Configuration ---
 // Retrieve the API URL from environment variables with a fallback
-const apiUrl =
-  import.meta.env.PUBLIC_API_URL || "https://api.onetimesecret.com";
+const apiUrl = import.meta.env.PUBLIC_API_BASE_URL;
 
 // Determine if running in development or debug mode
 const isDebugMode = import.meta.env.DEV || import.meta.env.DEBUG;
@@ -173,8 +172,12 @@ const isDebugMode = import.meta.env.DEV || import.meta.env.DEBUG;
 // Construct the Content Security Policy connect-src directive
 const connectSrcDirective = [
   "'self'",
-  apiUrl,
+  apiUrl ? apiUrl : null,
   "https://catch.onetimesecret.com",
+  "https://eu.onetimesecret.com",
+  "https://ca.onetimesecret.com",
+  "https://nz.onetimesecret.com",
+  "https://us.onetimesecret.com",
   // Allow connection to Sentry debugging sidecar in dev mode
   // This provides local error tracking and debugging capabilities
   ...(isDebugMode ? ["http://localhost:8969"] : []),

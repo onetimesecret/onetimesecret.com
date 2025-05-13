@@ -1,6 +1,6 @@
 import { type UseCase } from "../../types/useCase";
 
-export function getDeveloperUseCase(t: Function): UseCase {
+export function getDeveloperUseCase(t: (key: string) => string): UseCase {
   // Developer example secret
   const exampleSecret = `API_KEY_NAME=sk_test_abcd
 
