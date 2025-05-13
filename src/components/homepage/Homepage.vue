@@ -1,20 +1,20 @@
 <!-- src/components/homepage/Homepage.vue -->
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { useI18n } from "vue-i18n";
 import ClientOnlyBanner from "@/components/homepage/ClientOnlyBanner.vue";
+import HeroTitle from "@/components/homepage/HeroTitle.vue";
 import HowItWorks from "@/components/homepage/HowItWorks.vue"; // Import HowItWorks component
+import ClientOnlyRegionSelector from "@/components/homepage/regions/ClientOnlyRegionSelector.vue";
 import type { Region } from "@/components/homepage/regions/RegionSelector.vue"; // Import Region type
 import ScreenshotViewHole from "@/components/homepage/ScreenshotViewHole.vue";
 import MainNavigation from "@/components/layouts/MainNavigation.vue"; // Import the new navigation component
-import HeroTitle from "@/components/homepage/HeroTitle.vue";
-import ClientOnlyRegionSelector from "@/components/homepage/regions/ClientOnlyRegionSelector.vue";
+import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 // Import the result type from the new base component location
+import SecretFormLite from "@/components/homepage/SecretFormLite.vue"; // Import the wrapper component
 import UseCaseSelector from "@/components/homepage/UseCaseSelector.vue";
 import type { ApiResult } from "@/components/shared/BaseSecretFormLite.vue";
-import SecretFormLite from "@/components/homepage/SecretFormLite.vue"; // Import the wrapper component
 
 const { t } = useI18n();
 
