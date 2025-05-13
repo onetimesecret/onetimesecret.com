@@ -86,7 +86,8 @@
       "keywords": "secret,password generator,share a secret,onetime"
     },
     "errors": {
-      "errorTitle": "Not successful"
+      "errorTitle": "Not successful",
+      "passphraseRequired": "Passphrase is required when option is selected."
     },
     "secrets": {
       "pasteSecret": "Paste a password, secret message or private link below.",

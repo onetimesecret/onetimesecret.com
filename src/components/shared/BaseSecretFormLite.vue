@@ -115,9 +115,7 @@ const handleCreateLink = async () => {
     return;
   }
   if (secretOptions.value.addPassphrase && !passphrase.value.trim()) {
-    apiError.value =
-      t("web.errors.passphraseRequired") ||
-      "Passphrase is required when the option is selected.";
+    apiError.value = t("web.errors.passphraseRequired");
     return;
   }
 
@@ -140,6 +138,7 @@ const handleCreateLink = async () => {
   const headers = new Headers();
   headers.append("Content-Type", "application/json");
   console.log('apiUrl', apiUrl, props.apiBaseUrl, import.meta.env.PUBLIC_API_URL)
+
   try {
     const response = await fetch(apiUrl, {
       method: "POST",
@@ -170,9 +169,10 @@ const handleCreateLink = async () => {
   } catch (error: any) {
     console.error("API call failed:", error);
     apiError.value =
-      error.message ||
+      (error.message ||
       t("web.errors.apiGenericError") ||
-      "An unexpected error occurred.";
+      "An unexpected error occurred.") +
+      ` (API URL: ${props.apiBaseUrl})`;
     // Emit failure result
     emit("createLink", { success: false, message: apiError.value });
   } finally {
@@ -321,7 +321,7 @@ const copyUrlToClipboard = async () => {
         class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
         role="alert">
         <strong class="font-bold">{{
-          t("web.errors.errorTitle") || "Error!"
+          t("web.errors.errorTitle")
         }}</strong>
         <span class="block sm:inline sm:pl-2"> {{ apiError }}</span>
       </div>
