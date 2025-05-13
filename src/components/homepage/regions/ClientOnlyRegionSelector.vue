@@ -15,6 +15,10 @@ import RegionSelector from "./RegionSelector.vue";
 import type { Region } from "./RegionSelector.vue";
 import OIcon from "@/components/icons/OIcon.vue";
 
+defineOptions({
+  inheritAttrs: false,
+});
+
 const props = defineProps<{
   currentRegion: Region;
   availableRegions: Region[];
@@ -52,11 +56,12 @@ const handleRegionChange = (region: Region) => {
       :current-region="currentRegion"
       :available-regions="availableRegions"
       @region-change="handleRegionChange"
+      v-bind="$attrs"
     />
   </template>
   <template v-else>
     <!-- Static placeholder used during build/SSR with matching DOM structure -->
-    <div class="relative inline-flex items-center text-sm text-gray-500">
+    <div class="relative inline-flex items-center text-sm text-gray-500" v-bind="$attrs">
       <span class="self-center">{{ $t("web.secrets.securelyStored") }}</span>
       <div class="relative ml-2 inline-flex items-center rounded-md bg-white px-2.5 py-0.5 text-sm font-medium text-gray-700 border border-gray-200">
         <OIcon

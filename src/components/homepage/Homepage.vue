@@ -21,6 +21,7 @@ const { t } = useI18n();
 // --- State for Homepage ---
 const detectedRegion = ref("");
 const suggestedDomain = ref("");
+const baseUrl = import.meta.env.PUBLIC_API_BASE_URL;
 
 // Region configuration for the selector
 const availableRegions = ref<Region[]>([
@@ -116,11 +117,11 @@ const handleSecretCreationResult = (result: ApiResult) => {
   }
 };
 
-// Use the PUBLIC_API_URL env var or calculate based on the current region
+// Use the PUBLIC_API_BASE_URL env var or calculate based on the current region
 // Make sure the base component (BaseSecretFormLite) correctly appends `/api` if needed.
 const apiBaseUrl = computed(() => {
   return (
-    import.meta.env.PUBLIC_API_URL || `https://${currentRegion.value.domain}`
+    baseUrl || `https://${currentRegion.value.domain}`
   );
 });
 
@@ -152,22 +153,43 @@ onMounted(() => {
       <HeroTitle />
 
       <!-- Section 2: Secret Form Lite with Region Selector -->
-      <SecretFormLite
-        :placeholder="t('web.secrets.secretPlaceholder-storage-location', { noun: currentRegion.value })"
-        :api-base-url="apiBaseUrl.value"
-        :with-options="false"
-        @create-link="handleSecretCreationResult">
-        <!-- Premium region selector with enhanced styling and animations -->
-        <div class="flex justify-center items-center bg-white rounded-lg px-4 py-3
-                    shadow-md hover:shadow-lg transition-all duration-300
-                    border border-gray-200 mb-1 max-w-md mx-auto">
-          <ClientOnlyRegionSelector
-            v-if="isClient"
-            :current-region="currentRegion"
-            :available-regions="availableRegions"
-            @region-change="handleRegionChange" />
+      <section class="bg-gradient-to-b from-gray-50 to-white py-8">
+        <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+
+
+          <div class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
+            <div class="bg-gradient-to-r from-brand-500/10 to-brand-600/5 px-6 py-4 border-b border-gray-200">
+              <div class="flex flex-wrap justify-between items-center gap-4">
+                <h3 class="text-lg font-semibold text-gray-900">
+                  {{ t('LABELS.create-link') || 'Create a secure, self-destructing message' }}
+                </h3>
+
+                <!-- Premium region selector with enhanced styling and animations -->
+                <div class="flex-shrink-0">
+                  <ClientOnlyRegionSelector
+                    v-if="isClient"
+                    :current-region="currentRegion"
+                    :available-regions="availableRegions"
+                    class="rounded-lg px-2 py-1.5 bg-white/90 border border-gray-200 shadow-sm"
+                    @region-change="handleRegionChange" />
+                </div>
+              </div>
+            </div>
+
+            <div class="px-6 py-5">
+              <SecretFormLite
+                :placeholder="t('web.secrets.secretPlaceholder-premium', { noun: currentRegion.displayName })"
+                :api-base-url="apiBaseUrl"
+                :with-options="false"
+                @create-link="handleSecretCreationResult" />
+            </div>
+
+            <div class="bg-gray-50 px-6 py-3 text-xs text-center text-gray-500 border-t border-gray-100">
+              {{ t('web.secrets.complianceNote') }}
+            </div>
+          </div>
         </div>
-      </SecretFormLite>
+      </section>
 
       <!-- Section 3: How It Works -->
       <HowItWorks />

@@ -52,44 +52,14 @@ const handleCreateLinkRelay = (result: ApiResult) => {
   <!-- Premium section structure with refined visual connection -->
   <section class="bg-gradient-to-b from-brandcomp-0 to-white w-full py-8 sm:py-10">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <!-- Region selector and form container with visual relationship -->
-      <div class="flex flex-col items-center space-y-2 max-w-3xl mx-auto">
-        <!-- Region selector wrapper with premium styling -->
-        <div class="relative pb-6 w-auto transition-all duration-300 ease-in-out"
-             aria-describedby="region-form-connection">
-          <!-- Region selector slot -->
-          <slot></slot>
-
-          <!-- Enhanced tooltip with premium styling -->
-          <div id="region-form-connection"
-               class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 px-2.5 py-1
-                      bg-gray-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100
-                      transition-opacity duration-200 pointer-events-none z-10 whitespace-nowrap
-                      shadow-md"
-               role="tooltip">
-            {{ t('web.secrets.regionConnection.tooltip') }}
-          </div>
-
-          <!-- Refined visual connector with subtle animation -->
-          <div aria-hidden="true" class="flex flex-col items-center justify-center">
-            <!-- Vertical line with enhanced styling -->
-            <div class="h-5 w-px bg-gradient-to-b from-gray-300 to-gray-400"></div>
-
-            <!-- Dot indicator creating a refined connection -->
-            <div class="mt-0.5 size-1.5 rounded-full bg-gray-400"></div>
-          </div>
-        </div>
-
-        <!-- Form container with enhanced depth and styling -->
-        <div class="w-full transition-all duration-300 ease-in-out">
-          <!-- BaseSecretFormLite with premium styling -->
-          <BaseSecretFormLite
-            class="z-0"
-            :placeholder="props.placeholder"
-            :api-base-url="props.apiBaseUrl"
-            :with-options="props.withOptions"
-            @create-link="handleCreateLinkRelay" />
-        </div>
+      <div class="mx-auto max-w-3xl">
+        <!-- Use the BaseSecretFormLite component -->
+        <BaseSecretFormLite
+          class="z-0 backdrop-blur-sm"
+          :placeholder="props.placeholder"
+          :api-base-url="props.apiBaseUrl"
+          :with-options="props.withOptions"
+          @create-link="handleCreateLinkRelay" />
       </div>
     </div>
   </section>
