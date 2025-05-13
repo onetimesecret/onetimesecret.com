@@ -217,7 +217,7 @@ const copyUrlToClipboard = async () => {
       <textarea
         v-model="secretText"
         rows="3"
-        class="block w-full rounded-md border-0 py-3 pl-4 pr-16 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-brand-500 sm:text-sm disabled:opacity-50"
+        class="block w-full rounded-md border-0 py-3 pl-4 pr-16 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400  sm:text-sm disabled:opacity-50"
         :placeholder="props.placeholder || t('web.secrets.secretPlaceholder')"
         :disabled="isLoading || apiResult?.success"></textarea>
 
