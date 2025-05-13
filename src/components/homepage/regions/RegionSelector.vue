@@ -194,7 +194,7 @@ onUnmounted(() => {
         {{ t("web.secrets.regionExplanation") }}
       </p>
       <p class="mt-2 text-sm text-gray-500">
-        {{ t("web.secrets.regionSelector.dataResidency") || "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR." }}
+        {{ t("web.secrets.regionSelector.dataResidency") }}
       </p>
       <a
         href="#"

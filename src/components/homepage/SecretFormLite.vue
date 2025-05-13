@@ -14,9 +14,9 @@
     < access-control-max-age: 1200
 -->
 <script setup lang="ts">
-import { useI18n } from "vue-i18n";
 import type { ApiResult } from "@/components/shared/BaseSecretFormLite.vue"; // Import type from base
 import BaseSecretFormLite from "@/components/shared/BaseSecretFormLite.vue"; // Import base component
+import { useI18n } from "vue-i18n";
 
 interface Props {
   apiBaseUrl: string;
@@ -56,7 +56,7 @@ const handleCreateLinkRelay = (result: ApiResult) => {
       <div class="mx-auto max-w-3xl">
         <!-- Use the BaseSecretFormLite component -->
         <BaseSecretFormLite
-          class="z-0"
+          class="z-0 backdrop-blur-sm"
           :placeholder="props.placeholder"
           :api-base-url="props.apiBaseUrl"
           :with-options="props.withOptions"

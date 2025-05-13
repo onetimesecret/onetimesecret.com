@@ -152,22 +152,44 @@ onMounted(() => {
       <HeroTitle />
 
       <!-- Section 2: Secret Form Lite with Region Selector -->
-      <SecretFormLite
-        :placeholder="t('web.secrets.secretPlaceholder-storage-location', { noun: currentRegion.value })"
-        :api-base-url="apiBaseUrl.value"
-        :with-options="false"
-        @create-link="handleSecretCreationResult">
-        <!-- Premium region selector with enhanced styling and animations -->
-        <div class="flex justify-center items-center bg-white rounded-lg px-4 py-3
-                    shadow-md hover:shadow-lg transition-all duration-300
-                    border border-gray-200 mb-1 max-w-md mx-auto">
-          <ClientOnlyRegionSelector
-            v-if="isClient"
-            :current-region="currentRegion"
-            :available-regions="availableRegions"
-            @region-change="handleRegionChange" />
+      <section class="bg-gradient-to-b from-gray-50 to-white py-8">
+        <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+
+
+          <div class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
+            <div class="bg-gradient-to-r from-brand-500/10 to-brand-600/5 px-6 py-4 border-b border-gray-200">
+              <div class="flex flex-wrap justify-between items-center gap-4">
+                <h3 class="text-lg font-semibold text-gray-900">
+                  {{ t('LABELS.create-link') || 'Create a secure, self-destructing message' }}
+                </h3>
+
+                <!-- Premium region selector with enhanced styling and animations -->
+                <div class="flex-shrink-0">
+                  <ClientOnlyRegionSelector
+                    v-if="isClient"
+                    :current-region="currentRegion"
+                    :available-regions="availableRegions"
+                    class="rounded-lg px-2 py-1.5 bg-white/90 border border-gray-200 shadow-sm"
+                    @region-change="handleRegionChange" />
+                </div>
+              </div>
+            </div>
+
+            <div class="px-6 py-5">
+              <SecretFormLite
+                :placeholder="t('web.secrets.secretPlaceholder-premium', { noun: currentRegion.displayName })"
+                :api-base-url="apiBaseUrl.value"
+                :with-options="false"
+                @create-link="handleSecretCreationResult">
+              </SecretFormLite>
+            </div>
+
+            <div class="bg-gray-50 px-6 py-3 text-xs text-center text-gray-500 border-t border-gray-100">
+              {{ t('web.secrets.complianceNote') || 'Compliant with SOC2, GDPR, CCPA & HIPAA requirements for data privacy' }}
+            </div>
+          </div>
         </div>
-      </SecretFormLite>
+      </section>
 
       <!-- Section 3: How It Works -->
       <HowItWorks />
