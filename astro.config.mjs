@@ -15,11 +15,11 @@
  * - Vue integration: Configured with custom entry point for i18n support
  */
 // External dependencies
-import { defineConfig } from "astro/config";
-import tailwindcss from "@tailwindcss/vite";
+import vue from "@astrojs/vue";
 import sentry from "@sentry/astro";
 import spotlightjs from "@spotlightjs/astro";
-import vue from "@astrojs/vue";
+import tailwindcss from "@tailwindcss/vite";
+import { defineConfig } from "astro/config";
 // import bunny from "bunny-astro";
 
 // Internal dependencies
@@ -65,7 +65,7 @@ export default defineConfig({
    * Use `import.meta.env.VARIABLE_NAME` for accessing environment variables.
    * It works universally (server/client) and is the standard Vite/Astro way.
    *
-   * - For variables needed client-side, prefix them with `PUBLIC_` (e.g., `PUBLIC_API_URL`).
+   * - For variables needed client-side, prefix them with `PUBLIC_` (e.g., `PUBLIC_API_BASE_URL`).
    *   Vite embeds these into client code during build.
    * - For server-side only variables (e.g., API keys), use non-prefixed names.
    *   These are accessible via `import.meta.env` only in server contexts (.astro frontmatter, API routes).
@@ -179,6 +179,8 @@ export default defineConfig({
       "import.meta.env.VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS": JSON.stringify(
         viteAdditionalServerAllowedHosts,
       ),
+      // Define PUBLIC_API_BASE_URL explicitly to ensure it's available in client code
+      "import.meta.env.PUBLIC_API_BASE_URL": JSON.stringify(import.meta.env.PUBLIC_API_BASE_URL),
 
       /**
        * CRITICAL: This global variable must be defined as a boolean (not string)

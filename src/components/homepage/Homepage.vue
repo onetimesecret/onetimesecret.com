@@ -21,6 +21,7 @@ const { t } = useI18n();
 // --- State for Homepage ---
 const detectedRegion = ref("");
 const suggestedDomain = ref("");
+const baseUrl = import.meta.env.PUBLIC_API_BASE_URL;
 
 // Region configuration for the selector
 const availableRegions = ref<Region[]>([
@@ -178,13 +179,13 @@ onMounted(() => {
             <div class="px-6 py-5">
               <SecretFormLite
                 :placeholder="t('web.secrets.secretPlaceholder-premium', { noun: currentRegion.displayName })"
-                :api-base-url="apiBaseUrl.value"
+                :api-base-url="baseUrl"
                 :with-options="false"
                 @create-link="handleSecretCreationResult" />
             </div>
 
             <div class="bg-gray-50 px-6 py-3 text-xs text-center text-gray-500 border-t border-gray-100">
-              {{ t('web.secrets.complianceNote') || 'Compliant with SOC2, GDPR, CCPA & HIPAA requirements for data privacy' }}
+              {{ t('web.secrets.complianceNote') }}
             </div>
           </div>
         </div>
