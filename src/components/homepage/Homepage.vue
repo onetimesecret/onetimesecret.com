@@ -147,24 +147,21 @@ onMounted(() => {
 
     <main class="flex-grow">
       <!-- Section 1: Branding and Benefits -->
-      <HeroTitle>
-        <!-- Visual separator for wide screens -->
-        <span
-          class="mx-2 hidden sm:inline-flex self-center h-1 w-1 rounded-full bg-gray-300"></span>
-        <!-- Only render on client side after hydration -->
-        <ClientOnlyRegionSelector
-          v-if="isClient"
-          :current-region="currentRegion"
-          :available-regions="availableRegions"
-          @region-change="handleRegionChange" />
-      </HeroTitle>
+      <HeroTitle />
 
       <!-- Section 2: Secret Form Lite (Now self-contained with section) -->
       <SecretFormLite
         :placeholder="t('web.secrets.secretPlaceholder')"
         :api-base-url="apiBaseUrl.value"
         :with-options="false"
-        @create-link="handleSecretCreationResult" />
+        @create-link="handleSecretCreationResult">
+        <!-- Only render on client side after hydration -->
+        <ClientOnlyRegionSelector
+          v-if="isClient"
+          :current-region="currentRegion"
+          :available-regions="availableRegions"
+          @region-change="handleRegionChange" />
+      </SecretFormLite>
 
       <!-- Section 3: How It Works -->
       <HowItWorks />
