@@ -19,6 +19,6 @@ DB_PASS=tiger
     ],
     complianceInfo: t("web.useCases.it.compliance"),
     ctaText: t("web.useCases.it.cta"),
-    ctaLink: "/create",
+    ctaLink: "/signup",
   };
 }

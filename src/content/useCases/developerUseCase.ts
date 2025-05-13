@@ -19,6 +19,6 @@ API_SECRET=5Up0rS3kRu7`;
     ],
     complianceInfo: t("web.useCases.developer.compliance"),
     ctaText: t("web.useCases.developer.cta"),
-    ctaLink: "/create",
+    ctaLink: "/signup",
   };
 }

@@ -20,6 +20,6 @@ You can find the address in the handbook.`;
     ],
     complianceInfo: t("web.useCases.hr.compliance"),
     ctaText: t("web.useCases.hr.cta"),
-    ctaLink: "/create",
+    ctaLink: "/pricing",
   };
 }

@@ -118,6 +118,10 @@ export default defineConfig({
       status: 302,
       destination: "https://eu.onetimesecret.com/about",
     },
+    "/pricing": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/pricing",
+    },
     "/signup": {
       status: 302,
       destination: "https://eu.onetimesecret.com/signup",
@@ -180,7 +184,9 @@ export default defineConfig({
         viteAdditionalServerAllowedHosts,
       ),
       // Define PUBLIC_API_BASE_URL explicitly to ensure it's available in client code
-      "import.meta.env.PUBLIC_API_BASE_URL": JSON.stringify(import.meta.env.PUBLIC_API_BASE_URL),
+      "import.meta.env.PUBLIC_API_BASE_URL": JSON.stringify(
+        import.meta.env.PUBLIC_API_BASE_URL,
+      ),
 
       /**
        * CRITICAL: This global variable must be defined as a boolean (not string)
