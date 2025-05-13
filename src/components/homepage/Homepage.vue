@@ -111,18 +111,18 @@ const secretFormRef = ref();
 
 // Updated handler for the 'createLink' event from SecretFormLite
 const handleSecretCreationResult = (result: ApiResult) => {
-  // console.log("Secret creation result received:", result);
-  if (result.success) {
-    apiCallResult.value = result;
-    apiCallError.value = null;
-    // Optionally scroll to the result or perform other actions
-  } else {
-    apiCallResult.value = null;
-    apiCallError.value =
-      result.message ||
-      t("web.errors.apiGenericErrorHomepage") ||
-      "Failed to create secret.";
-  }
+// console.log("Secret creation result received:", result);
+if (result.success) {
+  apiCallResult.value = result;
+  apiCallError.value = null;
+  // Optionally scroll to the result or perform other actions
+} else {
+  apiCallResult.value = null;
+  apiCallError.value =
+    result.message ||
+    t("web.errors.apiGenericErrorHomepage") ||
+    "Failed to create secret.";
+}
 };
 
 // Use the PUBLIC_API_BASE_URL env var or calculate based on the current region
@@ -192,6 +192,8 @@ onMounted(() => {
                 :with-options="false"
                 @create-link="handleSecretCreationResult" />
             </div>
+
+
 
             <div class="bg-gray-50 px-6 py-3 text-xs text-center text-gray-500 border-t border-gray-100">
               {{ t('web.secrets.complianceNote') }}
