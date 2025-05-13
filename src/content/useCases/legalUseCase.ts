@@ -19,6 +19,6 @@ Access Code: Ragu22`;
     ],
     complianceInfo: t("web.useCases.legal.compliance"),
     ctaText: t("web.useCases.legal.cta"),
-    ctaLink: "/create",
+    ctaLink: "/pricing",
   };
 }
