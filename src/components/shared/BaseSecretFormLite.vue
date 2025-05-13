@@ -224,7 +224,7 @@ const copyUrlToClipboard = async () => {
       <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
         <button
           type="button"
-          class="inline-flex items-center justify-center min-w-[7rem] rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-sm font-medium text-white font-semibold shadow-sm hover:bg-brand-600 focus:outline-none disabled:opacity-50 disabled:bg-gray-400"
+          class="inline-flex font-brand items-center justify-center min-w-[7rem] rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-base font-medium text-white font-semibold shadow-sm hover:bg-brand-600 focus:outline-none disabled:opacity-50 disabled:bg-gray-400"
           :disabled="isLoading || !secretText.trim() || apiResult?.success"
           @click="handleCreateLink">
           <span v-if="!isLoading">{{
