@@ -4,16 +4,16 @@
 import { ref, computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import ClientOnlyBanner from "@/components/homepage/ClientOnlyBanner.vue";
-import ClientOnlyRegionSelector from "./regions/ClientOnlyRegionSelector.vue";
-import HowItWorks from "./HowItWorks.vue"; // Import HowItWorks component
-import type { Region } from "./regions/RegionSelector.vue"; // Import Region type
-import ScreenshotViewHole from "./ScreenshotViewHole.vue";
+import ClientOnlyRegionSelector from "@/components/homepage/regions/ClientOnlyRegionSelector.vue";
+import HowItWorks from "@/components/homepage/HowItWorks.vue"; // Import HowItWorks component
+import type { Region } from "@/components/homepage/regions/RegionSelector.vue"; // Import Region type
+import ScreenshotViewHole from "@/components/homepage/ScreenshotViewHole.vue";
 import MainNavigation from "@/components/layouts/MainNavigation.vue"; // Import the new navigation component
 
 // Import the result type from the new base component location
 import UseCaseSelector from "@/components/homepage/UseCaseSelector.vue";
-import type { ApiResult } from "../shared/BaseSecretFormLite.vue";
-import SecretFormLite from "./SecretFormLite.vue"; // Import the wrapper component
+import type { ApiResult } from "@/components/shared/BaseSecretFormLite.vue";
+import SecretFormLite from "@/components/homepage/SecretFormLite.vue"; // Import the wrapper component
 
 const { t } = useI18n();
 
@@ -80,7 +80,9 @@ const apiCallError = ref<string | null>(null); // State to hold error from Secre
 const switchRegion = (newRegion?: string) => {
   // If specific region is provided, find it in available regions
   if (newRegion) {
-    const region = availableRegions.value.find(r => r.identifier === newRegion);
+    const region = availableRegions.value.find(
+      (r) => r.identifier === newRegion,
+    );
     if (region) {
       handleRegionChange(region);
     }
@@ -93,7 +95,10 @@ const handleRegionChange = (region: Region) => {
 
   // Update the API base URL based on the selected region
   // Only redirect if we're not already on this domain
-  if (typeof window !== 'undefined' && window.location.hostname !== region.domain) {
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname !== region.domain
+  ) {
     // Optionally redirect to the new domain
     // window.location.href = `https://${region.domain}${window.location.pathname}`;
     console.log(`Region changed to ${region.displayName} (${region.domain})`);
@@ -119,9 +124,10 @@ const handleSecretCreationResult = (result: ApiResult) => {
 // Use the PUBLIC_API_URL env var or calculate based on the current region
 // Make sure the base component (BaseSecretFormLite) correctly appends `/api` if needed.
 const apiBaseUrl = computed(() => {
-  return import.meta.env.PUBLIC_API_URL || `https://${currentRegion.value.domain}`;
+  return (
+    import.meta.env.PUBLIC_API_URL || `https://${currentRegion.value.domain}`
+  );
 });
-
 </script>
 
 <template>
@@ -154,7 +160,8 @@ const apiBaseUrl = computed(() => {
               class="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl flex flex-wrap items-center justify-center">
               {{ t("web.secrets.keepSensitiveInfo") }}
               <!-- Visual separator for wide screens -->
-              <span class="mx-2 hidden sm:inline-flex self-center h-1 w-1 rounded-full bg-gray-300"></span>
+              <span
+                class="mx-2 hidden sm:inline-flex self-center h-1 w-1 rounded-full bg-gray-300"></span>
               <!-- Only render on client side after hydration -->
               <ClientOnlyRegionSelector
                 v-if="isClient"

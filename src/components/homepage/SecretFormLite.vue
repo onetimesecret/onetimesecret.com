@@ -25,14 +25,11 @@ interface Props {
 }
 
 // Define props again for this wrapper component
-const props = withDefaults(
-  defineProps<Props>(),
-  {
-    placeholder: "",
-    apiBaseUrl: "https://eu.onetimesecret.com", // Default API base URL
-    withOptions: false,
-  },
-);
+const props = withDefaults(defineProps<Props>(), {
+  placeholder: "",
+  apiBaseUrl: "https://eu.onetimesecret.com", // Default API base URL
+  withOptions: false,
+});
 
 // Define emits again to relay from the base component
 const emit = defineEmits<{
@@ -53,17 +50,17 @@ const handleCreateLinkRelay = (result: ApiResult) => {
 
 <template>
   <!-- Section structure moved from Homepage.vue -->
-    <section class="bg-gradient-to-b from-brandcomp-0 to-white w-full py-0">
-      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-3xl">
-          <!-- Use the BaseSecretFormLite component -->
-          <BaseSecretFormLite
-            class="z-0"
-            :placeholder="props.placeholder"
-            :api-base-url="props.apiBaseUrl"
-            :with-options="props.withOptions"
-            @create-link="handleCreateLinkRelay" />
-        </div>
+  <section class="bg-gradient-to-b from-brandcomp-0 to-white w-full py-0">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-3xl">
+        <!-- Use the BaseSecretFormLite component -->
+        <BaseSecretFormLite
+          class="z-0"
+          :placeholder="props.placeholder"
+          :api-base-url="props.apiBaseUrl"
+          :with-options="props.withOptions"
+          @create-link="handleCreateLinkRelay" />
       </div>
-    </section>
+    </div>
+  </section>
 </template>
