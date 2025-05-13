@@ -1,9 +1,10 @@
 <!-- src/components/homepage/regions/RegionSelector.vue -->
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue";
-import { useI18n } from "vue-i18n";
 import OIcon from "@/components/icons/OIcon.vue";
+import { onMounted, onUnmounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
+
 
 /**
  * Region information interface representing a regional deployment option
@@ -18,7 +19,7 @@ export interface Region {
   };
 }
 
-const props = defineProps<{
+defineProps<{
   currentRegion: Region;
   availableRegions: Region[];
 }>();
@@ -32,6 +33,9 @@ const { t } = useI18n({
   inheritLocale: true,
   useScope: "global",
 });
+
+// Current locale for generating links
+//const currentLocale = locale.value || "en";
 
 // State
 const isOpen = ref(false);
@@ -85,7 +89,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div id="region-selector" class="relative inline-flex items-center text-sm text-gray-500">
+  <div
+    id="region-selector"
+    class="relative inline-flex items-center text-sm text-gray-500">
     <span>{{ t("web.secrets.securelyStored") }}</span>
 
     <!-- Current region button that opens the dropdown -->
@@ -98,8 +104,7 @@ onUnmounted(() => {
         :collection="currentRegion.icon.collection"
         :name="currentRegion.icon.name"
         class="size-4 mr-1.5 text-gray-500"
-        :aria-label="`${currentRegion.displayName} region`"
-      />
+        :aria-label="`${currentRegion.displayName} region`" />
       <span>{{ currentRegion.displayName }}</span>
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -136,7 +141,8 @@ onUnmounted(() => {
       v-if="isOpen"
       class="absolute top-full mt-2 z-40 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 divide-y divide-gray-100"
       role="menu">
-      <div class="py-1 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
+      <div
+        class="py-1 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
         {{ t("web.secrets.selectRegionHeading") || "Select Region" }}
       </div>
       <div class="py-1">
@@ -145,21 +151,33 @@ onUnmounted(() => {
           :key="region.identifier"
           @click="selectRegion(region)"
           class="group flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-          :class="{'bg-gray-50': currentRegion.identifier === region.identifier}"
+          :class="{
+            'bg-gray-50': currentRegion.identifier === region.identifier,
+          }"
           role="menuitem">
           <OIcon
             :collection="region.icon.collection"
             :name="region.icon.name"
             class="size-4 mr-3 text-gray-500"
-            :aria-label="`${region.displayName} region`"
-          />
+            :aria-label="`${region.displayName} region`" />
           <span>{{ region.displayName }}</span>
         </button>
       </div>
       <div class="py-1">
         <div class="px-4 py-2 text-xs text-gray-500">
-          {{ t("web.secrets.regionSelector.currentDomain") || "Current domain" }}:
-          <span class="font-medium text-gray-700">{{ currentRegion.domain }}</span>
+          {{
+            t("web.secrets.regionSelector.currentDomain") || "Current domain"
+          }}:
+          <a
+            :href="`https://${currentRegion.domain}`"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-medium text-gray-700 hover:text-brand-600 transition-colors inline-flex items-center">
+            {{ currentRegion.domain }}
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-3 ml-0.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+            </svg>
+          </a>
         </div>
       </div>
     </div>
@@ -175,8 +193,8 @@ onUnmounted(() => {
         </h3>
         <button
           type="button"
-          @click="closeAll"
-          class="inline-flex text-gray-400 hover:text-gray-500">
+          class="inline-flex text-gray-400 hover:text-gray-500"
+          @click="closeAll">
           <span class="sr-only">Close</span>
           <svg
             class="h-5 w-5"
@@ -194,10 +212,10 @@ onUnmounted(() => {
         {{ t("web.secrets.regionExplanation") }}
       </p>
       <p class="mt-2 text-sm text-gray-500">
-        {{ t("web.secrets.regionSelector.dataResidency") || "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR." }}
+        {{ t("web.secrets.regionSelector.dataResidency") }}
       </p>
       <a
-        href="#"
+        href="https://docs.onetimesecret.com/en/regions/"
         class="mt-3 block text-sm font-medium text-brand-600 hover:text-brand-500">
         {{ t("web.secrets.learnMoreRegions") }}
       </a>

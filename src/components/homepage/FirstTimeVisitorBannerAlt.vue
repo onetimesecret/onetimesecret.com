@@ -27,15 +27,14 @@ const switchToSuggestedRegion = () => {
 </script>
 
 <template>
-<div
-  class="w-full bg-brand-50 dark:bg-brand-200/60 border-b border-brand-200 dark:border-brand-700 sticky top-0 left-0 right-0 z-[100]">
+  <div
+    class="w-full bg-brand-50 dark:bg-brand-200/60 border-b border-brand-200 dark:border-brand-700 sticky top-0 left-0 right-0 z-[100]">
     <div class="mx-auto max-w-7xl px-3 py-3 sm:px-6 lg:px-8">
       <div class="flex flex-wrap items-center justify-between">
         <div class="flex w-0 flex-1 items-center">
           <InformationCircleIcon
             class="h-5 w-5 text-brand-400 dark:text-brand-800"
             aria-hidden="true" />
-
           <p
             class="ml-3 truncate font-medium text-brand-700 dark:text-slate-900 text-sm">
             OnetimeSecret uses regional domains to keep your secrets in your
@@ -56,9 +55,9 @@ const switchToSuggestedRegion = () => {
         <div
           class="order-4 mt-2 w-full flex-shrink-0 sm:order-2 sm:mt-0 sm:w-auto">
           <a
-            href="#"
-            @click.prevent="switchToSuggestedRegion"
-            class="flex items-center justify-center rounded-md border border-transparent bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600">
+            href="https://docs.onetimesecret.com/en/regions/"
+            class="flex items-center justify-center rounded-md border border-transparent bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600"
+            @click.prevent="switchToSuggestedRegion">
             Learn more
           </a>
         </div>

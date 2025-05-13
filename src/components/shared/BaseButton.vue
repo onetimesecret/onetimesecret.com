@@ -20,7 +20,7 @@ const emit = defineEmits<{ (e: 'click', event: MouseEvent): void }>();
 // Compute the CSS classes for the button based on props
 const buttonClasses = computed(() => {
   // Base classes applicable to all variants
-  let baseClasses = 'inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2';
+  let baseClasses = 'inline-flex font-brand items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2';
 
   // Variant-specific classes
   switch (props.variant) {
