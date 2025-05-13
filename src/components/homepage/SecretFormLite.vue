@@ -54,7 +54,9 @@ const secretFormRef = ref();
 // Expose the resetForm method to parent components
 defineExpose({
   resetForm: () => {
-    secretFormRef.value?.resetForm();
+    if (secretFormRef.value) {
+      secretFormRef.value.resetForm();
+    }
   }
 });
 </script>

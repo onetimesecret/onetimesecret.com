@@ -77,21 +77,19 @@ const copySuccess = ref(false); // State for copy feedback
 const showPassphraseInput = computed(() => secretOptions.value.addPassphrase);
 
 // --- Methods ---
-// Method to reset the form while preserving feedback messages
-// This gets called when region changes, but we want to keep showing
-// success/error feedback until the user submits the form again
+// Method to reset the form while preserving feedback until next submission
 const resetForm = () => {
-  // Only reset the form inputs and options, not the feedback
+  // Reset the form inputs and options
   secretText.value = "";
   secretOptions.value = {
     expirationTime: false,
     addPassphrase: false,
   };
   passphrase.value = "";
-  // Don't reset apiResult and apiError to preserve feedback until next submission
-  // but ensure form is editable even with success message showing
   isLoading.value = false;
   copySuccess.value = false;
+  // We intentionally don't reset apiResult and apiError here
+  // This allows region changes to preserve feedback until new form submission
 };
 
 // Expose the resetForm method to parent components
@@ -116,10 +114,14 @@ watch(secretText, () => {
   // Set typing state to true immediately
   isTyping.value = true;
 
-  // If user starts typing again after a success, reset the form for a new submission
-  if (apiResult.value?.success && secretText.value.trim()) {
-    apiResult.value = null;
-    apiError.value = null;
+  // If user starts typing again after a success or error, reset for a new submission
+  if (secretText.value.trim() && (apiResult.value || apiError.value)) {
+    // Check if this is real user input (not the asterisks from a success state)
+    const isAllAsterisks = secretText.value.split('').every(char => char === '*');
+    if (!isAllAsterisks) {
+      apiResult.value = null;
+      apiError.value = null;
+    }
   }
 
   // Clear any existing timer
@@ -145,7 +147,6 @@ const handleCreateLink = async () => {
 
   isLoading.value = true;
   // Clear previous feedback messages when submitting the form
-  // This ensures old success/error messages are cleared when user clicks Create Link
   apiResult.value = null;
   apiError.value = null;
 
@@ -163,7 +164,7 @@ const handleCreateLink = async () => {
   const apiUrl = `${props.apiBaseUrl}/api/v2/secret/conceal`;
   const headers = new Headers();
   headers.append("Content-Type", "application/json");
-  console.log('apiUrl', apiUrl, props.apiBaseUrl, import.meta.env.PUBLIC_API_BASE_URL)
+  // console.log('apiUrl', apiUrl)
 
   try {
     const response = await fetch(apiUrl, {
@@ -190,6 +191,7 @@ const handleCreateLink = async () => {
       // This ensures URLs don't change when switching regions later
       createdWithBaseUrl.value = props.apiBaseUrl;
 
+      // Obscure the secret text with asterisks
       const minLen = 6;
       const maxLen = 32;
       const fuzzyLen = Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
@@ -254,13 +256,13 @@ const copyUrlToClipboard = async () => {
         rows="3"
         class="block w-full rounded-md border-0 py-3 pl-4 pr-16 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400  sm:text-sm disabled:opacity-50"
         :placeholder="props.placeholder || t('web.secrets.secretPlaceholder')"
-        :disabled="isLoading"></textarea>
+        :disabled="isLoading || apiResult?.success"></textarea>
 
       <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
         <button
           type="button"
           class="inline-flex font-brand items-center justify-center min-w-[7rem] rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-base font-medium text-white font-semibold shadow-sm hover:bg-brand-600 focus:outline-none disabled:opacity-50 disabled:bg-gray-400"
-          :disabled="isLoading || !secretText.trim()"
+          :disabled="isLoading || !secretText.trim() || apiResult?.success"
           @click="handleCreateLink">
           <span v-if="!isLoading">{{
             t("web.secrets.createLink") || "Create Link"
