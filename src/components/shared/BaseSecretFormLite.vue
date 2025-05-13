@@ -230,7 +230,7 @@ const copyUrlToClipboard = async () => {
           <span v-if="!isLoading">{{
             t("web.secrets.createLink") || "Create Link"
           }}</span>
-          <span v-else>{{ t("web.general.loading") || "Loading..." }}</span>
+          <span v-else>{{ t("LABELS.loading") }}</span>
         </button>
       </div>
     </div>

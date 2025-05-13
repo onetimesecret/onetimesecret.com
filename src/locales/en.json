@@ -76,7 +76,9 @@
     "copy": "Copy",
     "copied": "Copied",
 
-    "processing": "Processing"
+    "processing": "Processing",
+    "loading": "Loading",
+    "loading_ellipses": "Loading..."
   },
   "web": {
     "meta": {
