@@ -78,21 +78,4 @@ defineExpose({
 </template>
 
 <style scoped>
-/* Subtle pulse animation for the connection indicator */
-@keyframes pulse-subtle {
-  0%, 100% { opacity: 0.7; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.2); }
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Enhanced responsiveness for different screen sizes */
-@media (max-width: 640px) {
-  .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-}
 </style>
