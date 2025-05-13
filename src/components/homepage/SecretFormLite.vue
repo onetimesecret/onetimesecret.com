@@ -16,6 +16,7 @@
 <script setup lang="ts">
 import type { ApiResult } from "@/components/shared/BaseSecretFormLite.vue"; // Import type from base
 import BaseSecretFormLite from "@/components/shared/BaseSecretFormLite.vue"; // Import base component
+import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 interface Props {
@@ -46,15 +47,26 @@ const { t } = useI18n({
 const handleCreateLinkRelay = (result: ApiResult) => {
   emit("createLink", result);
 };
+
+// Reference to the BaseSecretFormLite component
+const secretFormRef = ref();
+
+// Expose the resetForm method to parent components
+defineExpose({
+  resetForm: () => {
+    secretFormRef.value?.resetForm();
+  }
+});
 </script>
 
 <template>
   <!-- Premium section structure with refined visual connection -->
-  <section class="bg-gradient-to-b from-brandcomp-0 to-white w-full py-8 sm:py-10">
+  <section class="bg-gradient-to-b from-brandcomp-0 to-white w-full pt-8 sm:pt-5">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-3xl">
         <!-- Use the BaseSecretFormLite component -->
         <BaseSecretFormLite
+          ref="secretFormRef"
           class="z-0 backdrop-blur-sm"
           :placeholder="props.placeholder"
           :api-base-url="props.apiBaseUrl"

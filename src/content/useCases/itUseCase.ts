@@ -2,8 +2,8 @@ import { type UseCase } from "../../types/useCase";
 
 export function getITUseCase(t: (key: string) => string): UseCase {
   // IT professional example secret
-  const exampleSecret = `DBUSER=scott
-DBPASS=tiger
+  const exampleSecret = `DB_USER=scott
+DB_PASS=tiger
 `;
 
   return {

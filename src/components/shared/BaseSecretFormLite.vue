@@ -77,6 +77,26 @@ const copySuccess = ref(false); // State for copy feedback
 const showPassphraseInput = computed(() => secretOptions.value.addPassphrase);
 
 // --- Methods ---
+// Method to reset the form while preserving feedback messages
+// This gets called when region changes, but we want to keep showing
+// success/error feedback until the user submits the form again
+const resetForm = () => {
+  // Only reset the form inputs and options, not the feedback
+  secretText.value = "";
+  secretOptions.value = {
+    expirationTime: false,
+    addPassphrase: false,
+  };
+  passphrase.value = "";
+  // Don't reset apiResult and apiError to preserve feedback until next submission
+  // but ensure form is editable even with success message showing
+  isLoading.value = false;
+  copySuccess.value = false;
+};
+
+// Expose the resetForm method to parent components
+defineExpose({ resetForm });
+
 const updateOption = (option: keyof SecretOptions, value: boolean) => {
   secretOptions.value[option] = value;
   if (option === "addPassphrase" && !value) {
@@ -93,10 +113,14 @@ const showOptions = computed(() => {
 });
 
 watch(secretText, () => {
-  if (!props.withOptions) return;
-
   // Set typing state to true immediately
   isTyping.value = true;
+
+  // If user starts typing again after a success, reset the form for a new submission
+  if (apiResult.value?.success && secretText.value.trim()) {
+    apiResult.value = null;
+    apiError.value = null;
+  }
 
   // Clear any existing timer
   if (typingTimerId.value !== null) {
@@ -120,6 +144,8 @@ const handleCreateLink = async () => {
   }
 
   isLoading.value = true;
+  // Clear previous feedback messages when submitting the form
+  // This ensures old success/error messages are cleared when user clicks Create Link
   apiResult.value = null;
   apiError.value = null;
 
@@ -160,6 +186,10 @@ const handleCreateLink = async () => {
     // Obscure the secret text on success by replacing it with a variable number of asterisks.
     // This visually confirms success while hiding the content and obfuscating its original length.
     if (resultData.success) {
+      // Store the API base URL used for this secret creation
+      // This ensures URLs don't change when switching regions later
+      createdWithBaseUrl.value = props.apiBaseUrl;
+
       const minLen = 6;
       const maxLen = 32;
       const fuzzyLen = Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
@@ -180,13 +210,18 @@ const handleCreateLink = async () => {
   }
 };
 
+// Store the original API base URL used when creating the secret
+// This ensures the URL doesn't change when regions change
+const createdWithBaseUrl = ref("");
+
 const buildSecretUrl = (result: ApiResult): string => {
   // Get the metadata shortkey from the response
   // const metadataKey = result.record?.metadata?.key ?? ""; // Use metadata key for receipt link
   const secretKey = result.record?.secret?.key ?? ""; // Use secret key for direct secret link
 
-  // Build the base URL - use the provided apiBaseUrl prop which should exclude /api
-  const baseUrl = props.apiBaseUrl.replace(/\/api$/, ""); // Remove /api if present
+  // Use the stored original base URL if available, otherwise use current base URL
+  // This ensures the URL doesn't change when switching regions
+  const baseUrl = (createdWithBaseUrl.value || props.apiBaseUrl).replace(/\/api$/, ""); // Remove /api if present
 
   // Construct the secret URL
   // return `${baseUrl}/receipt/${metadataKey}`; // Receipt link
@@ -219,13 +254,13 @@ const copyUrlToClipboard = async () => {
         rows="3"
         class="block w-full rounded-md border-0 py-3 pl-4 pr-16 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400  sm:text-sm disabled:opacity-50"
         :placeholder="props.placeholder || t('web.secrets.secretPlaceholder')"
-        :disabled="isLoading || apiResult?.success"></textarea>
+        :disabled="isLoading"></textarea>
 
       <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
         <button
           type="button"
           class="inline-flex font-brand items-center justify-center min-w-[7rem] rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-base font-medium text-white font-semibold shadow-sm hover:bg-brand-600 focus:outline-none disabled:opacity-50 disabled:bg-gray-400"
-          :disabled="isLoading || !secretText.trim() || apiResult?.success"
+          :disabled="isLoading || !secretText.trim()"
           @click="handleCreateLink">
           <span v-if="!isLoading">{{
             t("web.secrets.createLink") || "Create Link"
@@ -259,7 +294,7 @@ const copyUrlToClipboard = async () => {
                   ($event.target as HTMLInputElement).checked,
                 )
               "
-              :disabled="isLoading || apiResult?.success" />
+              :disabled="isLoading" />
             <label
               for="burn-after-reading"
               class="ml-2 block text-sm text-gray-600">
@@ -279,7 +314,7 @@ const copyUrlToClipboard = async () => {
                   ($event.target as HTMLInputElement).checked,
                 )
               "
-              :disabled="isLoading || apiResult?.success" />
+              :disabled="isLoading" />
             <label
               for="add-passphrase"
               class="ml-2 block text-sm text-gray-600">
@@ -304,7 +339,7 @@ const copyUrlToClipboard = async () => {
             :placeholder="
               t('web.secrets.passphrasePlaceholder') || 'Enter passphrase'
             "
-            :disabled="isLoading || apiResult?.success" />
+            :disabled="isLoading" />
         </div>
       </div>
     </div>

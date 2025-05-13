@@ -89,6 +89,11 @@ const handleRegionChange = (region: Region) => {
   //const prevRegion = currentRegion.value;
   currentRegion.value = region;
 
+  // Reset the secret form when region changes
+  if (secretFormRef.value) {
+    secretFormRef.value.resetForm();
+  }
+
   // Update the API base URL based on the selected region
   // Only redirect if we're not already on this domain
   if (
@@ -100,6 +105,9 @@ const handleRegionChange = (region: Region) => {
     console.log(`Region changed to ${region.displayName} (${region.domain})`);
   }
 };
+
+// Reference to the SecretFormLite component
+const secretFormRef = ref();
 
 // Updated handler for the 'createLink' event from SecretFormLite
 const handleSecretCreationResult = (result: ApiResult) => {
@@ -178,6 +186,7 @@ onMounted(() => {
 
             <div class="px-6 py-5">
               <SecretFormLite
+                ref="secretFormRef"
                 :placeholder="t('web.secrets.secretPlaceholder-premium', { noun: currentRegion.displayName })"
                 :api-base-url="apiBaseUrl"
                 :with-options="false"
