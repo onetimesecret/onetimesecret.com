@@ -1,6 +1,6 @@
 import { type UseCase } from "../../types/useCase";
 
-export function getHRUseCase(t: Function): UseCase {
+export function getHRUseCase(t: (key: string) => string): UseCase {
   // HR manager example secret
   const exampleSecret = `Temporary Password: Welc0me!2025
 
