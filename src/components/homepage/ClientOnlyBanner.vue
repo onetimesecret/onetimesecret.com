@@ -85,7 +85,7 @@ const handleSwitchRegion = (region: string) => {
     v-if="isClient && showRegionBanner"
     :detected-region="detectedRegion"
     :suggested-domain="suggestedDomain"
-    :showBanner="true"
+    :show-banner="true"
     @dismiss="dismissBanner"
     @switch-region="handleSwitchRegion"
   />

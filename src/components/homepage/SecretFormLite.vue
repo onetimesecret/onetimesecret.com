@@ -7,11 +7,11 @@
 
     $ curl -v -k -X OPTIONS https://dev.onetime.dev/api/v2/conceal
     < HTTP/2 204
-    < access-control-allow-credentials: false
-    < access-control-allow-headers: Content-Type, Authorization
-    < access-control-allow-methods: POST, OPTIONS
     < access-control-allow-origin: https://web.onetime.dev
-    < access-control-max-age: 3600
+    < access-control-allow-methods: GET, POST, OPTIONS
+    < access-control-allow-headers: Content-Type, Authorization, O-*
+    < access-control-allow-credentials: true
+    < access-control-max-age: 1200
 -->
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
@@ -19,8 +19,8 @@ import type { ApiResult } from "@/components/shared/BaseSecretFormLite.vue"; // 
 import BaseSecretFormLite from "@/components/shared/BaseSecretFormLite.vue"; // Import base component
 
 interface Props {
+  apiBaseUrl: string;
   placeholder?: string;
-  apiBaseUrl?: string;
   withOptions?: boolean;
 }
 

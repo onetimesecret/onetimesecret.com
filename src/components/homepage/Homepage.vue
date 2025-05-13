@@ -1,7 +1,7 @@
 <!-- src/components/homepage/Homepage.vue -->
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import ClientOnlyBanner from "@/components/homepage/ClientOnlyBanner.vue";
 import ClientOnlyRegionSelector from "./regions/ClientOnlyRegionSelector.vue";
@@ -20,6 +20,14 @@ const { t } = useI18n();
 // --- State for Homepage ---
 const detectedRegion = ref("");
 const suggestedDomain = ref("");
+const isClient = ref(false);
+
+// Set isClient to true when component is mounted on client-side
+// This prevents hydration mismatch by only enabling client-specific
+// components after initial hydration is complete
+onMounted(() => {
+  isClient.value = true;
+});
 
 // Region configuration for the selector
 const availableRegions = ref<Region[]>([
@@ -113,6 +121,7 @@ const handleSecretCreationResult = (result: ApiResult) => {
 const apiBaseUrl = computed(() => {
   return import.meta.env.PUBLIC_API_URL || `https://${currentRegion.value.domain}`;
 });
+
 </script>
 
 <template>
@@ -146,7 +155,9 @@ const apiBaseUrl = computed(() => {
               {{ t("web.secrets.keepSensitiveInfo") }}
               <!-- Visual separator for wide screens -->
               <span class="mx-2 hidden sm:inline-flex self-center h-1 w-1 rounded-full bg-gray-300"></span>
+              <!-- Only render on client side after hydration -->
               <ClientOnlyRegionSelector
+                v-if="isClient"
                 :current-region="currentRegion"
                 :available-regions="availableRegions"
                 @region-change="handleRegionChange" />

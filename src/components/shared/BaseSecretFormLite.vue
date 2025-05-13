@@ -41,14 +41,13 @@ export interface ApiResult {
 }
 
 interface Props {
+  apiBaseUrl: string;
   placeholder?: string;
-  apiBaseUrl?: string;
   withOptions?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   placeholder: "",
-  apiBaseUrl: "https://dev.onetime.dev/api",
   withOptions: false,
 });
 
@@ -140,7 +139,7 @@ const handleCreateLink = async () => {
   const apiUrl = `${props.apiBaseUrl}/api/v2/secret/conceal`;
   const headers = new Headers();
   headers.append("Content-Type", "application/json");
-
+  console.log('apiUrl', apiUrl, props.apiBaseUrl, import.meta.env.PUBLIC_API_URL)
   try {
     const response = await fetch(apiUrl, {
       method: "POST",
@@ -226,8 +225,8 @@ const copyUrlToClipboard = async () => {
         <button
           type="button"
           class="inline-flex items-center justify-center min-w-[7rem] rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-sm font-medium text-white font-semibold shadow-sm hover:bg-brand-600 focus:outline-none disabled:opacity-50 disabled:bg-gray-400"
-          @click="handleCreateLink"
-          :disabled="isLoading || !secretText.trim() || apiResult?.success">
+          :disabled="isLoading || !secretText.trim() || apiResult?.success"
+          @click="handleCreateLink">
           <span v-if="!isLoading">{{
             t("web.secrets.createLink") || "Create Link"
           }}</span>

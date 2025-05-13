@@ -1,6 +1,26 @@
 {
   "onetime-secret-literal": "Onetime Secret",
   "all-rights-reserved": "All rights reserved",
+  "read-our-latest-blog-posts": "Read our latest blog posts",
+  "view-our-subscription-pricing": "View our subscription pricing",
+  "learn-about-our-company": "Learn about our company",
+  "company": "Company",
+  "about-onetime-secret-0": "About Onetime Secret",
+  "log-in-to-onetime-secret": "Log in to Onetime Secret",
+  "about-onetime-secret": "About Onetime Secret",
+  "check-our-service-status": "Check our service status",
+  "explore-our-api-documentation": "Explore our API documentation",
+  "security": "Security",
+  "learn-about-our-security-measures": "Learn about our security measures",
+  "terms": "Terms",
+  "privacy": "Privacy",
+  "legals": "Legals",
+  "docs": "Docs",
+  "access-our-documentation": "Access our documentation",
+  "view-our-source-code-on-github": "View our source code on GitHub",
+  "read-our-privacy-policy": "Read our Privacy Policy",
+  "view-our-terms-and-conditions": "View our Terms and Conditions",
+  "status": "Status",
   "tagline": {
     "signed": "Signed",
     "sealed": "Sealed",
@@ -23,6 +43,7 @@
   },
   "auth": {
     "sign-in": "Sign In",
+    "sign-up": "Sign Up",
     "create-account": "Create Account"
   },
   "LABELS": {
