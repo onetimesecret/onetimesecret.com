@@ -11,7 +11,7 @@ declare const __VUE_PROD_DEVTOOLS__: boolean;
 interface ImportMetaEnv {
   readonly VITE_BASE_URL: string;
   readonly VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS?: string;
-  readonly PUBLIC_API_URL: string;
+  readonly PUBLIC_API_BASE_URL: string;
   readonly PUBLIC_SENTRY_DSN?: string;
   readonly SENTRY_ORG?: string;
   readonly SENTRY_PROJECT?: string;

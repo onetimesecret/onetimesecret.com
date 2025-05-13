@@ -116,11 +116,11 @@ const handleSecretCreationResult = (result: ApiResult) => {
   }
 };
 
-// Use the PUBLIC_API_URL env var or calculate based on the current region
+// Use the PUBLIC_API_BASE_URL env var or calculate based on the current region
 // Make sure the base component (BaseSecretFormLite) correctly appends `/api` if needed.
 const apiBaseUrl = computed(() => {
   return (
-    import.meta.env.PUBLIC_API_URL || `https://${currentRegion.value.domain}`
+    import.meta.env.PUBLIC_API_BASE_URL || `https://${currentRegion.value.domain}`
   );
 });
 
@@ -180,8 +180,7 @@ onMounted(() => {
                 :placeholder="t('web.secrets.secretPlaceholder-premium', { noun: currentRegion.displayName })"
                 :api-base-url="apiBaseUrl.value"
                 :with-options="false"
-                @create-link="handleSecretCreationResult">
-              </SecretFormLite>
+                @create-link="handleSecretCreationResult" />
             </div>
 
             <div class="bg-gray-50 px-6 py-3 text-xs text-center text-gray-500 border-t border-gray-100">

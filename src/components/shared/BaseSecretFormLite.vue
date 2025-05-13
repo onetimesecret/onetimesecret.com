@@ -137,7 +137,7 @@ const handleCreateLink = async () => {
   const apiUrl = `${props.apiBaseUrl}/api/v2/secret/conceal`;
   const headers = new Headers();
   headers.append("Content-Type", "application/json");
-  console.log('apiUrl', apiUrl, props.apiBaseUrl, import.meta.env.PUBLIC_API_URL)
+  console.log('apiUrl', apiUrl, props.apiBaseUrl, import.meta.env.PUBLIC_API_BASE_URL)
 
   try {
     const response = await fetch(apiUrl, {
