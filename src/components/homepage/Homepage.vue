@@ -84,6 +84,8 @@ const switchRegion = (newRegion?: string) => {
 
 // Handle region change from the selector component
 const handleRegionChange = (region: Region) => {
+  // Apply transition effect
+  //const prevRegion = currentRegion.value;
   currentRegion.value = region;
 
   // Update the API base URL based on the selected region
@@ -149,18 +151,22 @@ onMounted(() => {
       <!-- Section 1: Branding and Benefits -->
       <HeroTitle />
 
-      <!-- Section 2: Secret Form Lite (Now self-contained with section) -->
+      <!-- Section 2: Secret Form Lite with Region Selector -->
       <SecretFormLite
-        :placeholder="t('web.secrets.secretPlaceholder')"
+        :placeholder="t('web.secrets.secretPlaceholder-storage-location', { noun: currentRegion.value })"
         :api-base-url="apiBaseUrl.value"
         :with-options="false"
         @create-link="handleSecretCreationResult">
-        <!-- Only render on client side after hydration -->
-        <ClientOnlyRegionSelector
-          v-if="isClient"
-          :current-region="currentRegion"
-          :available-regions="availableRegions"
-          @region-change="handleRegionChange" />
+        <!-- Premium region selector with enhanced styling and animations -->
+        <div class="flex justify-center items-center bg-white rounded-lg px-4 py-3
+                    shadow-md hover:shadow-lg transition-all duration-300
+                    border border-gray-200 mb-1 max-w-md mx-auto">
+          <ClientOnlyRegionSelector
+            v-if="isClient"
+            :current-region="currentRegion"
+            :available-regions="availableRegions"
+            @region-change="handleRegionChange" />
+        </div>
       </SecretFormLite>
 
       <!-- Section 3: How It Works -->
@@ -175,4 +181,5 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+</style>

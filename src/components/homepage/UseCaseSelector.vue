@@ -94,7 +94,7 @@ const selectedUseCase = ref(useCases[0]);
       </div>
 
       <!-- Dynamic Content Based on Selection -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
         <!-- Left Column: Example & Benefits -->
         <div class="bg-white rounded-lg shadow-md p-6 border border-gray-100">
           <h3 class="text-xl font-semibold text-gray-900 mb-4">

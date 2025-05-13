@@ -96,10 +96,15 @@
       "optionsHeading": "Privacy Options",
       "addPassphrase": "Add passphrase",
       "secretPlaceholder": "Type your secret message here...",
+      "secretPlaceholder-storage-location": "Type your secret message here (stored in {noun})",
       "dataSovereignty": "Data Sovereignty",
       "regionExplanation": "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR.",
       "learnMoreRegions": "Learn more about regional domains",
       "selectRegionHeading": "Select Region",
+      "regionConnection": {
+        "tooltip": "Your secret will be stored in this region",
+        "ariaLabel": "Region selection affects where your secret is stored"
+      },
       "regionSelector": {
         "currentDomain": "Current domain",
         "dataResidency": "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR.",
