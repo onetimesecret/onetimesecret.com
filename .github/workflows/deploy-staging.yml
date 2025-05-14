@@ -58,7 +58,7 @@ jobs:
       SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
       SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      VITE_BASE_URL: ${{ env.VITE_BASE_URL }}
+      VITE_BASE_URL: ${{ vars.VITE_BASE_URL }}
 
     steps:
       # Step 1: Check out the repository code
