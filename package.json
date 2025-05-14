@@ -11,7 +11,10 @@
     "lint:quick": "pnpm run lint:base --cache-location ./node_modules/.cache/eslint --cache 'src/**/*.{mjs,ts}' './*.{mjs,ts,js}'",
     "lint:quick:fix": "pnpm run lint:base --fix 'src/**/*.{mjs,ts}' './*.{mjs,ts,d.ts,js}'",
     "lint:tests": "pnpm run lint:base 'tests/**/*.{mjs,ts,vue}'",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "type-check:base": "vue-tsc --noEmit",
+    "type-check": "pnpm run type-check:base",
+    "type-check:watch": "pnpm run type-check:base --watch"
   },
   "dependencies": {
     "@astrojs/vue": "^5.0.13",
@@ -27,7 +30,6 @@
     "@typescript-eslint/parser": "8.29.1",
     "@vueuse/core": "^13.1.0",
     "astro": "^5.7.12",
-    "bunny-astro": "^0.0.27",
     "eslint": "9.25.1",
     "eslint-import-resolver-typescript": "3.10.1",
     "eslint-plugin-import": "2.31.0",
@@ -44,6 +46,7 @@
     "prettier": "3.5.3",
     "prettier-plugin-astro": "0.14.1",
     "prettier-plugin-tailwindcss": "^0.6.11",
-    "prettier-plugin-vue": "1.1.6"
+    "prettier-plugin-vue": "1.1.6",
+    "vue-tsc": "^2.2.10"
   }
 }
