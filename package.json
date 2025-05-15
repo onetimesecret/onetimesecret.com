@@ -4,6 +4,9 @@
   "scripts": {
     "astro": "astro",
     "build": "astro build",
+    "check": "astro check",
+    "clean": "rm -rf dist/ .astro/ node_modules/.vite/",
+    "reinstall": "pnpm clean && pnpm install",
     "dev": "NODE_OPTIONS='--max-old-space-size=4096 ' astro dev",
     "lint": "pnpm run lint:base --cache-location ./node_modules/.cache/eslint --cache 'src/**/*.{mjs,ts,d.ts,vue}' './*.{mjs,ts,js}'",
     "lint:base": "eslint --quiet --config eslint.config.ts",
@@ -17,6 +20,8 @@
     "type-check:watch": "pnpm run type-check:base --watch"
   },
   "dependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/markdoc": "^0.14.2",
     "@astrojs/vue": "^5.0.13",
     "@eslint/js": "9.25.1",
     "@headlessui/vue": "^1.7.23",
@@ -36,6 +41,7 @@
     "eslint-plugin-vue": "9.33.0",
     "lucide-vue-next": "^0.507.0",
     "tailwindcss": "4.1.5",
+    "typescript": "^5.8.3",
     "typescript-eslint": "8.29.1",
     "vue": "^3.5.13",
     "vue-i18n": "^11.1.3"
