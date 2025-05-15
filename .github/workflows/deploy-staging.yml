@@ -83,6 +83,7 @@ jobs:
         id: pnpm-cache
         shell: bash
         run: |
+          echo "Deploying to ${VITE_BASE_URL}"
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       # Step 5: Setup pnpm cache
