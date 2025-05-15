@@ -14,10 +14,11 @@ import i18n from "./i18n";
  */
 export default function setupVue(app: App) {
   // Add i18n to Vue application
-  if (app && typeof app.use === 'function') {
+  if (app && typeof app.use === "function") {
     app.use(i18n);
+    console.info("Vue app is initialized");
   } else {
-    console.warn('Vue app instance not properly initialized in setupVue');
+    console.warn("Vue app instance not properly initialized in setupVue");
   }
 
   return app;
