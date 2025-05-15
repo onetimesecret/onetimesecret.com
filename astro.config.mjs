@@ -213,9 +213,22 @@ export default defineConfig({
        * Includes both runtime DSN and build-time source map upload options.
        * Authentication tokens and organization details are pulled from environment
        * variables for security.
+       *
+       * @see https://docs.sentry.io/platforms/javascript/guides/astro/
+       * @see https://spotlightjs.com/setup/astro
+       * @see https://github.com/getsentry/spotlight/blob/main/packages/astro/README.md
        */
       // Runtime DSN configuration (can also be handled by Sentry.init)
       dsn: import.meta.env.PUBLIC_SENTRY_DSN,
+      // Enable Spotlight in development environment
+      // spotlight: import.meta.env.DEV,
+      // Adjust sample rates as needed for performance monitoring
+      // tracesSampleRate: 0,
+      // // Adjust sample rates for session replay
+      // replaysSessionSampleRate: 0,
+      // replaysOnErrorSampleRate: 0,
+      // // sourceMapsUploadOptions are configured in astro.config.mjs for build time
+      // sendDefaultPii: false,
 
       // Build-time source map upload configuration
       sourceMapsUploadOptions: {
