@@ -16,8 +16,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
-        # Ensure pnpm version matches the project if specified,
-        # otherwise it uses a recent default or version from package.json
+        with:
+          version: 10.11 # Specify pnpm version
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
