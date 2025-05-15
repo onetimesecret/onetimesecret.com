@@ -29,6 +29,8 @@ import viteSSRGlobals from "./vite-ssr-globals.js";
 import { dirname, resolve as pathResolve } from "path";
 import { fileURLToPath } from "url";
 
+import markdoc from "@astrojs/markdoc";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -247,11 +249,9 @@ export default defineConfig({
       // Spotlight configuration can also be potentially moved here if preferred,
       // but keeping runtime config in sentry.config.ts is fine.
     }),
-
     spotlightjs({
       debug: false,
     }),
-
     vue({
       devtools: {
         launchEditor: "zed",
@@ -264,5 +264,6 @@ export default defineConfig({
       appEntrypoint: "/src/vueSetup",
       jsx: true,
     }),
+    markdoc(),
   ],
 });
