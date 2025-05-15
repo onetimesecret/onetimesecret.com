@@ -344,7 +344,7 @@ const connectSrcDirective = [
     <!-- Security Headers -->
     <meta
       http-equiv="Content-Security-Policy"
-      content={`default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src ${connectSrcDirective};`}
+      content={`default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src ${connectSrcDirective}; worker-src 'self' blob:;`}
     />
 
     <title>{title}</title>
