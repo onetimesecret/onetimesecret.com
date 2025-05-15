@@ -6,17 +6,19 @@ import { envField } from "astro/config";
 
 // register variables as a string, number, enum, or boolean
 export function createConfig() {
-  schema: {
-    API_URL: envField.string({
-      context: "client",
-      access: "public",
-      optional: true,
-    }),
-    PUBLIC_SENTRY_DSN: envField.string({
-      context: "server",
-      access: "public",
-      default: 4321,
-    }),
-    API_SECRET: envField.string({ context: "server", access: "secret" }),
-  },
-});
+  return {
+    schema: {
+      API_URL: envField.string({
+        context: "client",
+        access: "public",
+        optional: true,
+      }),
+      PUBLIC_SENTRY_DSN: envField.string({
+        context: "server",
+        access: "public",
+        default: "4321",
+      }),
+      API_SECRET: envField.string({ context: "server", access: "secret" }),
+    },
+  };
+}
