@@ -1,4 +1,4 @@
-// config/astro/env.mjs
+// config/astro/env.ts
 
 import { envField } from "astro/config";
 
@@ -8,17 +8,65 @@ import { envField } from "astro/config";
 export function createConfig() {
   return {
     schema: {
-      API_URL: envField.string({
+      // Debug mode for development
+      // import { VITE_DEBUG } from "astro:env/server";
+      VITE_DEBUG: envField.boolean({
+        context: "server",
+        access: "public",
+        default: false,
+      }),
+
+      // Public API base URL for homepage secret link UI
+      // import { PUBLIC_API_BASE_URL } from "astro:env/client";
+      PUBLIC_API_BASE_URL: envField.string({
+        context: "client",
+        access: "public",
+        default: "https://dev.onetime.dev",
+      }),
+
+      // Sentry configuration
+      SENTRY_DSN: envField.string({
+        context: "server",
+        access: "public",
+        default: "",
+      }),
+      SENTRY_ORG: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      SENTRY_AUTH_TOKEN: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      SENTRY_PROJECT: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+
+      // Sentry configuration
+      CLIENT_SENTRY_DSN: envField.string({
+        context: "client",
+        access: "public",
+        default: "",
+      }),
+      CLIENT_SENTRY_ORG: envField.string({
         context: "client",
         access: "public",
         optional: true,
       }),
-      PUBLIC_SENTRY_DSN: envField.string({
-        context: "server",
+      CLIENT_SENTRY_AUTH_TOKEN: envField.string({
+        context: "client",
         access: "public",
-        default: "4321",
+        optional: true,
       }),
-      API_SECRET: envField.string({ context: "server", access: "secret" }),
+      CLIENT_SENTRY_PROJECT: envField.string({
+        context: "client",
+        access: "public",
+        optional: true,
+      }),
     },
   };
 }
