@@ -6,6 +6,12 @@
  * This file configures the Astro build process, integrations, and Vite settings.
  * It includes critical configuration for Vue.js, i18n support, and environment variables.
  *
+ * ENVIRONMENT VARIABLES
+ * "you cannot use process.env in astro.config.mjs"
+ * "You can use process.env"
+ * "You can also use Vite’s loadEnv helper"
+ * @see https://docs.astro.build/en/guides/environment-variables/#in-the-astro-config-file
+ *
  * IMPORTANT: This file contains fixes for the "__VUE_PROD_DEVTOOLS__" reference error
  * that occurs during SSR when vue-i18n tries to access this global variable.
  *
@@ -24,7 +30,7 @@ import { defineConfig } from "astro/config";
 
 // Internal dependencies
 import viteSSRGlobals from "./vite-ssr-globals.js";
-
+// import { sentryVitePlugin } from "@sentry/vite-plugin";
 // Node.js built-ins
 import { dirname, resolve as pathResolve } from "path";
 import { fileURLToPath } from "url";
@@ -36,12 +42,12 @@ const __dirname = dirname(__filename);
 
 // Controls debug settings throughout the configuration
 // Also used for __VUE_PROD_DEVTOOLS__ to enable Vue devtools in production
-const DEBUG = import.meta.env.VITE_DEBUG === "true";
+const DEBUG = process.env.VITE_DEBUG === "true";
 
 // Remember, for security reasons, only variables prefixed with VITE_ are
 // available here to prevent accidental exposure of sensitive
 // environment variables to the client-side code.
-const viteBaseUrl = import.meta.env.VITE_BASE_URL;
+const viteBaseUrl = process.env.VITE_BASE_URL;
 
 /**
  * Configure additional server allowed hosts
@@ -56,26 +62,26 @@ const viteBaseUrl = import.meta.env.VITE_BASE_URL;
  * @see https://github.com/vitejs/vite/security/advisories/GHSA-vg6x-rcgg-rjx6
  */
 const viteAdditionalServerAllowedHosts =
-  import.meta.env.__VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS ??
-  import.meta.env.VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS;
+  process.env.__VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS ??
+  process.env.VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS;
 
 // https://astro.build/config
 export default defineConfig({
   /**
    * Environment Variable Access in Astro/Vite:
    *
-   * Use `import.meta.env.VARIABLE_NAME` for accessing environment variables.
+   * Use `process.env.VARIABLE_NAME` for accessing environment variables.
    * It works universally (server/client) and is the standard Vite/Astro way.
    *
    * - For variables needed client-side, prefix them with `PUBLIC_` (e.g., `PUBLIC_API_BASE_URL`).
    *   Vite embeds these into client code during build.
    * - For server-side only variables (e.g., API keys), use non-prefixed names.
-   *   These are accessible via `import.meta.env` only in server contexts (.astro frontmatter, API routes).
+   *   These are accessible via `process.env` only in server contexts (.astro frontmatter, API routes).
    *
    * Avoid using `process.env.VARIABLE_NAME` as it's Node.js specific, unreliable across
    * different runtimes Astro might support, and doesn't work client-side without polyfills.
    */
-  site: import.meta.env.VITE_BASE_URL,
+  site: process.env.VITE_BASE_URL,
   i18n: {
     // All pages, including static prerendered pages, have access to Astro.currentLocale.
     defaultLocale: "en",
@@ -138,7 +144,9 @@ export default defineConfig({
   // https://bunny-launcher.net/frameworks/astro/
   // adapter: bunny(),
   vite: {
-    build: {},
+    build: {
+      sourcemap: "inline",
+    },
     plugins: [tailwindcss(), viteSSRGlobals()],
     resolve: {
       alias: {
@@ -181,13 +189,13 @@ export default defineConfig({
       })(),
     },
     define: {
-      "import.meta.env.VITE_BASE_URL": JSON.stringify(viteBaseUrl),
-      "import.meta.env.VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS": JSON.stringify(
+      "process.env.VITE_BASE_URL": JSON.stringify(viteBaseUrl),
+      "process.env.VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS": JSON.stringify(
         viteAdditionalServerAllowedHosts,
       ),
       // Define PUBLIC_API_BASE_URL explicitly to ensure it's available in client code
-      "import.meta.env.PUBLIC_API_BASE_URL": JSON.stringify(
-        import.meta.env.PUBLIC_API_BASE_URL,
+      "process.env.PUBLIC_API_BASE_URL": JSON.stringify(
+        process.env.PUBLIC_API_BASE_URL,
       ),
 
       /**
@@ -217,32 +225,24 @@ export default defineConfig({
        * variables for security.
        *
        * @see https://docs.sentry.io/platforms/javascript/guides/astro/
-       * @see https://spotlightjs.com/setup/astro
        * @see https://github.com/getsentry/spotlight/blob/main/packages/astro/README.md
        */
-      // Runtime DSN configuration (can also be handled by Sentry.init)
-      dsn: import.meta.env.PUBLIC_SENTRY_DSN,
-      // Enable Spotlight in development environment
-      // spotlight: import.meta.env.DEV,
-      // Adjust sample rates as needed for performance monitoring
-      // tracesSampleRate: 0,
-      // // Adjust sample rates for session replay
-      // replaysSessionSampleRate: 0,
-      // replaysOnErrorSampleRate: 0,
-      // // sourceMapsUploadOptions are configured in astro.config.mjs for build time
-      // sendDefaultPii: false,
 
       // Build-time source map upload configuration
       sourceMapsUploadOptions: {
         // Disable Sentry telemetry during the upload process
         telemetry: false,
         // Sentry organization slug from environment variable
-        org: import.meta.env.SENTRY_ORG,
+        org: process.env.SENTRY_ORG,
         // Sentry project slug from environment variable, fallback to 'homepage'
-        project: import.meta.env.SENTRY_PROJECT || "homepage",
+        project: process.env.SENTRY_PROJECT || "homepage",
         // Sentry auth token from environment variable
-        authToken: import.meta.env.SENTRY_AUTH_TOKEN,
+        authToken: process.env.SENTRY_AUTH_TOKEN,
 
+        filesToDeleteAfterUpload: [
+          "./dist/**/client/**/*.map",
+          "./dist/**/server/**/*.map",
+        ],
         // The integration should automatically handle deleting maps
         // based on vite.build.sourcemap setting ('hidden' deletes maps)
       },
