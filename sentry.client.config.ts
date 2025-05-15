@@ -10,18 +10,19 @@ import * as Sentry from "@sentry/astro";
  *
  * @see https://spotlightjs.com/setup/astro
  */
-const DEBUG = import.meta.env.VITE_DEBUG === "true";
+const DEBUG = process.env.VITE_DEBUG === "true";
 
 Sentry.init({
   // Runtime DSN configuration (can also be handled by Sentry.init)
-  dsn: import.meta.env.CLIENT_SENTRY_DSN,
+  dsn: process.env.CLIENT_SENTRY_DSN,
 
   // Sentry organization slug from environment variable
   org: process.env.CLIENT_SENTRY_ORG,
+
   // Sentry project slug from environment variable, fallback to 'homepage'
   project: process.env.CLIENT_SENTRY_PROJECT || "homepage",
 
-  authToken: import.meta.env.CLIENT_SENTRY_AUTH_TOKEN,
+  authToken: process.env.CLIENT_SENTRY_AUTH_TOKEN,
 
   // Enable Spotlight in development environment
   spotlight: DEBUG,
