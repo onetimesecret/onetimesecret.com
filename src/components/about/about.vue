@@ -2,7 +2,7 @@
 
 <script setup lang="ts">
 import { Plan } from '@/content/product/plans';
-import type { PlanOptions } from '@/types/plan-options';
+// import type { PlanOptions } from '@/types/plan-options';
 import { ref, computed, onMounted } from 'vue';
 
 // Define the default plan ID
