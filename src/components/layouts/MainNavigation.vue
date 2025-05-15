@@ -13,10 +13,10 @@ const navigation = [
   { name: t("navigation.home"), href: "/" },
   // { name: t("navigation.features"), href: "#features" },
   // { name: t("navigation.regions"), href: "#regions" },
-  { name: t("navigation.about"), href: "https://eu.onetimesecret.com/about" },
+  { name: t("navigation.about"), href: "/about" },
   {
     name: t("navigation.pricing"),
-    href: "https://eu.onetimesecret.com/pricing",
+    href: "/pricing",
   },
 ];
 
