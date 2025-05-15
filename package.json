@@ -4,10 +4,10 @@
   "scripts": {
     "astro": "astro",
     "build": "astro build",
-    "check": "astro check",
+    "check": "astro check --tsconfig tsconfig.json",
     "clean": "rm -rf dist/ .astro/ node_modules/.vite/",
     "reinstall": "pnpm clean && pnpm install",
-    "dev": "NODE_OPTIONS='--max-old-space-size=4096 ' astro dev",
+    "dev": "NODE_OPTIONS='--max-old-space-size=8192' astro dev",
     "lint": "pnpm run lint:base --cache-location ./node_modules/.cache/eslint --cache 'src/**/*.{mjs,ts,d.ts,vue}' './*.{mjs,ts,js}'",
     "lint:base": "eslint --quiet --config eslint.config.ts",
     "lint:fix": "pnpm run lint:base --fix 'src/**/*.{mjs,ts,vue}' './*.{mjs,ts,d.ts,vue}'",
