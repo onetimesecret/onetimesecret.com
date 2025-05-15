@@ -10,12 +10,10 @@ import MarkdownContent from "@/components/layouts/static/MarkdownContent.vue";
 import AboutContent from "@/components/about/AboutContent.vue";
 import content from "@/locales/en.json";
 
+import { getLanguagePaths } from "@config/astro/i18n";
+
 export async function getStaticPaths() {
-  return [
-    { params: { lang: "en" } },
-    { params: { lang: "fr" } },
-    { params: { lang: "de" } },
-  ];
+  return getLanguagePaths();
 }
 
 const { lang } = Astro.params;
