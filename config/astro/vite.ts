@@ -44,6 +44,8 @@ export function createConfig(astroPath: string): Record<string, any> {
     resolve: {
       alias: {
         "@": pathResolve(astroPath, "src"),
+        "@root": pathResolve(astroPath),
+        "@config": pathResolve(astroPath, "config"),
       },
     },
     server: {

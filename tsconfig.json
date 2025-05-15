@@ -9,6 +9,8 @@
     "verbatimModuleSyntax": false,
     "paths": {
       "@/*": ["./src/*"],
+      "@root/*": ["./*"],
+      "@config/*": ["./config/*"],
       "@tests/*": ["./tests/*"]
     }
   }
