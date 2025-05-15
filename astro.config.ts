@@ -27,6 +27,7 @@ import { defineConfig } from "astro/config";
 // Internal dependencies
 import { dirname } from "path";
 import { fileURLToPath } from "url";
+import { loadEnv } from "vite";
 import { createConfig as createI18nConfig } from "./config/astro/i18n";
 import { createConfig as createIntegrations } from "./config/astro/integrations";
 import { createConfig as createRedirectsConfig } from "./config/astro/redirects";
@@ -37,6 +38,10 @@ const __dirname = dirname(__filename);
 
 // Controls debug settings throughout the configuration
 const DEBUG = process.env.VITE_DEBUG === "true";
+
+// Load environment variables (this works in astro.config.ts)
+// The empty string means it will load all variables regardless of prefix
+const env = loadEnv(process.env.NODE_ENV || "development", process.cwd(), "");
 
 // https://astro.build/config
 export default defineConfig({
@@ -54,7 +59,7 @@ export default defineConfig({
    * Avoid using `process.env.VARIABLE_NAME` as it's Node.js specific, unreliable across
    * different runtimes Astro might support, and doesn't work client-side without polyfills.
    */
-  site: process.env.VITE_BASE_URL,
+  site: env.VITE_BASE_URL,
 
   // Astro build configuration
   build: {
@@ -69,5 +74,5 @@ export default defineConfig({
   integrations: createIntegrations(),
 
   // Vite needs to know where to start the alias mapping
-  vite: createViteConfig(__dirname),
+  vite: createViteConfig(__dirname, env),
 });

@@ -1,44 +1,54 @@
 // config/astro/vite.ts
 
+// https://docs.astro.build/en/guides/environment-variables/#setting-environment-variables
+/**
+ * "pnpm does not allow you to import modules that are not directly installed in
+* your project. If you are using pnpm, you will need to install vite to use
+* the loadEnv helper."
+
+*/
 import tailwindcss from "@tailwindcss/vite";
+import { resolve as pathResolve } from "path";
+import type { UserConfig } from "vite";
 import viteSSRGlobals from "../../vite-ssr-globals.js";
-
-// Node.js built-ins
-import { dirname, resolve as pathResolve } from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 // Controls debug settings throughout the configuration
 // Also used for __VUE_PROD_DEVTOOLS__ to enable Vue devtools in production
 const DEBUG = process.env.VITE_DEBUG === "true";
 
-// Remember, for security reasons, only variables prefixed with VITE_ are
-// available here to prevent accidental exposure of sensitive
-// environment variables to the client-side code.
-const viteBaseUrl = process.env.VITE_BASE_URL;
-
 /**
- * Configure additional server allowed hosts
- *
- * According to the documentation, we should be able to set the allowed hosts
- * via __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS but as of 5.4.15, that is not
- * working as expected. So here we capture the value of that env var with
- * and without the __ prefix and if either are defined, add the hosts to
- * server.allowedHosts below. Multiple hosts can be separated by commas.
- *
- * @see https://vite.dev/config/server-options.html#server-allowedhosts
- * @see https://github.com/vitejs/vite/security/advisories/GHSA-vg6x-rcgg-rjx6
+ * Creates a Vite configuration for Astro
+ * @param astroPath - The root path of the Astro project
+ * @param env - Environment variables loaded with Vite's loadEnv
  */
-const viteAdditionalServerAllowedHosts =
-  process.env.__VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS ??
-  process.env.VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS;
+export function createConfig(
+  astroPath: string,
+  env: Record<string, string>,
+): UserConfig {
+  // Remember, for security reasons, only variables prefixed with VITE_ are
+  // available here to prevent accidental exposure of sensitive
+  // environment variables to the client-side code.
+  const viteBaseUrl = env.VITE_BASE_URL;
 
-export function createConfig(astroPath: string): Record<string, any> {
+  /**
+   * Configure additional server allowed hosts
+   *
+   * According to the documentation, we should be able to set the allowed hosts
+   * via __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS but as of 5.4.15, that is not
+   * working as expected. So here we capture the value of that env var with
+   * and without the __ prefix and if either are defined, add the hosts to
+   * server.allowedHosts below. Multiple hosts can be separated by commas.
+   *
+   * @see https://vite.dev/config/server-options.html#server-allowedhosts
+   * @see https://github.com/vitejs/vite/security/advisories/GHSA-vg6x-rcgg-rjx6
+   */
+  const viteAdditionalServerAllowedHosts =
+    env.__VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS ??
+    env.VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS;
+
   return {
     build: {
-      sourcemap: "inline",
+      sourcemap: "inline" as const,
     },
     plugins: [tailwindcss(), viteSSRGlobals()],
     resolve: {
@@ -86,7 +96,7 @@ export function createConfig(astroPath: string): Record<string, any> {
       ),
       // Define PUBLIC_API_BASE_URL explicitly to ensure it's available in client code
       "process.env.PUBLIC_API_BASE_URL": JSON.stringify(
-        process.env.PUBLIC_API_BASE_URL,
+        env.PUBLIC_API_BASE_URL,
       ),
 
       /**
