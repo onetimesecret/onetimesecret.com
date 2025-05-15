@@ -11,7 +11,11 @@ import AboutContent from "@/components/about/AboutContent.vue";
 import content from "@/locales/en.json";
 
 export async function getStaticPaths() {
-  return [{ params: { lang: "en" } }];
+  return [
+    { params: { lang: "en" } },
+    { params: { lang: "fr" } },
+    { params: { lang: "de" } },
+  ];
 }
 
 const { lang } = Astro.params;
