@@ -240,13 +240,16 @@ export default defineConfig({
     }),
 
     vue({
-      devtools: { launchEditor: "zed" },
+      devtools: {
+        launchEditor: "zed",
+      },
       /**
        * Custom Vue entry point where we ensure globals are defined
        * This entry point imports and runs setupGlobalVars() from src/env.ts
        * before initializing vue-i18n to prevent the reference error.
        */
       appEntrypoint: "/src/vueSetup",
+      jsx: true,
     }),
   ],
 });
