@@ -1,7 +1,4 @@
-// Import environment setup to ensure global variables are defined
-import { setupGlobalVars } from "./env";
-// Run setup to define required global variables
-setupGlobalVars();
+// src/vueSetup.ts
 
 import type { App } from "vue";
 import i18n from "./i18n";
