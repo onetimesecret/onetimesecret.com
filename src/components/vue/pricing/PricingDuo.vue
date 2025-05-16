@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import InfoTooltip from '@/components/InfoTooltip.vue';
-  import MovingGlobules from '@/components/MovingGlobules.vue';
-  import QuoteSection from '@/components/QuoteSection.vue';
+  import InfoTooltip from '@/components/vue/InfoTooltip.vue';
+  import MovingGlobules from '@/components/vue/MovingGlobules.vue';
+  import QuoteSection from '@/components/vue/QuoteSection.vue';
   import { paymentFrequencies, productTiers } from '@/sources/productTiers';
   import { testimonials as testimonialsData } from '@/sources/testimonials';
   import { RadioGroup, RadioGroupOption } from '@headlessui/vue';

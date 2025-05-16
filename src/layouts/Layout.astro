@@ -171,7 +171,10 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
         locale={lang}
       />
       <LanguagePicker />
-      <FooterSignOff client:load />
+      <FooterSignOff
+        client:load
+        locale={lang}
+      />
     </footer>
   </body><!-- SVG sprites - hidden but available for use -->
   <SvgSprites />

@@ -3,17 +3,17 @@
 <script setup lang="ts">
 import ClientOnlyBanner from "@/components/vue/homepage/ClientOnlyBanner.vue";
 import HeroTitle from "@/components/vue/homepage/HeroTitle.vue";
-import HowItWorks from "@/components/vue/homepage/HowItWorks.vue"; // Import HowItWorks component
+import HowItWorks from "@/components/vue/homepage/HowItWorks.vue";
 import ClientOnlyRegionSelector from "@/components/vue/homepage/regions/ClientOnlyRegionSelector.vue";
-import type { Region } from "@/components/vue/homepage/regions/RegionSelector.vue"; // Import Region type
+import type { Region } from "@/components/vue/homepage/regions/RegionSelector.vue";
 import ScreenshotViewHole from "@/components/vue/homepage/ScreenshotViewHole.vue";
-import MainNavigation from "@/components/vue/layouts/MainNavigation.vue"; // Import the new navigation component
-import { computed, onMounted, ref, watch } from "vue"; // Import watch
+import MainNavigation from "@/components/vue/layouts/MainNavigation.vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { setLanguage } from "@/i18n"; // Import setLanguage
+import { setLanguage } from "@/i18n";
 
-// Import the result type from the new base component location
-import SecretFormLite from "@/components/vue/homepage/SecretFormLite.vue"; // Import the wrapper component
+
+import SecretFormLite from "@/components/vue/homepage/SecretFormLite.vue";
 import UseCaseSelector from "@/components/vue/homepage/UseCaseSelector.vue";
 import type { ApiResult } from "@/components/vue/forms/BaseSecretFormLite.vue";
 
