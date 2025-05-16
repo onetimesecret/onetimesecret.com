@@ -1,10 +1,26 @@
 {
   "onetime-secret-literal": "Onetime Secret",
   "all-rights-reserved": "Gimme ur shoes",
+  "read-our-latest-blog-posts": "Read our latest blog posts",
+  "view-our-subscription-pricing": "View our subscription pricing",
+  "learn-about-our-company": "Learn about our company",
+  "check-our-service-status": "Check our service status",
+  "explore-our-api-documentation": "Explore our API documentation",
+  "learn-about-our-security-measures": "Learn about our security measures",
+  "access-our-documentation": "Access our documentation",
+  "view-our-source-code-on-github": "View our source code on GitHub",
+  "read-our-privacy-policy": "Read our Privacy Policy",
+  "view-our-terms-and-conditions": "View our Terms and Conditions",
+  "status": "Status",
   "tagline": {
     "signed": "Signed",
     "sealed": "Sealed",
     "delivered": "Delivered"
+  },
+  "banner": {
+    "try-it-out": "Try it out",
+    "open-menu": "Open main menu",
+    "close-menu": "Close menu"
   },
   "navigation": {
     "home": "Home",
@@ -14,12 +30,14 @@
     "pricing": "Pricing"
   },
   "auth": {
-    "sign-in": "Sign In"
+    "sign-in": "Sign In",
+    "sign-up": "Sign Up"
   },
   "LABELS": {
     "about": "About",
     "pricing": "Pricing",
     "blog": "Blog",
+    "create-link": "Create Secret Link",
     "docs": "Documentation",
     "privacy": "Privacy Policy",
     "terms": "Terms and Conditions",
@@ -29,11 +47,13 @@
     "legals": "Legals",
     "copy": "Copy",
     "copied": "Copied",
-    "processing": "Processing"
+    "processing": "Processing",
+    "loading": "Loading"
   },
   "web": {
     "errors": {
-      "errorTitle": "Not successful"
+      "errorTitle": "Not successful",
+      "passphraseRequired": "Passphrase is required when option is selected."
     },
     "secrets": {
       "keepSensitiveInfo": "Keep sensitive info out of your email and chat logs.",
@@ -44,9 +64,16 @@
       "optionsHeading": "Privacy Options",
       "addPassphrase": "Add passphrase",
       "secretPlaceholder": "Type your secret message here...",
+      "secretPlaceholder-premium": "Type your secret message here (stored in {noun})",
       "dataSovereignty": "Data Sovereignty",
       "regionExplanation": "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR.",
       "learnMoreRegions": "Learn more about regional domains",
+      "selectRegionHeading": "Select Region",
+      "complianceNote": "Helps with SOC2, GDPR, CCPA & HIPAA requirements for data privacy",
+      "regionSelector": {
+        "currentDomain": "Current domain",
+        "dataResidency": ""
+      },
       "successTitle": "Success!",
       "shareLinkDescription": "Share your secret link with others."
     },
