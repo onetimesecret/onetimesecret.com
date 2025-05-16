@@ -30,12 +30,11 @@ export async function loadLocalizedPage(
       // console.info(`Content for slug \'${slug}\' not found in \'${lang}\'. Fell back to \'en\'.`);
     } catch (fallbackError) {
       throw new Error(
-        `Could not find content for slug \'${slug}\' in \'${lang}\' or fallback language (en) in collection \'${collection}\'.`,
+        `Could not find content for slug '${slug}' in '${lang}' or fallback language (en) in collection '${collection}'. Error: ${fallbackError}`,
       );
     }
   }
 
-  // Render the content
-  const { Content, headings, data } = await entry.render();
-  return { Content, headings, data };
+  const { Content, headings } = await entry.render();
+  return { Content, headings, data: entry.data }; // Correctly access entry.data
 }
