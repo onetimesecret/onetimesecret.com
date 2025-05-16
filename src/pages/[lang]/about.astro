@@ -3,8 +3,7 @@
 
 import Layout from "@/layouts/Layout.astro";
 import { createLocaleI18n } from "@/i18n";
-
-import MainNavigation from "@/components/vue/layouts/MainNavigation.vue";
+import { loadLocalizedPage } from "@/utils/content"; // Import the new utility
 
 import { getLanguagePaths } from "@config/astro/i18n";
 
@@ -18,30 +17,17 @@ const { lang = "en" } = Astro.params;
 const i18n = await createLocaleI18n(lang);
 const { t } = i18n.global;
 
-import { getEntry } from "astro:content";
-
-// Try to get the about page in the current language
-let entry;
-try {
-  entry = await getEntry("pages", `${lang}/about`);
-} catch (error) {
-  // Fallback to English if the requested language isn't available
-  try {
-    entry = await getEntry("pages", "en/about");
-  } catch (fallbackError) {
-    throw new Error(
-      `Could not find about page in ${lang} or fallback language (en)`,
-    );
-  }
-}
-
-// Render the content
-const { Content, headings } = await entry.render();
+// Use the utility function to load content
+const { Content, headings, data } = await loadLocalizedPage(
+  "pages",
+  lang,
+  "about",
+);
 ---
 
 <Layout
-  title={`${entry.data.title} | Onetime Secret`}
-  description={entry.data.description ||
+  title={`${data.title} | Onetime Secret`}
+  description={data.description ||
     "Learn about Onetime Secret, our mission to provide secure one-time sharing, and the team behind our service."}>
   <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900">
     <Content />
