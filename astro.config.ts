@@ -69,6 +69,9 @@ export default defineConfig({
   // https://docs.astro.build/en/reference/configuration-reference/#output
   output: "static",
 
+  // https://docs.astro.build/en/guides/prefetch/
+  // prefetch: true,
+
   i18n: createI18nConfig(),
   redirects: createRedirectsConfig(),
   integrations: createIntegrations(),

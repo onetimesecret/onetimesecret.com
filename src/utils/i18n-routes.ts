@@ -6,6 +6,12 @@
  * ensuring consistency between Astro's i18n routing and Vue components.
  */
 
+/**
+ * Astro.preferredLocale: Browser-matched locale if available, undefined otherwise
+ * Astro.preferredLocaleList: Array of browser-requested locales supported by the site
+ * Astro.currentLocale: Locale from URL path, defaults to i18n.defaultLocale
+ */
+
 import {
   DEFAULT_LANGUAGE,
   SUPPORTED_LANGUAGES,
