@@ -6,6 +6,8 @@ import "@/styles/tailwind.css";
 import "@/fonts/font-face.css";
 import "@/i18n";
 
+const { lang } = Astro.props;
+
 /**
  * Component Script:
  * What markdown calls frontmatter, astro refers to as Component Script.
@@ -60,6 +62,9 @@ const pageDescription =
   description={pageDescription}>
   <!-- Render the Homepage component -->
   <!-- client:load ensures the Vue component hydrates and runs client-side -->
-  <Homepage client:load />
+  <Homepage
+    client:load
+    locale={lang}
+  />
   <!-- <slot />  -->
 </Layout>

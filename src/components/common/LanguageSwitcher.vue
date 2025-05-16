@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { createLanguageSwitcherUrl, getLocaleFromUrl } from '@/utils/i18n-routes';
+import { createLanguageSwitcherUrl, getLocaleFromUrl } from '@/i18n/utils';
 
 const { t, locale } = useI18n();
 

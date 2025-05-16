@@ -16,6 +16,11 @@ import SecretFormLite from "@/components/homepage/SecretFormLite.vue"; // Import
 import UseCaseSelector from "@/components/homepage/UseCaseSelector.vue";
 import type { ApiResult } from "@/components/shared/BaseSecretFormLite.vue";
 
+const props = defineProps<{
+  locale: string;
+}>();
+
+
 const { t } = useI18n();
 
 // --- State for Homepage ---
@@ -153,7 +158,7 @@ onMounted(() => {
 
     <header class="sticky top-0 z-[99] bg-white">
       <!-- Main Navigation -->
-      <MainNavigation />
+      <MainNavigation :locale="locale" />
     </header>
 
     <main class="flex-grow">

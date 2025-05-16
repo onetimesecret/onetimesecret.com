@@ -1,7 +1,7 @@
 <!-- src/components/layout/FooterLinkLists.vue -->
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-// import { localizeUrl } from "@/utils/i18n-routes";
+// import { localizeUrl } from "@/i18n/utils";
 
 interface LayoutProps {
   windowProps?: {

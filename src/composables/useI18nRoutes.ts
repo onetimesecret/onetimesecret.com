@@ -5,7 +5,7 @@ import {
   getPathWithoutLocale,
   isLocalizedUrlActive,
   localizeUrl,
-} from "@/utils/i18n-routes";
+} from "@/i18n/utils";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 

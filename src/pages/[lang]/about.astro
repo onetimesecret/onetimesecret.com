@@ -2,13 +2,13 @@
 // src/pages/[lang]/about.astro
 
 import Layout from "@/layouts/Layout.astro";
-import "@/i18n";
+import { createLocaleI18n } from "@/i18n";
 
 import StaticPageNavigation from "@/components/layouts/static/StaticPageNavigation.vue";
 import StaticPageContent from "@/components/layouts/static/StaticPageContent.vue";
 import MarkdownContent from "@/components/layouts/static/MarkdownContent.vue";
 import AboutContent from "@/components/about/AboutContent.vue";
-import content from "@/locales/en.json";
+// import content from "@/locales/en.json";
 
 import { getLanguagePaths } from "@config/astro/i18n";
 
@@ -16,19 +16,45 @@ export async function getStaticPaths() {
   return getLanguagePaths();
 }
 
-const { lang } = Astro.params;
+const { lang = 'en' } = Astro.params;
+// Initialize i18n asynchronously
+const i18n = await createLocaleI18n(lang);
+const { t } = i18n.global;
+
+import { getEntry } from "astro:content";
+
+// Try to get the about page in the current language
+let entry;
+try {
+  entry = await getEntry("pages", `${lang}/about`);
+} catch (error) {
+  // Fallback to English if the requested language isn't available
+  try {
+    entry = await getEntry("pages", "en/about");
+  } catch (fallbackError) {
+    throw new Error(`Could not find about page in ${lang} or fallback language (en)`);
+  }
+}
+
+// Render the content
+const { Content, headings } = await entry.render();
+
+const textString = t("all-rights-reserved");
 ---
 
 <Layout
-  title="About Us | Onetime Secret"
-  description="Learn about Onetime Secret, our mission to provide secure one-time sharing, and the team behind our service.">
+  title={`${entry.data.title} | Onetime Secret`}
+  description={entry.data.description || "Learn about Onetime Secret, our mission to provide secure one-time sharing, and the team behind our service."}>
   <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900">
-    <StaticPageNavigation client:load />
+    <StaticPageNavigation
+      client:load
+      locale={lang}
+    />
     <StaticPageContent
-      title="About Us"
+      title={entry.data.title}
       withNavPadding={true}
-      client:load>
-      <AboutContent />
-    </StaticPageContent>
+      client:load
+      ><Content /></StaticPageContent
+    >
   </div>
 </Layout>

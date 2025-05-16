@@ -44,6 +44,8 @@ import "@/i18n";
  * will get an error."
  */
 
+const { lang } = Astro.props;
+console.log("[plop]", lang);
 const pageTitle = "Share Secrets Securely | Onetime Secret";
 const pageDescription =
   "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever.";
@@ -55,6 +57,9 @@ const pageDescription =
   description={pageDescription}>
   <!-- Render the Homepage component -->
   <!-- client:load ensures the Vue component hydrates and runs client-side -->
-  <Homepage client:load />
+  <Homepage
+    client:load
+    locale={lang}
+  />
   <!-- <slot />  -->
 </Layout>

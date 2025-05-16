@@ -1,4 +1,4 @@
-// src/utils/i18n-routes.ts
+// src/i18n/utils.ts
 /**
  * Utilities for handling internationalized routes in the application
  *

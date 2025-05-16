@@ -5,15 +5,20 @@ import { Dialog, DialogPanel } from "@headlessui/vue";
 import { Bars3Icon, XMarkIcon } from "@heroicons/vue/24/outline";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { localizeUrl } from '@/i18n/utils';
+
+const props = defineProps<{
+  locale: string;
+}>();
 
 const { t } = useI18n();
 
 // Define navigation items using i18n keys
 const navigation = [
-  { name: t("navigation.home"), href: "/" },
+  { name: t("navigation.home"), href: localizeUrl("/", props.locale) },
   // { name: t("navigation.features"), href: "#features" },
   // { name: t("navigation.regions"), href: "#regions" },
-  { name: t("navigation.about"), href: "/about" },
+  { name: t("navigation.about"), href: localizeUrl("/about", props.locale) },
   {
     name: t("navigation.pricing"),
     href: "/pricing",

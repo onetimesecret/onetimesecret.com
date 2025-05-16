@@ -4,19 +4,27 @@ import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher.vue';
-import { localizeUrl } from '@/utils/i18n-routes';
+import { localizeUrl } from '@/i18n/utils';
+import { createLocaleI18n } from "@/i18n";
+
+const props = defineProps<{
+  locale: string;
+}>();
+
+const i18n = createLocaleI18n(props.locale);
+// const { t } = i18n.global;
 
 const { t, locale } = useI18n();
 
 // Get current locale for generating localized links
-const currentLocale = computed(() => locale.value || 'en');
+const currentLocale = props.locale;
 
 // Navigation items with localized paths
 const navigation = computed(() => [
-  { name: t('navigation.home'), href: localizeUrl('/', currentLocale.value) },
-  { name: t('navigation.features'), href: localizeUrl('/features', currentLocale.value) },
-  { name: t('navigation.about'), href: localizeUrl('/about', currentLocale.value) },
-  { name: t('navigation.pricing'), href: localizeUrl('/pricing', currentLocale.value) }
+  { name: t('navigation.home'), href: localizeUrl('/', currentLocale) },
+  { name: t('navigation.features'), href: localizeUrl('/features', currentLocale) },
+  { name: t('navigation.about'), href: localizeUrl('/about', currentLocale) },
+  { name: t('navigation.pricing'), href: localizeUrl('/pricing', currentLocale) }
 ]);
 
 // Determine current path to highlight active link
@@ -50,7 +58,7 @@ const mobileMenuOpen = ref(false);
           <div class="flex flex-shrink-0 items-center">
             <!-- Logo/Brand -->
             <a href="/" class="text-xl font-bold text-brand-600 dark:text-brand-500">
-              {{ t('onetime-secret-literal') }}
+              {{ t('all-rights-reserved') }}
             </a>
           </div>
           <!-- Desktop Navigation -->
