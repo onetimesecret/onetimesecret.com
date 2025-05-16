@@ -8,8 +8,9 @@ import ClientOnlyRegionSelector from "@/components/vue/homepage/regions/ClientOn
 import type { Region } from "@/components/vue/homepage/regions/RegionSelector.vue"; // Import Region type
 import ScreenshotViewHole from "@/components/vue/homepage/ScreenshotViewHole.vue";
 import MainNavigation from "@/components/vue/layouts/MainNavigation.vue"; // Import the new navigation component
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue"; // Import watch
 import { useI18n } from "vue-i18n";
+import { setLanguage } from "@/i18n"; // Import setLanguage
 
 // Import the result type from the new base component location
 import SecretFormLite from "@/components/vue/homepage/SecretFormLite.vue"; // Import the wrapper component
@@ -22,13 +23,27 @@ const props = defineProps<{
 
 const { t } = useI18n();
 
+// --- Reactive state for i18n readiness ---
+const i18nReady = ref(false);
+
+// --- Watch for locale changes and update i18n ---
+watch(
+  () => props.locale,
+  async (newLocale) => {
+    i18nReady.value = false;
+    await setLanguage(newLocale);
+    i18nReady.value = true;
+  },
+  { immediate: true }, // immediate: true will run the watcher upon component creation
+);
+
 // --- State for Homepage ---
 const detectedRegion = ref("");
 const suggestedDomain = ref("");
 const baseUrl = import.meta.env.PUBLIC_API_BASE_URL;
 
 // Region configuration for the selector
-const availableRegions = ref<Region[]>([
+const availableRegions = computed(() => [ // Make availableRegions a computed property to use t() reactively
   {
     identifier: "EU",
     displayName: t("web.secrets.europe") || "European Union",
@@ -89,37 +104,26 @@ const switchRegion = (newRegion?: string) => {
 
 // Handle region change from the selector component
 const handleRegionChange = (region: Region) => {
-  // Apply transition effect
-  //const prevRegion = currentRegion.value;
   currentRegion.value = region;
 
-  // Reset the secret form when region changes
   if (secretFormRef.value) {
     secretFormRef.value.resetForm();
   }
 
-  // Update the API base URL based on the selected region
-  // Only redirect if we're not already on this domain
   if (
     typeof window !== "undefined" &&
     window.location.hostname !== region.domain
   ) {
-    // Optionally redirect to the new domain
-    // window.location.href = `https://${region.domain}${window.location.pathname}`;
     console.log(`Region changed to ${region.displayName} (${region.domain})`);
   }
 };
 
-// Reference to the SecretFormLite component
 const secretFormRef = ref();
 
-// Updated handler for the 'createLink' event from SecretFormLite
 const handleSecretCreationResult = (result: ApiResult) => {
-  // console.log("Secret creation result received:", result);
   if (result.success) {
     apiCallResult.value = result;
     apiCallError.value = null;
-    // Optionally scroll to the result or perform other actions
   } else {
     apiCallResult.value = null;
     apiCallError.value =
@@ -129,24 +133,24 @@ const handleSecretCreationResult = (result: ApiResult) => {
   }
 };
 
-// Use the PUBLIC_API_BASE_URL env var or calculate based on the current region
-// Make sure the base component (BaseSecretFormLite) correctly appends `/api` if needed.
 const apiBaseUrl = computed(() => {
   return baseUrl || `https://${currentRegion.value.domain}`;
 });
 
 const isClient = ref(false);
 
-// Set isClient to true when component is mounted on client-side
-// This prevents hydration mismatch by only enabling client-specific
-// components after initial hydration is complete
-onMounted(() => {
+onMounted(async () => { // Make onMounted async
   isClient.value = true;
+  // Initial language setup is now handled by the watcher with immediate: true
+  // However, ensure currentRegion is updated if availableRegions changes due to locale load
+  currentRegion.value = availableRegions.value.find(r => r.identifier === currentRegion.value.identifier) || availableRegions.value[0];
 });
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-white overflow-hidden">
+  <div
+    v-if="i18nReady"
+    class="flex min-h-screen flex-col bg-white overflow-hidden">
     <!-- First Time Visitor Banner (Client-Only) -->
     <ClientOnlyBanner
       :detected-region="detectedRegion"
@@ -219,6 +223,10 @@ onMounted(() => {
       <!-- Section 5: Screenshot ViewHole -->
       <ScreenshotViewHole />
     </main>
+  </div>
+  <div v-else>
+    <!-- Optional: Add a loading indicator while i18n is loading -->
+    Loading translations...
   </div>
 </template>
 
