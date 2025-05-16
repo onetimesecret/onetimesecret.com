@@ -1,13 +1,13 @@
 // src/composables/useI18nRoutes.ts
-import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
 import {
-  localizeUrl,
-  getLocaleFromPath,
-  getPathWithoutLocale,
   createLanguageSwitcherUrl,
-  isLocalizedUrlActive
-} from '@/utils/i18n-routes';
+  getLocaleFromUrl,
+  getPathWithoutLocale,
+  isLocalizedUrlActive,
+  localizeUrl,
+} from "@/i18n/utils";
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 
 /**
  * Composable for working with i18n routes in Vue components
@@ -19,11 +19,11 @@ export default function useI18nRoutes() {
   const { locale } = useI18n();
 
   // Current locale as a reactive computed property
-  const currentLocale = computed(() => locale.value || 'en');
+  const currentLocale = computed(() => locale.value || "en");
 
   // Current path from browser (with SSR support)
   const currentPath = computed(() => {
-    if (typeof window === 'undefined') return '/';
+    if (typeof window === "undefined") return "/";
     return window.location.pathname;
   });
 
@@ -55,6 +55,6 @@ export default function useI18nRoutes() {
     toLocalizedPath,
     toLanguageSwitcherUrl,
     isRouteActive,
-    getLocaleFromPath
+    getLocaleFromUrl,
   };
 }

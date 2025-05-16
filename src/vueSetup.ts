@@ -1,7 +1,4 @@
-// Import environment setup to ensure global variables are defined
-import { setupGlobalVars } from "./env";
-// Run setup to define required global variables
-setupGlobalVars();
+// src/vueSetup.ts
 
 import type { App } from "vue";
 import i18n from "./i18n";
@@ -14,10 +11,11 @@ import i18n from "./i18n";
  */
 export default function setupVue(app: App) {
   // Add i18n to Vue application
-  if (app && typeof app.use === 'function') {
+  if (app && typeof app.use === "function") {
     app.use(i18n);
+    // console.debug("Vue app is initialized");
   } else {
-    console.warn('Vue app instance not properly initialized in setupVue');
+    console.warn("Vue app instance not properly initialized in setupVue");
   }
 
   return app;

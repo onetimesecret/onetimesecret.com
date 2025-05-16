@@ -1,5 +1,8 @@
 # CLAUDE.md - Agent Guidelines for OnetimeSecret.com
 
+ASTRO 5.7 WEBSITE
+
+
 ## i18n
 
 The default english translation is provided in the `src/locales/en.json` file.
@@ -9,6 +12,20 @@ how properly reference them in Vue components (e.g. `$t('web.secrets.enterPassph
 Proper stylization of project name: "Onetime Secret".
 
 DO NOT ADD TEXT unless using the i18n system. Use existing keys or create new ones.
+
+### i18n Management Tools
+
+The project uses `vue-i18n-extract` to manage i18n keys. These npm scripts are available:
+
+- `pnpm i18n:scan` - Scan for missing and unused keys without making changes
+- `pnpm i18n:add` - Add missing keys to locale files (with empty values)
+- `pnpm i18n:remove` - Remove unused keys from locale files
+
+Configuration is supposed to be in `vue-i18n-extract.config.js` but the command ignores it:
+- Standard Vue: `$t('key')` or `this.$t('key')`
+- Composition API: `t('key')`
+- Module import: `i18n.t('key')` or `useI18n().t('key')`
+- HTML attributes: `v-t="key"`, `:t="key"`, `t="key"`
 
 ## Build/Lint/Test Commands
 - Build: `pnpm build` (production) or `pnpm build:local` (development)

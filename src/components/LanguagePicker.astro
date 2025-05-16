@@ -1,0 +1,18 @@
+---
+import {
+  DEFAULT_LANGUAGE,
+  SUPPORTED_LANGUAGES,
+  LANGUAGE_META,
+  type SupportedLanguage,
+} from "../../config/astro/i18n";
+---
+
+<ul>
+  {
+    Object.entries(LANGUAGE_META).map(([lang, details]) => (
+      <li>
+        <a href={`/${lang}/`}>{details.name}</a>
+      </li>
+    ))
+  }
+</ul>

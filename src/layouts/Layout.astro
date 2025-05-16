@@ -1,101 +1,37 @@
 ---
-import CarbonSprites from "@/components/icons/CarbonSprites.vue";
-import FontAwesome6Sprites from "@/components/icons/FontAwesome6Sprites.vue";
-import HeroiconsSprites from "@/components/icons/HeroiconsSprites.vue";
-import MaterialSymbolsSprites from "@/components/icons/MaterialSymbolsSprites.vue";
-import MdiSprites from "@/components/icons/MdiSprites.vue";
-import PhosphorSprites from "@/components/icons/PhosphorSprites.vue";
-import SimpleIconsSprites from "@/components/icons/SimpleIconsSprites.vue";
-import TablerSprites from "@/components/icons/TablerSprites.vue";
-import FooterLinkLists from "../components/layouts/FooterLinkLists.vue";
-import FooterSignOff from "../components/layouts/FooterSignOff.vue";
+// Component imports
+import LanguagePicker from "@/components/LanguagePicker.astro";
+import FooterLinkLists from "@/components/vue/layouts/FooterLinkLists.vue";
+import FooterSignOff from "@/components/vue/layouts/FooterSignOff.vue";
+import Favicons from "@/components/layout/Favicons.astro";
+import SeoMeta from "@/components/layout/SeoMeta.astro";
+import SvgSprites from "@/components/layout/SvgSprites.astro";
+import OptimizedFonts from "@/components/layout/OptimizedFonts.astro";
 
-import "@/fonts/font-face.css";
+// Utilities
+import { getLocaleFromUrl } from "../i18n/utils";
+import { generateCspConnectSrc } from "@/utils/security";
+import {
+  getRouteSeoConfig,
+  generateBreadcrumbsLd,
+  defaultSeoValues,
+  getDefaultWebApplicationLd,
+} from "@/utils/seo";
+
+// Styles
 import "@/styles/global.css";
 import "@/styles/tailwind.css";
 
-// Get current path for route-specific optimizations
+// i18n setup
+const locale = getLocaleFromUrl(Astro.url);
+const { lang = "en" } = Astro.params;
+
+// Routing
 const currentPath = Astro.url.pathname;
 
-// Route-specific SEO configuration
-const routeConfig = {
-  "/": {
-    title: "Onetime Secret - Share Sensitive Information Securely",
-    description:
-      "Share passwords, private messages, and sensitive information with secure, self-destructing links that can only be viewed once.",
-    ogType: "website",
-    ogImage: "/etc/img/social/onetimesecret-home-og.png",
-    structuredData: {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      name: "Onetime Secret",
-      url: Astro.url.origin,
-      applicationCategory: "SecurityApplication",
-      offers: {
-        "@type": "Offer",
-        price: "0",
-        priceCurrency: "USD",
-      },
-      description:
-        "Share passwords, private messages, and sensitive information with secure, self-destructing links that can only be viewed once.",
-    },
-  },
-  "/about": {
-    title: "About Onetime Secret - Our Mission and Team",
-    description:
-      "Learn about Onetime Secret, our mission to provide secure one-time sharing, and the team behind this privacy-focused service.",
-    ogImage: "/etc/img/social/onetimesecret-home-og.png",
-    structuredData: {
-      "@context": "https://schema.org",
-      "@type": "AboutPage",
-      name: "About Onetime Secret",
-      url: `${Astro.url.origin}/about`,
-      description:
-        "Learn about Onetime Secret, our mission to provide secure one-time sharing, and the team behind this privacy-focused service.",
-    },
-  },
-  "/pricing": {
-    title: "Onetime Secret Pricing - Free and Premium Plans",
-    description:
-      "Explore Onetime Secret pricing plans. Use our basic service for free or upgrade to premium for enhanced security features and longer expiration times.",
-    ogImage: "/etc/img/social/onetimesecret-home-og.png",
-    structuredData: {
-      "@context": "https://schema.org",
-      "@type": "PriceSpecification",
-      name: "Onetime Secret Pricing",
-      url: `${Astro.url.origin}/pricing`,
-      description:
-        "Explore Onetime Secret pricing plans with free and premium options.",
-    },
-  },
-};
-
-// Route-specific breadcrumbs
-const getBreadcrumbs = (path) => {
-  const segments = path.split("/").filter((segment) => segment);
-  const breadcrumbs = [
-    {
-      "@type": "ListItem",
-      position: 1,
-      name: "Home",
-      item: Astro.url.origin,
-    },
-  ];
-
-  let currentPath = "";
-  segments.forEach((segment, index) => {
-    currentPath += `/${segment}`;
-    breadcrumbs.push({
-      "@type": "ListItem",
-      position: index + 2,
-      name:
-        segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " "),
-      item: `${Astro.url.origin}${currentPath}`,
-    });
-  });
-
-  return breadcrumbs;
-};
+// --------------------------
+// Props Interface
+// --------------------------
 
 export interface Props {
   title?: string;
@@ -105,93 +41,63 @@ export interface Props {
   ogType?: string;
   twitterCard?: string;
   keywords?: string;
-  noindex?: boolean;
+  noindex?: boolean; // Allow explicitly setting noindex
   alternateLanguages?: { code: string; url: string }[];
   structuredData?: object;
-  windowProps?: {
-    support_host?: string;
-  };
 }
 
-// Get configuration for current route or use defaults
-const routeSpecificConfig = routeConfig[currentPath] || {};
+// --------------------------
+// Configuration & Data Processing
+// --------------------------
 
-const {
-  title = routeSpecificConfig.title ||
-    "Onetime Secret - Share Sensitive Information Securely",
-  description = routeSpecificConfig.description ||
-    "Share passwords, private messages, and sensitive information with secure, self-destructing links that can only be viewed once.",
-  canonicalUrl = Astro.url.href,
-  ogImage = routeSpecificConfig.ogImage ||
-    "/etc/img/social/onetimesecret-home-og.png",
-  ogType = routeSpecificConfig.ogType || "website",
-  twitterCard = "summary_large_image",
-  keywords = "secure sharing, one-time links, self-destructing messages, secure passwords, private sharing",
-  noindex = currentPath.startsWith("/secret/") ||
-    currentPath.startsWith("/private/") ||
-    currentPath.startsWith("/receipt/"),
-  alternateLanguages = [
-    { code: "en", url: `${Astro.url.origin}/en${currentPath}` },
-  ],
-  structuredData = routeSpecificConfig.structuredData || {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    name: "Onetime Secret",
-    url: Astro.url.origin,
-    applicationCategory: "SecurityApplication",
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "USD",
-    },
-    description: description,
-  },
-  windowProps = {
-    support_host: "https://docs.onetimesecret.com",
-  },
-} = Astro.props;
+const siteOrigin = Astro.url.origin.toString();
 
-// Generate JSON-LD structured data
-const jsonLD = JSON.stringify(structuredData);
+// SEO Configuration
+const routeSpecificSeo = getRouteSeoConfig(currentPath, siteOrigin);
 
-// Generate breadcrumb JSON-LD
-const breadcrumbsData = {
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  itemListElement: getBreadcrumbs(currentPath),
-};
-const breadcrumbsLD = JSON.stringify(breadcrumbsData);
+const pageTitle =
+  Astro.props.title || routeSpecificSeo.title || defaultSeoValues.title;
+const pageDescription =
+  Astro.props.description ||
+  routeSpecificSeo.description ||
+  defaultSeoValues.description;
+const pageOgImage =
+  Astro.props.ogImage || routeSpecificSeo.ogImage || defaultSeoValues.ogImage;
+const pageOgType =
+  Astro.props.ogType || routeSpecificSeo.ogType || defaultSeoValues.ogType;
+const pageKeywords = Astro.props.keywords || defaultSeoValues.keywords;
+const pageCanonicalUrl = Astro.props.canonicalUrl || Astro.url.href;
+const pageTwitterCard = Astro.props.twitterCard || defaultSeoValues.twitterCard;
 
-// --- CSP Configuration ---
-// Retrieve the API URL from environment variables with a fallback
+// Determine noindex status: explicitly set via prop, or based on path conventions
+const pageNoindex =
+  Astro.props.noindex !== undefined
+    ? Astro.props.noindex
+    : currentPath.startsWith("/secret/") ||
+      currentPath.startsWith("/private/") ||
+      currentPath.startsWith("/receipt/");
+
+const pageAlternateLanguages = Astro.props.alternateLanguages || [
+  { code: "en", url: `${siteOrigin}/en${Astro.url.pathname}` }, // ensure pathname starts with /
+];
+
+// Structured Data
+const pageStructuredData =
+  Astro.props.structuredData ||
+  routeSpecificSeo.structuredData ||
+  getDefaultWebApplicationLd(siteOrigin, pageDescription);
+
+const pageBreadcrumbsLd = generateBreadcrumbsLd(currentPath, siteOrigin);
+
+// Security Configuration
 const apiUrl = import.meta.env.PUBLIC_API_BASE_URL;
-
-// Determine if running in development or debug mode
 const isDebugMode = import.meta.env.DEV || import.meta.env.DEBUG;
-
-// Construct the Content Security Policy connect-src directive
-const connectSrcDirective = [
-  "'self'",
-  apiUrl ? apiUrl : null,
-  "https://catch.onetimesecret.com",
-  "https://eu.onetimesecret.com",
-  "https://ca.onetimesecret.com",
-  "https://nz.onetimesecret.com",
-  "https://us.onetimesecret.com",
-  // Allow connection to Sentry debugging sidecar in dev mode
-  // This provides local error tracking and debugging capabilities
-  ...(isDebugMode ? ["http://localhost:8969"] : []),
-]
-  // filter(Boolean) removes any falsy values from the array (like null,
-  // undefined, empty strings, etc.) This ensures that only valid, non-empty
-  // URLs are included in the CSP directive
-  .filter(Boolean)
-  .join(" ");
+const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
 ---
 
 <!doctype html>
 <html
-  lang="en"
+  lang={locale}
   class="h-full">
   <head>
     <meta charset="utf-8" />
@@ -204,14 +110,6 @@ const connectSrcDirective = [
       content="width=device-width, initial-scale=1.0"
     />
     <meta
-      name="description"
-      content={description}
-    />
-    <meta
-      name="keywords"
-      content={keywords}
-    />
-    <meta
       name="color-scheme"
       content="dark light"
     />
@@ -220,159 +118,64 @@ const connectSrcDirective = [
       content="Onetime Secret"
     />
 
-    <!-- Robots control - prevent indexing of private/secret pages -->
-    {
-      noindex && (
-        <meta
-          name="robots"
-          content="noindex, nofollow"
-        />
-      )
-    }
+    <!-- Favicons and Web App Manifest -->
+    <Favicons />
 
-    <!-- Canonical URL -->
-    <link
-      rel="canonical"
-      href={canonicalUrl}
-    />
-
-    <!-- Favicon -->
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="/favicon.svg"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="/favicon-32x32.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="/favicon-16x16.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="/apple-touch-icon.png"
+    <!-- SEO Meta Tags (including Open Graph, Twitter, JSON-LD, etc.) -->
+    <SeoMeta
+      title={pageTitle}
+      description={pageDescription}
+      canonicalUrl={pageCanonicalUrl}
+      ogImageBaseUrl={siteOrigin}
+      ogImage={pageOgImage}
+      ogType={pageOgType}
+      twitterCard={pageTwitterCard}
+      keywords={pageKeywords}
+      noindex={pageNoindex}
+      alternateLanguages={pageAlternateLanguages}
+      structuredData={pageStructuredData}
+      breadcrumbsLd={pageBreadcrumbsLd}
     />
 
-    <!-- Web App Manifest -->
-    <link
-      rel="manifest"
-      href="/site.webmanifest"
-    />
-
-    <!-- Open Graph / Facebook -->
-    <meta
-      property="og:type"
-      content={ogType}
-    />
-    <meta
-      property="og:url"
-      content={canonicalUrl}
-    />
-    <meta
-      property="og:title"
-      content={title}
-    />
-    <meta
-      property="og:description"
-      content={description}
-    />
-    <meta
-      property="og:image"
-      content={new URL(ogImage, Astro.url.origin).href}
-    />
-    <meta
-      property="og:site_name"
-      content="Onetime Secret"
-    />
-
-    <!-- X -->
-    <meta
-      name="twitter:card"
-      content={twitterCard}
-    />
-    <meta
-      name="twitter:title"
-      content={title}
-    />
-    <meta
-      name="twitter:description"
-      content={description}
-    />
-    <meta
-      name="twitter:image"
-      content={new URL(ogImage, Astro.url.origin).href}
-    />
-
-    <!-- Alternate language versions -->
-    {
-      alternateLanguages.map((lang) => (
-        <link
-          rel="alternate"
-          hreflang={lang.code}
-          href={lang.url}
-        />
-      ))
-    }
+    <!-- Default alternate language link -->
     <link
       rel="alternate"
       hreflang="x-default"
-      href={Astro.url.origin + currentPath}
+      href={siteOrigin + Astro.url.pathname}
     />
 
-    <!-- Preload critical resources -->
-    <!-- TODO: Fonts -->
-
-    <!-- Structured Data -->
-    <script
-      type="application/ld+json"
-      set:html={jsonLD}
-    />
-
-    <!-- Breadcrumbs Structured Data -->
-    <script
-      type="application/ld+json"
-      set:html={breadcrumbsLD}
-    />
+    <!-- Font optimization using OptimizedFonts component -->
+    <OptimizedFonts />
 
     <!-- Security Headers -->
     <meta
       http-equiv="Content-Security-Policy"
-      content={`default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src ${connectSrcDirective};`}
+      content={`default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src ${connectSrcDirective}; worker-src 'self' blob:;`}
     />
 
-    <title>{title}</title>
+    <title>{pageTitle}</title>
   </head>
   <body class="flex h-full flex-col bg-white dark:bg-gray-900">
-    <!-- All along the watch tower -->
+    <!-- Site-wide progress indicator -->
     <div class="bg-brand-500 fixed top-0 left-0 z-50 h-1 w-full"></div>
+
+    <!-- Main content area -->
     <div class="flex-grow">
       <slot />
     </div>
+
+    <!-- Footer section -->
     <footer class="bg-white dark:bg-gray-900">
       <FooterLinkLists
-        windowProps={windowProps}
         client:load
+        locale={lang}
       />
-      <FooterSignOff client:load />
+      <LanguagePicker />
+      <FooterSignOff
+        client:load
+        locale={lang}
+      />
     </footer>
-  </body>
-  <div
-    id="sprites"
-    class="hidden">
-    <HeroiconsSprites />
-    <CarbonSprites />
-    <FontAwesome6Sprites />
-    <MdiSprites />
-    <MaterialSymbolsSprites />
-    <TablerSprites />
-    <PhosphorSprites />
-    <SimpleIconsSprites />
-  </div>
+  </body><!-- SVG sprites - hidden but available for use -->
+  <SvgSprites />
 </html>

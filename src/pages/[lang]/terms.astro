@@ -4,34 +4,35 @@
 import Layout from "@/layouts/Layout.astro";
 import "@/i18n";
 
-import StaticPageNavigation from "@/components/layouts/static/StaticPageNavigation.vue";
-import StaticPageContent from "@/components/layouts/static/StaticPageContent.vue";
-import MarkdownContent from "@/components/layouts/static/MarkdownContent.vue";
-// Directly copied from our site-policy repo:
-// https://github.com/onetimesecret/site-policy/blob/main/onetime-terms-of-service.md
-import PageContent from "@/content/info/terms.md";
-import content from "@/locales/en.json";
+import { getLanguagePaths } from "@config/astro/i18n";
 
 export async function getStaticPaths() {
-  return [{ params: { lang: "en" } }];
+  return getLanguagePaths();
 }
+
+/*
+ * Markdown imports provide several properties:
+ * - file: absolute path (/path/to/file.md)
+ * - url: page URL (/en/guides/markdown-content)
+ * - frontmatter: YAML/TOML data from the document
+ * - <Content />: component for rendering the full content
+ * - rawContent(): returns raw Markdown as string
+ * - compiledContent(): returns Markdown compiled to HTML string
+ * - getHeadings(): returns heading array with depth, slug, and text
+ */
+
+// Directly copied from our site-policy repo:
+// https://github.com/onetimesecret/site-policy/blob/main/onetime-terms-of-service.md
+import { Content, frontmatter } from "@/content/pages/terms.md";
 
 const { lang } = Astro.params;
 ---
 
 <Layout
-  title="Terms of Service | Onetime Secret"
+  title={`${frontmatter.title} | Onetime Secret`}
   description="Our terms of service explain the rules and regulations for using Onetime Secret.">
   <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900">
-    <StaticPageNavigation client:load />
     <!-- $t('terms-of-service') -->
-    <StaticPageContent
-      title="Terms of Service"
-      withNavPadding={true}
-      client:load>
-      <MarkdownContent>
-        <PageContent />
-      </MarkdownContent>
-    </StaticPageContent>
+    <Content />
   </div>
 </Layout>
