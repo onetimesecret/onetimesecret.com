@@ -1,0 +1,147 @@
+---
+// src/components/layout/SeoMeta.astro
+// Handles rendering of SEO-related meta tags, Open Graph, Twitter cards,
+// alternate language links, and JSON-LD structured data.
+
+export interface Props {
+  title: string;
+  description: string;
+  canonicalUrl: string;
+  ogImageBaseUrl: string; // Base URL for resolving relative ogImage paths
+  ogImage?: string;
+  ogType?: string;
+  twitterCard?: string;
+  keywords?: string;
+  noindex?: boolean;
+  alternateLanguages?: { code: string; url: string }[];
+  structuredData?: object; // Main JSON-LD structured data
+  breadcrumbsLd?: object; // Breadcrumbs JSON-LD
+}
+
+const {
+  title,
+  description,
+  canonicalUrl,
+  ogImageBaseUrl,
+  ogImage = "/etc/img/social/onetimesecret-home-og.png", // Default if not provided
+  ogType = "website",
+  twitterCard = "summary_large_image",
+  keywords = "secure sharing, one-time links, self-destructing messages, secure passwords, private sharing",
+  noindex = false,
+  alternateLanguages = [],
+  structuredData,
+  breadcrumbsLd,
+} = Astro.props;
+
+// Construct absolute URL for Open Graph and Twitter images
+const absoluteOgImageUrl = ogImage ? new URL(ogImage, ogImageBaseUrl).href : "";
+---
+
+<meta
+  name="description"
+  content={description}
+/>
+<meta
+  name="keywords"
+  content={keywords}
+/>
+
+<!-- Robots control - prevent indexing based on prop -->
+{
+  noindex && (
+    <meta
+      name="robots"
+      content="noindex, nofollow"
+    />
+  )
+}
+
+<!-- Canonical URL -->
+<link
+  rel="canonical"
+  href={canonicalUrl}
+/>
+
+<!-- Open Graph / Facebook -->
+<meta
+  property="og:type"
+  content={ogType}
+/>
+<meta
+  property="og:url"
+  content={canonicalUrl}
+/>
+<meta
+  property="og:title"
+  content={title}
+/>
+<meta
+  property="og:description"
+  content={description}
+/>
+{
+  absoluteOgImageUrl && (
+    <meta
+      property="og:image"
+      content={absoluteOgImageUrl}
+    />
+  )
+}
+<meta
+  property="og:site_name"
+  content="Onetime Secret"
+/>
+
+<!-- X (formerly Twitter) -->
+<meta
+  name="twitter:card"
+  content={twitterCard}
+/>
+<meta
+  name="twitter:title"
+  content={title}
+/>
+<meta
+  name="twitter:description"
+  content={description}
+/>
+{
+  absoluteOgImageUrl && (
+    <meta
+      name="twitter:image"
+      content={absoluteOgImageUrl}
+    />
+  )
+}
+
+<!-- Alternate language versions -->
+{
+  alternateLanguages.map((lang) => (
+    <link
+      rel="alternate"
+      hreflang={lang.code}
+      href={lang.url}
+    />
+  ))
+}
+{/* x-default is handled in Layout.astro as it depends on currentPath */}
+
+<!-- Structured Data -->
+{
+  structuredData && (
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(structuredData)}
+    />
+  )
+}
+
+<!-- Breadcrumbs Structured Data -->
+{
+  breadcrumbsLd && (
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(breadcrumbsLd)}
+    />
+  )
+}
