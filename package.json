@@ -7,7 +7,7 @@
     "check": "astro check --tsconfig tsconfig.json",
     "clean": "rm -rf dist/ .astro/ node_modules/.vite/",
     "reinstall": "pnpm clean && pnpm install",
-    "dev": "NODE_OPTIONS='--max-old-space-size=8192' astro dev",
+    "dev": "NODE_OPTIONS='--max-old-space-size=8192 --trace-warnings' astro dev",
     "lint": "pnpm run lint:base --cache-location ./node_modules/.cache/eslint --cache 'src/**/*.{mjs,ts,d.ts,vue}' './*.{mjs,ts,js}'",
     "lint:base": "eslint --quiet --config eslint.config.ts",
     "lint:fix": "pnpm run lint:base --fix 'src/**/*.{mjs,ts,vue}' './*.{mjs,ts,d.ts,vue}'",
@@ -17,7 +17,10 @@
     "preview": "astro preview",
     "type-check:base": "vue-tsc --noEmit",
     "type-check": "pnpm run type-check:base",
-    "type-check:watch": "pnpm run type-check:base --watch"
+    "type-check:watch": "pnpm run type-check:base --watch",
+    "i18n:scan": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue)\" --languageFiles \"./src/locales/*.json\"",
+    "i18n:add": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue)\" --languageFiles \"./src/locales/*.json\" --add",
+    "i18n:remove": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue)\" --languageFiles \"./src/locales/*.json\" --remove"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
@@ -54,6 +57,7 @@
     "prettier-plugin-tailwindcss": "^0.6.11",
     "prettier-plugin-vue": "1.1.6",
     "vite": "^6.3.5",
+    "vue-i18n-extract": "^2.0.7",
     "vue-tsc": "^2.2.10"
   }
 }
