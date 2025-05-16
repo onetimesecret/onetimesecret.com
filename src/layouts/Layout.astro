@@ -6,6 +6,7 @@ import FooterSignOff from "@/components/vue/layouts/FooterSignOff.vue";
 import Favicons from "@/components/layout/Favicons.astro";
 import SeoMeta from "@/components/layout/SeoMeta.astro";
 import SvgSprites from "@/components/layout/SvgSprites.astro";
+import OptimizedFonts from "@/components/layout/OptimizedFonts.astro";
 
 // Utilities
 import { getLocaleFromUrl } from "../i18n/utils";
@@ -18,7 +19,6 @@ import {
 } from "@/utils/seo";
 
 // Styles
-import "@/fonts/font-face.css";
 import "@/styles/global.css";
 import "@/styles/tailwind.css";
 
@@ -144,8 +144,8 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
       href={siteOrigin + Astro.url.pathname}
     />
 
-    <!-- Preload critical resources -->
-    <!-- TODO: Fonts -->
+    <!-- Font optimization using OptimizedFonts component -->
+    <OptimizedFonts />
 
     <!-- Security Headers -->
     <meta
