@@ -15,17 +15,16 @@ Create a directory structure that supports multiple languages:
 ```
 src/
 ├── content/
-│   ├── pages/
-│   │   ├── en/
-│   │   │   ├── about.md
-│   │   │   └── security.md
-│   │   ├── fr/
-│   │   │   ├── about.md
-│   │   │   └── security.md
-│   │   └── de/
-│   │       ├── about.md
-│   │       └── security.md
-│   └── schema.ts (content collections schema)
+│   └── pages/
+│       ├── en/
+│       │   ├── about.md
+│       │   └── security.md
+│       ├── fr/
+│       │   ├── about.md
+│       │   └── security.md
+│       └── de/
+│           ├── about.md
+│           └── security.md
 ├── i18n/
 │   ├── ui/
 │   │   ├── en.json
@@ -34,12 +33,16 @@ src/
 │   └── utils.ts (i18n utility functions)
 ├── pages/
 │   ├── [lang]/
-│   │   ├── blog/
-│   │   │   └── [slug].astro
+│   │   ├── [page].astro
 │   │   └── index.astro
-│   └── index.astro (redirects to default language)
-└── layouts/
-    └── BaseLayout.astro
+│   └── index.astro
+├── layouts/
+│   ├── BaseLayout.astro
+│   ├── Layout.astro
+│   ├── AboutLayout.astro
+│   ├── PricingLayout.astro
+│   └── HomepageLayout.astro
+└── content.config.ts (content collections schema)
 ```
 
 ### 2. Set Up Content Collections with i18n Support
@@ -47,66 +50,43 @@ src/
 Define your content collections with language-specific schema:
 
 ```typescript
-// src/content/schema.ts
-import { defineCollection, z } from 'astro:content';
+// src/content.config.ts
+// https://docs.astro.build/en/guides/content-collections/
 
-export const blogCollection = defineCollection({
+import { defineCollection, z } from "astro:content";
+
+// Define a schema for page frontmatter
+const pageCollection = defineCollection({
+  type: "content",
   schema: z.object({
     title: z.string(),
-    date: z.date(),
     description: z.string().optional(),
-    // Add other fields as needed
+    locale: z.string().optional(),
   }),
 });
 
+// Export collections
 export const collections = {
-  blog: blogCollection,
+  pages: pageCollection,
 };
+
 ```
 
 ### 3. Create i18n Utility Functions
 
 ```typescript
 // src/i18n/utils.ts
-import en from './ui/en.json';
-import fr from './ui/fr.json';
-import de from './ui/de.json';
 
-export const languages = {
-  en: 'English',
-  fr: 'Français',
-  de: 'Deutsch',
-};
-
-export const defaultLanguage = 'en';
-
-export const ui = {
-  en,
-  fr,
-  de,
-};
-
-export function getLanguageFromURL(pathname: string) {
-  const langCodeMatch = pathname.match(/\/([a-z]{2})(\/|$)/);
-  return langCodeMatch ? langCodeMatch[1] : defaultLanguage;
-}
-
-// Function to translate UI strings
-export function useTranslations(lang: keyof typeof ui) {
-  return function t(key: keyof typeof ui[typeof defaultLanguage]) {
-    return ui[lang][key] || ui[defaultLanguage][key];
-  };
-}
 ```
 
 ### 4. Create Dynamic Routes for Each Language
 
 ```astro
 ---
-// src/pages/[lang]/blog/[slug].astro
+// src/pages/[lang]/[page].astro
 import { getCollection } from 'astro:content';
-import BaseLayout from '../../../layouts/BaseLayout.astro';
-import { useTranslations, languages, defaultLanguage } from '../../../i18n/utils';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { useTranslations, languages, defaultLanguage } from '@/i18n/utils';
 
 export async function getStaticPaths() {
   const blogEntries = await getCollection('blog');
@@ -130,21 +110,21 @@ const t = useTranslations(lang as keyof typeof languages);
 const { Content } = await entry.render();
 ---
 
-<BaseLayout lang={lang}>
+<Layout lang={lang}>
   <article>
     <h1>{entry.data.title}</h1>
     <time>{entry.data.date.toLocaleDateString(lang)}</time>
     <Content />
   </article>
-</BaseLayout>
+</Layout>
 ```
 
 ### 5. Implement a Base Layout with i18n Support
 
 ```astro
 ---
-// src/layouts/BaseLayout.astro
-import { useTranslations, languages } from '../i18n/utils';
+// src/layouts/Layout.astro
+import { useTranslations, languages } from '@/i18n/utils';
 
 const { lang = 'en' } = Astro.props;
 const t = useTranslations(lang as keyof typeof languages);
@@ -214,9 +194,9 @@ Then use it in your Astro page:
 ```astro
 ---
 // src/pages/[lang]/index.astro
-import { useTranslations } from '../../i18n/utils';
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import LocalizedComponent from '../../components/LocalizedComponent.vue';
+import { useTranslations } from '@/i18n/utils';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import LocalizedComponent from '@/components/LocalizedComponent.vue';
 
 const { lang = 'en' } = Astro.params;
 const t = useTranslations(lang);
@@ -270,7 +250,7 @@ Create a root index page that redirects to the default language:
 ```astro
 ---
 // src/pages/index.astro
-import { defaultLanguage } from '../i18n/utils';
+import { defaultLanguage } from '@/i18n/utils';
 ---
 
 <meta http-equiv="refresh" content={`0;url=/${defaultLanguage}`} />
