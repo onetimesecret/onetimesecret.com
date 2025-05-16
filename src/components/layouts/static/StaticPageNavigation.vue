@@ -14,7 +14,7 @@ const props = defineProps<{
 const i18n = createLocaleI18n(props.locale);
 // const { t } = i18n.global;
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 // Get current locale for generating localized links
 const currentLocale = props.locale;

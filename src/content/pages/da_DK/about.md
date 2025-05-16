@@ -8,7 +8,7 @@ title: Om os
   </h2>
 
   <p>
-    Hej, jeg er {navn}, skaberen af Onetime Secret. Det, der startede i 2012 som en enkel og sikker måde at dele følsomme oplysninger på, er vokset ud over vores vildeste forventninger. Over et årti senere faciliterer vi sikker deling af millioner af hemmeligheder hver måned med anvendelsesmuligheder, vi aldrig havde forestillet os.
+    Hej, jeg er {name}, skaberen af Onetime Secret. Det, der startede i 2012 som en enkel og sikker måde at dele følsomme oplysninger på, er vokset ud over vores vildeste forventninger. Over et årti senere faciliterer vi sikker deling af millioner af hemmeligheder hver måned med anvendelsesmuligheder, vi aldrig havde forestillet os.
   </p>
 
   <p>
@@ -29,7 +29,7 @@ title: Om os
 
   <p>
     God fornøjelse med at dele,
-{navn}
+    {name}
   </p>
 
   <p style="margin-left: 40%; margin-right: 40%">
