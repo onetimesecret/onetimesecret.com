@@ -14,7 +14,7 @@ import { useI18n } from "vue-i18n";
 // Import the result type from the new base component location
 import SecretFormLite from "@/components/vue/homepage/SecretFormLite.vue"; // Import the wrapper component
 import UseCaseSelector from "@/components/vue/homepage/UseCaseSelector.vue";
-import type { ApiResult } from "@/components/vue/shared/BaseSecretFormLite.vue";
+import type { ApiResult } from "@/components/vue/forms/BaseSecretFormLite.vue";
 
 const props = defineProps<{
   locale: string;

@@ -14,8 +14,8 @@
     < access-control-max-age: 1200
 -->
 <script setup lang="ts">
-import type { ApiResult } from "@/components/vue/shared/BaseSecretFormLite.vue"; // Import type from base
-import BaseSecretFormLite from "@/components/vue/shared/BaseSecretFormLite.vue"; // Import base component
+import type { ApiResult } from "@/components/vue/forms/BaseSecretFormLite.vue";
+import BaseSecretFormLite from "@/components/vue/forms/BaseSecretFormLite.vue";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 

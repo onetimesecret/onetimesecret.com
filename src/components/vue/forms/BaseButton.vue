@@ -1,4 +1,4 @@
-<!-- src/components/vue/shared/BaseButton.vue -->
+<!-- src/components/vue/forms/BaseButton.vue -->
 
 <script setup lang="ts">
 import { computed } from 'vue';

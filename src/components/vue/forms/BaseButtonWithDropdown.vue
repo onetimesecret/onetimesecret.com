@@ -1,4 +1,4 @@
-<!-- src/components/vue/shared/BaseButtonWithDropdown.vue -->
+<!-- src/components/vue/forms/BaseButtonWithDropdown.vue -->
 
 <script setup lang="ts">
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/vue";

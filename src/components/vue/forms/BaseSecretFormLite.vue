@@ -1,4 +1,4 @@
-<!-- src/components/vue/shared/BaseSecretFormLite.vue -->
+<!-- src/components/vue/forms/BaseSecretFormLite.vue -->
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
