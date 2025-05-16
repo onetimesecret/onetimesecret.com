@@ -1,0 +1,155 @@
+{
+  "onetime-secret-literal": "Onetime Secret",
+  "all-rights-reserved": "All rights reserved",
+  "read-our-latest-blog-posts": "Read our latest blog posts",
+  "view-our-subscription-pricing": "View our subscription pricing",
+  "learn-about-our-company": "Learn about our company",
+  "check-our-service-status": "Check our service status",
+  "explore-our-api-documentation": "Explore our API documentation",
+  "learn-about-our-security-measures": "Learn about our security measures",
+  "access-our-documentation": "Access our documentation",
+  "view-our-source-code-on-github": "View our source code on GitHub",
+  "read-our-privacy-policy": "Read our Privacy Policy",
+  "view-our-terms-and-conditions": "View our Terms and Conditions",
+  "status": "Status",
+  "tagline": {
+    "signed": "Signed",
+    "sealed": "Sealed",
+    "delivered": "Delivered"
+  },
+  "banner": {
+    "try-it-out": "Try it out",
+    "open-menu": "Open main menu",
+    "close-menu": "Close menu"
+  },
+  "navigation": {
+    "home": "Home",
+    "features": "Features",
+    "regions": "Regions",
+    "about": "About",
+    "pricing": "Pricing"
+  },
+  "auth": {
+    "sign-in": "Sign In",
+    "sign-up": "Sign Up"
+  },
+  "LABELS": {
+    "about": "About",
+    "pricing": "Pricing",
+    "blog": "Blog",
+    "create-link": "Create Secret Link",
+    "docs": "Documentation",
+    "privacy": "Privacy Policy",
+    "terms": "Terms and Conditions",
+    "security": "Security Measures",
+    "company": "Company",
+    "resources": "Resources",
+    "legals": "Legals",
+    "copy": "Copy",
+    "copied": "Copied",
+    "processing": "Processing",
+    "loading": "Loading"
+  },
+  "web": {
+    "errors": {
+      "errorTitle": "Not successful",
+      "passphraseRequired": "Passphrase is required when option is selected."
+    },
+    "secrets": {
+      "keepSensitiveInfo": "Keep sensitive info out of your email and chat logs.",
+      "securelyStored": "Securely stored in",
+      "europe": "Europe",
+      "createLink": "Create Link",
+      "expirationTime": "Extend lifetime",
+      "optionsHeading": "Privacy Options",
+      "addPassphrase": "Add passphrase",
+      "secretPlaceholder": "Type your secret message here...",
+      "secretPlaceholder-premium": "Type your secret message here (stored in {noun})",
+      "dataSovereignty": "Data Sovereignty",
+      "regionExplanation": "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR.",
+      "learnMoreRegions": "Learn more about regional domains",
+      "selectRegionHeading": "Select Region",
+      "complianceNote": "Helps with SOC2, GDPR, CCPA & HIPAA requirements for data privacy",
+      "regionSelector": {
+        "currentDomain": "Current domain",
+        "dataResidency": ""
+      },
+      "successTitle": "Success!",
+      "shareLinkDescription": "Share your secret link with others."
+    },
+    "useCases": {
+      "sectionTitle": "Security for Professionals",
+      "sectionSubtitle": "See how professionals use secure links in their daily workflows",
+      "exampleSecret": "Example Secret",
+      "keyBenefits": "Key Benefits",
+      "complianceInfo": "Compliance Information",
+      "privacyNote": "Your secrets are encrypted, never stored in logs, and automatically deleted after viewing.",
+      "it": {
+        "title": "IT Professional",
+        "description": "Securely share credentials and access information with your team",
+        "benefits": {
+          "1": "Prevent credential leaks in email and chat logs",
+          "2": "Audit when secrets are accessed",
+          "3": "Enforce security protocols for sensitive information"
+        },
+        "compliance": "Helps meet SOC 2 and ISO 27001 security requirements for access control",
+        "cta": "Secure Your Credentials"
+      },
+      "developer": {
+        "title": "Developer",
+        "description": "Share API keys and credentials securely during development",
+        "benefits": {
+          "1": "Keep API keys and tokens out of code repositories",
+          "2": "Securely onboard new team members with access credentials",
+          "3": "Share database connection strings without compromising security"
+        },
+        "compliance": "Helps enforce security best practices for CI/CD pipelines and infrastructure access",
+        "cta": "Secure Your API Keys"
+      },
+      "hr": {
+        "title": "HR Manager",
+        "description": "Securely share sensitive employee information and credentials",
+        "benefits": {
+          "1": "Safely transmit onboarding credentials to new employees",
+          "2": "Share confidential information with one-time access",
+          "3": "Maintain privacy for sensitive HR communications"
+        },
+        "compliance": "Helps meet GDPR and other privacy regulations for handling personal data",
+        "cta": "Secure HR Communications"
+      },
+      "legal": {
+        "title": "Legal Team",
+        "description": "Share confidential legal documents and information securely",
+        "benefits": {
+          "1": "Maintain attorney-client privilege in digital communications",
+          "2": "Securely share case-sensitive information with clients",
+          "3": "Control access to confidential settlement terms"
+        },
+        "compliance": "Helps ensure confidentiality required by legal ethics rules and client confidentiality agreements",
+        "cta": "Secure Legal Communications"
+      }
+    },
+    "homepage": {
+      "howItWorks": {
+        "title": "How It Works",
+        "subtitle": "Share your information once, then it's permanently deleted",
+        "step1": {
+          "title": "Create a Secret",
+          "description": "Enter your sensitive information and generate a secure one-time link"
+        },
+        "step2": {
+          "title": "Share the Link",
+          "description": "Send the secure link through any messaging platform"
+        },
+        "step3": {
+          "title": "Works only Once",
+          "description": "Recipient views the secret, then it's permanently deleted"
+        }
+      },
+      "visualExamples": {
+        "title": "Custom Domain & Branding",
+        "subtitle": "Reinforce your brand and build trust by using your own domain and logo."
+      }
+    }
+  }
+}
