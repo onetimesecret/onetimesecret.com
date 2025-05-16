@@ -18,7 +18,7 @@ The project uses `vue-i18n-extract` to manage i18n keys. These npm scripts are a
 - `pnpm i18n:add` - Add missing keys to locale files (with empty values)
 - `pnpm i18n:remove` - Remove unused keys from locale files
 
-Configuration is in `vue-i18n-extract.config.js` with patterns to match different i18n usage styles:
+Configuration is supposed to be in `vue-i18n-extract.config.js` but the command ignores it:
 - Standard Vue: `$t('key')` or `this.$t('key')`
 - Composition API: `t('key')`
 - Module import: `i18n.t('key')` or `useI18n().t('key')`
