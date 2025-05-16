@@ -1,16 +1,13 @@
 <!-- src/components/layout/FooterLinkLists.vue -->
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-// import { localizeUrl } from "@/i18n/utils";
 
-interface LayoutProps {
-  windowProps?: {
-    support_host?: string;
-  };
-}
+import { localizeUrl } from '@/i18n/utils';
 
-// Define props using defineProps
-const props = defineProps<LayoutProps>();
+const props = defineProps<{
+  locale: string;
+}>();
+
 const { locale, t } = useI18n();
 
 // Current locale for generating links
@@ -79,9 +76,9 @@ const currentLocale = locale.value || "en";
                 >GitHub</a
               >
             </li>
-            <li v-if="props.windowProps?.support_host">
+            <li>
               <a
-                :href="`${props.windowProps.support_host}/${currentLocale}`"
+                :href="`https://docs.onetimesecret.com/${currentLocale}`"
                 :aria-label="t('access-our-documentation')"
                 class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                 target="_blank"
@@ -89,9 +86,9 @@ const currentLocale = locale.value || "en";
                 >{{ t("LABELS.docs") }}</a
               >
             </li>
-            <li v-if="props.windowProps?.support_host">
+            <li>
               <a
-                :href="`${props.windowProps.support_host}/docs/rest-api`"
+                :href="`https://docs.onetimesecret.com/${currentLocale}/rest-api`"
                 :aria-label="t('explore-our-api-documentation')"
                 class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                 target="_blank"

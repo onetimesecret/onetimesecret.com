@@ -16,12 +16,10 @@ const { t } = useI18n();
 // Define navigation items using i18n keys
 const navigation = [
   { name: t("navigation.home"), href: localizeUrl("/", props.locale) },
-  // { name: t("navigation.features"), href: "#features" },
-  // { name: t("navigation.regions"), href: "#regions" },
   { name: t("navigation.about"), href: localizeUrl("/about", props.locale) },
   {
     name: t("navigation.pricing"),
-    href: "/pricing",
+    href: localizeUrl("/pricing", props.locale) ,
   },
 ];
 

@@ -112,9 +112,6 @@ export interface Props {
   noindex?: boolean;
   alternateLanguages?: { code: string; url: string }[];
   structuredData?: object;
-  windowProps?: {
-    support_host?: string;
-  };
 }
 
 // Get configuration for current route or use defaults
@@ -149,9 +146,6 @@ const {
       priceCurrency: "USD",
     },
     description: description,
-  },
-  windowProps = {
-    support_host: "https://docs.onetimesecret.com",
   },
 } = Astro.props;
 
@@ -360,10 +354,7 @@ const connectSrcDirective = [
       <slot />
     </div>
     <footer class="bg-white dark:bg-gray-900">
-      <FooterLinkLists
-        windowProps={windowProps}
-        client:load
-      />
+      <FooterLinkLists client:load />
       <LanguagePicker />
       <FooterSignOff client:load />
     </footer>
