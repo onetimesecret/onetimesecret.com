@@ -1,9 +1,7 @@
 ---
+import { getLanguagePaths } from "@config/astro/i18n";
+
 export async function getStaticPaths() {
-  return [
-    { params: { lang: "en" } },
-    { params: { lang: "fr" } },
-    { params: { lang: "de" } },
-  ];
+  return getLanguagePaths();
 }
 ---
