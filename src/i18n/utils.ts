@@ -25,10 +25,10 @@ import {
  * @param path - The current path
  * @returns The detected locale or default language
  */
-export function getLocaleFromPath(path: string): SupportedLanguage {
-  if (!path) return DEFAULT_LANGUAGE;
+export function getLocaleFromUrl(uri: { pathname: string }): SupportedLanguage {
+  if (!uri) return DEFAULT_LANGUAGE;
 
-  const segments = path.split("/").filter(Boolean);
+  const segments = uri.pathname.split("/").filter(Boolean);
   // First segment might be the locale
   const potentialLocale = segments[0];
 
@@ -138,10 +138,20 @@ export function isLocalizedUrlActive(
 }
 
 /**
+  This mimics the functionality from vue-i18n, returning the string from current
+  locale if it exists, otherwise returning the string from the default locale.
+*/
+// export function useTranslations(lang: keyof typeof ui) {
+//   return function t(key: keyof (typeof ui)[typeof defaultLang]) {
+//     return ui[lang][key] || ui[defaultLang][key];
+//   };
+// }
+
+/**
  * Default export for convenience
  */
 export default {
-  getLocaleFromPath,
+  getLocaleFromUrl,
   getPathWithoutLocale,
   localizeUrl,
   createLanguageSwitcherUrl,

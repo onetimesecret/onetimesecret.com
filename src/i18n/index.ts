@@ -26,15 +26,6 @@
 //     - The direct definition in `src/vueSetup.ts` or
 //       `src/i18n/index.ts
 
-// Define Vue dev tools flag if not already defined
-if (
-  typeof globalThis !== "undefined" &&
-  typeof __VUE_PROD_DEVTOOLS__ === "undefined"
-) {
-  // @ts-expect-error - Defining global variable
-  globalThis.__VUE_PROD_DEVTOOLS__ = false;
-}
-
 import { createI18n } from "vue-i18n";
 import en from "../locales/en.json";
 

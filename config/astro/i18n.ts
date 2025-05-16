@@ -1,5 +1,7 @@
 // config/astro/i18n.ts
 
+// https://rtlstyling.com/posts/rtl-styling/
+
 /**
  * Supported languages for the application
  */

@@ -1,4 +1,5 @@
 ---
+import LanguagePicker from "@/components/LanguagePicker.astro";
 import CarbonSprites from "@/components/icons/CarbonSprites.vue";
 import FontAwesome6Sprites from "@/components/icons/FontAwesome6Sprites.vue";
 import HeroiconsSprites from "@/components/icons/HeroiconsSprites.vue";
@@ -9,6 +10,9 @@ import SimpleIconsSprites from "@/components/icons/SimpleIconsSprites.vue";
 import TablerSprites from "@/components/icons/TablerSprites.vue";
 import FooterLinkLists from "../components/layouts/FooterLinkLists.vue";
 import FooterSignOff from "../components/layouts/FooterSignOff.vue";
+import { getLocaleFromUrl } from "../i18n/utils";
+
+const locale = getLocaleFromUrl(Astro.url);
 
 import "@/fonts/font-face.css";
 import "@/styles/global.css";
@@ -191,7 +195,7 @@ const connectSrcDirective = [
 
 <!doctype html>
 <html
-  lang="en"
+  lang={locale}
   class="h-full">
   <head>
     <meta charset="utf-8" />
@@ -360,6 +364,7 @@ const connectSrcDirective = [
         windowProps={windowProps}
         client:load
       />
+      <LanguagePicker />
       <FooterSignOff client:load />
     </footer>
   </body>

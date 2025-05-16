@@ -79,3 +79,20 @@ export default defineConfig({
   // Vite needs to know where to start the alias mapping
   vite: createViteConfig(__dirname, env),
 });
+
+/**
+ * When building an Astro website, you may need to share state across components.
+ * Astro recommends the use of Nano Stores for shared client storage.
+ * @see https://docs.astro.build/en/recipes/sharing-state/
+ *
+ * UI frameworks like React/Vue use "context" providers, but these won't work
+ * when partially hydrating components in Astro/Markdown. Nano Stores are
+ * framework-agnostic for seamless state sharing across different UI libraries.
+ * Astro values flexibility with consistent developer experience regardless
+ * of framework preference.
+ * @see https://docs.astro.build/en/recipes/sharing-state-islands/
+ *
+ *  import { atom } from "nanostores";
+ *  export const isOpen = atom(false);
+ *
+ */
