@@ -20,7 +20,8 @@
     "type-check:watch": "pnpm run type-check:base --watch",
     "i18n:scan": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/locales/*.json\"",
     "i18n:add": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/locales/*.json\" --add",
-    "i18n:remove": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/locales/*.json\" --remove"
+    "i18n:remove": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/locales/*.json\" --remove",
+    "i18n:markdown": "node src/scripts/generate-markdown-content.ts"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
@@ -51,6 +52,7 @@
   },
   "devDependencies": {
     "eslint-config-prettier": "10.1.2",
+    "glob": "^11.0.2",
     "globals": "^16.1.0",
     "prettier": "3.5.3",
     "prettier-plugin-astro": "0.14.1",
