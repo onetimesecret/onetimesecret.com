@@ -1,154 +1,154 @@
 {
   "onetime-secret-literal": "Onetime Secret",
-  "all-rights-reserved": "All rights reserved",
-  "read-our-latest-blog-posts": "Read our latest blog posts",
-  "view-our-subscription-pricing": "View our subscription pricing",
-  "learn-about-our-company": "Learn about our company",
-  "check-our-service-status": "Check our service status",
-  "explore-our-api-documentation": "Explore our API documentation",
-  "learn-about-our-security-measures": "Learn about our security measures",
-  "access-our-documentation": "Access our documentation",
-  "view-our-source-code-on-github": "View our source code on GitHub",
-  "read-our-privacy-policy": "Read our Privacy Policy",
-  "view-our-terms-and-conditions": "View our Terms and Conditions",
+  "all-rights-reserved": "Alle Rechte vorbehalten",
+  "read-our-latest-blog-posts": "Lesen Sie unsere neuesten Blogbeiträge",
+  "view-our-subscription-pricing": "Sehen Sie unsere Abonnementpreise",
+  "learn-about-our-company": "Erfahren Sie mehr über unser Unternehmen",
+  "check-our-service-status": "Prüfen Sie unseren Servicestatus",
+  "explore-our-api-documentation": "Entdecken Sie unsere API-Dokumentation",
+  "learn-about-our-security-measures": "Informieren Sie sich über unsere Sicherheitsmaßnahmen",
+  "access-our-documentation": "Zugriff auf unsere Dokumentation",
+  "view-our-source-code-on-github": "Sehen Sie unseren Quellcode auf GitHub",
+  "read-our-privacy-policy": "Lesen Sie unsere Datenschutzerklärung",
+  "view-our-terms-and-conditions": "Lesen Sie unsere Allgemeinen Geschäftsbedingungen",
   "status": "Status",
   "tagline": {
-    "signed": "Signed",
-    "sealed": "Sealed",
-    "delivered": "Delivered"
+    "signed": "Signiert",
+    "sealed": "Versiegelt",
+    "delivered": "Zugestellt"
   },
   "banner": {
-    "try-it-out": "Try it out",
-    "open-menu": "Open main menu",
-    "close-menu": "Close menu"
+    "try-it-out": "Jetzt ausprobieren",
+    "open-menu": "Hauptmenü öffnen",
+    "close-menu": "Menü schließen"
   },
   "navigation": {
-    "home": "Home",
-    "features": "Features",
-    "regions": "Regions",
-    "about": "About",
-    "pricing": "Pricing"
+    "home": "Startseite",
+    "features": "Funktionen",
+    "regions": "Regionen",
+    "about": "Über uns",
+    "pricing": "Preise"
   },
   "auth": {
-    "sign-in": "Sign In",
-    "sign-up": "Sign Up"
+    "sign-in": "Anmelden",
+    "sign-up": "Registrieren"
   },
   "LABELS": {
-    "about": "About",
-    "pricing": "Pricing",
+    "about": "Über uns",
+    "pricing": "Preise",
     "blog": "Blog",
-    "create-link": "Create Secret Link",
-    "docs": "Documentation",
-    "privacy": "Privacy Policy",
-    "terms": "Terms and Conditions",
-    "security": "Security Measures",
-    "company": "Company",
-    "resources": "Resources",
-    "legals": "Legals",
-    "copy": "Copy",
-    "copied": "Copied",
-    "processing": "Processing",
-    "loading": "Loading"
+    "create-link": "Geheimen Link erstellen",
+    "docs": "Dokumentation",
+    "privacy": "Datenschutzerklärung",
+    "terms": "Allgemeine Geschäftsbedingungen",
+    "security": "Sicherheitsmaßnahmen",
+    "company": "Unternehmen",
+    "resources": "Ressourcen",
+    "legals": "Rechtliches",
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "processing": "Wird verarbeitet",
+    "loading": "Wird geladen"
   },
   "web": {
     "errors": {
-      "errorTitle": "Not successful",
-      "passphraseRequired": "Passphrase is required when option is selected."
+      "errorTitle": "Nicht erfolgreich",
+      "passphraseRequired": "Passphrase ist erforderlich, wenn diese Option ausgewählt ist."
     },
     "secrets": {
-      "keepSensitiveInfo": "Keep sensitive info out of your email and chat logs.",
-      "securelyStored": "Securely stored in",
-      "europe": "Europe",
-      "createLink": "Create Link",
-      "expirationTime": "Extend lifetime",
-      "optionsHeading": "Privacy Options",
-      "addPassphrase": "Add passphrase",
-      "secretPlaceholder": "Type your secret message here...",
-      "secretPlaceholder-premium": "Type your secret message here (stored in {noun})",
-      "dataSovereignty": "Data Sovereignty",
-      "regionExplanation": "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR.",
-      "learnMoreRegions": "Learn more about regional domains",
-      "selectRegionHeading": "Select Region",
-      "complianceNote": "Helps with SOC2, GDPR, CCPA & HIPAA requirements for data privacy",
+      "keepSensitiveInfo": "Halten Sie sensible Informationen aus Ihren E-Mails und Chat-Protokollen heraus.",
+      "securelyStored": "Sicher gespeichert in",
+      "europe": "Europa",
+      "createLink": "Link erstellen",
+      "expirationTime": "Lebensdauer verlängern",
+      "optionsHeading": "Datenschutzoptionen",
+      "addPassphrase": "Passphrase hinzufügen",
+      "secretPlaceholder": "Geben Sie hier Ihre geheime Nachricht ein...",
+      "secretPlaceholder-premium": "Geben Sie hier Ihre geheime Nachricht ein (gespeichert in {noun})",
+      "dataSovereignty": "Datensouveränität",
+      "regionExplanation": "Ihre Geheimnisse bleiben in der von Ihnen ausgewählten Region. Dies hilft, Anforderungen an den Datenstandort und Datenschutzbestimmungen wie die DSGVO zu erfüllen.",
+      "learnMoreRegions": "Erfahren Sie mehr über regionale Domains",
+      "selectRegionHeading": "Region auswählen",
+      "complianceNote": "Unterstützt die Einhaltung von SOC2, DSGVO, CCPA & HIPAA-Anforderungen zum Datenschutz",
       "regionSelector": {
-        "currentDomain": "Current domain",
-        "dataResidency": ""
+        "currentDomain": "Aktuelle Domain",
+        "dataResidency": "Datenresidenz"
       },
-      "successTitle": "Success!",
-      "shareLinkDescription": "Share your secret link with others."
+      "successTitle": "Erfolg!",
+      "shareLinkDescription": "Teilen Sie Ihren geheimen Link mit anderen."
     },
     "useCases": {
-      "sectionTitle": "Security for Professionals",
-      "sectionSubtitle": "See how professionals use secure links in their daily workflows",
-      "exampleSecret": "Example Secret",
-      "keyBenefits": "Key Benefits",
-      "complianceInfo": "Compliance Information",
-      "privacyNote": "Your secrets are encrypted, never stored in logs, and automatically deleted after viewing.",
+      "sectionTitle": "Sicherheit für Fachleute",
+      "sectionSubtitle": "Sehen Sie, wie Fachleute sichere Links in ihren täglichen Arbeitsabläufen nutzen",
+      "exampleSecret": "Beispiel-Geheimnis",
+      "keyBenefits": "Hauptvorteile",
+      "complianceInfo": "Compliance-Informationen",
+      "privacyNote": "Ihre Geheimnisse werden verschlüsselt, nie in Protokollen gespeichert und nach dem Anzeigen automatisch gelöscht.",
       "it": {
-        "title": "IT Professional",
-        "description": "Securely share credentials and access information with your team",
+        "title": "IT-Fachkraft",
+        "description": "Teilen Sie Anmeldedaten und Zugriffsinformationen sicher mit Ihrem Team",
         "benefits": {
-          "1": "Prevent credential leaks in email and chat logs",
-          "2": "Audit when secrets are accessed",
-          "3": "Enforce security protocols for sensitive information"
+          "1": "Verhindern Sie das Auslaufen von Anmeldedaten in E-Mail- und Chat-Protokollen",
+          "2": "Überwachen Sie, wann auf Geheimnisse zugegriffen wird",
+          "3": "Durchsetzen von Sicherheitsprotokollen für sensible Informationen"
         },
-        "compliance": "Helps meet SOC 2 and ISO 27001 security requirements for access control",
-        "cta": "Secure Your Credentials"
+        "compliance": "Hilft bei der Erfüllung der SOC 2- und ISO 27001-Sicherheitsanforderungen für die Zugriffskontrolle",
+        "cta": "Sichern Sie Ihre Anmeldedaten"
       },
       "developer": {
-        "title": "Developer",
-        "description": "Share API keys and credentials securely during development",
+        "title": "Entwickler",
+        "description": "Teilen Sie API-Schlüssel und Anmeldedaten sicher während der Entwicklung",
         "benefits": {
-          "1": "Keep API keys and tokens out of code repositories",
-          "2": "Securely onboard new team members with access credentials",
-          "3": "Share database connection strings without compromising security"
+          "1": "Halten Sie API-Schlüssel und Tokens aus Code-Repositories heraus",
+          "2": "Integrieren Sie neue Teammitglieder sicher mit Zugangsdaten",
+          "3": "Teilen Sie Datenbankverbindungszeichenfolgen, ohne die Sicherheit zu gefährden"
         },
-        "compliance": "Helps enforce security best practices for CI/CD pipelines and infrastructure access",
-        "cta": "Secure Your API Keys"
+        "compliance": "Hilft bei der Durchsetzung von Sicherheitsstandards für CI/CD-Pipelines und Infrastrukturzugriff",
+        "cta": "Sichern Sie Ihre API-Schlüssel"
       },
       "hr": {
-        "title": "HR Manager",
-        "description": "Securely share sensitive employee information and credentials",
+        "title": "HR-Manager",
+        "description": "Teilen Sie sensible Mitarbeiterinformationen und Anmeldedaten sicher",
         "benefits": {
-          "1": "Safely transmit onboarding credentials to new employees",
-          "2": "Share confidential information with one-time access",
-          "3": "Maintain privacy for sensitive HR communications"
+          "1": "Übermitteln Sie Onboarding-Anmeldedaten sicher an neue Mitarbeiter",
+          "2": "Teilen Sie vertrauliche Informationen mit einmaligem Zugriff",
+          "3": "Wahren Sie die Privatsphäre für sensible HR-Kommunikation"
         },
-        "compliance": "Helps meet GDPR and other privacy regulations for handling personal data",
-        "cta": "Secure HR Communications"
+        "compliance": "Hilft bei der Einhaltung der DSGVO und anderer Datenschutzbestimmungen für den Umgang mit personenbezogenen Daten",
+        "cta": "Sichere HR-Kommunikation"
       },
       "legal": {
-        "title": "Legal Team",
-        "description": "Share confidential legal documents and information securely",
+        "title": "Rechtsteam",
+        "description": "Teilen Sie vertrauliche Rechtsdokumente und Informationen sicher",
         "benefits": {
-          "1": "Maintain attorney-client privilege in digital communications",
-          "2": "Securely share case-sensitive information with clients",
-          "3": "Control access to confidential settlement terms"
+          "1": "Wahren Sie das Anwaltsgeheimnis in der digitalen Kommunikation",
+          "2": "Teilen Sie fallsensible Informationen sicher mit Mandanten",
+          "3": "Kontrollieren Sie den Zugriff auf vertrauliche Vergleichsbedingungen"
         },
-        "compliance": "Helps ensure confidentiality required by legal ethics rules and client confidentiality agreements",
-        "cta": "Secure Legal Communications"
+        "compliance": "Hilft, die Vertraulichkeit zu gewährleisten, die von rechtlichen Ethikregeln und Vertraulichkeitsvereinbarungen mit Mandanten gefordert wird",
+        "cta": "Sichere Rechtskommunikation"
       }
     },
     "homepage": {
       "howItWorks": {
-        "title": "How It Works",
-        "subtitle": "Share your information once, then it's permanently deleted",
+        "title": "Wie es funktioniert",
+        "subtitle": "Teilen Sie Ihre Informationen einmal, dann werden sie dauerhaft gelöscht",
         "step1": {
-          "title": "Create a Secret",
-          "description": "Enter your sensitive information and generate a secure one-time link"
+          "title": "Geheimnis erstellen",
+          "description": "Geben Sie Ihre sensiblen Informationen ein und generieren Sie einen sicheren Einmal-Link"
         },
         "step2": {
-          "title": "Share the Link",
-          "description": "Send the secure link through any messaging platform"
+          "title": "Link teilen",
+          "description": "Senden Sie den sicheren Link über eine beliebige Messaging-Plattform"
         },
         "step3": {
-          "title": "Works only Once",
-          "description": "Recipient views the secret, then it's permanently deleted"
+          "title": "Funktioniert nur einmal",
+          "description": "Empfänger sieht das Geheimnis, dann wird es dauerhaft gelöscht"
         }
       },
       "visualExamples": {
-        "title": "Custom Domain & Branding",
-        "subtitle": "Reinforce your brand and build trust by using your own domain and logo."
+        "title": "Eigene Domain & Branding",
+        "subtitle": "Stärken Sie Ihre Marke und schaffen Sie Vertrauen durch Verwendung Ihrer eigenen Domain und Ihres Logos."
       }
     }
   }
