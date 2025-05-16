@@ -4,7 +4,7 @@
 import Layout from "@/layouts/Layout.astro";
 import { createLocaleI18n } from "@/i18n";
 
-import AboutContent from "@/components/about/AboutContent.vue";
+import MainNavigation from "@/components/vue/layouts/MainNavigation.vue";
 
 import { getLanguagePaths } from "@config/astro/i18n";
 
@@ -37,8 +37,6 @@ try {
 
 // Render the content
 const { Content, headings } = await entry.render();
-
-const textString = t("all-rights-reserved");
 ---
 
 <Layout

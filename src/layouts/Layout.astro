@@ -1,5 +1,10 @@
 ---
+// Component imports
 import LanguagePicker from "@/components/LanguagePicker.astro";
+import FooterLinkLists from "@/components/vue/layouts/FooterLinkLists.vue";
+import FooterSignOff from "@/components/vue/layouts/FooterSignOff.vue";
+
+// Icon sprite imports
 import CarbonSprites from "@/components/vue/icons/CarbonSprites.vue";
 import FontAwesome6Sprites from "@/components/vue/icons/FontAwesome6Sprites.vue";
 import HeroiconsSprites from "@/components/vue/icons/HeroiconsSprites.vue";
@@ -8,18 +13,25 @@ import MdiSprites from "@/components/vue/icons/MdiSprites.vue";
 import PhosphorSprites from "@/components/vue/icons/PhosphorSprites.vue";
 import SimpleIconsSprites from "@/components/vue/icons/SimpleIconsSprites.vue";
 import TablerSprites from "@/components/vue/icons/TablerSprites.vue";
-import FooterLinkLists from "@/components/vue/layouts/FooterLinkLists.vue";
-import FooterSignOff from "@/components/vue/layouts/FooterSignOff.vue";
+
+// Utilities
 import { getLocaleFromUrl } from "../i18n/utils";
 
-const locale = getLocaleFromUrl(Astro.url);
-
+// Styles
 import "@/fonts/font-face.css";
 import "@/styles/global.css";
 import "@/styles/tailwind.css";
 
-// Get current path for route-specific optimizations
+// i18n setup
+const locale = getLocaleFromUrl(Astro.url);
+const { lang = "en" } = Astro.params;
+
+// Routing
 const currentPath = Astro.url.pathname;
+
+// --------------------------
+// SEO Configuration
+// --------------------------
 
 // Route-specific SEO configuration
 const routeConfig = {
@@ -74,7 +86,7 @@ const routeConfig = {
   },
 };
 
-// Route-specific breadcrumbs
+// Route-specific breadcrumbs generator
 const getBreadcrumbs = (path) => {
   const segments = path.split("/").filter((segment) => segment);
   const breadcrumbs = [
@@ -100,6 +112,10 @@ const getBreadcrumbs = (path) => {
 
   return breadcrumbs;
 };
+
+// --------------------------
+// Props Interface
+// --------------------------
 
 export interface Props {
   title?: string;
@@ -149,6 +165,10 @@ const {
   },
 } = Astro.props;
 
+// --------------------------
+// Structured Data
+// --------------------------
+
 // Generate JSON-LD structured data
 const jsonLD = JSON.stringify(structuredData);
 
@@ -160,7 +180,10 @@ const breadcrumbsData = {
 };
 const breadcrumbsLD = JSON.stringify(breadcrumbsData);
 
-// --- CSP Configuration ---
+// --------------------------
+// Security Configuration
+// --------------------------
+
 // Retrieve the API URL from environment variables with a fallback
 const apiUrl = import.meta.env.PUBLIC_API_BASE_URL;
 
@@ -348,27 +371,36 @@ const connectSrcDirective = [
     <title>{title}</title>
   </head>
   <body class="flex h-full flex-col bg-white dark:bg-gray-900">
-    <!-- All along the watch tower -->
-    <div class="bg-brand-500 fixed top-0 left-0 z-50 h-1 w-full"></div>
-    <div class="flex-grow">
-      <slot />
+      <!-- Site-wide progress indicator -->
+      <div class="bg-brand-500 fixed top-0 left-0 z-50 h-1 w-full"></div>
+
+      <!-- Main content area -->
+      <div class="flex-grow">
+        <slot />
+      </div>
+
+      <!-- Footer section -->
+      <footer class="bg-white dark:bg-gray-900">
+        <FooterLinkLists
+          client:load
+          locale={lang}
+        />
+        <LanguagePicker />
+        <FooterSignOff client:load />
+      </footer>
+    </body>
+
+    <!-- SVG sprites - hidden but available for use -->
+    <div
+      id="sprites"
+      class="hidden">
+      <HeroiconsSprites />
+      <CarbonSprites />
+      <FontAwesome6Sprites />
+      <MdiSprites />
+      <MaterialSymbolsSprites />
+      <TablerSprites />
+      <PhosphorSprites />
+      <SimpleIconsSprites />
     </div>
-    <footer class="bg-white dark:bg-gray-900">
-      <FooterLinkLists client:load />
-      <LanguagePicker />
-      <FooterSignOff client:load />
-    </footer>
-  </body>
-  <div
-    id="sprites"
-    class="hidden">
-    <HeroiconsSprites />
-    <CarbonSprites />
-    <FontAwesome6Sprites />
-    <MdiSprites />
-    <MaterialSymbolsSprites />
-    <TablerSprites />
-    <PhosphorSprites />
-    <SimpleIconsSprites />
-  </div>
 </html>

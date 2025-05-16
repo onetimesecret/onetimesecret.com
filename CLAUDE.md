@@ -1,5 +1,8 @@
 # CLAUDE.md - Agent Guidelines for OnetimeSecret.com
 
+ASTRO 5.7 WEBSITE
+
+
 ## i18n
 
 The default english translation is provided in the `src/locales/en.json` file.
