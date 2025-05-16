@@ -140,7 +140,7 @@ title: ${applyReplacements(about.title || "About Us")}
     <a
       href="https://delanotes.com/"
       title="${translations["delano-mandelbaum"] || "Delano Mandelbaum"}"><img
-        src="/public/etc/img/delano-g.png"
+        src="/etc/img/delano-g.png"
         width="95"
         height="120"
         border="0"
@@ -316,24 +316,33 @@ function ensureDirectoryExists(dir) {
  */
 async function processExistingFiles(outputDir, translations, lang) {
   // List of files to check for conversion from templates to static content
-  const templateFiles = ['about.md', 'security.md'];
+  const templateFiles = ["about.md", "security.md"];
 
   for (const file of templateFiles) {
     const filePath = path.join(outputDir, file);
 
     if (fs.existsSync(filePath)) {
       try {
-        const content = fs.readFileSync(filePath, 'utf8');
+        const content = fs.readFileSync(filePath, "utf8");
 
         // Check if the file contains Vue template variables
-        if (content.includes('$t(') || content.includes('{{ $t(') || content.includes('v-html="$t(')) {
-          console.log(`🔄 Converting template in ${lang}/${file} to static content`);
+        if (
+          content.includes("$t(") ||
+          content.includes("{{ $t(") ||
+          content.includes('v-html="$t(')
+        ) {
+          console.log(
+            `🔄 Converting template in ${lang}/${file} to static content`,
+          );
 
           // We'll generate a new file with static content in the next steps
           // Just making note here that it needs conversion
         }
       } catch (error) {
-        console.error(`Error processing existing file ${lang}/${file}:`, error.message);
+        console.error(
+          `Error processing existing file ${lang}/${file}:`,
+          error.message,
+        );
       }
     }
   }
@@ -357,8 +366,10 @@ async function processExistingFiles(outputDir, translations, lang) {
  */
 function generateSecurityContent(translations, lang) {
   // Check for both security keys in web.security or directly in the root translations object
-  const hasSecurity = (translations?.web?.security && Object.keys(translations.web.security).length > 0) ||
-                     (translations && 'security-policy' in translations);
+  const hasSecurity =
+    (translations?.web?.security &&
+      Object.keys(translations.web.security).length > 0) ||
+    (translations && "security-policy" in translations);
 
   if (!hasSecurity) {
     console.warn(`Missing required translations for security page in ${lang}`);
@@ -554,7 +565,10 @@ async function main() {
         // Generate and save the security page content
         const securityContent = generateSecurityContent(translations, lang);
         if (securityContent) {
-          fs.writeFileSync(path.join(outputDir, "security.md"), securityContent);
+          fs.writeFileSync(
+            path.join(outputDir, "security.md"),
+            securityContent,
+          );
           console.log(`✅ Generated ${lang}/security.md`);
         } else {
           console.warn(`⚠️ Skipping ${lang}/security.md: Missing content`);
@@ -567,7 +581,6 @@ async function main() {
         //   fs.writeFileSync(path.join(outputDir, "terms.md"), termsContent);
         //   console.log(`✅ Generated ${lang}/terms.md`);
         // }
-
       } catch (error) {
         console.error(`Error processing ${lang}:`, error.message);
       }

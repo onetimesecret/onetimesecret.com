@@ -13,6 +13,7 @@ export async function getStaticPaths() {
 
 const { lang = "en" } = Astro.params;
 
+// Initialize i18n asynchronously
 const i18n = await createLocaleI18n(lang);
 const { t } = i18n.global;
 

@@ -35,7 +35,7 @@ title: Informazioni
     <a
       href="https://delanotes.com/"
       title="Delano Mandelbaum"><img
-        src="/public/etc/img/delano-g.png"
+        src="/etc/img/delano-g.png"
         width="95"
         height="120"
         border="0"

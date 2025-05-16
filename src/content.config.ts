@@ -8,7 +8,7 @@ const pageCollection = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string().optional(),
-    // Add other fields as needed
+    locale: z.string().optional(),
   }),
 });
 
