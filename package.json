@@ -18,9 +18,9 @@
     "type-check:base": "vue-tsc --noEmit",
     "type-check": "pnpm run type-check:base",
     "type-check:watch": "pnpm run type-check:base --watch",
-    "i18n:scan": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx))\" --languageFiles \"./src/locales/*.json\"",
+    "i18n:scan": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/locales/*.json\"",
     "i18n:add": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/locales/*.json\" --add",
-    "i18n:remove": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx))\" --languageFiles \"./src/locales/*.json\" --remove"
+    "i18n:remove": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/locales/*.json\" --remove"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",

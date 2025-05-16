@@ -10,7 +10,7 @@ import {
   DEFAULT_LANGUAGE,
   SUPPORTED_LANGUAGES,
   type SupportedLanguage,
-} from "@/../../config/astro/i18n";
+} from "../../config/astro/i18n";
 
 /**
  * Get the locale from a path
