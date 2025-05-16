@@ -5,7 +5,7 @@ The primary goal of this architecture is to create a system for managing "Use Ca
 
 ## Core Components & Their Roles:
 
-1.  **Localization Files (`src/locales/*.json` - e.g., `en.json`)**
+1.  **Localization Files (`src/i18n/ui/*.json` - e.g., `en.json`)**
     *   **Purpose**: This is the single source of truth for all user-facing text strings.
     *   **Structure**: Standard JSON format where keys (e.g., `"web.useCases.developer.title"`) map to their corresponding translated strings (e.g., `"Developer"`).
     *   **Benefits**:

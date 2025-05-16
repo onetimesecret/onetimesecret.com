@@ -1,0 +1,15 @@
+---
+// src/components/layout/AboutLayout.astro
+
+import Layout from "@/layouts/Layout.astro";
+
+const { lang = "en" } = Astro.params;
+---
+
+<Layout
+  title="Placeholder Title"
+  description="Placeholder Description">
+  <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900">
+    <slot locale={lang} />
+  </div>
+</Layout>

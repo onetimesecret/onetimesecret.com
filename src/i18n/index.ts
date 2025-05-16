@@ -1,7 +1,7 @@
 // src/i18n/index.ts
 
 import { createI18n } from "vue-i18n";
-import enMessages from "../locales/en.json"; // Default English messages
+import enMessages from "./ui/en.json"; // Default English messages
 
 // Define a type for the message schema based on the English messages
 type MessageSchema = typeof enMessages;
@@ -33,8 +33,8 @@ export async function setLanguage(lang: string) {
 
   try {
     // Dynamically import the locale messages
-    // This assumes locale files are named `[lang].json` and are in `../locales/`
-    const messages = await import(`../locales/${lang}.json`);
+    // This assumes locale files are named `[lang].json` and are in `./ui/`
+    const messages = await import(`./ui/${lang}.json`);
 
     // Add the loaded messages to the i18n instance
     i18n.global.setLocaleMessage(lang, messages.default || messages);
@@ -44,7 +44,10 @@ export async function setLanguage(lang: string) {
 
     // console.log(`Successfully loaded and set language: ${lang}`);
   } catch (error) {
-    console.warn(`Failed to load language "${lang}", falling back to "en".`, error);
+    console.warn(
+      `Failed to load language "${lang}", falling back to "en".`,
+      error,
+    );
     // Fallback to English if the desired locale fails to load
     if (i18n.global.locale.value !== "en") {
       // Only set to 'en' if it's not already 'en' to avoid an infinite loop
@@ -63,7 +66,7 @@ export const createLocaleI18n = async (locale: string = "en") => {
 
   if (locale !== "en") {
     try {
-      const localeModule = await import(`../locales/${locale}.json`);
+      const localeModule = await import(`./ui/${locale}.json`);
       messages[locale] = localeModule.default || localeModule;
     } catch (e) {
       console.warn(`Failed to load locale: ${locale}, falling back to en`, e);

@@ -18,9 +18,9 @@
     "type-check:base": "vue-tsc --noEmit",
     "type-check": "pnpm run type-check:base",
     "type-check:watch": "pnpm run type-check:base --watch",
-    "i18n:scan": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/locales/*.json\"",
-    "i18n:add": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/locales/*.json\" --add",
-    "i18n:remove": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/locales/*.json\" --remove",
+    "i18n:scan": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/i18n/ui/*.json\"",
+    "i18n:add": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/i18n/ui/*.json\" --add",
+    "i18n:remove": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/i18n/ui/*.json\" --remove",
     "i18n:markdown": "node src/scripts/generate-markdown-content.mjs"
   },
   "dependencies": {

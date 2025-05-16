@@ -5,7 +5,7 @@ ASTRO 5.7 WEBSITE
 
 ## i18n
 
-The default english translation is provided in the `src/locales/en.json` file.
+The default english translation is provided in the `src/i18n/ui/en.json` file.
 Look at the heirarchical keys in the JSON file to understand the structure and
 how properly reference them in Vue components (e.g. `$t('web.secrets.enterPassphrase')`).
 
