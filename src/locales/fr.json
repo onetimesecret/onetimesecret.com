@@ -6,11 +6,6 @@
     "sealed": "Sealed",
     "delivered": "Delivered"
   },
-  "banner": {
-    "regional-domains": "We use regional domains to keep your secrets in your chosen region.",
-    "learn-more": "Learn more",
-    "dismiss": "Dismiss"
-  },
   "navigation": {
     "home": "Home",
     "features": "Features",
@@ -19,60 +14,36 @@
     "pricing": "Pricing"
   },
   "auth": {
-    "sign-in": "Sign In",
-    "create-account": "Create Account"
+    "sign-in": "Sign In"
   },
   "LABELS": {
-    "aria": {
-      "view-our-subscription-pricing": "View our subscription pricing"
-    },
-
     "about": "About",
     "pricing": "Pricing",
     "blog": "Blog",
-
-    "github": "View our source code on GitHub",
     "docs": "Documentation",
-    "api": "API Documentation",
-    "status": "Service Status",
-
     "privacy": "Privacy Policy",
     "terms": "Terms and Conditions",
     "security": "Security Measures",
-
     "company": "Company",
     "resources": "Resources",
-
     "legals": "Legals",
-    "contact": "Contact Us",
-
     "copy": "Copy",
     "copied": "Copied",
-
     "processing": "Processing"
   },
   "web": {
-    "meta": {
-      "title": "Share Secrets Securely | Onetime Secret",
-      "description": "Keep sensitive information out of your chat logs and email. Share a secret link that is available only one time.",
-      "descriptionAlt": "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever.",
-      "keywords": "secret,password generator,share a secret,onetime"
-    },
     "errors": {
       "errorTitle": "Not successful"
     },
     "secrets": {
-      "pasteSecret": "Paste a password, secret message or private link below.",
       "keepSensitiveInfo": "Keep sensitive info out of your email and chat logs.",
       "securelyStored": "Securely stored in",
       "europe": "Europe",
       "createLink": "Create Link",
-      "burnAfterReading": "Burn after reading",
       "expirationTime": "Extend lifetime",
       "optionsHeading": "Privacy Options",
       "addPassphrase": "Add passphrase",
       "secretPlaceholder": "Type your secret message here...",
-      "secretPlaceholder-storage-location": "Type your secret message here (stored in {noun})",
       "dataSovereignty": "Data Sovereignty",
       "regionExplanation": "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR.",
       "learnMoreRegions": "Learn more about regional domains",
@@ -81,10 +52,7 @@
     },
     "useCases": {
       "sectionTitle": "Security for Professionals",
-      "sectionTitleAlt": "Secure sharing at work",
       "sectionSubtitle": "See how professionals use secure links in their daily workflows",
-      "sectionSubtitleAlt": "Practical examples of secure sharing across different jobs",
-      "iAm": "I am a...",
       "exampleSecret": "Example Secret",
       "keyBenefits": "Key Benefits",
       "complianceInfo": "Compliance Information",
@@ -138,7 +106,6 @@
       "howItWorks": {
         "title": "How It Works",
         "subtitle": "Share your information once, then it's permanently deleted",
-        "subtitleAlt": "Secure, single-use links that self-destruct after viewing",
         "step1": {
           "title": "Create a Secret",
           "description": "Enter your sensitive information and generate a secure one-time link"
@@ -152,70 +119,9 @@
           "description": "Recipient views the secret, then it's permanently deleted"
         }
       },
-      "benefits": {
-        "title": "Key Benefits",
-        "security": {
-          "title": "Enhanced Security",
-          "description": "One-time access means no digital trail which prevents information leaks"
-        },
-        "dataSovereignty": {
-          "title": "Data Sovereignty",
-          "description": "Choose where your data is stored to meet regulatory requirements"
-        },
-        "customDomains": {
-          "title": "Custom Domain & Branding",
-          "description": "Reinforce your brand identity and build trust by using your own domain and logo for a seamless experience."
-        },
-        "simplicity": {
-          "title": "Simple & Fast",
-          "description": "No accounts required - create and share secrets in seconds"
-        }
-      },
       "visualExamples": {
         "title": "Custom Domain & Branding",
         "subtitle": "Reinforce your brand and build trust by using your own domain and logo."
-      }
-    },
-    "about": {
-      "title": "À propos de nous",
-      "faq": {
-        "trust_points": [
-          "Nous ne pouvons pas accéder à vos informations même si nous le voulions (ce qui n'est pas le cas). Par exemple, si vous partagez un mot de passe, nous ne connaissons pas le nom d'utilisateur ni même l'application à laquelle il est destiné.",
-          "Si vous utilisez une phrase de passe (disponible sous \"Options de confidentialité\"), nous l'incluons dans la clé de cryptage du secret. Nous ne stockons qu'un hachage bcrypt de la phrase de passe, ce qui rend impossible le décryptage de votre secret une fois qu'il est sauvegardé.",
-          "Notre code est {openSourceLink}. Vous pouvez l'examiner vous-même ou même exécuter votre propre instance si vous le préférez.",
-          "Nous utilisons des pratiques de sécurité conformes aux normes industrielles, notamment le protocole HTTPS pour toutes les connexions et le cryptage au repos pour les données stockées."
-        ],
-        "passphrase_points": [
-          "Nous ne stockons jamais le secret non chiffré ou la phrase de passe.",
-          "Le hachage bcrypt ne peut pas être utilisé pour déchiffrer le secret.",
-          "Sans la phrase de passe originale, le secret chiffré ne peut pas être déchiffré, même par nous.",
-          "Cela signifie que même si nos serveurs étaient compromis, votre secret resterait sécurisé tant que la phrase de passe reste inconnue."
-        ],
-        "why_use_title": "Pourquoi l'utiliser ?",
-        "why_use_description": "Lorsque vous envoyez des mots de passe et des liens privés par courrier électronique ou par chat, des copies de ces informations sont stockées dans de nombreux endroits. Si vous utilisez plutôt un lien Onetime, les informations sont conservées pour une seule consultation, ce qui signifie qu'elles ne peuvent pas être lues par quelqu'un d'autre par la suite. Cela vous permet d'envoyer des informations sensibles en toute sécurité, en sachant qu'elles ne seront vues que par une seule personne. C'est un peu comme un message autodestructeur.",
-        "file_limitation_title": "Pourquoi ne puis-je pas envoyer des images ou d'autres types de fichiers ?",
-        "file_limitation_description": "Notre service est conçu spécifiquement pour les secrets textuels afin de garantir une sécurité et une simplicité maximales. Les fichiers, en particulier les images, peuvent contenir des métadonnées susceptibles de révéler involontairement des informations sur l'expéditeur ou le destinataire. En nous concentrant sur le texte, nous pouvons garantir qu'aucune donnée supplémentaire n'est transmise au-delà de ce que vous tapez explicitement. Si vous devez partager un fichier en toute sécurité, nous vous recommandons d'utiliser un service de transfert de fichiers sécurisé. Nous pourrons envisager d'ajouter la prise en charge des fichiers à l'avenir si des cas d'utilisation convaincants le justifient.",
-        "text_copy_title": "Mais je peux copier le texte secret. Quelle est la différence ?",
-        "text_copy_description": "C'est vrai, mais vous n'avez que du texte. Les images et autres types de fichiers peuvent contenir des métadonnées et d'autres informations potentiellement révélatrices sur l'expéditeur ou le destinataire. Là encore, il s'agit simplement de s'assurer qu'aucune information privée n'est partagée en dehors du destinataire prévu.",
-        "secret_retrieval_title": "Puis-je récupérer un secret qui a déjà été partagé ?",
-        "secret_retrieval_description": "Non. Nous l'affichons une fois, puis nous le supprimons. Après cela, il disparaît à jamais.",
-        "account_difference_title": "Quelle est la différence entre une utilisation anonyme et un compte gratuit ?",
-        "account_difference_description": "Les utilisateurs anonymes peuvent créer des secrets d'une durée maximale de {anonymousTtlDays} jours et d'une taille maximale de {anonymousSizeKB} KO. Les titulaires d'un compte gratuit bénéficient d'avantages supplémentaires : les secrets peuvent durer jusqu'à {defaultTtlDays} jours et avoir une taille maximale de {defaultSizeKB} Ko. Les titulaires de comptes ont également accès à des fonctionnalités supplémentaires telles que les options de gravure avant lecture, qui permettent aux expéditeurs de supprimer les secrets avant qu'ils ne soient reçus.",
-        "law_enforcement_title": "Comment gérez-vous les demandes de données émanant des forces de l'ordre ou d'autres tiers ?",
-        "law_enforcement_description": "Nous avons conçu notre système en tenant compte de la protection de la vie privée. Nous ne stockons pas les secrets après qu'ils ont été consultés et nous ne conservons pas les journaux d'accès au-delà du minimum nécessaire. Cela signifie que, dans la plupart des cas, nous n'avons tout simplement pas de données à fournir en réponse à de telles demandes. Pour plus de détails, veuillez consulter notre {privacyPolicyLink}.",
-        "trust_title": "Pourquoi devrais-je vous faire confiance ?",
-        "trust_description": "Nous avons conçu notre système en plaçant la protection de la vie privée et la sécurité en tête de nos priorités. Voici pourquoi vous pouvez nous faire confiance :",
-        "passphrase_title": "Comment fonctionne l'option de phrase secrète ?",
-        "passphrase_description": "Lorsque vous utilisez une phrase de passe, nous cryptons votre secret sur nos serveurs à l'aide de la phrase de passe que vous nous fournissez. Nous ne stockons pas la phrase de passe elle-même, mais seulement un hachage bcrypt de celle-ci. Ce hachage est utilisé pour vérifier la phrase de passe lorsque le destinataire la saisit. Voici pourquoi cette méthode est sûre :",
-        "passphrase_final_note": "N'oubliez pas que la sécurité de votre secret dépend de la force de votre phrase de passe et de la sécurité avec laquelle vous la communiquez au destinataire."
-      },
-      "intro": {
-        "paragraph1": "Bonjour, je suis {nom}, le créateur de Onetime Secret. Ce qui a commencé en 2012 comme un moyen simple et sécurisé de partager des informations sensibles s'est développé au-delà de nos attentes les plus folles. Plus d'une décennie plus tard, nous facilitons le partage sécurisé de millions de secrets chaque mois, avec des cas d'utilisation que nous n'aurions jamais imaginés.",
-        "paragraph2": "Le premier semestre 2024 a été notre période la plus chargée. Nous sommes reconnaissants que les gens continuent à utiliser et à partager notre produit depuis plus de dix ans. Nous travaillons actuellement sur des améliorations qui, selon nous, rendront le service encore plus utile.",
-        "paragraph3": "Fidèles à nos racines, {githubLink} sur GitHub. Alors que nous naviguons dans le paysage en constante évolution de la protection de la vie privée et de la sécurité numérique, nous nous engageons à faire preuve de transparence et à nous améliorer continuellement.",
-        "paragraph4": "Merci d'avoir participé à notre aventure. Voici une nouvelle décennie de partage sécurisé et éphémère.",
-        "feedback_hint": "Si vous avez des questions, vous trouverez un formulaire de retour d'information au bas de (presque) toutes les pages.",
-        "signature": "Joyeux partage,\n{nom}"
       }
     }
   }
