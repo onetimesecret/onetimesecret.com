@@ -1,7 +1,7 @@
 <!-- src/views/info/Icons.vue -->
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import IconSources from '@/components/icons/IconSources.vue';
+import IconSources from '@/components/vue/icons/IconSources.vue';
 import { useI18n } from 'vue-i18n';
 
 interface IconSet {

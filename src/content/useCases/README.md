@@ -33,7 +33,7 @@ The primary goal of this architecture is to create a system for managing "Use Ca
     *   **Responsibility**: This function imports the getter functions from each individual use case module, calls them with the passed-in `t` function, and returns an array of fully constituted `UseCase` objects (with translated strings).
     *   **Benefits**: Provides a clean, single point of entry for components or other parts of the application to retrieve all use case data.
 
-4.  **Vue Component (`src/components/homepage/UseCaseSelector.vue`)**
+4.  **Vue Component (`src/components/vue/homepage/UseCaseSelector.vue`)**
     *   **Purpose**: To display the use case information interactively to the user.
     *   **Responsibilities**:
         *   It fetches the array of `UseCase` objects by calling `getUseCases(t)` (where `t` is obtained from `useI18n()`).

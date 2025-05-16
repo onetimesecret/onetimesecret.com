@@ -11,7 +11,7 @@ export async function getStaticPaths() {
 
 // Directly copied from our site-policy repo:
 // https://github.com/onetimesecret/site-policy/blob/main/onetime-terms-of-service.md
-import Content from "@/content/pages/privacy.md";
+import { Content, frontmatter } from "@/content/pages/privacy.md";
 
 const { lang } = Astro.params;
 ---

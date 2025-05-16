@@ -29,7 +29,7 @@
 -->
 
 <script setup lang="ts">
-  import OIcon from '@/components/icons/OIcon.vue';
+  import OIcon from '@/components/vue/icons/OIcon.vue';
   import { ref, computed } from 'vue';
 
   const props = defineProps({
