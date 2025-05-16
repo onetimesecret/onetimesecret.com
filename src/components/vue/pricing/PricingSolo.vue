@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import OIcon from '@/components/vue/vue/icons/OIcon.vue';
+  import OIcon from '@/components/vue/icons/OIcon.vue';
   import MovingGlobules from '@/components/vue/MovingGlobules.vue';
   import QuoteSection from '@/components/vue/QuoteSection.vue';
   import { RadioGroup, RadioGroupOption } from '@headlessui/vue';
