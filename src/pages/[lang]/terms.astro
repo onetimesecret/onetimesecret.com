@@ -1,38 +1,61 @@
 ---
-// src/pages/terms.astro
-
-import Layout from "@/layouts/Layout.astro";
-import "@/i18n";
-
-import { getLanguagePaths } from "@/i18n";
+/**
+ * src/pages/[lang]/terms.astro
+ * Terms of service page using content collections
+ */
+import { getCollection } from "astro:content";
+import ContentPage from "@/components/ContentPage.astro";
+import { getLanguagePaths, type SupportedLanguage } from "@/i18n";
+import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
+import { createLocaleI18n } from "@/i18n";
+import enMessages from "@/i18n/ui/en.json";
+import type { MessageSchema } from "@/i18n";
 
 export async function getStaticPaths() {
   return getLanguagePaths();
 }
 
-/*
- * Markdown imports provide several properties:
- * - file: absolute path (/path/to/file.md)
- * - url: page URL (/en/guides/markdown-content)
- * - frontmatter: YAML/TOML data from the document
- * - <Content />: component for rendering the full content
- * - rawContent(): returns raw Markdown as string
- * - compiledContent(): returns Markdown compiled to HTML string
- * - getHeadings(): returns heading array with depth, slug, and text
- */
+const { lang = DEFAULT_LANGUAGE } = Astro.params as { lang: SupportedLanguage };
 
-// Directly copied from our site-policy repo:
-// https://github.com/onetimesecret/site-policy/blob/main/onetime-terms-of-service.md
-import { Content, frontmatter } from "@/content/pages/terms.md";
+// Setup initial messages for i18n
+const initialMessages = {
+  [DEFAULT_LANGUAGE]: enMessages as MessageSchema,
+};
 
-const { lang } = Astro.params;
+// Initialize i18n for page content
+await createLocaleI18n(lang, initialMessages);
+
+// Get the page by language/slug using Astro content collection API
+const allPages = await getCollection("pages");
+const page = allPages.find(
+  (page) =>
+    page.id === `${lang}/terms.md` ||
+    (lang !== DEFAULT_LANGUAGE && page.id === `${DEFAULT_LANGUAGE}/terms.md`),
+);
+
+if (!page) {
+  throw new Error(`Page not found: ${lang}/terms.md`);
+}
+
+// Render the content
+const renderedContent = await page.render();
+
+// Track if we're using a fallback
+const isFallback = !page.id.startsWith(`${lang}/`);
 ---
 
-<Layout
-  title={`${frontmatter.title} | Onetime Secret`}
-  description="Our terms of service explain the rules and regulations for using Onetime Secret.">
-  <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900">
-    <!-- $t('terms-of-service') -->
-    <Content />
+<ContentPage
+  page={page}
+  renderedContent={renderedContent}
+  lang={lang}
+  initialMessages={initialMessages}
+/>
+
+{isFallback && (
+  <div class="fixed bottom-4 right-4 z-50 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-600 shadow-md dark:bg-amber-900/30 dark:text-amber-400">
+    <p>
+      This content is not available in your preferred language ({lang}).
+      Showing the {DEFAULT_LANGUAGE} version instead.
+    </p>
   </div>
-</Layout>
+)}

@@ -1,43 +1,126 @@
 // onetimesecret.com/src/utils/content.ts
-import type { CollectionEntry } from "astro:content";
-import { getEntry } from "astro:content";
+import type { CollectionEntry, AnyEntryMap } from "astro:content";
+import { getCollection, getEntry } from "astro:content";
+import type { SupportedLanguage } from "@/i18n";
+import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
 
 /**
- * Loads localized page content from the specified collection.
- *
- * Falls back to English if the requested language is not available.
- * Throws an error if neither the requested language nor English content can be found.
- *
- * @param collection - The name of the content collection (e.g., "pages").
- * @param lang - The desired language code (e.g., "en", "es").
- * @param slug - The slug of the content entry (e.g., "about", "security").
- * @returns A promise that resolves to the rendered content, headings, and data.
+ * Type for rendered content from Astro collections
  */
-export async function loadLocalizedPage(
-  collection: string,
-  lang: string,
-  slug: string,
-): Promise<{ Content: any; headings: any; data: any }> {
-  let entry: CollectionEntry<any> | undefined;
+export interface RenderedContent {
+  Content: any;
+  headings: Array<{
+    depth: number;
+    slug: string;
+    text: string;
+  }>;
+}
 
-  // Try to get the page in the current language
-  // `getEntry` returns undefined if the entry is not found, it does not throw.
-  entry = await getEntry(collection as any, `${lang}/${slug}`);
+/**
+ * Type for a localized content entry
+ */
+export interface LocalizedContent<T extends keyof AnyEntryMap> {
+  entry: CollectionEntry<T>;
+  renderedContent: RenderedContent;
+  isFallback: boolean;
+}
 
-  // If not found in the current language, try the fallback (English)
-  if (!entry) {
-    // console.info(`Content for slug \'${slug}\' not found in \'${lang}\'. Attempting fallback to \'en\'.`);
-    entry = await getEntry(collection as any, `en/${slug}`);
+/**
+ * Loads content from a collection with proper language fallback
+ *
+ * @param collection - The collection name ("pages", "product", etc.)
+ * @param lang - The desired language
+ * @param slug - The content slug
+ * @returns The content entry, rendered content, and fallback status
+ */
+export async function getLocalizedContent<T extends keyof AnyEntryMap>(
+  collection: T,
+  lang: SupportedLanguage,
+  slug: string
+): Promise<LocalizedContent<T>> {
+  // Try to get the content in the requested language
+  let entry = await getEntry(collection, `${lang}/${slug}`);
+  let isFallback = false;
+
+  // If not found, fall back to the default language
+  if (!entry && lang !== DEFAULT_LANGUAGE) {
+    entry = await getEntry(collection, `${DEFAULT_LANGUAGE}/${slug}`);
+    isFallback = true;
   }
 
-  // If still not found after attempting the fallback, then throw an error.
+  // If still not found, throw an error
   if (!entry) {
     throw new Error(
-      `Could not find content for slug '${slug}' in collection '${collection}' for language '${lang}' or the fallback language 'en'. Please ensure the corresponding content files (e.g., 'src/content/${collection}/${lang}/${slug}.md' or 'src/content/${collection}/en/${slug}.md') exist.`,
+      `Content not found: ${collection}/${lang}/${slug} or fallback ${collection}/${DEFAULT_LANGUAGE}/${slug}`
     );
   }
 
-  // If an entry is found (either in the requested language or fallback), render it.
-  const { Content, headings } = await entry.render();
-  return { Content, headings, data: entry.data };
+  // Render the content
+  const renderedContent = await entry.render();
+
+  return {
+    entry,
+    renderedContent,
+    isFallback,
+  };
+}
+
+/**
+ * Gets all entries from a collection for a specific language
+ * Falls back to default language entries for missing content
+ *
+ * @param collection - The collection name
+ * @param lang - The desired language
+ * @returns An array of collection entries
+ */
+export async function getLocalizedCollection<T extends keyof AnyEntryMap>(
+  collection: T,
+  lang: SupportedLanguage
+): Promise<Array<CollectionEntry<T>>> {
+  // Get all entries from the collection
+  const allEntries = await getCollection(collection);
+
+  // Filter for the requested language
+  const langEntries = allEntries.filter(
+    entry => entry.id.startsWith(`${lang}/`)
+  );
+
+  // If using the default language, just return those entries
+  if (lang === DEFAULT_LANGUAGE) {
+    return langEntries;
+  }
+
+  // For other languages, get default language entries that don't have a translation
+  const defaultEntries = allEntries.filter(entry => {
+    // Only include default language entries
+    if (!entry.id.startsWith(`${DEFAULT_LANGUAGE}/`)) {
+      return false;
+    }
+
+    // Extract the slug (everything after the language prefix)
+    const slug = entry.id.substring(DEFAULT_LANGUAGE.length + 1);
+
+    // Check if we already have this entry in the requested language
+    const hasTranslation = langEntries.some(
+      langEntry => langEntry.id.substring(lang.length + 1) === slug
+    );
+
+    // Include this entry if it doesn't have a translation
+    return !hasTranslation;
+  });
+
+  // Return the combined entries (requested language + default language fallbacks)
+  return [...langEntries, ...defaultEntries];
+}
+
+/**
+ * Extracts the slug from a collection entry ID
+ *
+ * @param entry - The collection entry
+ * @returns The slug portion of the ID (without language prefix)
+ */
+export function getSlugFromEntry(entry: CollectionEntry<any>): string {
+  // Entry ID format is expected to be "[lang]/[slug]"
+  const parts = entry.id.split('/');
+  return parts.slice(1).join('/');
 }

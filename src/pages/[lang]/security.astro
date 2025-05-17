@@ -1,33 +1,49 @@
 ---
-// src/pages/[lang]/security.astro
-
-import Layout from "@/layouts/Layout.astro";
+/**
+ * src/pages/[lang]/security.astro
+ * Security page implementation using content collections
+ */
+import { getCollection } from "astro:content";
+import ContentPage from "@/components/ContentPage.astro";
+import { getLanguagePaths, type SupportedLanguage } from "@/i18n";
+import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
 import { createLocaleI18n } from "@/i18n";
-import { loadLocalizedPage } from "@/utils/content";
-
-import { getLanguagePaths } from "@/i18n";
+import enMessages from "@/i18n/ui/en.json";
+import type { MessageSchema } from "@/i18n";
 
 export async function getStaticPaths() {
   return getLanguagePaths();
 }
 
-const { lang = "en" } = Astro.params;
+const { lang = DEFAULT_LANGUAGE } = Astro.params as { lang: SupportedLanguage };
 
-// Initialize i18n asynchronously
-const i18n = await createLocaleI18n(lang);
-const { t } = i18n.global;
+// Setup initial messages for i18n
+const initialMessages = {
+  [DEFAULT_LANGUAGE]: enMessages as MessageSchema,
+};
 
-const { Content, headings, data } = await loadLocalizedPage(
-  "pages",
-  lang,
-  "security",
+// Initialize i18n for page content
+await createLocaleI18n(lang, initialMessages);
+
+// Get the page by language/slug using Astro content collection API
+const allPages = await getCollection("pages");
+const page = allPages.find(
+  (page) =>
+    page.id === `${lang}/security.md` ||
+    (lang !== DEFAULT_LANGUAGE && page.id === `${DEFAULT_LANGUAGE}/security.md`),
 );
+
+if (!page) {
+  throw new Error(`Page not found: ${lang}/security.md`);
+}
+
+// Render the content
+const renderedContent = await page.render();
 ---
 
-<Layout
-  title={`${data.title} | Onetime Secret`}
-  description={data.description || "Security information for Onetime Secret."}>
-  <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900">
-    <Content />
-  </div>
-</Layout>
+<ContentPage
+  page={page}
+  renderedContent={renderedContent}
+  lang={lang}
+  initialMessages={initialMessages}
+/>
