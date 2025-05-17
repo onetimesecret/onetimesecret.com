@@ -10,6 +10,11 @@
 <template>
   <svg style="display: block">
     <defs>
+      <symbol id="heroicons-icon-globe" viewBox="0 0 24 24">
+        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/>
+        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.6 9h16.8M3.6 15h16.8"/>
+        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3a4.5 4.5 0 0 0 0 18 4.5 4.5 0 0 0 0-18z"/>
+      </symbol>
       <symbol viewBox="0 0 16 16" id="heroicons-x-mark-16-solid"><path fill="currentColor" d="M5.28 4.22a.75.75 0 0 0-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 1 0 1.06 1.06L8 9.06l2.72 2.72a.75.75 0 1 0 1.06-1.06L9.06 8l2.72-2.72a.75.75 0 0 0-1.06-1.06L8 6.94z" /></symbol>
       <symbol
         viewBox="0 0 16 16"
