@@ -30,6 +30,7 @@ import { fileURLToPath } from "url";
 import { loadEnv } from "vite";
 import { createConfig as createI18nConfig } from "./config/astro/i18n";
 import { createConfig as createIntegrations } from "./config/astro/integrations";
+import { createConfig as createMarkdownConfig } from "./config/astro/markdown";
 import { createConfig as createRedirectsConfig } from "./config/astro/redirects";
 import { createConfig as createViteConfig } from "./config/astro/vite";
 
@@ -72,7 +73,10 @@ export default defineConfig({
   // https://docs.astro.build/en/guides/prefetch/
   // prefetch: true,
 
+  markdown: createMarkdownConfig(),
+
   i18n: createI18nConfig(),
+
   redirects: createRedirectsConfig(),
   integrations: createIntegrations(),
 

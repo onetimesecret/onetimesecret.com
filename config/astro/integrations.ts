@@ -3,8 +3,9 @@
 import markdoc from "@astrojs/markdoc";
 import vue from "@astrojs/vue";
 import sentry from "@sentry/astro";
+import { AstroUserConfig } from "astro";
 
-export function createConfig() {
+export function createConfig(): AstroUserConfig["integrations"] {
   return [
     /**
      * Astro integrations

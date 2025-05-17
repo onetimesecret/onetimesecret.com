@@ -1,5 +1,7 @@
 // config/astro/vite.ts
 
+import { AstroUserConfig } from "astro";
+
 // https://docs.astro.build/en/guides/environment-variables/#setting-environment-variables
 /**
  * "pnpm does not allow you to import modules that are not directly installed in
@@ -9,7 +11,6 @@
 */
 import tailwindcss from "@tailwindcss/vite";
 import { resolve as pathResolve } from "path";
-import type { UserConfig } from "vite";
 import viteSSRGlobals from "../../vite-ssr-globals.js";
 // Controls debug settings throughout the configuration
 // Also used for __VUE_PROD_DEVTOOLS__ to enable Vue devtools in production
@@ -23,7 +24,7 @@ const DEBUG = process.env.VITE_DEBUG === "true";
 export function createConfig(
   astroPath: string,
   env: Record<string, string>,
-): UserConfig {
+): AstroUserConfig["vite"] {
   // Remember, for security reasons, only variables prefixed with VITE_ are
   // available here to prevent accidental exposure of sensitive
   // environment variables to the client-side code.
