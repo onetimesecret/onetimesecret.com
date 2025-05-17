@@ -54,7 +54,6 @@ export async function getStaticPaths() {
 
 interface Props {
   lang: SupportedLanguage;
-  now: number; // Changed from plop: Date to now: number
   initialMessages: Record<string, MessageSchema>;
   langMeta: {
     name: string;
@@ -63,10 +62,24 @@ interface Props {
   };
 }
 
-const { lang, now, initialMessages, langMeta } = Astro.props;
+const effectiveLang = (Astro.props.lang ||
+  Astro.params.lang ||
+  DEFAULT_LANGUAGE) as SupportedLanguage;
+
+// Determine effective langMeta, falling back to default language's meta if necessary
+const effectiveLangMeta = Astro.props.langMeta || LANGUAGE_META[effectiveLang];
+
+// Determine effective initialMessages, falling back to just English messages if necessary
+// This ensures initialMessages is always an object.
+const effectiveInitialMessages = Astro.props.initialMessages || {
+  [DEFAULT_LANGUAGE]: enMessages as MessageSchema,
+};
 
 // Initialize a page-specific i18n instance for SSR content using initialMessages
-const pageI18n = await createLocaleI18n(lang, initialMessages);
+const pageI18n = await createLocaleI18n(
+  effectiveLang,
+  effectiveInitialMessages,
+);
 const t = pageI18n.global.t;
 
 // Translated title and description for the Layout
@@ -90,16 +103,17 @@ const pageDescription = t(
 <Layout
   title={pageTitle}
   description={pageDescription}
-  htmlLang={lang}
-  langDir={langMeta.dir}
-  initialMessages={initialMessages}>
+  htmlLang={effectiveLang}
+  langDir={effectiveLangMeta.dir}
+  initialMessages={effectiveInitialMessages}>
   <!-- Render the Homepage component -->
   <!-- client:load ensures the Vue component hydrates and runs client-side -->
   <Homepage
     client:load
-    now={now}
-    locale={lang}
-    initialMessages={initialMessages}
+    locale={effectiveLang}
+    htmlLang={effectiveLang}
+    langDir={effectiveLangMeta.dir}
+    initialMessages={effectiveInitialMessages}
   />
   <!-- <slot />  -->
 </Layout>

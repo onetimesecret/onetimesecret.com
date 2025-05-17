@@ -1,24 +1,69 @@
 ---
-import {
-  DEFAULT_LANGUAGE,
-  SUPPORTED_LANGUAGES,
-  LANGUAGE_META,
-} from "../../config/astro/i18n";
-import { type SupportedLanguage } from "@/i18n";
+// Assumed corrected version of onetimesecret.com/src/components/LanguagePicker.astro
+import { LANGUAGE_META } from "../../config/astro/i18n";
 
 export interface Props {
   currentLocale: string;
 }
 const { currentLocale } = Astro.props;
+
+const currentPathname = Astro.url.pathname;
+
+console.log(`LanguagePicker: Path "${currentPathname}"`);
+
+let contentPath = "/"; // Default to root content path, e.g., "/"
+const langPrefix = `/${currentLocale}`; // e.g., "/en"
+
+if (currentPathname.startsWith(langPrefix)) {
+  contentPath = currentPathname.substring(langPrefix.length);
+  // If currentPathname was "/en/", contentPath is now "/".
+  // If currentPathname was "/en", contentPath is now "".
+  if (contentPath === "") {
+    // Normalizes "" (from "/en") to "/"
+    contentPath = "/";
+  }
+  // Ensures sub-paths like "about" become "/about" if substring resulted in no leading slash
+  // (though currentPathname.substring(langPrefix.length) usually preserves it for subpaths like "/about")
+  if (contentPath !== "/" && !contentPath.startsWith("/")) {
+    contentPath = `/${contentPath}`;
+  }
+} else {
+  // Fallback if currentPathname doesn't start with the expected language prefix.
+  // This might happen if on a non-prefixed default language path, though your config uses prefixDefaultLocale: true.
+  contentPath = currentPathname;
+  console.warn(
+    `LanguagePicker: Path "${currentPathname}" does not match locale prefix "${currentLocale}". Content path set to "${contentPath}".`,
+  );
+}
 ---
 
-<div>Current Locale for Picker: {currentLocale}</div>
+<div>Current Locale for Picker2: {currentLocale}</div>
 <ul>
   {
-    Object.entries(LANGUAGE_META).map(([lang, details]) => (
-      <li>
-        <a href={`/${lang}/`}>{details.name}</a>
-      </li>
-    ))
+    Object.entries(LANGUAGE_META).map(([targetLang, details]) => {
+      let newHref = `/${targetLang}`; // Key line 1
+      if (contentPath !== "/") {
+        newHref += contentPath; // Key line 2
+      } else {
+        newHref += "/"; // Key line 3
+      }
+
+      // For debugging:
+      console.log(
+        `Picker Debug: currentLocale="${currentLocale}", currentPathname="${currentPathname}", contentPath="${contentPath}", targetLang="${targetLang}", generatedHref="${newHref}"`,
+      );
+
+      const isCurrent = targetLang === currentLocale;
+
+      return (
+        <li>
+          {isCurrent ? (
+            <span>{details.name} (Current)</span>
+          ) : (
+            <a href={newHref}>{details.name}</a>
+          )}
+        </li>
+      );
+    })
   }
 </ul>
