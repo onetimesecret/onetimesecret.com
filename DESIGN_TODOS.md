@@ -4,12 +4,13 @@ This document outlines design issues identified on the Onetime Secret developmen
 
 ## High Priority
 
-### 1. Improve Homepage Information Architecture
-- **Issue**: Core functionality explanation is limited
-- **Task**: Add concise feature highlights with visual aids
-- **Solution**: Create feature highlight component for homepage
-- **Files**: Homepage template, new feature component
-- **Testing**: User testing for comprehension
+
+### 1. Complete Internationalization Implementation
+- **Issue**: Language switching appears incomplete
+- **Task**: Finish i18n implementation using Vue-i18n
+- **Solution**: Audit and complete translation keys, fix language switcher
+- **Files**: Language files, i18n configuration
+- **Testing**: Verify all text is properly translated in supported languages
 
 ### 2. ~~Standardize Navigation Bar~~ DONE
 - **Issue**: Navigation bar appears/disappears across pages
@@ -18,19 +19,21 @@ This document outlines design issues identified on the Onetime Secret developmen
 - **Files**: Create `/src/layouts/MainLayout.astro` if not exists
 - **Testing**: Verify navigation appears consistently across all pages
 
-### 3. Standardize the About Page
+### 3. ~~Standardize the About Page~~ DONE
 - **Issue**: About page layout inconsistent with other pages
 - **Task**: Create a consistent layout for the About page
 - **Solution**: Create an astro layout for content pages like About
 - **Files**: Update `/src/pages/[lang]/about.astro`
 - **Testing**: Verify layout consistency
 
-### 4. Complete Internationalization Implementation
-- **Issue**: Language switching appears incomplete
-- **Task**: Finish i18n implementation using Vue-i18n
-- **Solution**: Audit and complete translation keys, fix language switcher
-- **Files**: Language files, i18n configuration
-- **Testing**: Verify all text is properly translated in supported languages
+### 4. Improve Homepage Information Architecture
+- **Issue**: Core functionality explanation is limited
+- **Task**: Add concise feature highlights with visual aids
+- **Solution**: Create feature highlight component for homepage
+- **Files**: Homepage template, new feature component
+- **Testing**: User testing for comprehension
+
+
 
 ## Medium Priority
 
