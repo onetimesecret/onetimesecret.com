@@ -64,19 +64,34 @@ const { Content, headings, data } = await loadLocalizedPage(
   htmlLang={effectiveLang}
   langDir={effectiveLangMeta.dir}
   initialMessages={effectiveInitialMessages}>
-  <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900">
-    <header class="bg-white">
+  <div class="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-900">
+    <header class="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/90">
       <MainNavigation
         client:load
         locale={effectiveLang}
         initialMessages={effectiveInitialMessages}
       />
-      <div class="pt-20 pb-4 text-center">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{data.title}</h1>
-      </div>
     </header>
-    <main class="flex-grow px-4 sm:px-6 lg:px-8 py-8 max-w-5xl mx-auto">
-      <Content />
+    <main class="flex-grow">
+      <div class="bg-white dark:bg-slate-900 py-12 sm:py-16">
+        <div class="mx-auto max-w-7xl px-6 lg:px-8">
+          <div class="mx-auto max-w-2xl lg:text-center">
+            <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
+              {data.title}
+            </h1>
+            {/* data.description is available if a subtitle is desired, but not used for now */}
+            {/* <p class="mt-6 text-lg leading-8 text-slate-600 dark:text-slate-300">
+              {data.description}
+            </p> */}
+          </div>
+        </div>
+      </div>
+
+      <div class="relative px-4 sm:px-6 lg:px-8 py-12 sm:py-16 bg-slate-50 dark:bg-slate-950">
+        <div class="mx-auto max-w-3xl prose prose-slate dark:prose-invert lg:prose-lg">
+          <Content />
+        </div>
+      </div>
     </main>
   </div>
 </Layout>

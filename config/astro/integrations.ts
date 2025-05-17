@@ -39,6 +39,7 @@ export function createConfig() {
           "./dist/**/client/**/*.map",
           "./dist/**/server/**/*.map",
         ],
+
         // The integration should automatically handle deleting maps
         // based on vite.build.sourcemap setting ('hidden' deletes maps)
       },
