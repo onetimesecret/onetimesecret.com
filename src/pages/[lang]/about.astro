@@ -3,13 +3,16 @@
  * src/pages/[lang]/about.astro
  * About page implementation using content collections
  */
-import { getCollection } from "astro:content";
-import MainLayout from "@/layouts/MainLayout.astro";
-import { getLanguagePaths, type SupportedLanguage } from "@/i18n";
-import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
-import { createLocaleI18n } from "@/i18n";
-import enMessages from "@/i18n/ui/en.json";
 import type { MessageSchema } from "@/i18n";
+import {
+  createLocaleI18n,
+  getLanguagePaths,
+  type SupportedLanguage,
+} from "@/i18n";
+import enMessages from "@/i18n/ui/en.json";
+import MainLayout from "@/layouts/MainLayout.astro";
+import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
+import { getCollection } from "astro:content";
 
 export async function getStaticPaths() {
   return getLanguagePaths();
@@ -50,9 +53,8 @@ const { Content } = renderedContent;
   initialMessages={initialMessages}
   showHero={true}
   heroTitle={page.data.title}
-  heroDescription={page.data.description}
->
-  <div class="prose prose-lg mx-auto dark:prose-invert">
+  heroDescription={page.data.description}>
+  <div class="prose prose-lg dark:prose-invert mx-auto">
     <Content />
   </div>
 </MainLayout>
