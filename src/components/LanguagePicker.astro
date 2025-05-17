@@ -3,10 +3,16 @@ import {
   DEFAULT_LANGUAGE,
   SUPPORTED_LANGUAGES,
   LANGUAGE_META,
-  type SupportedLanguage,
 } from "../../config/astro/i18n";
+import { type SupportedLanguage } from "@/i18n";
+
+export interface Props {
+  currentLocale: string;
+}
+const { currentLocale } = Astro.props;
 ---
 
+<div>Current Locale for Picker: {currentLocale}</div>
 <ul>
   {
     Object.entries(LANGUAGE_META).map(([lang, details]) => (
