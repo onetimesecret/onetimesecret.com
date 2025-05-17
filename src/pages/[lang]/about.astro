@@ -2,43 +2,32 @@
 // src/pages/[lang]/about.astro
 
 import Layout from "@/layouts/Layout.astro";
-// The `createLocaleI18n` function from "@/i18n" might no longer be needed here,
-// or could be adapted if it serves other purposes.
-// import { createLocaleI18n } from "@/i18n";
+import { createLocaleI18n, type MessageSchema } from "@/i18n"; // For page SSR
 import { loadLocalizedPage } from "@/utils/content";
-
-// Import the modified getLanguagePaths
+import { type SupportedLanguage } from "@config/astro/i18n"; // For getStaticPaths
 import { getLanguagePaths } from "@/i18n";
-// Import createI18n from vue-i18n to initialize it with props
-import { createI18n } from "vue-i18n";
-// You might need to export MessageSchema from your i18n setup or define it
-// For example, if MessageSchema is `typeof import("@/i18n/ui/en.json").default`
-// For simplicity, we'll assume a general type or that it's globally available.
-// import type { MessageSchema } from "@/i18n"; // Adjust path if MessageSchema is exported
 
 export async function getStaticPaths() {
   // getLanguagePaths is now async and provides initialMessages in props
   return getLanguagePaths();
 }
 
-const { lang = "en" } = Astro.params;
-// Retrieve initialMessages from Astro.props, passed by getLanguagePaths
-const { initialMessages, langMeta } = Astro.props;
+interface Props {
+  lang: SupportedLanguage;
+  initialMessages: Record<string, MessageSchema>; // From getStaticPaths
+  langMeta: {
+    name: string;
+    locale: string;
+    dir: string;
+  };
+  // now: number; // if needed from getStaticPaths
+}
 
-// Define MessageSchema locally if not imported, based on expected structure
-// This is a placeholder; ideally, share the type from your i18n setup.
-type MessageSchema = Record<string, any>;
+const { lang, initialMessages, langMeta } = Astro.props;
 
-// Initialize i18n with the pre-loaded messages from props
-const i18n = createI18n<[MessageSchema], string>({
-  legacy: false, // Use Composition API
-  locale: lang, // Set current locale
-  fallbackLocale: "en", // Set fallback locale
-  messages: initialMessages, // Use messages passed via props
-  silentTranslationWarn: true,
-  silentFallbackWarn: true,
-});
-const { t } = i18n.global;
+// Initialize i18n for page SSR content (e.g., title, description)
+const i18n = await createLocaleI18n(lang, initialMessages);
+// const { t } = i18n.global; // if you need t directly for this page
 
 // Use the utility function to load content (assuming this remains unchanged)
 const { Content, headings, data } = await loadLocalizedPage(

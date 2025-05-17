@@ -102,9 +102,7 @@ export async function getLanguagePaths() {
         try {
           // Dynamically import the locale messages for the current language.
           // The path is relative from `config/astro/i18n.ts` to `src/i18n/ui/[lang].json`
-          const langMessagesModule = await import(
-            `../src/i18n/ui/${lang}.json`
-          );
+          const langMessagesModule = await import(`./ui/${lang}.json`);
           // Assign the imported messages to the current language key.
           // Handles both default export and direct module export.
           initialMessages[lang] = (langMessagesModule.default ||
@@ -131,23 +129,62 @@ export async function getLanguagePaths() {
   );
   return paths;
 }
-// This function is kept for compatibility or specific use cases if needed,
-// but setLanguage is the primary way to change locales now.
-export const createLocaleI18n = async (locale: string = "en") => {
+
+/**
+ * Synchronously configures the global i18n instance with pre-loaded messages.
+ *
+ * @param targetLang - The language to set as the current locale.
+ * @param loadedMessages - An object where keys are language codes (e.g., "en", "fr")
+ *                         and values are their corresponding message objects.
+ *                         Should typically include messages for targetLang and "en" (fallback).
+ */
+export function setLanguageWithMessages(
+  targetLang: string,
+  loadedMessages: Record<string, MessageSchema>,
+) {
+  if (!targetLang || !loadedMessages) return;
+
+  // Add/update all provided messages in the global i18n instance
+  for (const langCode in loadedMessages) {
+    if (Object.prototype.hasOwnProperty.call(loadedMessages, langCode)) {
+      // Vue I18n's setLocaleMessage will add or update messages for the given locale.
+      i18n.global.setLocaleMessage(langCode, loadedMessages[langCode]);
+    }
+  }
+
+  // Set the current locale
+  if (i18n.global.locale.value !== targetLang) {
+    i18n.global.locale.value = targetLang;
+  }
+}
+
+// getLanguagePaths is now in config/astro/i18n.ts
+// createLocaleI18n was for page-specific SSR instances, which is still a valid pattern
+// for Astro pages themselves, distinct from the global client-side instance.
+export const createLocaleI18n = async (
+  locale: string = "en",
+  ssrMessages?: Record<string, MessageSchema>,
+) => {
   let messages: Record<string, MessageSchema> = {
-    en: enMessagesImport,
+    en: enMessagesImport, // Always include English
   };
 
-  if (locale !== "en") {
+  if (ssrMessages) {
+    Object.assign(messages, ssrMessages);
+  } else if (locale !== "en") {
     try {
       const localeModule = await import(`./ui/${locale}.json`);
       messages[locale] = localeModule.default || localeModule;
     } catch (e) {
-      console.warn(`Failed to load locale: ${locale}, falling back to en`, e);
+      console.warn(
+        `Failed to load locale: ${locale} for createLocaleI18n, falling back to en`,
+        e,
+      );
     }
   }
 
-  return createI18n<[MessageSchema], typeof locale>({
+  return createI18n<[MessageSchema], string>({
+    // Explicitly type locale as string
     legacy: false,
     locale,
     fallbackLocale: "en",

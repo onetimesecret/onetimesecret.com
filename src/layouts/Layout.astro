@@ -7,6 +7,7 @@ import Favicons from "@/components/layout/Favicons.astro";
 import SeoMeta from "@/components/layout/SeoMeta.astro";
 import SvgSprites from "@/components/layout/SvgSprites.astro";
 import OptimizedFonts from "@/components/layout/OptimizedFonts.astro";
+import type { MessageSchema } from "@/i18n";
 
 // Utilities
 import { getLocaleFromUrl } from "../i18n/utils";
@@ -35,26 +36,33 @@ const currentPath = Astro.url.pathname;
 export interface Props {
   title?: string;
   description?: string;
-  htmlLang?: string;
-  langDir?: string;
   canonicalUrl?: string;
   ogImage?: string;
   ogType?: string;
   twitterCard?: string;
   keywords?: string;
-  noindex?: boolean; // Allow explicitly setting noindex
+  noindex?: boolean;
   alternateLanguages?: { code: string; url: string }[];
   structuredData?: object;
+  htmlLang: string; // Expect lang for <html> attribute
+  langDir: string; // Expect dir for <html> attribute
+  initialMessages: Record<string, MessageSchema>; // Expect initialMessages
 }
 
 // --------------------------
 // Configuration & Data Processing
 // --------------------------
-
 const siteOrigin = Astro.url.origin.toString();
+const {
+  htmlLang,
+  langDir,
+  initialMessages, // Use this prop
+  // ... other props for SEO
+} = Astro.props;
 
 // SEO Configuration
 const routeSpecificSeo = getRouteSeoConfig(currentPath, siteOrigin);
+const currentLocaleForChildren = htmlLang; // Use the passed htmlLang
 
 const pageTitle =
   Astro.props.title || routeSpecificSeo.title || defaultSeoValues.title;
@@ -98,7 +106,8 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
 
 <!doctype html>
 <html
-  lang={Astro.props.htmlLang}
+  lang={htmlLang}
+  dir={langDir}
   class="h-full">
   <head>
     <meta charset="utf-8" />
@@ -169,14 +178,15 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
     <footer class="bg-white dark:bg-gray-900">
       <FooterLinkLists
         client:load
-        locale={lang}
+        locale={currentLocaleForChildren}
+        initialMessages={initialMessages}
       />
       <LanguagePicker />
       <FooterSignOff
         client:load
-        locale={lang}
+        locale={currentLocaleForChildren}
+        initialMessages={initialMessages}
       />
     </footer>
-  </body><!-- SVG sprites - hidden but available for use -->
-  <SvgSprites />
+  </body><SvgSprites /><!-- SVG sprites - hidden but available for use -->
 </html>

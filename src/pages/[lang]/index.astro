@@ -7,10 +7,8 @@ import { i18n as globalI18nInstance, setLanguage } from "@/i18n"; // Import glob
 import { type SupportedLanguage } from "@config/astro/i18n";
 import { getLanguagePaths } from "@/i18n";
 import { createI18n } from "vue-i18n";
+import { createLocaleI18n, type MessageSchema } from "@/i18n";
 import type enMessages from "@/i18n/ui/en.json"; // For MessageSchema type
-
-// Define MessageSchema based on the structure of en.json
-type MessageSchema = typeof enMessages;
 
 /**
  * Component Script:
@@ -67,15 +65,8 @@ interface Props {
 
 const { lang, now, initialMessages, langMeta } = Astro.props;
 
-// Initialize a page-specific i18n instance for SSR content
-const pageI18n = createI18n<[MessageSchema], string>({
-  legacy: false,
-  locale: lang,
-  fallbackLocale: "en",
-  messages: initialMessages,
-  silentTranslationWarn: true,
-  silentFallbackWarn: true,
-});
+// Initialize a page-specific i18n instance for SSR content using initialMessages
+const pageI18n = await createLocaleI18n(lang, initialMessages);
 const t = pageI18n.global.t;
 
 // Translated title and description for the Layout
@@ -100,13 +91,15 @@ const pageDescription = t(
   title={pageTitle}
   description={pageDescription}
   htmlLang={lang}
-  langDir={langMeta.dir}>
+  langDir={langMeta.dir}
+  initialMessages={initialMessages}>
   <!-- Render the Homepage component -->
   <!-- client:load ensures the Vue component hydrates and runs client-side -->
   <Homepage
     client:load
     now={now}
     locale={lang}
+    initialMessages={initialMessages}
   />
   <!-- <slot />  -->
 </Layout>

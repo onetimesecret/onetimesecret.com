@@ -11,7 +11,7 @@ import MainNavigation from "@/components/vue/layouts/MainNavigation.vue";
 import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { setLanguage } from "@/i18n";
-
+import { setLanguageWithMessages, type MessageSchema } from "@/i18n";
 
 import SecretFormLite from "@/components/vue/homepage/SecretFormLite.vue";
 import UseCaseSelector from "@/components/vue/homepage/UseCaseSelector.vue";
@@ -19,23 +19,12 @@ import type { ApiResult } from "@/components/vue/forms/BaseSecretFormLite.vue";
 
 const props = defineProps<{
   locale: string;
+  initialMessages: Record;
+  // other component-specific props like 'now' for Homepage
+  now?: number;
 }>();
 
-const { t } = useI18n();
-
-// --- Reactive state for i18n readiness ---
-const i18nReady = ref(false);
-
-// --- Watch for locale changes and update i18n ---
-watch(
-  () => props.locale,
-  async (newLocale) => {
-    i18nReady.value = false;
-    await setLanguage(newLocale);
-    i18nReady.value = true;
-  },
-  { immediate: true }, // immediate: true will run the watcher upon component creation
-);
+const { t } = useI18n(); // Now uses the correctly configured global instance
 
 // --- State for Homepage ---
 const detectedRegion = ref("");
@@ -43,7 +32,8 @@ const suggestedDomain = ref("");
 const baseUrl = import.meta.env.PUBLIC_API_BASE_URL;
 
 // Region configuration for the selector
-const availableRegions = computed(() => [ // Make availableRegions a computed property to use t() reactively
+const availableRegions = computed(() => [
+  // Make availableRegions a computed property to use t() reactively
   {
     identifier: "EU",
     displayName: t("web.secrets.europe") || "European Union",
@@ -139,19 +129,20 @@ const apiBaseUrl = computed(() => {
 
 const isClient = ref(false);
 
-onMounted(async () => { // Make onMounted async
+onMounted(async () => {
+  // Make onMounted async
   isClient.value = true;
   // Initial language setup is now handled by the watcher with immediate: true
   // However, ensure currentRegion is updated if availableRegions changes due to locale load
-  currentRegion.value = availableRegions.value.find(r => r.identifier === currentRegion.value.identifier) || availableRegions.value[0];
+  currentRegion.value =
+    availableRegions.value.find(
+      (r) => r.identifier === currentRegion.value.identifier,
+    ) || availableRegions.value[0];
 });
 </script>
 
 <template>
-  <div
-    v-if="i18nReady"
-    class="flex min-h-screen flex-col bg-white overflow-hidden">
-      <div class="text-black">plop: {{ props.plop }}</div>
+  <div class="flex min-h-screen flex-col bg-white overflow-hidden">
     <!-- First Time Visitor Banner (Client-Only) -->
     <ClientOnlyBanner
       :detected-region="detectedRegion"
@@ -224,10 +215,6 @@ onMounted(async () => { // Make onMounted async
       <!-- Section 5: Screenshot ViewHole -->
       <ScreenshotViewHole />
     </main>
-  </div>
-  <div v-else>
-    <!-- Optional: Add a loading indicator while i18n is loading -->
-    Loading translations...
   </div>
 </template>
 
