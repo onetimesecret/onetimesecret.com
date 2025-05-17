@@ -6,11 +6,7 @@ export interface Props {
   currentLocale: string;
 }
 const { currentLocale } = Astro.props;
-
 const currentPathname = Astro.url.pathname;
-
-console.log(`LanguagePicker: Path "${currentPathname}"`);
-
 let contentPath = "/"; // Default to root content path, e.g., "/"
 const langPrefix = `/${currentLocale}`; // e.g., "/en"
 
@@ -37,7 +33,24 @@ if (currentPathname.startsWith(langPrefix)) {
 }
 ---
 
-<div>Current Locale for Picker2: {currentLocale}</div>
+<script>
+  // This script runs in the browser to update the language when links are clicked
+  document.addEventListener("DOMContentLoaded", () => {
+    // Select all language links
+    document.querySelectorAll("[data-lang-link]").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        // Store the target language in localStorage before navigation
+        // This helps with the transition between page loads
+        const targetLang = link.getAttribute("data-lang");
+        if (targetLang) {
+          localStorage.setItem("preferredLanguage", targetLang);
+        }
+      });
+    });
+  });
+</script>
+
+<div>Current Locale for Picker: {currentLocale}</div>
 <ul>
   {
     Object.entries(LANGUAGE_META).map(([targetLang, details]) => {
@@ -49,9 +62,9 @@ if (currentPathname.startsWith(langPrefix)) {
       }
 
       // For debugging:
-      console.log(
-        `Picker Debug: currentLocale="${currentLocale}", currentPathname="${currentPathname}", contentPath="${contentPath}", targetLang="${targetLang}", generatedHref="${newHref}"`,
-      );
+      // console.log(
+      //   `Picker Debug: currentLocale="${currentLocale}", currentPathname="${currentPathname}", contentPath="${contentPath}", targetLang="${targetLang}", generatedHref="${newHref}"`,
+      // );
 
       const isCurrent = targetLang === currentLocale;
 

@@ -9,7 +9,7 @@ import SvgSprites from "@/components/layout/SvgSprites.astro";
 import OptimizedFonts from "@/components/layout/OptimizedFonts.astro";
 
 // Utilities
-// import { getLocaleFromUrl } from "../i18n/utils"; // Not used directly here
+import { getLocaleFromUrl } from "@/i18n/utils";
 import { generateCspConnectSrc } from "@/utils/security";
 import {
   getRouteSeoConfig,
@@ -74,7 +74,13 @@ const {
   structuredData: propsStructuredData,
 } = Astro.props;
 
+const effectiveLocale = getLocaleFromUrl(Astro.url) ?? htmlLang;
 const siteOrigin = Astro.url.origin.toString();
+
+// For debugging during build - remove in production if not needed
+console.log(
+  `Layout: URL="${Astro.url.pathname}", htmlLang="${htmlLang}", effectiveLocale="${effectiveLocale}"`,
+);
 
 // SEO Configuration
 const routeSpecificSeo = getRouteSeoConfig(currentPath, siteOrigin);
@@ -124,7 +130,7 @@ const currentLocaleForChildren = htmlLang;
 
 <!doctype html>
 <html
-  lang={htmlLang}
+  lang={effectiveLocale}
   dir={langDir}
   class="h-full">
   <head>
@@ -187,13 +193,13 @@ const currentLocaleForChildren = htmlLang;
     <footer class="bg-white dark:bg-gray-900">
       <FooterLinkLists
         client:load
-        locale={currentLocaleForChildren}
+        locale={effectiveLocale}
         initialMessages={initialMessages}
       />
-      <LanguagePicker currentLocale={currentLocaleForChildren} />
+      <LanguagePicker currentLocale={effectiveLocale} />
       <FooterSignOff
         client:load
-        locale={currentLocaleForChildren}
+        locale={effectiveLocale}
         initialMessages={initialMessages}
       />
     </footer>

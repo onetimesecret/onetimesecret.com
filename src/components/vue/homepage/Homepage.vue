@@ -24,6 +24,13 @@ const props = defineProps<{
   now?: number;
 }>();
 
+// Add this to the top level of your script setup
+// This ensures locale is set before the component starts rendering
+if (props.initialMessages && props.locale) {
+  // Initialize with provided locale and messages before component rendering begins
+  setLanguageWithMessages(props.locale, props.initialMessages);
+}
+
 const { t } = useI18n(); // Now uses the correctly configured global instance
 
 // --- State for Homepage ---
@@ -130,6 +137,7 @@ const apiBaseUrl = computed(() => {
 const isClient = ref(false);
 
 onMounted(async () => {
+
   // Make onMounted async
   isClient.value = true;
   // Initial language setup is now handled by the watcher with immediate: true
