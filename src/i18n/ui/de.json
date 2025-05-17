@@ -51,6 +51,10 @@
     "loading": "Wird geladen"
   },
   "web": {
+    "pricing": {
+      "title": "Preispläne | Onetime Secret",
+      "description": "Wählen Sie den perfekten Plan für Ihre Bedürfnisse zum sicheren Informationsaustausch. Von kostenlosen Basisplänen bis hin zu Premium-Optionen mit benutzerdefinierten Domains und dedizierter Infrastruktur."
+    },
     "errors": {
       "errorTitle": "Nicht erfolgreich",
       "passphraseRequired": "Passphrase ist erforderlich, wenn diese Option ausgewählt ist."

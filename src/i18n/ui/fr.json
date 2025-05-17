@@ -51,6 +51,10 @@
     "loading": "Chargement"
   },
   "web": {
+    "pricing": {
+      "title": "Plans tarifaires | Onetime Secret",
+      "description": "Choisissez le plan parfait pour vos besoins de partage d'informations sécurisées. Des plans gratuits de base aux options premium avec domaines personnalisés et infrastructure dédiée."
+    },
     "errors": {
       "errorTitle": "Échec",
       "passphraseRequired": "Une phrase de passe est requise lorsque l'option est sélectionnée."

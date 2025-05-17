@@ -62,6 +62,10 @@
       "light": "Light",
       "dark": "Dark"
     },
+    "pricing": {
+      "title": "Pricing Plans | Onetime Secret",
+      "description": "Choose the perfect plan for your secure information sharing needs. From basic free plans to premium options with custom domains and dedicated infrastructure."
+    },
     "errors": {
       "errorTitle": "Not successful",
       "passphraseRequired": "Passphrase is required when option is selected."

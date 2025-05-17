@@ -4,7 +4,7 @@
  * About page implementation using content collections
  */
 import { getCollection } from "astro:content";
-import ContentPage from "@/components/ContentPage.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
 import { getLanguagePaths, type SupportedLanguage } from "@/i18n";
 import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
 import { createLocaleI18n } from "@/i18n";
@@ -23,7 +23,8 @@ const initialMessages = {
 };
 
 // Initialize i18n for page content
-await createLocaleI18n(lang, initialMessages);
+const pageI18n = await createLocaleI18n(lang, initialMessages);
+const t = pageI18n.global.t;
 
 // Get the page by language/slug using Astro content collection API
 const allPages = await getCollection("pages");
@@ -39,11 +40,19 @@ if (!page) {
 
 // Render the content
 const renderedContent = await page.render();
+const { Content } = renderedContent;
 ---
 
-<ContentPage
-  page={page}
-  renderedContent={renderedContent}
-  lang={lang}
+<MainLayout
+  title={`${page.data.title} | Onetime Secret`}
+  description={page.data.description || `${page.data.title} | Onetime Secret`}
+  htmlLang={lang}
   initialMessages={initialMessages}
-/>
+  showHero={true}
+  heroTitle={page.data.title}
+  heroDescription={page.data.description}
+>
+  <div class="prose prose-lg mx-auto dark:prose-invert">
+    <Content />
+  </div>
+</MainLayout>
