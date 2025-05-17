@@ -24,7 +24,7 @@ export function createConfig() {
        * @see https://docs.sentry.io/platforms/javascript/guides/astro/
        * @see https://github.com/getsentry/spotlight/blob/main/packages/astro/README.md
        */
-
+      dsn: process.env.SENTRY_DSN,
       // Build-time source map upload configuration
       sourceMapsUploadOptions: {
         // Disable Sentry telemetry during the upload process
@@ -48,6 +48,8 @@ export function createConfig() {
     }),
     spotlightjs({
       debug: false,
+      // sidecarUrl: "https://catch.onetimesecret.com/",
+      sidecarUrl: "http://localhost:8969", // Force using only the local sidecar
     }),
     vue({
       devtools: {
