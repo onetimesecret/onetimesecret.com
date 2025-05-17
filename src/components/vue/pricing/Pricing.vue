@@ -7,7 +7,7 @@
   import { useI18n } from 'vue-i18n';
   import { setLanguage, setLanguageWithMessages, type MessageSchema } from '@/i18n';
 
-  import { paymentFrequencies as frequencies, productTiers as tiers } from '@/content/product/productTiers';
+  import { paymentFrequencies as frequencies, productTiers as tiers } from '@/data/product/productTiers';
 
   const props = defineProps<{
     locale: string;

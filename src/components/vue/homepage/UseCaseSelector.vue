@@ -9,7 +9,7 @@ import {
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
-import { getUseCases } from "@/content/useCases/index";
+import { getUseCases } from "@/data/product/usecases/index";
 import type { UseCase } from "@/types/useCase";
 
 const { t } = useI18n();
