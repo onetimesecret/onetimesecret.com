@@ -5,7 +5,7 @@ This document outlines design issues identified on the Onetime Secret developmen
 ## High Priority
 
 
-### 1. Complete Internationalization Implementation
+### 1. Improve Internationalization Implementation
 - **Issue**: Language switching appears incomplete
 - **Task**: Finish i18n implementation using Vue-i18n
 - **Solution**: Audit and complete translation keys, fix language switcher
@@ -26,7 +26,7 @@ This document outlines design issues identified on the Onetime Secret developmen
 - **Files**: Update `/src/pages/[lang]/about.astro`
 - **Testing**: Verify layout consistency
 
-### 4. Improve Homepage Information Architecture
+### 4. ~~Improve Homepage Information Architecture~~ DONE
 - **Issue**: Core functionality explanation is limited
 - **Task**: Add concise feature highlights with visual aids
 - **Solution**: Create feature highlight component for homepage
