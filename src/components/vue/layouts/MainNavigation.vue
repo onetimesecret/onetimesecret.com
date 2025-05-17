@@ -7,6 +7,7 @@ import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { localizeUrl } from '@/i18n/utils';
 import { setLanguage, setLanguageWithMessages, type MessageSchema } from "@/i18n";
+import LanguageSwitcher from "@/components/vue/navigation/LanguageSwitcher.vue";
 
 const props = defineProps<{
   locale: string;
@@ -83,6 +84,12 @@ const mobileMenuOpen = ref(false);
           </a>
         </div>
         <div class="hidden md:flex md:flex-1 md:justify-end md:space-x-4 items-center">
+          <LanguageSwitcher
+            :locale="locale"
+            size="sm"
+            variant="minimal"
+            class="mr-2"
+          />
           <a
             href="/signin"
             class="text-sm/6 font-semibold text-gray-900 dark:text-gray-100 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">
@@ -138,6 +145,13 @@ const mobileMenuOpen = ref(false);
                 </a>
               </div>
               <div class="py-6 space-y-2">
+                <div class="py-2 px-3">
+                  <LanguageSwitcher
+                    :locale="locale"
+                    size="sm"
+                    variant="full"
+                  />
+                </div>
                 <a
                   href="/signin"
                   class="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800">

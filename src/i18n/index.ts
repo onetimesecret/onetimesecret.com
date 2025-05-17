@@ -28,7 +28,7 @@ import { createI18n } from "vue-i18n";
 // i18next.use(Backend).init(i18nextOptions);
 
 // Define a type for the message schema based on the English messages
-type MessageSchema = typeof enMessagesImport;
+export type MessageSchema = typeof enMessagesImport;
 
 // Create the global i18n instance
 // It's initialized with English, but can be updated dynamically

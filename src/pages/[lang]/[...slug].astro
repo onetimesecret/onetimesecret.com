@@ -23,7 +23,7 @@ export async function getStaticPaths() {
   const useCasesEntries = await getCollection("useCases");
 
   // Get all supported language paths
-  const langPaths = getLanguagePaths();
+  const langPaths = await getLanguagePaths();
 
   // Create a map for all available content
   const paths = [];

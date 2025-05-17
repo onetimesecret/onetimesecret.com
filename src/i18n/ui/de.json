@@ -51,6 +51,17 @@
     "loading": "Wird geladen"
   },
   "web": {
+    "accessibilityLabels": {
+      "lightMode": "Heller Modus",
+      "darkMode": "Dunkler Modus",
+      "toggleColorTheme": "Farbthema umschalten"
+    },
+    "theme": {
+      "title": "Thema",
+      "toggleTheme": "Thema umschalten",
+      "light": "Hell",
+      "dark": "Dunkel"
+    },
     "pricing": {
       "title": "Preispläne | Onetime Secret",
       "description": "Wählen Sie den perfekten Plan für Ihre Bedürfnisse zum sicheren Informationsaustausch. Von kostenlosen Basisplänen bis hin zu Premium-Optionen mit benutzerdefinierten Domains und dedizierter Infrastruktur."
@@ -134,8 +145,8 @@
       }
     },
     "homepage": {
-      "title": "IT-Fachkraft",
-      "description": "Teilen Sie Anmeldedaten und Zugriffsinformationen sicher mit Ihrem Team",
+      "title": "Teilen Sie Geheimnisse sicher | Onetime Secret",
+      "description": "Teilen Sie sensible Informationen sicher mit selbstzerstörenden Links. Fügen Sie Ihr Geheimnis ein, generieren Sie einen Link und teilen Sie ihn. Nach dem Anzeigen ist es für immer verschwunden.",
       "howItWorks": {
         "title": "Wie es funktioniert",
         "subtitle": "Teilen Sie Ihre Informationen einmal, dann werden sie dauerhaft gelöscht",
@@ -155,6 +166,26 @@
       "visualExamples": {
         "title": "Eigene Domain & Branding",
         "subtitle": "Stärken Sie Ihre Marke und schaffen Sie Vertrauen durch Verwendung Ihrer eigenen Domain und Ihres Logos."
+      },
+      "featureHighlights": {
+        "sectionTitle": "Hauptfunktionen",
+        "sectionSubtitle": "Entdecken Sie, was Onetime Secret zur bevorzugten Lösung für den sicheren Informationsaustausch macht",
+        "security": {
+          "title": "Ende-zu-Ende-Verschlüsselung",
+          "description": "Ihre sensiblen Informationen werden während der Übertragung und im Ruhezustand verschlüsselt und gewährleisten so maximale Sicherheit."
+        },
+        "selfDestruction": {
+          "title": "Selbstzerstörende Links",
+          "description": "Nach dem Anzeigen wird Ihr Geheimnis dauerhaft von unseren Servern gelöscht. Keine Kopien, keine Spuren."
+        },
+        "dataResidency": {
+          "title": "Regionale Datenspeicherung",
+          "description": "Wählen Sie, wo Ihre Daten gespeichert werden, um Compliance-Anforderungen und Bedürfnisse der Datenhoheit zu erfüllen."
+        },
+        "compliance": {
+          "title": "Compliance-bereit",
+          "description": "Entwickelt, um die Anforderungen von SOC2, DSGVO, CCPA & HIPAA für den sicheren Umgang mit Informationen zu erfüllen."
+        }
       }
     }
   }

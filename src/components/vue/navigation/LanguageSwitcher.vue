@@ -1,0 +1,116 @@
+<!-- src/components/vue/navigation/LanguageSwitcher.vue -->
+
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { GlobeAltIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
+import {
+  SUPPORTED_LANGUAGES,
+  LANGUAGE_META,
+  type SupportedLanguage
+} from '@config/astro/i18n';
+import {
+  getLocaleFromUrl,
+  createLanguageSwitcherUrl
+} from '@/i18n/utils';
+import { OIcon } from '@/components/vue/icons/OIcon.vue';
+
+const props = defineProps<{
+  size?: 'sm' | 'md' | 'lg';
+  variant?: 'minimal' | 'full';
+  locale?: string;
+}>();
+
+const { t } = useI18n();
+
+// Get current route to preserve path when switching languages
+const currentPath = computed(() => {
+  return window.location.pathname;
+});
+
+// Current detected locale, with fallback to props or browser
+const currentLocale = computed(() => {
+  return props.locale || getLocaleFromUrl(window.location) || navigator.language.split('-')[0] as SupportedLanguage;
+});
+
+// Get current language metadata
+const currentLanguage = computed(() => {
+  return LANGUAGE_META[currentLocale.value as SupportedLanguage] || LANGUAGE_META.en;
+});
+
+// Create paths for each supported language
+const languagePaths = computed(() => {
+  return SUPPORTED_LANGUAGES.map(lang => ({
+    lang,
+    name: LANGUAGE_META[lang].name,
+    path: createLanguageSwitcherUrl(currentPath.value, lang),
+    isActive: lang === currentLocale.value
+  }));
+});
+
+// Size classes based on prop
+const sizeClasses = computed(() => {
+  switch(props.size) {
+    case 'sm': return 'text-xs';
+    case 'lg': return 'text-base';
+    case 'md':
+    default: return 'text-sm';
+  }
+});
+
+// Function to handle language change
+const changeLanguage = (path: string) => {
+  window.location.href = path;
+};
+</script>
+
+<template>
+  <div class="relative">
+    <Menu
+      as="div"
+      class="relative inline-block text-left"
+    >
+      <div>
+        <MenuButton
+          class="inline-flex w-full items-center justify-center gap-x-1.5 rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+          :class="sizeClasses"
+        >
+          <GlobeAltIcon class="size-5 -ml-0.5 mr-1.5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+          <span v-if="props.variant === 'full'">{{ currentLanguage.name }}</span>
+          <span v-else>{{ currentLocale.toUpperCase() }}</span>
+          <ChevronDownIcon class="size-5 ml-1 -mr-1 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+        </MenuButton>
+      </div>
+
+      <transition
+        enter-active-class="transition ease-out duration-100"
+        enter-from-class="transform opacity-0 scale-95"
+        enter-to-class="transform opacity-100 scale-100"
+        leave-active-class="transition ease-in duration-75"
+        leave-from-class="transform opacity-100 scale-100"
+        leave-to-class="transform opacity-0 scale-95"
+      >
+        <MenuItems
+          class="absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+        >
+          <div class="py-1">
+            <MenuItem v-for="item in languagePaths" :key="item.lang">
+              <a
+                :href="item.path"
+                :class="[
+                  item.isActive ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-200',
+                  'block px-4 py-2 text-sm'
+                ]"
+                @click.prevent="changeLanguage(item.path)"
+              >
+                <span class="inline-block w-8">{{ item.lang.toUpperCase() }}</span>
+                <span>{{ item.name }}</span>
+              </a>
+            </MenuItem>
+          </div>
+        </MenuItems>
+      </transition>
+    </Menu>
+  </div>
+</template>
