@@ -1,7 +1,27 @@
 // src/i18n/index.ts
 
+import enMessages from "@/i18n/ui/en.json"; // Default English messages
 import { createI18n } from "vue-i18n";
-import enMessages from "./ui/en.json"; // Default English messages
+
+// import i18next from "i18next";
+// import Backend from "i18next-fs-backend";
+
+// const i18nextOptions = {
+//   lng: "en",
+//   debug: false,
+//   backend: {
+//     // path where resources get loaded from, or a function
+//     // returning a path:
+//     // function(lngs, namespaces) { return customPath; }
+//     // the returned path will interpolate lng, ns if provided like giving a static path
+//     loadPath: "@/i18n/ui/{{lng}}.json",
+
+//     // path to post missing resources
+//     addPath: "@/i18n/ui/{{lng}}.missing.json",
+//   },
+// };
+// // https://www.i18next.com/overview/configuration-options#languages-namespaces-resources
+// i18next.use(Backend).init(i18nextOptions);
 
 // Define a type for the message schema based on the English messages
 type MessageSchema = typeof enMessages;

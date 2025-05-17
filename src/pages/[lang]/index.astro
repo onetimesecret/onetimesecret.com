@@ -5,8 +5,6 @@ import "@/styles/global.css";
 import "@/styles/tailwind.css";
 import "@/i18n";
 
-const { lang } = Astro.props;
-
 /**
  * Component Script:
  * What markdown calls frontmatter, astro refers to as Component Script.
@@ -50,6 +48,18 @@ export async function getStaticPaths() {
   return getLanguagePaths();
 }
 
+interface Props {
+  lang: string;
+  plop: Date;
+  i18n: any;
+  langMeta: {
+    name: string;
+    locale: string;
+    dir: string;
+  };
+}
+
+const { lang, plop, langMeta } = Astro.props;
 const pageTitle = "Share Secrets Securely | Onetime Secret";
 const pageDescription =
   "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever.";
@@ -63,6 +73,7 @@ const pageDescription =
   <!-- client:load ensures the Vue component hydrates and runs client-side -->
   <Homepage
     client:load
+    plop={plop}
     locale={lang}
   />
   <!-- <slot />  -->

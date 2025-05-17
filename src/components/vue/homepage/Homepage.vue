@@ -151,6 +151,7 @@ onMounted(async () => { // Make onMounted async
   <div
     v-if="i18nReady"
     class="flex min-h-screen flex-col bg-white overflow-hidden">
+      <div class="text-black">plop: {{ props.plop }}</div>
     <!-- First Time Visitor Banner (Client-Only) -->
     <ClientOnlyBanner
       :detected-region="detectedRegion"

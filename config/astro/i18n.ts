@@ -35,20 +35,6 @@ export const LANGUAGE_META = {
 } as const;
 
 /**
- * Returns static paths for language-specific routes
- * For use in Astro's getStaticPaths for consistent language support across pages
- */
-export function getLanguagePaths() {
-  return SUPPORTED_LANGUAGES.map((lang) => ({
-    params: { lang },
-    props: {
-      lang,
-      langMeta: LANGUAGE_META[lang],
-    },
-  }));
-}
-
-/**
  * Astro i18n configuration
  */
 export function createConfig() {
