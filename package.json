@@ -53,6 +53,8 @@
   "devDependencies": {
     "@sentry/astro": "^9.17.0",
     "@spotlightjs/astro": "^3.2.3",
+    "@spotlightjs/sidecar": "^1.11.3",
+    "@spotlightjs/spotlight": "^2.13.3",
     "eslint-config-prettier": "10.1.2",
     "glob": "^11.0.2",
     "globals": "^16.1.0",

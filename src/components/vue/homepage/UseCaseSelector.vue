@@ -22,13 +22,13 @@ const selectedUseCase = ref(useCases[0]);
 </script>
 
 <template>
-  <section class="py-20 bg-gray-50 w-full">
+  <section class="py-20 bg-gray-50 dark:bg-gray-800 w-full">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:max-w-5xl lg:px-8">
-      <h2 class="text-3xl font-bold text-center text-gray-900 mb-8">
+      <h2 class="text-3xl font-bold text-center text-gray-900 dark:text-white mb-8">
         {{ t("web.useCases.sectionTitle", "How can we help you?") }}
       </h2>
 
-      <p class="text-center text-lg text-gray-600 mb-8">
+      <p class="text-center text-lg text-gray-600 dark:text-gray-300 mb-8">
         {{
           t(
             "web.useCases.sectionSubtitle",
@@ -42,8 +42,8 @@ const selectedUseCase = ref(useCases[0]);
         <Listbox v-model="selectedUseCase">
           <div class="relative">
             <ListboxButton
-              class="relative w-full cursor-default rounded-lg bg-white py-3 pl-4 pr-10 text-left border border-gray-300 shadow-sm focus:outline-none focus-visible:border-brand-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-300 text-base">
-              <span class="block truncate font-medium text-slate-800">
+              class="relative w-full cursor-default rounded-lg bg-white dark:bg-gray-700 py-3 pl-4 pr-10 text-left border border-gray-300 dark:border-gray-600 shadow-sm focus:outline-none focus-visible:border-brand-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-300 text-base">
+              <span class="block truncate font-medium text-slate-800 dark:text-white">
                 {{ selectedUseCase.title }}
               </span>
               <span
@@ -59,7 +59,7 @@ const selectedUseCase = ref(useCases[0]);
               leave-from-class="opacity-100"
               leave-to-class="opacity-0">
               <ListboxOptions
-                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
                 <ListboxOption
                   v-for="useCase in useCases"
                   :key="useCase.id"
@@ -68,7 +68,7 @@ const selectedUseCase = ref(useCases[0]);
                   as="template">
                   <li
                     :class="[
-                      active ? 'bg-brand-100 text-brand-900' : 'text-gray-900',
+                      active ? 'bg-brand-100 text-brand-900 dark:bg-brand-800 dark:text-brand-100' : 'text-gray-900 dark:text-gray-100',
                       'relative cursor-default select-none py-3 pl-10 pr-4',
                     ]">
                     <span
@@ -96,19 +96,19 @@ const selectedUseCase = ref(useCases[0]);
       <!-- Dynamic Content Based on Selection -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
         <!-- Left Column: Example & Benefits -->
-        <div class="bg-white rounded-lg shadow-md p-6 border border-gray-100">
-          <h3 class="text-xl font-semibold text-gray-900 mb-4">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-100 dark:border-gray-700">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
             {{ selectedUseCase.description }}
           </h3>
 
           <!-- Example Secret -->
           <div class="mb-6">
             <h4
-              class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">
+              class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
               {{ t("web.useCases.exampleSecret", "Example Secret") }}
             </h4>
             <div
-              class="bg-gray-50 rounded-md p-4 font-mono text-sm text-gray-800 whitespace-pre-line">
+              class="bg-gray-50 dark:bg-gray-700 rounded-md p-4 font-mono text-sm text-gray-800 dark:text-gray-200 whitespace-pre-line">
               {{ selectedUseCase.exampleSecret }}
             </div>
           </div>
@@ -116,7 +116,7 @@ const selectedUseCase = ref(useCases[0]);
           <!-- Benefits -->
           <div>
             <h4
-              class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">
+              class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
               {{ t("web.useCases.keyBenefits", "Key Benefits") }}
             </h4>
             <ul class="space-y-2">
@@ -127,7 +127,7 @@ const selectedUseCase = ref(useCases[0]);
                 <span class="flex-shrink-0 h-5 w-5 text-brand-500 mr-2">
                   <CheckIcon class="h-5 w-5" />
                 </span>
-                <span class="text-gray-700">{{ benefit }}</span>
+                <span class="text-gray-700 dark:text-gray-300">{{ benefit }}</span>
               </li>
             </ul>
           </div>
@@ -135,14 +135,14 @@ const selectedUseCase = ref(useCases[0]);
 
         <!-- Right Column: Compliance & CTA -->
         <div
-          class="bg-gradient-to-br from-brand-50 to-brand-100 rounded-lg shadow-md p-6 border border-brand-200 flex flex-col">
+          class="bg-gradient-to-br from-brand-50 to-brand-100 dark:from-brand-900/30 dark:to-brand-800/50 rounded-lg shadow-md p-6 border border-brand-200 dark:border-brand-800 flex flex-col">
           <!-- Compliance Info -->
           <div class="mb-8">
             <h4
-              class="text-sm font-medium text-brand-600 uppercase tracking-wider mb-2">
+              class="text-sm font-medium text-brand-600 dark:text-brand-400 uppercase tracking-wider mb-2">
               {{ t("web.useCases.complianceInfo", "Compliance Information") }}
             </h4>
-            <p class="text-gray-700">
+            <p class="text-gray-700 dark:text-gray-300">
               {{ selectedUseCase.complianceInfo }}
             </p>
           </div>
@@ -151,10 +151,10 @@ const selectedUseCase = ref(useCases[0]);
           <div class="mt-auto">
             <a
               :href="selectedUseCase.ctaLink"
-              class="block w-full bg-brand-600 hover:bg-brand-700 text-white font-medium py-3 px-4 rounded-md text-center transition-colors duration-150 ease-in-out">
+              class="block w-full bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 text-white font-medium py-3 px-4 rounded-md text-center transition-colors duration-150 ease-in-out">
               {{ selectedUseCase.ctaText }}
             </a>
-            <p class="text-xs text-center text-gray-500 mt-3">
+            <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-3">
               {{
                 t(
                   "web.useCases.privacyNote",

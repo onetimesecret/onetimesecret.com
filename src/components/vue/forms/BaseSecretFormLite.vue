@@ -254,14 +254,14 @@ const copyUrlToClipboard = async () => {
       <textarea
         v-model="secretText"
         rows="3"
-        class="block w-full rounded-md border-0 py-3 pl-4 pr-16 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400  sm:text-sm disabled:opacity-50"
+        class="block w-full rounded-md border-0 py-3 pl-4 pr-16 text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 dark:bg-gray-800 sm:text-sm disabled:opacity-50"
         :placeholder="props.placeholder || t('web.secrets.secretPlaceholder')"
         :disabled="isLoading || apiResult?.success"></textarea>
 
       <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
         <button
           type="button"
-          class="inline-flex font-brand items-center justify-center min-w-[7rem] rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-base font-medium text-white font-semibold shadow-sm hover:bg-brand-600 focus:outline-none disabled:opacity-50 disabled:bg-gray-400"
+          class="inline-flex font-brand items-center justify-center min-w-[7rem] rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-base font-medium text-white font-semibold shadow-sm hover:bg-brand-600 dark:bg-brand-600 dark:hover:bg-brand-500 focus:outline-none disabled:opacity-50 disabled:bg-gray-400"
           :disabled="isLoading || !secretText.trim() || apiResult?.success"
           @click="handleCreateLink">
           <span v-if="!isLoading">{{
@@ -276,13 +276,13 @@ const copyUrlToClipboard = async () => {
     <div
       v-if="showOptions"
       class="mt-3 mb-4">
-      <div class="bg-gray-50 rounded-md p-3">
+      <div class="bg-gray-50 dark:bg-gray-700 rounded-md p-3">
         <h3
-          class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+          class="text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider mb-2">
           {{ t("web.secrets.optionsHeading") || "Secret Options" }}
         </h3>
         <div
-          class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-sm text-gray-600">
+          class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-sm text-gray-600 dark:text-gray-300">
           <!-- Expiration Time Option -->
           <div class="flex items-center">
             <input
@@ -299,7 +299,7 @@ const copyUrlToClipboard = async () => {
               :disabled="isLoading" />
             <label
               for="burn-after-reading"
-              class="ml-2 block text-sm text-gray-600">
+              class="ml-2 block text-sm text-gray-600 dark:text-gray-300">
               {{ t("web.secrets.expirationTime") || "Burn after reading" }}
             </label>
           </div>
@@ -319,7 +319,7 @@ const copyUrlToClipboard = async () => {
               :disabled="isLoading" />
             <label
               for="add-passphrase"
-              class="ml-2 block text-sm text-gray-600">
+              class="ml-2 block text-sm text-gray-600 dark:text-gray-300">
               {{ t("web.secrets.addPassphrase") || "Add passphrase" }}
             </label>
           </div>
@@ -330,14 +330,14 @@ const copyUrlToClipboard = async () => {
           class="mt-3">
           <label
             for="passphrase-input"
-            class="block text-sm font-medium text-gray-700">
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300">
             {{ t("web.secrets.passphraseLabel") || "Passphrase" }}
           </label>
           <input
             type="password"
             id="passphrase-input"
             v-model="passphrase"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm disabled:opacity-50"
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:bg-gray-800 dark:text-gray-100 sm:text-sm disabled:opacity-50"
             :placeholder="
               t('web.secrets.passphrasePlaceholder') || 'Enter passphrase'
             "
@@ -350,7 +350,7 @@ const copyUrlToClipboard = async () => {
     <div class="mt-4 mb-10 min-h-[4rem]">
       <div
         v-if="isLoading"
-        class="text-center text-gray-500">
+        class="text-center text-gray-500 dark:text-gray-400">
         {{ t("LABELS.processing") }}...
       </div>
       <div
@@ -386,12 +386,12 @@ const copyUrlToClipboard = async () => {
             type="text"
             :value="buildSecretUrl(apiResult)"
             readonly
-            class="block w-full rounded-none rounded-l-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm bg-white p-2"
+            class="block w-full rounded-none rounded-l-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm bg-white dark:bg-gray-800 dark:text-gray-100 p-2"
             @focus="($event.target as HTMLInputElement).select()" />
           <button
             @click="copyUrlToClipboard"
             type="button"
-            class="relative -ml-px min-w-[6rem] inline-flex items-center justify-center space-x-2 rounded-r-md border border-gray-300 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+            class="relative -ml-px min-w-[6rem] inline-flex items-center justify-center space-x-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
             :class="{
               'bg-green-200 text-green-800 hover:bg-green-300': copySuccess,
             }">

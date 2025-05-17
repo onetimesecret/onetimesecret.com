@@ -42,3 +42,7 @@ Sentry.init({
 
   integrations: [],
 });
+// In the frontend it's important that you init Spotlight after Sentry
+import * as Spotlight from "@spotlightjs/spotlight";
+
+Spotlight.init();

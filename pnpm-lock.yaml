@@ -90,6 +90,12 @@ importers:
       '@spotlightjs/astro':
         specifier: ^3.2.3
         version: 3.2.3(@sentry/astro@9.17.0(astro@5.7.12(@types/node@22.15.17)(jiti@2.4.2)(lightningcss@1.29.2)(rollup@4.40.2)(typescript@5.8.3)(yaml@2.7.1)))(astro@5.7.12(@types/node@22.15.17)(jiti@2.4.2)(lightningcss@1.29.2)(rollup@4.40.2)(typescript@5.8.3)(yaml@2.7.1))
+      '@spotlightjs/sidecar':
+        specifier: ^1.11.3
+        version: 1.11.3
+      '@spotlightjs/spotlight':
+        specifier: ^2.13.3
+        version: 2.13.3
       eslint-config-prettier:
         specifier: 10.1.2
         version: 10.1.2(eslint@9.25.1(jiti@2.4.2))

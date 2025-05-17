@@ -12,40 +12,51 @@ const translations = enTranslations;
 ---
 
 <div class="flex flex-col items-end">
-  <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 hidden md:block">
+  <h3
+    class="mb-2 hidden text-sm font-medium text-gray-700 md:block dark:text-gray-300">
     {translations.web.theme?.title || "Theme"}
   </h3>
   <button
     id="color-mode-toggle"
-    class="inline-flex items-center rounded-md px-2 py-1 text-sm font-medium text-gray-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100 transition-colors"
-    aria-label={translations.web.accessibilityLabels?.toggleColorTheme || "Toggle color theme"}
-  >
-  <!-- Sun icon (shown in dark mode) -->
-  <svg
-    id="sun-icon"
-    class="h-5 w-5 hidden"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke-width="1.5"
-    stroke="currentColor"
-  >
-    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
-  </svg>
+    class="focus:ring-brand-500 inline-flex items-center rounded-md px-2 py-1 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 focus:ring-2 focus:outline-none dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+    aria-label={translations.web.accessibilityLabels?.toggleColorTheme ||
+      "Toggle color theme"}>
+    <!-- Sun icon (shown in dark mode) -->
+    <svg
+      id="sun-icon"
+      class="h-5 w-5"
+      style="display: none;"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor">
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"
+      ></path>
+    </svg>
 
-  <!-- Moon icon (shown in light mode) -->
-  <svg
-    id="moon-icon"
-    class="h-5 w-5 hidden"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke-width="1.5"
-    stroke="currentColor"
-  >
-    <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
-  </svg>
-    <span class="ml-1.5 hidden sm:inline">{translations.web.theme?.toggleTheme || "Toggle theme"}</span>
+    <!-- Moon icon (shown in light mode) -->
+    <svg
+      id="moon-icon"
+      class="h-5 w-5"
+      style="display: none;"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor">
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z"
+      ></path>
+    </svg>
+    <span class="ml-1.5 hidden sm:inline"
+      >{translations.web.theme?.toggleTheme || "Toggle theme"}</span
+    >
   </button>
 </div>
 
@@ -55,38 +66,38 @@ const translations = enTranslations;
    * Manages theme persistence and system preference detection
    */
   function updateIconVisibility(isDark) {
-      const sunIcon = document.getElementById('sun-icon');
-      const moonIcon = document.getElementById('moon-icon');
-      const toggleButton = document.getElementById('color-mode-toggle');
+    const sunIcon = document.getElementById("sun-icon");
+    const moonIcon = document.getElementById("moon-icon");
+    const toggleButton = document.getElementById("color-mode-toggle");
 
-      if (sunIcon && moonIcon) {
-        if (isDark) {
-          sunIcon.classList.remove('hidden');
-          moonIcon.classList.add('hidden');
-          if (toggleButton) {
-            toggleButton.classList.add('bg-gray-700');
-            toggleButton.classList.add('text-gray-200');
-            toggleButton.setAttribute('aria-pressed', 'true');
-          }
-        } else {
-          sunIcon.classList.add('hidden');
-          moonIcon.classList.remove('hidden');
-          if (toggleButton) {
-            toggleButton.classList.remove('bg-gray-700');
-            toggleButton.classList.remove('text-gray-200');
-            toggleButton.setAttribute('aria-pressed', 'false');
-          }
+    if (sunIcon && moonIcon) {
+      if (isDark) {
+        sunIcon.classList.remove("hidden");
+        moonIcon.classList.add("hidden");
+        if (toggleButton) {
+          toggleButton.classList.add("bg-gray-700");
+          toggleButton.classList.add("text-gray-200");
+          toggleButton.setAttribute("aria-pressed", "true");
+        }
+      } else {
+        sunIcon.classList.add("hidden");
+        moonIcon.classList.remove("hidden");
+        if (toggleButton) {
+          toggleButton.classList.remove("bg-gray-700");
+          toggleButton.classList.remove("text-gray-200");
+          toggleButton.setAttribute("aria-pressed", "false");
         }
       }
     }
+  }
 
   function applyTheme(theme) {
-    const isDark = theme === 'dark';
+    const isDark = theme === "dark";
 
     if (isDark) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove("dark");
     }
 
     updateIconVisibility(isDark);
@@ -94,52 +105,87 @@ const translations = enTranslations;
     // Update meta color-scheme for browser UI elements
     const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
     if (metaColorScheme) {
-      metaColorScheme.setAttribute('content', isDark ? 'dark light' : 'light dark');
+      metaColorScheme.setAttribute(
+        "content",
+        isDark ? "dark light" : "light dark",
+      );
     }
   }
 
+  // function toggleColorMode() {
+  //   const currentTheme = localStorage.getItem("colorMode") || "light";
+  //   const newTheme = currentTheme === "dark" ? "light" : "dark";
+
+  //   localStorage.setItem("colorMode", newTheme);
+  //   applyTheme(newTheme);
+  // }
   function toggleColorMode() {
-    const currentTheme = localStorage.getItem('colorMode') || 'light';
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-    localStorage.setItem('colorMode', newTheme);
+    const currentTheme = localStorage.getItem("colorMode") || "light";
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    localStorage.setItem("colorMode", newTheme);
     applyTheme(newTheme);
-  }
 
+    // Force style recalculation
+    document.body.style.display = "none";
+    // This triggers a reflow
+    void document.body.offsetHeight;
+    document.body.style.display = "";
+  }
   function initColorMode() {
-    const savedTheme = localStorage.getItem('colorMode');
+    const savedTheme = localStorage.getItem("colorMode");
 
     if (!savedTheme) {
       // Check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const initialTheme = prefersDark ? 'dark' : 'light';
-      localStorage.setItem('colorMode', initialTheme);
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)",
+      ).matches;
+      const initialTheme = prefersDark ? "dark" : "light";
+      localStorage.setItem("colorMode", initialTheme);
       applyTheme(initialTheme);
     } else {
       applyTheme(savedTheme);
     }
 
     // Listen for system preference changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-      if (!localStorage.getItem('colorMode')) {
-        const newTheme = e.matches ? 'dark' : 'light';
-        localStorage.setItem('colorMode', newTheme);
-        applyTheme(newTheme);
-      }
-    });
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (e) => {
+        if (!localStorage.getItem("colorMode")) {
+          const newTheme = e.matches ? "dark" : "light";
+          localStorage.setItem("colorMode", newTheme);
+          applyTheme(newTheme);
+        }
+      });
+
+    // Also update the icon visibility based on current theme
+    updateIconVisibility(savedTheme === "dark");
   }
 
   // Initialize on page load
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener("DOMContentLoaded", () => {
     initColorMode();
 
     // Add click event listener to toggle button
-    const toggleButton = document.getElementById('color-mode-toggle');
+    const toggleButton = document.getElementById("color-mode-toggle");
     if (toggleButton) {
-      toggleButton.addEventListener('click', toggleColorMode);
+      toggleButton.addEventListener("click", toggleColorMode);
     }
   });
 
-  // Also run initialization immediately to avoid flicker
-  initColorMode();
+  // Run initialization immediately to avoid flicker
+  if (typeof window !== "undefined") {
+    // Set a small timeout to ensure the DOM is fully loaded
+    // This helps prevent issues with client-side hydration
+    document.addEventListener("DOMContentLoaded", () => {
+      initColorMode();
+    });
+
+    // Also try to initialize immediately in case the DOM is already loaded
+    if (
+      document.readyState === "complete" ||
+      document.readyState === "interactive"
+    ) {
+      initColorMode();
+    }
+  }
 </script>

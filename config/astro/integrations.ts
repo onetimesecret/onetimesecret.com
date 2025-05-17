@@ -50,6 +50,8 @@ export function createConfig() {
       debug: false,
       // sidecarUrl: "https://catch.onetimesecret.com/",
       sidecarUrl: "http://localhost:8969", // Force using only the local sidecar
+      openOnInit: false,
+      openOnErrors: false,
     }),
     vue({
       devtools: {
