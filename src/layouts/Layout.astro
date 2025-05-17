@@ -1,6 +1,7 @@
 ---
 // Component imports
 import LanguagePicker from "@/components/LanguagePicker.astro";
+import ColorModeToggle from "@/components/ColorModeToggle.astro";
 import FooterLinkLists from "@/components/vue/layouts/FooterLinkLists.vue";
 import FooterSignOff from "@/components/vue/layouts/FooterSignOff.vue";
 import Favicons from "@/components/layout/Favicons.astro";
@@ -203,7 +204,13 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
         locale={effectiveLocale}
         initialMessages={initialMessages}
       />
-      <LanguagePicker currentLocale={effectiveLocale} />
+      <div class="border-t border-gray-200 dark:border-gray-800">
+        <div
+          class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+          <LanguagePicker currentLocale={effectiveLocale} />
+          <ColorModeToggle />
+        </div>
+      </div>
       <FooterSignOff
         client:load
         locale={effectiveLocale}

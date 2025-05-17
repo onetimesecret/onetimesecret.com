@@ -3,6 +3,12 @@
 ASTRO 5.7 SSG WEBSITE - built time server-side-generated static website.
 
 
+## Icons
+
+Use <OIcon collection name class> from src/components/vue/icons/OIcon.vue.
+
+There are many SVG sprites available. See src/components/vue/icons/IconSources.vue
+
 ## i18n
 
 The default english translation is provided in the `src/i18n/ui/en.json` file.

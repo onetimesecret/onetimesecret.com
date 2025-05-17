@@ -51,6 +51,17 @@
     "loading": "Loading"
   },
   "web": {
+    "accessibilityLabels": {
+      "lightMode": "Light Mode",
+      "darkMode": "Dark Mode",
+      "toggleColorTheme": "Toggle color theme"
+    },
+    "theme": {
+      "title": "Theme",
+      "toggleTheme": "Toggle theme",
+      "light": "Light",
+      "dark": "Dark"
+    },
     "errors": {
       "errorTitle": "Not successful",
       "passphraseRequired": "Passphrase is required when option is selected."
