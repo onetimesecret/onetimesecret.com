@@ -1,21 +1,24 @@
 ---
-// src/pages/[lang]/about.astro
-
 import Layout from "@/layouts/Layout.astro";
-import { createLocaleI18n, type MessageSchema } from "@/i18n"; // For page SSR
+// Import createLocaleI18n for page-specific SSR translations
+// Also import MessageSchema for typing, and enMessages for a fallback
+import { createLocaleI18n, type MessageSchema } from "@/i18n";
+import enMessages from "@/i18n/ui/en.json";
+
 import { loadLocalizedPage } from "@/utils/content";
-import { type SupportedLanguage } from "@config/astro/i18n"; // For getStaticPaths
-import { getLanguagePaths } from "@/i18n";
+// Import i18n config for defaults and types
+import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
+import { getLanguagePaths, type SupportedLanguage } from "@/i18n";
 
 export async function getStaticPaths() {
-  // getLanguagePaths is now async and provides initialMessages in props
   return getLanguagePaths();
 }
 
 interface Props {
-  lang: SupportedLanguage;
-  initialMessages: Record<string, MessageSchema>; // From getStaticPaths
-  langMeta: {
+  // Allow props to be potentially undefined to handle HMR issues gracefully
+  lang?: SupportedLanguage;
+  initialMessages?: Record<string, MessageSchema>;
+  langMeta?: {
     name: string;
     locale: string;
     dir: string;
@@ -23,16 +26,32 @@ interface Props {
   // now: number; // if needed from getStaticPaths
 }
 
-const { lang, initialMessages, langMeta } = Astro.props;
+// Determine effective language:
+// 1. From Astro.props.lang (ideal)
+// 2. From Astro.params.lang (direct from URL segment, good fallback)
+// 3. From DEFAULT_LANGUAGE (last resort)
+const effectiveLang = (Astro.props.lang ||
+  Astro.params.lang ||
+  DEFAULT_LANGUAGE) as SupportedLanguage;
+
+// Determine effective langMeta, falling back to default language's meta if necessary
+const effectiveLangMeta = Astro.props.langMeta || LANGUAGE_META[effectiveLang];
+
+// Determine effective initialMessages, falling back to just English messages if necessary
+// This ensures initialMessages is always an object.
+const effectiveInitialMessages = Astro.props.initialMessages || {
+  [DEFAULT_LANGUAGE]: enMessages as MessageSchema,
+};
 
 // Initialize i18n for page SSR content (e.g., title, description)
-const i18n = await createLocaleI18n(lang, initialMessages);
-// const { t } = i18n.global; // if you need t directly for this page
+// This uses the effectiveLang and effectiveInitialMessages to be robust.
+const i18n = await createLocaleI18n(effectiveLang, effectiveInitialMessages);
+// const { t } = i18n.global; // if you need t directly for this page's SSR content
 
-// Use the utility function to load content (assuming this remains unchanged)
+// Load page content using the robust effectiveLang
 const { Content, headings, data } = await loadLocalizedPage(
   "pages",
-  lang,
+  effectiveLang,
   "about",
 );
 ---
@@ -41,10 +60,12 @@ const { Content, headings, data } = await loadLocalizedPage(
   title={`${data.title} | Onetime Secret`}
   description={data.description ||
     "Learn about Onetime Secret, our mission to provide secure one-time sharing, and the team behind our service."}
-  htmlLang={lang}
-  langDir={langMeta.dir}>
+  htmlLang={effectiveLang}
+  langDir={effectiveLangMeta.dir}
+  initialMessages={effectiveInitialMessages}>
   <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900">
-    {t("all-rights-reserved")}
     <Content />
+    <!-- If About page had client:load Vue components needing i18n: -->
+    <!-- <MyVueComponent client:load locale={effectiveLang} initialMessages={effectiveInitialMessages} /> -->
   </div>
 </Layout>

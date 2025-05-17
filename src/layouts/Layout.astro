@@ -7,10 +7,9 @@ import Favicons from "@/components/layout/Favicons.astro";
 import SeoMeta from "@/components/layout/SeoMeta.astro";
 import SvgSprites from "@/components/layout/SvgSprites.astro";
 import OptimizedFonts from "@/components/layout/OptimizedFonts.astro";
-import type { MessageSchema } from "@/i18n";
 
 // Utilities
-import { getLocaleFromUrl } from "../i18n/utils";
+// import { getLocaleFromUrl } from "../i18n/utils"; // Not used directly here
 import { generateCspConnectSrc } from "@/utils/security";
 import {
   getRouteSeoConfig,
@@ -18,13 +17,17 @@ import {
   defaultSeoValues,
   getDefaultWebApplicationLd,
 } from "@/utils/seo";
+import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n"; // For defaults
+import type { MessageSchema } from "@/i18n"; // For type
+import enMessages from "@/i18n/ui/en.json"; // For default initialMessages
 
 // Styles
 import "@/styles/global.css";
 import "@/styles/tailwind.css";
 
-// i18n setup
-const { lang = "en" } = Astro.params;
+// This lang is from Astro.params, specific to Layout's own context if needed.
+// It's different from the htmlLang prop.
+const layoutFileLangParam = (Astro.params.lang || DEFAULT_LANGUAGE) as string;
 
 // Routing
 const currentPath = Astro.url.pathname;
@@ -32,7 +35,6 @@ const currentPath = Astro.url.pathname;
 // --------------------------
 // Props Interface
 // --------------------------
-
 export interface Props {
   title?: string;
   description?: string;
@@ -44,64 +46,80 @@ export interface Props {
   noindex?: boolean;
   alternateLanguages?: { code: string; url: string }[];
   structuredData?: object;
-  htmlLang: string; // Expect lang for <html> attribute
-  langDir: string; // Expect dir for <html> attribute
-  initialMessages: Record<string, MessageSchema>; // Expect initialMessages
+  // Props for i18n, with optional chaining for robustness
+  htmlLang?: string;
+  langDir?: string;
+  initialMessages?: Record<string, MessageSchema>;
 }
 
 // --------------------------
 // Configuration & Data Processing
 // --------------------------
-const siteOrigin = Astro.url.origin.toString();
+
+// Destructure props with defaults to ensure they are always defined
 const {
-  htmlLang,
-  langDir,
-  initialMessages, // Use this prop
-  // ... other props for SEO
+  htmlLang = DEFAULT_LANGUAGE,
+  langDir = LANGUAGE_META[DEFAULT_LANGUAGE].dir,
+  initialMessages = { [DEFAULT_LANGUAGE]: enMessages as MessageSchema },
+  // SEO related props
+  title: propsTitle, // Renamed to avoid conflict with pageTitle variable
+  description: propsDescription, // Renamed
+  ogImage: propsOgImage,
+  ogType: propsOgType,
+  keywords: propsKeywords,
+  canonicalUrl: propsCanonicalUrl,
+  twitterCard: propsTwitterCard,
+  noindex: propsNoindex,
+  alternateLanguages: propsAlternateLanguages,
+  structuredData: propsStructuredData,
 } = Astro.props;
+
+const siteOrigin = Astro.url.origin.toString();
 
 // SEO Configuration
 const routeSpecificSeo = getRouteSeoConfig(currentPath, siteOrigin);
-const currentLocaleForChildren = htmlLang; // Use the passed htmlLang
 
 const pageTitle =
-  Astro.props.title || routeSpecificSeo.title || defaultSeoValues.title;
+  propsTitle || routeSpecificSeo.title || defaultSeoValues.title;
 const pageDescription =
-  Astro.props.description ||
+  propsDescription ||
   routeSpecificSeo.description ||
   defaultSeoValues.description;
 const pageOgImage =
-  Astro.props.ogImage || routeSpecificSeo.ogImage || defaultSeoValues.ogImage;
+  propsOgImage || routeSpecificSeo.ogImage || defaultSeoValues.ogImage;
 const pageOgType =
-  Astro.props.ogType || routeSpecificSeo.ogType || defaultSeoValues.ogType;
-const pageKeywords = Astro.props.keywords || defaultSeoValues.keywords;
-const pageCanonicalUrl = Astro.props.canonicalUrl || Astro.url.href;
-const pageTwitterCard = Astro.props.twitterCard || defaultSeoValues.twitterCard;
+  propsOgType || routeSpecificSeo.ogType || defaultSeoValues.ogType;
+const pageKeywords = propsKeywords || defaultSeoValues.keywords;
+const pageCanonicalUrl = propsCanonicalUrl || Astro.url.href;
+const pageTwitterCard = propsTwitterCard || defaultSeoValues.twitterCard;
 
-// Determine noindex status: explicitly set via prop, or based on path conventions
 const pageNoindex =
-  Astro.props.noindex !== undefined
-    ? Astro.props.noindex
+  propsNoindex !== undefined
+    ? propsNoindex
     : currentPath.startsWith("/secret/") ||
       currentPath.startsWith("/private/") ||
       currentPath.startsWith("/receipt/");
 
-const pageAlternateLanguages = Astro.props.alternateLanguages || [
-  { code: "en", url: `${siteOrigin}/en${Astro.url.pathname}` }, // ensure pathname starts with /
+const pageAlternateLanguages = propsAlternateLanguages || [
+  {
+    code: "en",
+    url: `${siteOrigin}/en${Astro.url.pathname.substring(Astro.url.pathname.startsWith("/en") || Astro.url.pathname.startsWith("/fr") || Astro.url.pathname.startsWith("/de") ? 3 : 0)}`,
+  },
 ];
 
-// Structured Data
 const pageStructuredData =
-  Astro.props.structuredData ||
+  propsStructuredData ||
   routeSpecificSeo.structuredData ||
   getDefaultWebApplicationLd(siteOrigin, pageDescription);
 
 const pageBreadcrumbsLd = generateBreadcrumbsLd(currentPath, siteOrigin);
 
-// Security Configuration
 const apiUrl = import.meta.env.PUBLIC_API_BASE_URL;
 const isDebugMode = import.meta.env.DEV || import.meta.env.DEBUG;
 const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
+
+// Use the robust htmlLang for children components that need locale context
+const currentLocaleForChildren = htmlLang;
 ---
 
 <!doctype html>
@@ -127,11 +145,7 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
       name="author"
       content="Onetime Secret"
     />
-
-    <!-- Favicons and Web App Manifest -->
     <Favicons />
-
-    <!-- SEO Meta Tags (including Open Graph, Twitter, JSON-LD, etc.) -->
     <SeoMeta
       title={pageTitle}
       description={pageDescription}
@@ -146,47 +160,42 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
       structuredData={pageStructuredData}
       breadcrumbsLd={pageBreadcrumbsLd}
     />
-
-    <!-- Default alternate language link -->
     <link
       rel="alternate"
       hreflang="x-default"
-      href={siteOrigin + Astro.url.pathname}
+      href={siteOrigin +
+        Astro.url.pathname.substring(
+          Astro.url.pathname.startsWith("/en") ||
+            Astro.url.pathname.startsWith("/fr") ||
+            Astro.url.pathname.startsWith("/de")
+            ? 3
+            : 0,
+        )}
     />
-
-    <!-- Font optimization using OptimizedFonts component -->
     <OptimizedFonts />
-
-    <!-- Security Headers -->
     <meta
       http-equiv="Content-Security-Policy"
       content={`default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src ${connectSrcDirective}; worker-src 'self' blob:;`}
     />
-
     <title>{pageTitle}</title>
   </head>
   <body class="flex h-full flex-col bg-white dark:bg-gray-900">
-    <!-- Site-wide progress indicator -->
     <div class="bg-brand-500 fixed top-0 left-0 z-50 h-1 w-full"></div>
-
-    <!-- Main content area -->
     <div class="flex-grow">
       <slot />
     </div>
-
-    <!-- Footer section -->
     <footer class="bg-white dark:bg-gray-900">
       <FooterLinkLists
         client:load
         locale={currentLocaleForChildren}
         initialMessages={initialMessages}
       />
-      <LanguagePicker />
+      <LanguagePicker currentLocale={currentLocaleForChildren} />
       <FooterSignOff
         client:load
         locale={currentLocaleForChildren}
         initialMessages={initialMessages}
       />
     </footer>
-  </body><SvgSprites /><!-- SVG sprites - hidden but available for use -->
+  </body><SvgSprites />
 </html>
