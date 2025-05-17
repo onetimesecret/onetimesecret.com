@@ -36,10 +36,7 @@
 
 <template>
   <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900 overflow-hidden">
-    <header class="sticky top-0 z-[99] bg-white dark:bg-gray-800">
-      <!-- Main Navigation -->
-      <MainNavigation :locale="locale" :initial-messages="initialMessages" />
-    </header>
+
 
     <main class="flex-grow">
       <div class="isolate overflow-hidden bg-gray-900 dark:bg-gray-950">

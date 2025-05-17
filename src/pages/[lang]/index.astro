@@ -1,9 +1,9 @@
 ---
 /**
  * src/pages/[lang]/index.astro
- * Homepage implementation using MainLayout for consistent navigation
+ * Homepage implementation using Layout for consistent navigation
  */
-import MainLayout from "@/layouts/MainLayout.astro";
+import Layout from "@/layouts/Layout.astro";
 import Homepage from "@/components/vue/homepage/Homepage.vue";
 import "@/styles/global.css";
 import "@/styles/tailwind.css";
@@ -55,7 +55,7 @@ const pageDescription = t("web.homepage.description");
 ---
 
 <!-- The Component Template -->
-<MainLayout
+<Layout
   title={pageTitle}
   description={pageDescription}
   htmlLang={effectiveLang}
@@ -73,4 +73,4 @@ const pageDescription = t("web.homepage.description");
     langDir={effectiveLangMeta.dir}
     initialMessages={effectiveInitialMessages}
   />
-</MainLayout>
+</Layout>
