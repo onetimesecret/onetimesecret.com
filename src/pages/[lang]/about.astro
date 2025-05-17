@@ -1,97 +1,39 @@
 ---
-import Layout from "@/layouts/Layout.astro";
-// Import createLocaleI18n for page-specific SSR translations
-// Also import MessageSchema for typing, and enMessages for a fallback
-import { createLocaleI18n, type MessageSchema } from "@/i18n";
-import enMessages from "@/i18n/ui/en.json";
-import MainNavigation from "@/components/vue/layouts/MainNavigation.vue";
-
-import { loadLocalizedPage } from "@/utils/content";
-// Import i18n config for defaults and types
-import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
+// src/pages/[lang]/about.astro - Simplified approach
+import { getCollection } from "astro:content";
+import MarkdownLayout from "@/layouts/MarkdownLayout.astro";
 import { getLanguagePaths, type SupportedLanguage } from "@/i18n";
+import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
 
 export async function getStaticPaths() {
   return getLanguagePaths();
 }
 
-interface Props {
-  // Allow props to be potentially undefined to handle HMR issues gracefully
-  lang?: SupportedLanguage;
-  initialMessages?: Record<string, MessageSchema>;
-  langMeta?: {
-    name: string;
-    locale: string;
-    dir: string;
-  };
-  // now: number; // if needed from getStaticPaths
+const { lang = DEFAULT_LANGUAGE } = Astro.params as { lang: SupportedLanguage };
+const langMeta = LANGUAGE_META[lang];
+
+// Get the page by language/slug - more idiomatic Astro approach
+const allPages = await getCollection("pages");
+const page = allPages.find(
+  (page) =>
+    page.id === `${lang}/about.md` ||
+    (lang !== DEFAULT_LANGUAGE && page.id === `${DEFAULT_LANGUAGE}/about.md`),
+);
+
+if (!page) {
+  throw new Error(`Page not found: ${lang}/about.md`);
 }
 
-// Determine effective language:
-// 1. From Astro.props.lang (ideal)
-// 2. From Astro.params.lang (direct from URL segment, good fallback)
-// 3. From DEFAULT_LANGUAGE (last resort)
-const effectiveLang = (Astro.props.lang ||
-  Astro.params.lang ||
-  DEFAULT_LANGUAGE) as SupportedLanguage;
-
-// Determine effective langMeta, falling back to default language's meta if necessary
-const effectiveLangMeta = Astro.props.langMeta || LANGUAGE_META[effectiveLang];
-
-// Determine effective initialMessages, falling back to just English messages if necessary
-// This ensures initialMessages is always an object.
-const effectiveInitialMessages = Astro.props.initialMessages || {
-  [DEFAULT_LANGUAGE]: enMessages as MessageSchema,
-};
-
-// Initialize i18n for page SSR content (e.g., title, description)
-// This uses the effectiveLang and effectiveInitialMessages to be robust.
-const i18n = await createLocaleI18n(effectiveLang, effectiveInitialMessages);
-const { t } = i18n.global; // if you need t directly for this page's SSR content
-
-// Load page content using the robust effectiveLang
-const { Content, headings, data } = await loadLocalizedPage(
-  "pages",
-  effectiveLang,
-  "about",
-);
+// Render the content
+const { Content, headings } = await page.render();
 ---
 
-<Layout
-  title={`${data.title} | Onetime Secret`}
-  description={data.description ||
+<MarkdownLayout
+  title={`${page.data.title} | Onetime Secret`}
+  description={page.data.description ||
     "Learn about Onetime Secret, our mission to provide secure one-time sharing, and the team behind our service."}
-  htmlLang={effectiveLang}
-  langDir={effectiveLangMeta.dir}
-  initialMessages={effectiveInitialMessages}>
-  <div class="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-900">
-    <header class="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/90">
-      <MainNavigation
-        client:load
-        locale={effectiveLang}
-        initialMessages={effectiveInitialMessages}
-      />
-    </header>
-    <main class="flex-grow">
-      <div class="bg-white dark:bg-slate-900 py-12 sm:py-16">
-        <div class="mx-auto max-w-7xl px-6 lg:px-8">
-          <div class="mx-auto max-w-2xl lg:text-center">
-            <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
-              {data.title}
-            </h1>
-            {/* data.description is available if a subtitle is desired, but not used for now */}
-            {/* <p class="mt-6 text-lg leading-8 text-slate-600 dark:text-slate-300">
-              {data.description}
-            </p> */}
-          </div>
-        </div>
-      </div>
-
-      <div class="relative px-4 sm:px-6 lg:px-8 py-12 sm:py-16 bg-slate-50 dark:bg-slate-950">
-        <div class="mx-auto max-w-3xl prose prose-slate dark:prose-invert lg:prose-lg">
-          <Content />
-        </div>
-      </div>
-    </main>
-  </div>
-</Layout>
+  htmlLang={lang}
+  langDir={langMeta.dir}
+  headings={headings}>
+  <Content />
+</MarkdownLayout>
