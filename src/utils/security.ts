@@ -29,7 +29,9 @@ export function generateCspConnectSrc(
     directives.push("wss://localhost:8969");
     directives.push("wss://localhost:4321");
     directives.push("ws://localhost:4321");
+    directives.push("http://localhost:4321");
     directives.push("wss://web.onetime.dev");
+    directives.push("wss://web.onetime.dev/");
   }
 
   // Filter out any null or undefined values (e.g., if apiUrl is not set)

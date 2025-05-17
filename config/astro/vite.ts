@@ -59,13 +59,15 @@ export function createConfig(
       },
     },
     server: {
-      hmr: {
-        // Configure HMR to work through your proxy
-        clientPort: 4321, // Use standard HTTPS port
-        path: "/?token=pMCN-nyXJX4G", // Match the token path pattern
-        protocol: "ws", // Use secure WebSocket
-        host: "localhost", // Use your proxy domain
-      },
+      // port: 4321,
+      // strictPort: true,
+      // hmr: {
+      //   // Configure HMR to work through your proxy
+      //   clientPort: 4321, // Use standard HTTPS port
+      //   // path: "/", // Match the token path pattern
+      //   // protocol: "ws", // Use secure WebSocket
+      //   host: "localhost", // Use your proxy domain
+      // },
       /**
        * Configure server's allowed hosts using IIFE
        *
