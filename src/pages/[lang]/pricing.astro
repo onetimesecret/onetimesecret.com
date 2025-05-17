@@ -1,5 +1,9 @@
 ---
-import Layout from "@/layouts/Layout.astro";
+/**
+ * src/pages/[lang]/pricing.astro
+ * Pricing page implementation using MainLayout for consistent navigation
+ */
+import MainLayout from "@/layouts/MainLayout.astro";
 import Pricing from "@/components/vue/pricing/Pricing.vue";
 import { getLanguagePaths } from "@/i18n";
 import { createLocaleI18n, type MessageSchema } from "@/i18n";
@@ -38,15 +42,18 @@ const pageTitle = t("web.pricing.title");
 const pageDescription = t("web.pricing.description");
 ---
 
-<Layout
+<MainLayout
   title={pageTitle}
   description={pageDescription}
   htmlLang={currentLang}
   langDir={currentLangMeta.dir}
-  initialMessages={pageScopedInitialMessages}>
+  initialMessages={pageScopedInitialMessages}
+  showHero={true}
+  heroTitle={pageTitle}
+  heroDescription={pageDescription}>
   <Pricing
     client:load
     locale={currentLang}
     initialMessages={pageScopedInitialMessages}
   />
-</Layout>
+</MainLayout>
