@@ -5,7 +5,7 @@ This document outlines design issues identified on the Onetime Secret developmen
 ## High Priority
 
 
-### 1. Improve Internationalization Implementation
+### 1. ~~Improve Internationalization Implementation~~ DONE
 - **Issue**: Language switching appears incomplete
 - **Task**: Finish i18n implementation using Vue-i18n
 - **Solution**: Audit and complete translation keys, fix language switcher
@@ -34,47 +34,51 @@ This document outlines design issues identified on the Onetime Secret developmen
 - **Testing**: User testing for comprehension
 
 
+### 5. Fix and Improve Theme Toggle.
+- **Issue**: Theme toggle not working as expected
+- **Task**: Debug and fix theme toggle functionality
+- **Solution**: Ensure theme toggle updates local storage and applies theme correctly
+- **Files**: /Users/d/Projects/opensource/onetime/onetimesecret.com/src/components/ColorModeToggle.astro
+- **Testing**: Verify theme toggle works across sessions
 
 ## Medium Priority
 
-### 5. Improve Form Feedback
+### 6. Improve Form Feedback
 - **Issue**: No visual feedback during form submission
 - **Task**: Add loading states and clear success/error messages
 - **Solution**: Implement form state management with loading, success, and error states
 - **Files**: Update form components, create notification component
 - **Testing**: Verify all form state transitions work correctly
 
-### 6. Mobile Responsiveness
+### 7. Mobile Responsiveness
 - **Issue**: Interface designed primarily for desktop
 - **Task**: Implement responsive design across all components
 - **Solution**: Use Tailwind breakpoints consistently
 - **Files**: Audit and update all component templates
 - **Testing**: Test across various screen sizes with browser devtools
 
-### 7. Accessibility Improvements
+### 8. Accessibility Improvements
 - **Issue**: Contrast issues, some elements lack proper ARIA attributes
 - **Task**: Ensure all text meets WCAG AA standards (4.5:1 ratio)
 - **Solution**: Audit contrast ratios, implement proper ARIA roles
 - **Files**: Global stylesheet, component templates
 - **Testing**: Run accessibility tests with axe-core or similar
 
-## Lower Priority
-
-### 8. Regional Domain Banner Enhancement
+### 9. Regional Domain Banner Enhancement
 - **Issue**: Banner lacks clear action path
 - **Task**: Add more context or clearer call-to-action
 - **Solution**: Redesign banner to include better explanation and actionable button
 - **Files**: Banner component
 - **Testing**: User testing for clarity
 
-### 9. Standardize Button Styling
+### 10. Standardize Button Styling
 - **Issue**: Inconsistent button styling
 - **Task**: Create button style guide and implementation
 - **Solution**: Document button variants and implement consistent styling
 - **Files**: Create `/docs/ButtonStyleGuide.md` and update button components
 - **Testing**: Visual verification of button consistency
 
-### 10. Button Targeting Problems
+### 11. Button Targeting Problems
 - **Issue**: Inconsistent selector targeting making buttons unreliable
 - **Task**: Standardize button component implementation
 - **Solution**: Create a shared button component with reliable class structure

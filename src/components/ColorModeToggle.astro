@@ -1,7 +1,7 @@
 ---
-import { getLocaleFromUrl } from "../i18n/utils";
+import { getLocaleFromUrl } from "@/i18n/utils";
 import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
-import enTranslations from "../i18n/ui/en.json";
+import enTranslations from "@/i18n/ui/en.json";
 
 // Get the current locale from the URL or use default
 const currentLocale = getLocaleFromUrl(Astro.url) || DEFAULT_LANGUAGE;
@@ -24,8 +24,7 @@ const translations = enTranslations;
     <!-- Sun icon (shown in dark mode) -->
     <svg
       id="sun-icon"
-      class="h-5 w-5"
-      style="display: none;"
+      class="h-5 w-5 hidden"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
@@ -41,8 +40,7 @@ const translations = enTranslations;
     <!-- Moon icon (shown in light mode) -->
     <svg
       id="moon-icon"
-      class="h-5 w-5"
-      style="display: none;"
+      class="h-5 w-5 hidden"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
@@ -112,24 +110,12 @@ const translations = enTranslations;
     }
   }
 
-  // function toggleColorMode() {
-  //   const currentTheme = localStorage.getItem("colorMode") || "light";
-  //   const newTheme = currentTheme === "dark" ? "light" : "dark";
-
-  //   localStorage.setItem("colorMode", newTheme);
-  //   applyTheme(newTheme);
-  // }
+  // Previous version removed
   function toggleColorMode() {
     const currentTheme = localStorage.getItem("colorMode") || "light";
     const newTheme = currentTheme === "dark" ? "light" : "dark";
     localStorage.setItem("colorMode", newTheme);
     applyTheme(newTheme);
-
-    // Force style recalculation
-    document.body.style.display = "none";
-    // This triggers a reflow
-    void document.body.offsetHeight;
-    document.body.style.display = "";
   }
   function initColorMode() {
     const savedTheme = localStorage.getItem("colorMode");
@@ -161,8 +147,8 @@ const translations = enTranslations;
     updateIconVisibility(savedTheme === "dark");
   }
 
-  // Initialize on page load
-  document.addEventListener("DOMContentLoaded", () => {
+  // Initialize the theme mode system
+  function initialize() {
     initColorMode();
 
     // Add click event listener to toggle button
@@ -170,22 +156,19 @@ const translations = enTranslations;
     if (toggleButton) {
       toggleButton.addEventListener("click", toggleColorMode);
     }
-  });
+  }
 
   // Run initialization immediately to avoid flicker
   if (typeof window !== "undefined") {
-    // Set a small timeout to ensure the DOM is fully loaded
-    // This helps prevent issues with client-side hydration
-    document.addEventListener("DOMContentLoaded", () => {
-      initColorMode();
-    });
+    // Set up event listeners for different document states
+    document.addEventListener("DOMContentLoaded", initialize);
 
-    // Also try to initialize immediately in case the DOM is already loaded
+    // Try to initialize immediately if the DOM is already loaded
     if (
       document.readyState === "complete" ||
       document.readyState === "interactive"
     ) {
-      initColorMode();
+      initialize();
     }
   }
 </script>
