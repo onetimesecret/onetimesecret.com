@@ -17,17 +17,17 @@ import {
   defaultSeoValues,
   getDefaultWebApplicationLd,
 } from "@/utils/seo";
-import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n"; // For defaults
+import {
+  DEFAULT_LANGUAGE,
+  LANGUAGE_META,
+  SUPPORTED_LANGUAGES,
+} from "@config/astro/i18n";
 import type { MessageSchema } from "@/i18n"; // For type
 import enMessages from "@/i18n/ui/en.json"; // For default initialMessages
 
 // Styles
 import "@/styles/global.css";
 import "@/styles/tailwind.css";
-
-// This lang is from Astro.params, specific to Layout's own context if needed.
-// It's different from the htmlLang prop.
-const layoutFileLangParam = (Astro.params.lang || DEFAULT_LANGUAGE) as string;
 
 // Routing
 const currentPath = Astro.url.pathname;
@@ -59,11 +59,10 @@ export interface Props {
 // Destructure props with defaults to ensure they are always defined
 const {
   htmlLang = DEFAULT_LANGUAGE,
-  langDir = LANGUAGE_META[DEFAULT_LANGUAGE].dir,
   initialMessages = { [DEFAULT_LANGUAGE]: enMessages as MessageSchema },
   // SEO related props
-  title: propsTitle, // Renamed to avoid conflict with pageTitle variable
-  description: propsDescription, // Renamed
+  title: propsTitle,
+  description: propsDescription,
   ogImage: propsOgImage,
   ogType: propsOgType,
   keywords: propsKeywords,
@@ -74,10 +73,19 @@ const {
   structuredData: propsStructuredData,
 } = Astro.props;
 
-const effectiveLocale = getLocaleFromUrl(Astro.url) ?? htmlLang;
+// 1. DETERMINE EFFECTIVE LOCALE CONSISTENTLY
+// The URL locale takes precedence, fall back to htmlLang from props, then default
+const effectiveLocale =
+  getLocaleFromUrl(Astro.url) || htmlLang || DEFAULT_LANGUAGE;
+
+// 2. DERIVE langDir BASED ON EFFECTIVE LOCALE
+const langDir =
+  LANGUAGE_META[effectiveLocale as keyof typeof LANGUAGE_META]?.dir ||
+  LANGUAGE_META[DEFAULT_LANGUAGE].dir;
+
 const siteOrigin = Astro.url.origin.toString();
 
-// For debugging during build - remove in production if not needed
+// For debugging during build - keep this during development
 console.log(
   `Layout: URL="${Astro.url.pathname}", htmlLang="${htmlLang}", effectiveLocale="${effectiveLocale}"`,
 );
@@ -106,12 +114,21 @@ const pageNoindex =
       currentPath.startsWith("/private/") ||
       currentPath.startsWith("/receipt/");
 
-const pageAlternateLanguages = propsAlternateLanguages || [
-  {
-    code: "en",
-    url: `${siteOrigin}/en${Astro.url.pathname.substring(Astro.url.pathname.startsWith("/en") || Astro.url.pathname.startsWith("/fr") || Astro.url.pathname.startsWith("/de") ? 3 : 0)}`,
-  },
-];
+// 3. GENERATE ALTERNATE LANGUAGE LINKS CONSISTENTLY
+const languagePrefixes = ["/en", "/fr", "/de"];
+const hasLangPrefix = languagePrefixes.some((prefix) =>
+  currentPath.startsWith(prefix),
+);
+const basePathForAlternates = hasLangPrefix
+  ? currentPath.substring(3)
+  : currentPath;
+
+const pageAlternateLanguages =
+  propsAlternateLanguages ||
+  SUPPORTED_LANGUAGES.map((lang) => ({
+    code: lang,
+    url: `${siteOrigin}/${lang}${basePathForAlternates}`,
+  }));
 
 const pageStructuredData =
   propsStructuredData ||
@@ -123,9 +140,6 @@ const pageBreadcrumbsLd = generateBreadcrumbsLd(currentPath, siteOrigin);
 const apiUrl = import.meta.env.PUBLIC_API_BASE_URL;
 const isDebugMode = import.meta.env.DEV || import.meta.env.DEBUG;
 const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
-
-// Use the robust htmlLang for children components that need locale context
-const currentLocaleForChildren = htmlLang;
 ---
 
 <!doctype html>
@@ -169,14 +183,7 @@ const currentLocaleForChildren = htmlLang;
     <link
       rel="alternate"
       hreflang="x-default"
-      href={siteOrigin +
-        Astro.url.pathname.substring(
-          Astro.url.pathname.startsWith("/en") ||
-            Astro.url.pathname.startsWith("/fr") ||
-            Astro.url.pathname.startsWith("/de")
-            ? 3
-            : 0,
-        )}
+      href={`${siteOrigin}${basePathForAlternates}`}
     />
     <OptimizedFonts />
     <meta
