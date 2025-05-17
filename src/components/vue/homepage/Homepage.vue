@@ -2,6 +2,7 @@
 
 <script setup lang="ts">
 import ClientOnlyBanner from "@/components/vue/homepage/ClientOnlyBanner.vue";
+import FeatureHighlights from "@/components/vue/homepage/FeatureHighlights.vue";
 import HeroTitle from "@/components/vue/homepage/HeroTitle.vue";
 import HowItWorks from "@/components/vue/homepage/HowItWorks.vue";
 import ClientOnlyRegionSelector from "@/components/vue/homepage/regions/ClientOnlyRegionSelector.vue";
@@ -214,10 +215,13 @@ onMounted(async () => {
         </div>
       </section>
 
-      <!-- Section 3: How It Works -->
+      <!-- Section 3: Feature Highlights -->
+      <FeatureHighlights />
+
+      <!-- Section 4: How It Works -->
       <HowItWorks />
 
-      <!-- Section 4: Use Cases -->
+      <!-- Section 5: Use Cases -->
       <UseCaseSelector />
 
       <!-- Section 5: Screenshot ViewHole -->
