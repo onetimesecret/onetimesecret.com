@@ -3,37 +3,24 @@ import OIcon from "@/components/vue/icons/OIcon.vue";
 
 import { useI18n } from "vue-i18n";
 import { setLanguage, setLanguageWithMessages, type MessageSchema } from "@/i18n";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted } from "vue";
 
 const props = defineProps<{
   locale: string;
   initialMessages?: Record<string, MessageSchema>;
 }>();
 
-// Create reactive refs for i18n readiness
-const i18nReady = ref(false);
 const { t } = useI18n();
 
-// Immediately initialize i18n with provided messages if available
+// Initialize i18n with provided messages
 if (props.initialMessages && props.locale) {
-  // Set all messages from initialMessages at once
   setLanguageWithMessages(props.locale, props.initialMessages);
-  i18nReady.value = true;
+} else {
+  // Fallback initialization on mount if no messages provided
+  onMounted(async () => {
+    await setLanguage(props.locale);
+  });
 }
-
-// Since language changes happen through navigation to different URLs,
-// we only need to initialize i18n once at component mount
-
-onMounted(async () => {
-  if (!i18nReady.value) {
-    if (props.initialMessages && props.initialMessages[props.locale]) {
-      setLanguageWithMessages(props.locale, props.initialMessages);
-    } else {
-      await setLanguage(props.locale);
-    }
-    i18nReady.value = true;
-  }
-});
 
 const navigation = {
   social: [
@@ -52,7 +39,7 @@ const currentYear = computed(() => new Date().getFullYear());
 </script>
 
 <template>
-  <div v-if="i18nReady">
+  <div>
     <div class="mx-auto max-w-7xl px-6 py-8 lg:px-8">
       <div
         class="flex flex-col items-center justify-between gap-y-4 sm:flex-row">
@@ -86,11 +73,6 @@ const currentYear = computed(() => new Date().getFullYear());
           {{ t("all-rights-reserved") }}.
         </p>
       </div>
-    </div>
-  </div>
-  <div v-else class="py-8">
-    <div class="mx-auto max-w-7xl px-6 flex justify-center items-center">
-      <div class="animate-pulse h-3 w-16 bg-gray-200 rounded"></div>
     </div>
   </div>
 </template>
