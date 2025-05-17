@@ -1,6 +1,6 @@
 # CLAUDE.md - Agent Guidelines for OnetimeSecret.com
 
-ASTRO 5.7 WEBSITE
+ASTRO 5.7 SSG WEBSITE - built time server-side-generated static website.
 
 
 ## i18n

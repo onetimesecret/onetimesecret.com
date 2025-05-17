@@ -23,7 +23,6 @@ import "@/styles/global.css";
 import "@/styles/tailwind.css";
 
 // i18n setup
-const locale = getLocaleFromUrl(Astro.url);
 const { lang = "en" } = Astro.params;
 
 // Routing
@@ -36,6 +35,8 @@ const currentPath = Astro.url.pathname;
 export interface Props {
   title?: string;
   description?: string;
+  htmlLang?: string;
+  langDir?: string;
   canonicalUrl?: string;
   ogImage?: string;
   ogType?: string;
@@ -97,7 +98,7 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
 
 <!doctype html>
 <html
-  lang={locale}
+  lang={Astro.props.htmlLang}
   class="h-full">
   <head>
     <meta charset="utf-8" />

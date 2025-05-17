@@ -3,7 +3,16 @@ import Layout from "@/layouts/Layout.astro";
 import Homepage from "@/components/vue/homepage/Homepage.vue";
 import "@/styles/global.css";
 import "@/styles/tailwind.css";
-import "@/i18n";
+import { i18n as globalI18nInstance, setLanguage } from "@/i18n"; // Import global instance and setLanguage
+import { createI18n } from "vue-i18n";
+import enMessages from "@/i18n/ui/en.json"; // Import English messages directly
+import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
+
+// Define MessageSchema based on the structure of en.json
+type MessageSchema = typeof enMessages;
+
+const currentLang = DEFAULT_LANGUAGE;
+const currentLangMeta = LANGUAGE_META[currentLang];
 
 /**
  * Component Script:
@@ -43,17 +52,42 @@ import "@/i18n";
  * will get an error."
  */
 
-const { lang } = Astro.props;
+// Initialize a page-specific i18n instance for SSR content (for English)
+const pageI18n = createI18n<[MessageSchema], string>({
+  legacy: false,
+  locale: currentLang,
+  fallbackLocale: currentLang, // Fallback to English itself
+  messages: {
+    [currentLang]: enMessages,
+  },
+  silentTranslationWarn: true,
+  silentFallbackWarn: true,
+});
+const t = pageI18n.global.t;
 
-const pageTitle = "Share Secrets Securely | Onetime Secret";
-const pageDescription =
-  "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever.";
+// Translated title and description for the Layout using English
+// IMPORTANT: Ensure 'homepage.title' and 'homepage.description' keys exist in en.json
+const pageTitle = t(
+  "homepage.title",
+  "Share Secrets Securely | Onetime Secret",
+);
+const pageDescription = t(
+  "homepage.description",
+  "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever.",
+);
+
+const now = Date.now();
+
+// The import "@/i18n"; was already here.
+// Homepage.vue will call setLanguage('en') on the client.
 ---
 
 <!-- The Component Template -->
 <Layout
   title={pageTitle}
-  description={pageDescription}>
+  description={pageDescription}
+  htmlLang={currentLang}
+  langDir={currentLangMeta.dir}>
   <!-- Render the Homepage component -->
   <!-- client:load ensures the Vue component hydrates and runs client-side -->
   <Homepage

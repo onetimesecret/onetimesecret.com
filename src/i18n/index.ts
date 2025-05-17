@@ -1,8 +1,12 @@
 // src/i18n/index.ts
 
-import enMessages from "@/i18n/ui/en.json"; // Default English messages
+import enMessagesImport from "@/i18n/ui/en.json"; // Default English messages
+import {
+  LANGUAGE_META,
+  SUPPORTED_LANGUAGES,
+  SupportedLanguage,
+} from "@config/astro/i18n";
 import { createI18n } from "vue-i18n";
-
 // import i18next from "i18next";
 // import Backend from "i18next-fs-backend";
 
@@ -24,7 +28,7 @@ import { createI18n } from "vue-i18n";
 // i18next.use(Backend).init(i18nextOptions);
 
 // Define a type for the message schema based on the English messages
-type MessageSchema = typeof enMessages;
+type MessageSchema = typeof enMessagesImport;
 
 // Create the global i18n instance
 // It's initialized with English, but can be updated dynamically
@@ -33,7 +37,7 @@ export const i18n = createI18n<[MessageSchema], string>({
   locale: "en", // Default locale
   fallbackLocale: "en", // Fallback to English if a translation is missing
   messages: {
-    en: enMessages,
+    en: enMessagesImport,
   },
   silentTranslationWarn: true, // Suppress warnings for missing translations
   silentFallbackWarn: true, // Suppress warnings for fallback to fallbackLocale
@@ -77,11 +81,61 @@ export async function setLanguage(lang: string) {
   }
 }
 
+/**
+ * Returns static paths for language-specific routes, including pre-loaded i18n messages.
+ * For use in Astro's getStaticPaths for build-time access to translations.
+ *
+ * @see https://docs.astro.build/en/reference/routing-reference/#getstaticpaths
+ */
+export async function getLanguagePaths() {
+  // Ensure enMessages is correctly typed for use.
+  const enMessages: MessageSchema = enMessagesImport as MessageSchema;
+
+  const paths = await Promise.all(
+    SUPPORTED_LANGUAGES.map(async (lang: SupportedLanguage) => {
+      // Initialize messages object with English as the base/fallback.
+      const initialMessages: Record<string, MessageSchema> = {
+        en: enMessages,
+      };
+
+      if (lang !== "en") {
+        try {
+          // Dynamically import the locale messages for the current language.
+          // The path is relative from `config/astro/i18n.ts` to `src/i18n/ui/[lang].json`
+          const langMessagesModule = await import(
+            `../src/i18n/ui/${lang}.json`
+          );
+          // Assign the imported messages to the current language key.
+          // Handles both default export and direct module export.
+          initialMessages[lang] = (langMessagesModule.default ||
+            langMessagesModule) as MessageSchema;
+        } catch (error) {
+          console.warn(
+            `Failed to load messages for language "${lang}" in getLanguagePaths. English fallback will be used.`,
+            error,
+          );
+          // If a specific language file fails to load, the page will rely on the 'en' fallback
+          // already present in initialMessages.
+        }
+      }
+
+      return {
+        params: { lang },
+        props: {
+          langMeta: LANGUAGE_META[lang],
+          now: Date.now(), // Preserving this from your original structure
+          initialMessages, // Pass the loaded i18n messages as a prop
+        },
+      };
+    }),
+  );
+  return paths;
+}
 // This function is kept for compatibility or specific use cases if needed,
 // but setLanguage is the primary way to change locales now.
 export const createLocaleI18n = async (locale: string = "en") => {
   let messages: Record<string, MessageSchema> = {
-    en: enMessages,
+    en: enMessagesImport,
   };
 
   if (locale !== "en") {

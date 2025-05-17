@@ -3,7 +3,14 @@ import Layout from "@/layouts/Layout.astro";
 import Homepage from "@/components/vue/homepage/Homepage.vue";
 import "@/styles/global.css";
 import "@/styles/tailwind.css";
-import "@/i18n";
+import { i18n as globalI18nInstance, setLanguage } from "@/i18n"; // Import global instance and setLanguage
+import { type SupportedLanguage } from "@config/astro/i18n";
+import { getLanguagePaths } from "@/i18n";
+import { createI18n } from "vue-i18n";
+import type enMessages from "@/i18n/ui/en.json"; // For MessageSchema type
+
+// Define MessageSchema based on the structure of en.json
+type MessageSchema = typeof enMessages;
 
 /**
  * Component Script:
@@ -42,16 +49,15 @@ import "@/i18n";
  * "If you try to hydrate an Astro component with a client: modifier, you
  * will get an error."
  */
-import { getLanguagePaths } from "@config/astro/i18n";
 
 export async function getStaticPaths() {
   return getLanguagePaths();
 }
 
 interface Props {
-  lang: string;
-  plop: Date;
-  i18n: any;
+  lang: SupportedLanguage;
+  now: number; // Changed from plop: Date to now: number
+  initialMessages: Record<string, MessageSchema>;
   langMeta: {
     name: string;
     locale: string;
@@ -59,21 +65,47 @@ interface Props {
   };
 }
 
-const { lang, plop, langMeta } = Astro.props;
-const pageTitle = "Share Secrets Securely | Onetime Secret";
-const pageDescription =
-  "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever.";
+const { lang, now, initialMessages, langMeta } = Astro.props;
+
+// Initialize a page-specific i18n instance for SSR content
+const pageI18n = createI18n<[MessageSchema], string>({
+  legacy: false,
+  locale: lang,
+  fallbackLocale: "en",
+  messages: initialMessages,
+  silentTranslationWarn: true,
+  silentFallbackWarn: true,
+});
+const t = pageI18n.global.t;
+
+// Translated title and description for the Layout
+// IMPORTANT: You'll need to add 'homepage.title' and 'homepage.description' keys
+// to your i18n JSON files (e.g., src/i18n/ui/en.json).
+const pageTitle = t(
+  "homepage.title",
+  "Share Secrets Securely | Onetime Secret",
+);
+const pageDescription = t(
+  "homepage.description",
+  "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever.",
+);
+
+// The import "@/i18n"; was already here, which ensures the global i18n module is initialized.
+// For client-side components like Homepage.vue, they will call setLanguage(lang) themselves
+// to configure the global i18n instance on the client.
 ---
 
 <!-- The Component Template -->
 <Layout
   title={pageTitle}
-  description={pageDescription}>
+  description={pageDescription}
+  htmlLang={lang}
+  langDir={langMeta.dir}>
   <!-- Render the Homepage component -->
   <!-- client:load ensures the Vue component hydrates and runs client-side -->
   <Homepage
     client:load
-    plop={plop}
+    now={now}
     locale={lang}
   />
   <!-- <slot />  -->
