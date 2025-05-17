@@ -28,9 +28,7 @@ await createLocaleI18n(lang, initialMessages);
 // Get the page by language/slug using Astro content collection API
 const allPages = await getCollection("pages");
 const page = allPages.find(
-  (page) =>
-    page.id === `${lang}/terms.md` ||
-    (lang !== DEFAULT_LANGUAGE && page.id === `${DEFAULT_LANGUAGE}/terms.md`),
+  (page) => page.id === `terms.md` || page.id === `/terms.md`,
 );
 
 if (!page) {
@@ -51,11 +49,13 @@ const isFallback = !page.id.startsWith(`${lang}/`);
   initialMessages={initialMessages}
 />
 
-{isFallback && (
-  <div class="fixed bottom-4 right-4 z-50 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-600 shadow-md dark:bg-amber-900/30 dark:text-amber-400">
-    <p>
-      This content is not available in your preferred language ({lang}).
-      Showing the {DEFAULT_LANGUAGE} version instead.
-    </p>
-  </div>
-)}
+{
+  isFallback && (
+    <div class="fixed right-4 bottom-4 z-50 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-600 shadow-md dark:bg-amber-900/30 dark:text-amber-400">
+      <p>
+        This content is not available in your preferred language ({lang}).
+        Showing the {DEFAULT_LANGUAGE} version instead.
+      </p>
+    </div>
+  )
+}
