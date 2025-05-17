@@ -130,6 +130,8 @@
       }
     },
     "homepage": {
+      "title": "Share Secrets Securely | Onetime Secret",
+      "description": "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever",
       "howItWorks": {
         "title": "How It Works",
         "subtitle": "Share your information once, then it's permanently deleted",

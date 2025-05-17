@@ -83,16 +83,10 @@ const pageI18n = await createLocaleI18n(
 const t = pageI18n.global.t;
 
 // Translated title and description for the Layout
-// IMPORTANT: You'll need to add 'homepage.title' and 'homepage.description' keys
+// IMPORTANT: You'll need to add 'web.homepage.title' and 'web.homepage.description' keys
 // to your i18n JSON files (e.g., src/i18n/ui/en.json).
-const pageTitle = t(
-  "homepage.title",
-  "Share Secrets Securely | Onetime Secret",
-);
-const pageDescription = t(
-  "homepage.description",
-  "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever.",
-);
+const pageTitle = t("web.homepage.title");
+const pageDescription = t("web.homepage.description");
 
 // The import "@/i18n"; was already here, which ensures the global i18n module is initialized.
 // For client-side components like Homepage.vue, they will call setLanguage(lang) themselves

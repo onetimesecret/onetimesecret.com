@@ -130,6 +130,8 @@
       }
     },
     "homepage": {
+      "title": "Professionnel de l'informatique",
+      "description": "Partagez en toute sécurité les informations d'identification et d'accès avec votre équipe.",
       "howItWorks": {
         "title": "Comment ça marche",
         "subtitle": "Partagez vos informations une seule fois, puis elles sont définitivement supprimées.",

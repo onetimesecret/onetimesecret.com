@@ -130,6 +130,8 @@
       }
     },
     "homepage": {
+      "title": "IT-Fachkraft",
+      "description": "Teilen Sie Anmeldedaten und Zugriffsinformationen sicher mit Ihrem Team",
       "howItWorks": {
         "title": "Wie es funktioniert",
         "subtitle": "Teilen Sie Ihre Informationen einmal, dann werden sie dauerhaft gelöscht",
