@@ -3,7 +3,6 @@
 import markdoc from "@astrojs/markdoc";
 import vue from "@astrojs/vue";
 import sentry from "@sentry/astro";
-import spotlightjs from "@spotlightjs/astro";
 
 export function createConfig() {
   return [
@@ -46,13 +45,15 @@ export function createConfig() {
       // Spotlight configuration can also be potentially moved here if preferred,
       // but keeping runtime config in sentry.config.ts is fine.
     }),
-    spotlightjs({
-      debug: false,
-      // sidecarUrl: "https://catch.onetimesecret.com/",
-      sidecarUrl: "http://localhost:8969", // Force using only the local sidecar
-      openOnInit: false,
-      openOnErrors: false,
-    }),
+    // https://spotlightjs.com/reference/configuration/
+    // spotlightjs({
+    //   debug: false,
+    //   // sidecarUrl: "https://catch.onetimesecret.com/",
+    //   sidecarUrl: "http://localhost:8969", // Force using only the local sidecar
+    //   openOnInit: false,
+    //   injectImmediately: true,
+    //   fullPage: true,
+    // }),
     vue({
       devtools: {
         launchEditor: "zed",

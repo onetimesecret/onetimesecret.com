@@ -16,14 +16,6 @@ Sentry.init({
   // Runtime DSN configuration (can also be handled by Sentry.init)
   dsn: process.env.CLIENT_SENTRY_DSN,
 
-  // Sentry organization slug from environment variable
-  org: process.env.CLIENT_SENTRY_ORG,
-
-  // Sentry project slug from environment variable, fallback to 'homepage'
-  project: process.env.CLIENT_SENTRY_PROJECT || "homepage",
-
-  authToken: process.env.CLIENT_SENTRY_AUTH_TOKEN,
-
   // Enable Spotlight in development environment
   spotlight: DEBUG,
 
@@ -43,6 +35,5 @@ Sentry.init({
   integrations: [],
 });
 // In the frontend it's important that you init Spotlight after Sentry
-import * as Spotlight from "@spotlightjs/spotlight";
 
-Spotlight.init();
+// Spotlight.init();
