@@ -58,7 +58,7 @@ export function createConfig() {
        * This entry point imports and runs setupGlobalVars() from src/env.ts
        * before initializing vue-i18n to prevent the reference error.
        */
-      appEntrypoint: "/src/vueSetup",
+      appEntrypoint: "/src/App",
       jsx: true,
     }),
     markdoc(),
