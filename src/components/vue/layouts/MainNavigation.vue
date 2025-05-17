@@ -3,15 +3,39 @@
 <script setup lang="ts">
 import { Dialog, DialogPanel } from "@headlessui/vue";
 import { Bars3Icon, XMarkIcon } from "@heroicons/vue/24/outline";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { localizeUrl } from '@/i18n/utils';
+import { setLanguage, setLanguageWithMessages, type MessageSchema } from "@/i18n";
 
 const props = defineProps<{
   locale: string;
+  initialMessages?: Record<string, MessageSchema>;
 }>();
 
+// Create reactive refs for i18n readiness
+const i18nReady = ref(false);
 const { t } = useI18n();
+
+// Immediately initialize i18n with provided messages if available
+if (props.initialMessages && props.locale) {
+  // Set all messages from initialMessages at once
+  setLanguageWithMessages(props.locale, props.initialMessages);
+  i18nReady.value = true;
+}
+
+// Since language changes happen through navigation to different URLs,
+// we only need to initialize i18n once at component mount
+onMounted(async () => {
+  if (!i18nReady.value) {
+    if (props.initialMessages && props.initialMessages[props.locale]) {
+      setLanguageWithMessages(props.locale, props.initialMessages);
+    } else {
+      await setLanguage(props.locale);
+    }
+    i18nReady.value = true;
+  }
+});
 
 // Define navigation items using i18n keys
 const navigation = [
@@ -27,7 +51,7 @@ const mobileMenuOpen = ref(false);
 </script>
 
 <template>
-  <div class="relative z-50">
+  <div v-if="i18nReady" class="relative z-50">
     <header class="absolute inset-x-0 top-0 z-50">
       <nav
         class="flex items-center justify-between p-6 md:px-8"
@@ -141,6 +165,15 @@ const mobileMenuOpen = ref(false);
           </div>
         </DialogPanel>
       </Dialog>
+    </header>
+  </div>
+  <div v-else class="relative z-50">
+    <header class="absolute inset-x-0 top-0 z-50">
+      <nav class="flex items-center justify-between p-6 md:px-8" aria-label="Global">
+        <div class="flex md:flex-1">
+          <div class="h-12 w-12 rounded-lg bg-gray-200 animate-pulse"></div>
+        </div>
+      </nav>
     </header>
   </div>
 </template>

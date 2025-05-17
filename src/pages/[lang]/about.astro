@@ -4,6 +4,7 @@ import Layout from "@/layouts/Layout.astro";
 // Also import MessageSchema for typing, and enMessages for a fallback
 import { createLocaleI18n, type MessageSchema } from "@/i18n";
 import enMessages from "@/i18n/ui/en.json";
+import MainNavigation from "@/components/vue/layouts/MainNavigation.vue";
 
 import { loadLocalizedPage } from "@/utils/content";
 // Import i18n config for defaults and types
@@ -46,7 +47,7 @@ const effectiveInitialMessages = Astro.props.initialMessages || {
 // Initialize i18n for page SSR content (e.g., title, description)
 // This uses the effectiveLang and effectiveInitialMessages to be robust.
 const i18n = await createLocaleI18n(effectiveLang, effectiveInitialMessages);
-// const { t } = i18n.global; // if you need t directly for this page's SSR content
+const { t } = i18n.global; // if you need t directly for this page's SSR content
 
 // Load page content using the robust effectiveLang
 const { Content, headings, data } = await loadLocalizedPage(
@@ -64,8 +65,18 @@ const { Content, headings, data } = await loadLocalizedPage(
   langDir={effectiveLangMeta.dir}
   initialMessages={effectiveInitialMessages}>
   <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900">
-    <Content />
-    <!-- If About page had client:load Vue components needing i18n: -->
-    <!-- <MyVueComponent client:load locale={effectiveLang} initialMessages={effectiveInitialMessages} /> -->
+    <header class="bg-white">
+      <MainNavigation
+        client:load
+        locale={effectiveLang}
+        initialMessages={effectiveInitialMessages}
+      />
+      <div class="pt-20 pb-4 text-center">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{data.title}</h1>
+      </div>
+    </header>
+    <main class="flex-grow px-4 sm:px-6 lg:px-8 py-8 max-w-5xl mx-auto">
+      <Content />
+    </main>
   </div>
 </Layout>

@@ -1,12 +1,38 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import DataCentreMap from "@/components/vue/DataCentreMap.vue";
+import MainNavigation from "@/components/vue/layouts/MainNavigation.vue";
 
-import { getLanguagePaths } from "@/i18n";
+import { getLanguagePaths, type MessageSchema } from "@/i18n";
+import { DEFAULT_LANGUAGE, LANGUAGE_META, type SupportedLanguage } from "@config/astro/i18n";
+import enMessages from "@/i18n/ui/en.json";
 
 export async function getStaticPaths() {
   return getLanguagePaths();
 }
+
+interface Props {
+  lang?: SupportedLanguage;
+  initialMessages?: Record<string, MessageSchema>;
+  langMeta?: {
+    name: string;
+    locale: string;
+    dir: string;
+  };
+}
+
+// Determine effective language from props or params
+const effectiveLang = (Astro.props.lang ||
+  Astro.params.lang ||
+  DEFAULT_LANGUAGE) as SupportedLanguage;
+
+// Determine effective langMeta, falling back to default language's meta if necessary
+const effectiveLangMeta = Astro.props.langMeta || LANGUAGE_META[effectiveLang];
+
+// Determine effective initialMessages, falling back to just English messages if necessary
+const effectiveInitialMessages = Astro.props.initialMessages || {
+  [DEFAULT_LANGUAGE]: enMessages as MessageSchema,
+};
 
 // Data center locations data
 const dataCenters = [
@@ -65,8 +91,19 @@ const description =
 
 <Layout
   title={title}
-  description={description}>
-  <main>
+  description={description}
+  htmlLang={effectiveLang}
+  langDir={effectiveLangMeta.dir}
+  initialMessages={effectiveInitialMessages}>
+  <div class="flex min-h-screen flex-col bg-white">
+    <header class="bg-white">
+      <MainNavigation
+        client:load
+        locale={effectiveLang}
+        initialMessages={effectiveInitialMessages}
+      />
+    </header>
+    <main>
     <!-- Hero Section -->
     <section class="bg-gradient-to-b from-white to-gray-50 py-20">
       <div class="container mx-auto px-4">
@@ -424,4 +461,5 @@ const description =
       </div>
     </section>
   </main>
+  </div>
 </Layout>
