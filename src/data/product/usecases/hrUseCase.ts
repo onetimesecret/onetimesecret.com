@@ -1,4 +1,4 @@
-import { type UseCase } from "../../types/useCase";
+import { type UseCase } from "@/types/useCase";
 
 export function getHRUseCase(t: (key: string) => string): UseCase {
   // HR manager example secret
