@@ -1,6 +1,6 @@
 ---
 title: About Us
-layout: MarkdownLayout
+
 ---
 
 # About Us

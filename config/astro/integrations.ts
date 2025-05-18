@@ -66,7 +66,7 @@ export function createConfig(): AstroUserConfig["integrations"] {
        * before initializing vue-i18n to prevent the reference error.
        */
       appEntrypoint: "/src/App",
-      jsx: true,
+      // jsx: true,
     }),
     markdoc(),
   ];

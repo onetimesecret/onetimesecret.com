@@ -1,0 +1,27 @@
+---
+/**
+ * src/components/vue/Prose.astro
+ * A wrapper component that applies Tailwind Typography styling to markdown content
+ * Customized for Onetime Secret's brand and styling preferences
+ */
+---
+
+<div
+  class="prose prose-lg mx-auto max-w-3xl dark:prose-invert
+  prose-headings:font-brand prose-headings:text-brand-700 dark:prose-headings:text-brand-300
+  prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl
+  prose-p:text-pretty prose-p:leading-relaxed
+  prose-a:text-brandcomp-600 prose-a:transition-colors hover:prose-a:text-brandcomp-500 dark:prose-a:text-brandcomp-400 dark:hover:prose-a:text-brandcomp-300
+  prose-strong:text-brand-700 dark:prose-strong:text-brand-300
+  prose-blockquote:border-brand-300 prose-blockquote:bg-brand-50 prose-blockquote:p-2 dark:prose-blockquote:border-brand-700 dark:prose-blockquote:bg-brand-950/30
+  prose-li:marker:text-brand-500 dark:prose-li:marker:text-brand-400
+  prose-pre:bg-slate-900 prose-pre:rounded-md prose-pre:shadow-md
+  prose-code:rounded prose-code:bg-slate-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-brand-600 dark:prose-code:bg-slate-800 dark:prose-code:text-brand-400
+  prose-img:rounded-lg
+  prose-hr:border-brand-200 dark:prose-hr:border-brand-800
+  prose-th:p-3 prose-th:text-left prose-th:bg-brand-100 prose-th:text-brand-700 dark:prose-th:bg-brand-900 dark:prose-th:text-brand-300
+  prose-td:p-3 prose-tr:border-b prose-tr:border-slate-200 dark:prose-tr:border-slate-700
+  prose-figcaption:mt-2 prose-figcaption:text-center prose-figcaption:text-sm prose-figcaption:text-slate-600 dark:prose-figcaption:text-slate-400"
+>
+  <slot />
+</div>
