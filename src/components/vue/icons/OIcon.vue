@@ -1,8 +1,9 @@
 <!-- src/components/vue/icons/OIcon.vue -->
 <script setup lang="ts">
 defineProps<{
-  collection?: string;
-  class?: string;
+  collection: string; // Collection identifier (e.g., 'heroicons')
+  name: string;       // Icon name (e.g., 'x-mark-20-solid')
+  class?: string;      // Optional CSS classes
 }>();
 </script>
 
@@ -12,6 +13,7 @@ defineProps<{
     :class="class"
     aria-hidden="true"
   >
-    <use :xlink:href="`#icon-${collection}`" />
+    <!-- Constructs the symbol ID, e.g., #heroicons-x-mark-20-solid -->
+    <use :xlink:href="`#${collection}-${name}`" />
   </svg>
 </template>
