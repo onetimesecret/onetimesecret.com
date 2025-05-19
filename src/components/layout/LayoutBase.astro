@@ -11,10 +11,7 @@ import "@/styles/tailwind.css";
 
 // Utilities
 import { getLocaleFromUrl } from "@/i18n/utils";
-import {
-  DEFAULT_LANGUAGE,
-  LANGUAGE_META,
-} from "@config/astro/i18n";
+import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
 import type { MessageSchema } from "@/i18n"; // For type
 import enMessages from "@/i18n/ui/en.json"; // For default initialMessages
 
@@ -54,10 +51,12 @@ const {
 } = Astro.props;
 
 // Determine effective locale consistently
-const effectiveLocale = getLocaleFromUrl(Astro.url) || htmlLang || DEFAULT_LANGUAGE;
+const effectiveLocale =
+  getLocaleFromUrl(Astro.url) || htmlLang || DEFAULT_LANGUAGE;
 
 // Derive langDir based on effective locale
-const langDir = LANGUAGE_META[effectiveLocale as keyof typeof LANGUAGE_META]?.dir ||
+const langDir =
+  LANGUAGE_META[effectiveLocale as keyof typeof LANGUAGE_META]?.dir ||
   LANGUAGE_META[DEFAULT_LANGUAGE].dir;
 
 // For debugging during build
@@ -68,7 +67,7 @@ if (import.meta.env.DEV) {
 }
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html
   lang={effectiveLocale}
   dir={langDir}
@@ -79,21 +78,23 @@ if (import.meta.env.DEV) {
     {...seoProps}
   />
   <body class="flex h-full flex-col bg-white dark:bg-gray-900">
-    {header && (
-      <LayoutHeader
-        effectiveLocale={effectiveLocale}
-        initialMessages={initialMessages}
-      >
-        <slot name="header" />
-      </LayoutHeader>
-    )}
+    {
+      header && (
+        <LayoutHeader
+          effectiveLocale={effectiveLocale}
+          initialMessages={initialMessages}>
+          <slot name="header" />
+        </LayoutHeader>
+      )
+    }
     <div class="flex-grow">
       <slot />
     </div>
     <LayoutFooter
       effectiveLocale={effectiveLocale}
-      initialMessages={initialMessages}
-    />
+      initialMessages={initialMessages}>
+      <slot name="footer" />
+    </LayoutFooter>
     <SvgSprites />
   </body>
 </html>

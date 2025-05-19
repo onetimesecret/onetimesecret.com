@@ -30,6 +30,13 @@ const props = Astro.props;
 ---
 
 <LayoutBase {...props}>
-  <slot name="header" slot="header" />
+  <slot
+    name="header"
+    slot="header"
+  />
   <slot />
+  <slot
+    name="footer"
+    slot="footer"
+  />
 </LayoutBase>

@@ -14,18 +14,20 @@ export interface Props {
 
 const {
   effectiveLocale = getLocaleFromUrl(Astro.url) || DEFAULT_LANGUAGE,
-  initialMessages = {}
+  initialMessages = {},
 } = Astro.props;
 ---
 
 <footer class="bg-white dark:bg-gray-900">
+  <slot />
   <FooterLinkLists
     client:load
     locale={effectiveLocale}
     initialMessages={initialMessages}
   />
   <div class="border-t border-gray-200 dark:border-gray-800">
-    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+    <div
+      class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
       <LanguageSwitcher
         client:load
         locale={effectiveLocale}
