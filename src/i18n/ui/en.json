@@ -169,14 +169,14 @@
       },
       "featureHighlights": {
         "sectionTitle": "Key Features",
-        "sectionSubtitle": "Discover what makes Onetime Secret the preferred solution for secure information sharing",
+        "sectionSubtitle": "Discover what makes Onetime Secret the preferred solution for secure information sharing.",
         "security": {
-          "title": "End-to-End Encryption",
-          "description": "Your sensitive information is encrypted in transit and at rest, ensuring maximum security."
+          "title": "Enhanced Privacy Options",
+          "description": "Add a passphrase for an extra layer of security. Only those with the passphrase can view the secret."
         },
         "selfDestruction": {
           "title": "Self-Destructing Links",
-          "description": "Once viewed, your secret is permanently deleted from our servers. No copies, no traces."
+          "description": "Once viewed or expired, your secret is permanently deleted from our servers. No copies, no traces."
         },
         "dataResidency": {
           "title": "Regional Data Storage",

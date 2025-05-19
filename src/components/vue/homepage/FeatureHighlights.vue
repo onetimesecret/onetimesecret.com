@@ -7,25 +7,25 @@ const { t } = useI18n();
 const features = [
   {
     id: "secure-encryption",
-    icon: "fa6-solid:lock",
+    icon: "mdi-lock-open",
     title: "web.homepage.featureHighlights.security.title",
     description: "web.homepage.featureHighlights.security.description"
   },
   {
     id: "self-destruction",
-    icon: "fa6-solid:bomb",
+    icon: "fa6-solid-bomb",
     title: "web.homepage.featureHighlights.selfDestruction.title",
     description: "web.homepage.featureHighlights.selfDestruction.description"
   },
   {
     id: "data-residency",
-    icon: "fa6-solid:globe",
+    icon: "fa6-solid-globe",
     title: "web.homepage.featureHighlights.dataResidency.title",
     description: "web.homepage.featureHighlights.dataResidency.description"
   },
   {
     id: "compliance",
-    icon: "fa6-solid:shield-check",
+    icon: "heroicons-shield-check-solid",
     title: "web.homepage.featureHighlights.compliance.title",
     description: "web.homepage.featureHighlights.compliance.description"
   }
@@ -52,8 +52,8 @@ const features = [
         >
           <div class="w-16 h-16 rounded-full bg-brand-500/10 dark:bg-brand-500/20 flex items-center justify-center mb-4">
             <OIcon
-              :collection="feature.icon.split(':')[0]"
-              :name="feature.icon.split(':')[1]"
+              :collection="feature.icon"
+              name=""
               class="h-8 w-8 text-brand-600 dark:text-brand-400"
             />
           </div>
