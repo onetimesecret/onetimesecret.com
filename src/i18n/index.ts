@@ -27,6 +27,8 @@ import { createI18n } from "vue-i18n";
 // // https://www.i18next.com/overview/configuration-options#languages-namespaces-resources
 // i18next.use(Backend).init(i18nextOptions);
 
+export { type SupportedLanguage };
+
 // Define a type for the message schema based on the English messages
 export type MessageSchema = typeof enMessagesImport;
 
