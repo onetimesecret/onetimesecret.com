@@ -1,5 +1,5 @@
 ---
-// Assumed corrected version of onetimesecret.com/src/components/LanguagePicker.astro
+// /src/components/LanguagePicker.astro
 import { LANGUAGE_META } from "../../config/astro/i18n";
 
 export interface Props {
@@ -9,6 +9,8 @@ const { currentLocale } = Astro.props;
 const currentPathname = Astro.url.pathname;
 let contentPath = "/"; // Default to root content path, e.g., "/"
 const langPrefix = `/${currentLocale}`; // e.g., "/en"
+// Generate unique ID for ARIA attributes
+const componentId = `lang-picker-${Math.random().toString(36).substring(2, 9)}`;
 
 if (currentPathname.startsWith(langPrefix)) {
   contentPath = currentPathname.substring(langPrefix.length);
@@ -46,15 +48,31 @@ if (currentPathname.startsWith(langPrefix)) {
           localStorage.setItem("preferredLanguage", targetLang);
         }
       });
+
+      // Add keyboard support for accessibility
+      link.addEventListener("keydown", (e) => {
+        // Activate on Enter or Space
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          link.click();
+        }
+      });
     });
   });
 </script>
 
-<div class="flex flex-col">
-  <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 hidden md:block">
+<div
+  class="flex flex-col"
+  aria-labelledby={`${componentId}-heading`}>
+  <h3
+    id={`${componentId}-heading`}
+    class="mb-2 hidden text-sm font-medium text-gray-700 md:block dark:text-gray-300">
     Languages
   </h3>
-  <ul class="flex flex-wrap gap-2">
+  <ul
+    class="flex flex-wrap gap-2"
+    role="menu"
+    aria-label="Available languages">
     {
       Object.entries(LANGUAGE_META).map(([targetLang, details]) => {
         let newHref = `/${targetLang}`; // Key line 1
@@ -72,19 +90,26 @@ if (currentPathname.startsWith(langPrefix)) {
         const isCurrent = targetLang === currentLocale;
 
         return (
-          <li>
+          <li role="presentation">
             {isCurrent ? (
-              <span class="inline-flex items-center rounded-md bg-gray-100 dark:bg-gray-700 px-2 py-1 text-sm font-medium text-gray-800 dark:text-gray-200">
+              <span
+                class="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-sm font-medium text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+                aria-current="true"
+                role="menuitem">
                 <span class="hidden sm:inline md:inline">{details.name}</span>
                 <span class="sm:hidden">{targetLang.toUpperCase()}</span>
+                <span class="sr-only">(current language)</span>
               </span>
             ) : (
               <a
                 href={newHref}
-                class="inline-flex items-center rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                class="focus:ring-brand-500 dark:focus:ring-brand-400 inline-flex items-center rounded-md px-2 py-1 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200 hover:text-gray-900 focus:ring-2 focus:outline-none dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                 data-lang-link
                 data-lang={targetLang}
-              >
+                role="menuitem"
+                aria-label={`Switch to ${details.name}`}
+                title={`Switch to ${details.name}`}
+                tabindex="0">
                 <span class="hidden sm:inline md:inline">{details.name}</span>
                 <span class="sm:hidden">{targetLang.toUpperCase()}</span>
               </a>
