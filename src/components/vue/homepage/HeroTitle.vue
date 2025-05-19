@@ -12,7 +12,7 @@ const { t } = useI18n();
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center">
         <h1
-          class="text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
+          class="text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white sm:text-5xl md:text-6xl hc:text-yellow-500">
           <span class="block">{{ t("onetime-secret-literal") }}</span>
           <span class="block text-brand-600 dark:text-brand-400 mt-1">
             {{ t("tagline.signed") }}. <em>{{ t("tagline.sealed") }}</em

@@ -2,173 +2,174 @@
 import { getLocaleFromUrl } from "@/i18n/utils";
 import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
 import enTranslations from "@/i18n/ui/en.json";
+import OIcon from "@/components/vue/icons/OIcon.vue";
 
 // Get the current locale from the URL or use default
 const currentLocale = getLocaleFromUrl(Astro.url) || DEFAULT_LANGUAGE;
 
 // For now, we only use English translations at build time
-// In a real implementation, we'd import translations based on locale
 const translations = enTranslations;
 ---
 
 <div class="flex flex-col items-end">
   <h3
-    class="mb-2 hidden text-sm font-medium text-gray-700 md:block dark:text-gray-300">
+    class="mb-2 hidden text-sm font-medium text-gray-700 md:block dark:text-gray-300"
+  >
     {translations.web.theme?.title || "Theme"}
   </h3>
   <button
-    id="color-mode-toggle"
+    id="theme-cycler-button"
     class="focus:ring-brand-500 inline-flex items-center rounded-md px-2 py-1 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 focus:ring-2 focus:outline-none dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
     aria-label={translations.web.accessibilityLabels?.toggleColorTheme ||
-      "Toggle color theme"}>
-    <!-- Sun icon (shown in dark mode) -->
-    <svg
-      id="sun-icon"
-      class="h-5 w-5 hidden"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke-width="1.5"
-      stroke="currentColor">
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"
-      ></path>
-    </svg>
-
-    <!-- Moon icon (shown in light mode) -->
-    <svg
-      id="moon-icon"
-      class="h-5 w-5 hidden"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke-width="1.5"
-      stroke="currentColor">
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z"
-      ></path>
-    </svg>
-    <span class="ml-1.5 hidden sm:inline"
-      >{translations.web.theme?.toggleTheme || "Toggle theme"}</span
-    >
+      "Cycle color theme"}
+  >
+    <OIcon collection="heroicons" name="swatch" class="h-5 w-5" />
+    <span class="ml-1.5 hidden sm:inline">
+      {translations.web.theme?.toggleTheme || "Cycle Theme"}
+    </span>
   </button>
 </div>
 
 <script>
   /**
-   * Color mode toggle for Astro components
-   * Manages theme persistence and system preference detection
+   * Theme management for Astro components, supporting multiple themes.
+   * Manages theme persistence, cycling, and system preference detection for initial theme.
    */
-  function updateIconVisibility(isDark) {
-    const sunIcon = document.getElementById("sun-icon");
-    const moonIcon = document.getElementById("moon-icon");
-    const toggleButton = document.getElementById("color-mode-toggle");
+  const THEMES = ['light', 'dark', 'high-contrast', 'dyslexic'];
+  let initialized = false;
 
-    if (sunIcon && moonIcon) {
-      if (isDark) {
-        sunIcon.classList.remove("hidden");
-        moonIcon.classList.add("hidden");
-        if (toggleButton) {
-          toggleButton.classList.add("bg-gray-700");
-          toggleButton.classList.add("text-gray-200");
-          toggleButton.setAttribute("aria-pressed", "true");
-        }
-      } else {
-        sunIcon.classList.add("hidden");
-        moonIcon.classList.remove("hidden");
-        if (toggleButton) {
-          toggleButton.classList.remove("bg-gray-700");
-          toggleButton.classList.remove("text-gray-200");
-          toggleButton.setAttribute("aria-pressed", "false");
-        }
-      }
-    }
-  }
-
-  function applyTheme(theme) {
-    const isDark = theme === "dark";
-
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
+  /**
+   * Applies the specified theme to the document and persists it.
+   * @param {string} themeName - The name of the theme to apply.
+   */
+  function applyTheme(themeName) {
+    if (!THEMES.includes(themeName)) {
+      // console.warn(`Invalid theme: ${themeName}. Defaulting to ${THEMES[0]}.`);
+      themeName = THEMES[0];
     }
 
-    updateIconVisibility(isDark);
+    // Remove all known theme classes from <html>
+    THEMES.forEach(t => document.documentElement.classList.remove(t));
+    // Explicitly remove 'dark' class that Tailwind uses, in case a previous theme was 'dark'
+    document.documentElement.classList.remove('dark');
+
+    // Add the new theme class
+    document.documentElement.classList.add(themeName);
+
+    // If the current theme is 'dark', add the 'dark' class for Tailwind CSS dark variants
+    if (themeName === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+
+    try {
+      localStorage.setItem('theme', themeName);
+    } catch (e) {
+      // console.error("Failed to save theme to localStorage:", e);
+    }
 
     // Update meta color-scheme for browser UI elements
     const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
     if (metaColorScheme) {
-      metaColorScheme.setAttribute(
-        "content",
-        isDark ? "dark light" : "light dark",
-      );
+      if (themeName === 'dark') {
+        metaColorScheme.setAttribute('content', 'dark light');
+      } else {
+        // For 'light', 'high-contrast', 'dyslexic', assume they are light-based
+        // or define their own base colors. 'light dark' tells the browser
+        // the component supports light mode primarily and dark mode secondarily.
+        metaColorScheme.setAttribute('content', 'light dark');
+      }
     }
   }
 
-  // Previous version removed
-  function toggleColorMode() {
-    const currentTheme = localStorage.getItem("colorMode") || "light";
-    const newTheme = currentTheme === "dark" ? "light" : "dark";
-    localStorage.setItem("colorMode", newTheme);
-    applyTheme(newTheme);
-  }
-  function initColorMode() {
-    const savedTheme = localStorage.getItem("colorMode");
-
-    if (!savedTheme) {
-      // Check system preference
-      const prefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)",
-      ).matches;
-      const initialTheme = prefersDark ? "dark" : "light";
-      localStorage.setItem("colorMode", initialTheme);
-      applyTheme(initialTheme);
-    } else {
-      applyTheme(savedTheme);
+  /**
+   * Cycles to the next theme in the THEMES array and applies it.
+   */
+  function cycleTheme() {
+    let currentTheme = 'light';
+    try {
+      currentTheme = localStorage.getItem('theme') || THEMES[0];
+    } catch (e) {
+      // Fallback if localStorage is inaccessible
+      currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : THEMES[0];
     }
 
-    // Listen for system preference changes
-    window
-      .matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change", (e) => {
-        if (!localStorage.getItem("colorMode")) {
-          const newTheme = e.matches ? "dark" : "light";
-          localStorage.setItem("colorMode", newTheme);
-          applyTheme(newTheme);
+    let currentIndex = THEMES.indexOf(currentTheme);
+    if (currentIndex === -1) { // Fallback if stored theme is invalid
+      currentIndex = 0;
+    }
+    const nextIndex = (currentIndex + 1) % THEMES.length;
+    applyTheme(THEMES[nextIndex]);
+  }
+
+  /**
+   * Initializes the theme system on page load.
+   * Sets the theme based on localStorage or system preference.
+   * Adds listener for system preference changes for 'light'/'dark' themes.
+   */
+  function initThemeSystem() {
+    let initialTheme = THEMES[0]; // Default to the first theme in the list ('light')
+    try {
+      const storedTheme = localStorage.getItem('theme');
+      if (storedTheme && THEMES.includes(storedTheme)) {
+        initialTheme = storedTheme;
+      } else {
+        // No valid theme in localStorage, check system preference for dark mode
+        // This only influences the choice between 'light' and 'dark' for the initial setup.
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (prefersDark) {
+          initialTheme = 'dark';
         }
-      });
+        // If not prefersDark, it remains the default 'light' (or THEMES[0])
+      }
+    } catch (e) {
+      // localStorage might be unavailable, try to guess from class
+      if (document.documentElement.classList.contains('dark')) initialTheme = 'dark';
+      // console.error("Failed to initialize theme from localStorage:", e);
+    }
 
-    // Also update the icon visibility based on current theme
-    updateIconVisibility(savedTheme === "dark");
+    applyTheme(initialTheme); // Apply and save the determined initial theme
+
+    // Listen for changes in system color scheme preference
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      let themeToConsider = THEMES[0];
+       try {
+        themeToConsider = localStorage.getItem('theme') || THEMES[0];
+      } catch (err) { /* ignore */ }
+
+      // Only adjust if the current theme is 'light' or 'dark'
+      if (themeToConsider === 'light' || themeToConsider === 'dark') {
+        const newSystemTheme = e.matches ? 'dark' : 'light';
+        if (newSystemTheme !== themeToConsider) {
+          applyTheme(newSystemTheme);
+        }
+      }
+    });
   }
 
-  // Initialize the theme mode system
-  function initialize() {
-    initColorMode();
+  /**
+   * Main initialization function, sets up theme and event listeners.
+   * Ensures it only runs once.
+   */
+  function runOnceInitialize() {
+    if (initialized) return;
+    initialized = true;
 
-    // Add click event listener to toggle button
-    const toggleButton = document.getElementById("color-mode-toggle");
-    if (toggleButton) {
-      toggleButton.addEventListener("click", toggleColorMode);
+    initThemeSystem();
+
+    const cycleButton = document.getElementById('theme-cycler-button');
+    if (cycleButton) {
+      cycleButton.addEventListener('click', cycleTheme);
     }
   }
 
-  // Run initialization immediately to avoid flicker
-  if (typeof window !== "undefined") {
-    // Set up event listeners for different document states
-    document.addEventListener("DOMContentLoaded", initialize);
-
-    // Try to initialize immediately if the DOM is already loaded
-    if (
-      document.readyState === "complete" ||
-      document.readyState === "interactive"
-    ) {
-      initialize();
+  // Initialize the theme system
+  if (typeof window !== 'undefined') {
+    if (document.readyState === 'loading') {
+      // Document is still loading, wait for DOMContentLoaded
+      document.addEventListener('DOMContentLoaded', runOnceInitialize);
+    } else {
+      // DOM is already interactive or complete
+      runOnceInitialize();
     }
   }
 </script>

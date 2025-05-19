@@ -13,6 +13,7 @@
  * are not supported in CSS and break colour mode. This breaks the colour mode.
  */
 @custom-variant dark (&:where(.dark, .dark *));
+@custom-variant high-contrast (&:where(.hc, .hc *));
 
 /**
  * Misc gotchas:
