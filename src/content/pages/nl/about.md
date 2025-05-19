@@ -12,7 +12,7 @@ title: Over ons
   </p>
 
   <p>
-    De eerste helft van 2024 is onze drukste periode tot nu toe geweest. We zijn dankbaar dat mensen ons product al meer dan tien jaar blijven gebruiken en delen. We werken momenteel aan verbeteringen waarvan we denken dat ze de service nog nuttiger zullen maken — we zullen binnenkort meer details delen.
+    De eerste helft van 2025 is onze drukste periode tot nu toe geweest. We zijn dankbaar dat mensen ons product al meer dan tien jaar blijven gebruiken en delen. We werken momenteel aan verbeteringen waarvan we denken dat ze de service nog nuttiger zullen maken — we zullen binnenkort meer details delen.
   </p>
 
   <p>

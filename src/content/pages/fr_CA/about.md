@@ -12,7 +12,7 @@ title: À propos de nous
   </p>
 
   <p>
-    Le premier semestre 2024 a été notre période la plus chargée. Nous sommes reconnaissants que les gens continuent à utiliser et à partager notre produit depuis plus de dix ans. Nous travaillons actuellement sur des améliorations qui, selon nous, rendront le service encore plus utile.
+    Le premier semestre 2025 a été notre période la plus chargée. Nous sommes reconnaissants que les gens continuent à utiliser et à partager notre produit depuis plus de dix ans. Nous travaillons actuellement sur des améliorations qui, selon nous, rendront le service encore plus utile.
   </p>
 
   <p>

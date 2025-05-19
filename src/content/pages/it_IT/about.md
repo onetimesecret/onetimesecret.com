@@ -12,7 +12,7 @@ title: Informazioni
   </p>
 
   <p>
-    La prima metà del 2024 è stato il nostro periodo più intenso. Siamo grati che le persone abbiano continuato a usare e condividere il nostro prodotto per più di un decennio. Attualmente stiamo lavorando a miglioramenti che pensiamo renderanno il servizio ancora più utile - condivideremo presto maggiori dettagli.
+    La prima metà del 2025 è stato il nostro periodo più intenso. Siamo grati che le persone abbiano continuato a usare e condividere il nostro prodotto per più di un decennio. Attualmente stiamo lavorando a miglioramenti che pensiamo renderanno il servizio ancora più utile - condivideremo presto maggiori dettagli.
   </p>
 
   <p>
