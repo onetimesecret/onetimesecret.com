@@ -1,6 +1,7 @@
 // config/astro/markdown.ts
 
 import { AstroUserConfig } from "astro";
+import { remarkAlert } from "remark-github-blockquote-alert";
 import remarkCallouts from "../remark/callouts.mjs";
 
 export function createConfig(): AstroUserConfig["markdown"] {
@@ -8,7 +9,8 @@ export function createConfig(): AstroUserConfig["markdown"] {
     syntaxHighlight: "prism",
     remarkPlugins: [
       // Add custom remark plugins
-      remarkCallouts
+      remarkCallouts,
+      remarkAlert,
     ],
     rehypePlugins: [],
     remarkRehype: {
@@ -21,7 +23,7 @@ export function createConfig(): AstroUserConfig["markdown"] {
     smartypants: false,
     shikiConfig: {
       // Add custom themes for code blocks
-      theme: 'github-dark'
-    }
+      theme: "github-dark",
+    },
   };
 }
