@@ -1,0 +1,99 @@
+---
+// Import layout components
+import LayoutHead from "./LayoutHead.astro";
+import LayoutHeader from "./LayoutHeader.astro";
+import LayoutFooter from "./LayoutFooter.astro";
+import SvgSprites from "./SvgSprites.astro";
+
+// Import styles
+import "@/styles/global.css";
+import "@/styles/tailwind.css";
+
+// Utilities
+import { getLocaleFromUrl } from "@/i18n/utils";
+import {
+  DEFAULT_LANGUAGE,
+  LANGUAGE_META,
+} from "@config/astro/i18n";
+import type { MessageSchema } from "@/i18n"; // For type
+import enMessages from "@/i18n/ui/en.json"; // For default initialMessages
+
+// --------------------------
+// Props Interface
+// --------------------------
+export interface Props {
+  title?: string;
+  description?: string;
+  canonicalUrl?: string;
+  ogImage?: string;
+  ogType?: string;
+  twitterCard?: string;
+  keywords?: string;
+  noindex?: boolean;
+  alternateLanguages?: { code: string; url: string }[];
+  structuredData?: object;
+  // Props for i18n, with optional chaining for robustness
+  htmlLang?: string;
+  langDir?: string;
+  initialMessages?: Record<string, MessageSchema>;
+  // Layout specific props
+  header?: boolean; // Whether to show the header
+}
+
+// --------------------------
+// Configuration & Data Processing
+// --------------------------
+
+// Destructure props with defaults
+const {
+  htmlLang = DEFAULT_LANGUAGE,
+  initialMessages = { [DEFAULT_LANGUAGE]: enMessages as MessageSchema },
+  header = true,
+  // SEO related props are passed through to LayoutHead
+  ...seoProps
+} = Astro.props;
+
+// Determine effective locale consistently
+const effectiveLocale = getLocaleFromUrl(Astro.url) || htmlLang || DEFAULT_LANGUAGE;
+
+// Derive langDir based on effective locale
+const langDir = LANGUAGE_META[effectiveLocale as keyof typeof LANGUAGE_META]?.dir ||
+  LANGUAGE_META[DEFAULT_LANGUAGE].dir;
+
+// For debugging during build
+if (import.meta.env.DEV) {
+  console.log(
+    `LayoutBase: URL="${Astro.url.pathname}", htmlLang="${htmlLang}", effectiveLocale="${effectiveLocale}"`,
+  );
+}
+---
+
+<!DOCTYPE html>
+<html
+  lang={effectiveLocale}
+  dir={langDir}
+  class="h-full">
+  <LayoutHead
+    effectiveLocale={effectiveLocale}
+    langDir={langDir}
+    {...seoProps}
+  />
+  <body class="flex h-full flex-col bg-white dark:bg-gray-900">
+    {header && (
+      <LayoutHeader
+        effectiveLocale={effectiveLocale}
+        initialMessages={initialMessages}
+      >
+        <slot name="header" />
+      </LayoutHeader>
+    )}
+    <div class="flex-grow">
+      <slot />
+    </div>
+    <LayoutFooter
+      effectiveLocale={effectiveLocale}
+      initialMessages={initialMessages}
+    />
+    <SvgSprites />
+  </body>
+</html>

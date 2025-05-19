@@ -1,0 +1,25 @@
+---
+import { getLocaleFromUrl } from "@/i18n/utils";
+import type { MessageSchema } from "@/i18n";
+import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
+
+export interface Props {
+  effectiveLocale?: string;
+  initialMessages?: Record<string, MessageSchema>;
+}
+
+const {
+  effectiveLocale = getLocaleFromUrl(Astro.url) || DEFAULT_LANGUAGE,
+  initialMessages = {}
+} = Astro.props;
+---
+
+<header>
+  <!-- Fixed brand bar at top -->
+  <div class="bg-brand-500 fixed top-0 left-0 z-[100] h-1 w-full"></div>
+
+  <!-- Main header content slot -->
+  <div class="w-full">
+    <slot />
+  </div>
+</header>

@@ -1,0 +1,44 @@
+---
+import LanguageSwitcher from "@/components/vue/LanguageSwitcher.vue";
+import ColorModeToggle from "@/components/ColorModeToggle.astro";
+import FooterLinkLists from "@/components/vue/layouts/FooterLinkLists.vue";
+import FooterSignOff from "@/components/vue/layouts/FooterSignOff.vue";
+import { getLocaleFromUrl } from "@/i18n/utils";
+import type { MessageSchema } from "@/i18n";
+import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
+
+export interface Props {
+  effectiveLocale?: string;
+  initialMessages?: Record<string, MessageSchema>;
+}
+
+const {
+  effectiveLocale = getLocaleFromUrl(Astro.url) || DEFAULT_LANGUAGE,
+  initialMessages = {}
+} = Astro.props;
+---
+
+<footer class="bg-white dark:bg-gray-900">
+  <FooterLinkLists
+    client:load
+    locale={effectiveLocale}
+    initialMessages={initialMessages}
+  />
+  <div class="border-t border-gray-200 dark:border-gray-800">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+      <LanguageSwitcher
+        client:load
+        locale={effectiveLocale}
+        size="sm"
+        variant="full"
+        openDirection="up"
+      />
+      <ColorModeToggle />
+    </div>
+  </div>
+  <FooterSignOff
+    client:load
+    locale={effectiveLocale}
+    initialMessages={initialMessages}
+  />
+</footer>

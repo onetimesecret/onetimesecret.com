@@ -1,0 +1,152 @@
+---
+import Favicons from "./Favicons.astro";
+import SeoMeta from "./SeoMeta.astro";
+import OptimizedFonts from "./OptimizedFonts.astro";
+import { AVAILABLE_THEMES } from "@/utils/theme";
+
+// Utilities
+import { generateCspConnectSrc } from "@/utils/security";
+import {
+  getRouteSeoConfig,
+  generateBreadcrumbsLd,
+  defaultSeoValues,
+  getDefaultWebApplicationLd,
+} from "@/utils/seo";
+import { SUPPORTED_LANGUAGES } from "@config/astro/i18n";
+
+export interface Props {
+  title?: string;
+  description?: string;
+  canonicalUrl?: string;
+  ogImage?: string;
+  ogType?: string;
+  twitterCard?: string;
+  keywords?: string;
+  noindex?: boolean;
+  alternateLanguages?: { code: string; url: string }[];
+  structuredData?: object;
+  effectiveLocale: string;
+  langDir: string;
+}
+
+const {
+  title: propsTitle,
+  description: propsDescription,
+  ogImage: propsOgImage,
+  ogType: propsOgType,
+  keywords: propsKeywords,
+  canonicalUrl: propsCanonicalUrl,
+  twitterCard: propsTwitterCard,
+  noindex: propsNoindex,
+  alternateLanguages: propsAlternateLanguages,
+  structuredData: propsStructuredData,
+  effectiveLocale,
+  langDir,
+} = Astro.props;
+
+const currentPath = Astro.url.pathname;
+const siteOrigin = Astro.url.origin.toString();
+
+// SEO Configuration
+const routeSpecificSeo = getRouteSeoConfig(currentPath, siteOrigin);
+
+const pageTitle = propsTitle || routeSpecificSeo.title || defaultSeoValues.title;
+const pageDescription = propsDescription || routeSpecificSeo.description || defaultSeoValues.description;
+const pageOgImage = propsOgImage || routeSpecificSeo.ogImage || defaultSeoValues.ogImage;
+const pageOgType = propsOgType || routeSpecificSeo.ogType || defaultSeoValues.ogType;
+const pageKeywords = propsKeywords || defaultSeoValues.keywords;
+const pageCanonicalUrl = propsCanonicalUrl || Astro.url.href;
+const pageTwitterCard = propsTwitterCard || defaultSeoValues.twitterCard;
+
+const pageNoindex = propsNoindex !== undefined
+  ? propsNoindex
+  : currentPath.startsWith("/secret/") ||
+    currentPath.startsWith("/private/") ||
+    currentPath.startsWith("/receipt/");
+
+// Generate alternate language links
+const languagePrefixes = ["/en", "/fr", "/de"];
+const hasLangPrefix = languagePrefixes.some((prefix) => currentPath.startsWith(prefix));
+const basePathForAlternates = hasLangPrefix ? currentPath.substring(3) : currentPath;
+
+const pageAlternateLanguages = propsAlternateLanguages ||
+  SUPPORTED_LANGUAGES.map((lang) => ({
+    code: lang,
+    url: `${siteOrigin}/${lang}${basePathForAlternates}`,
+  }));
+
+const pageStructuredData = propsStructuredData ||
+  routeSpecificSeo.structuredData ||
+  getDefaultWebApplicationLd(siteOrigin, pageDescription);
+
+const pageBreadcrumbsLd = generateBreadcrumbsLd(currentPath, siteOrigin);
+
+// Content Security Policy
+const apiUrl = import.meta.env.PUBLIC_API_BASE_URL;
+const isDebugMode = import.meta.env.DEV || import.meta.env.DEBUG;
+const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
+---
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark light contrast" />
+  <meta name="author" content="Onetime Secret" />
+  <Favicons />
+  <SeoMeta
+    title={pageTitle}
+    description={pageDescription}
+    canonicalUrl={pageCanonicalUrl}
+    ogImageBaseUrl={siteOrigin}
+    ogImage={pageOgImage}
+    ogType={pageOgType}
+    twitterCard={pageTwitterCard}
+    keywords={pageKeywords}
+    noindex={pageNoindex}
+    alternateLanguages={pageAlternateLanguages}
+    structuredData={pageStructuredData}
+    breadcrumbsLd={pageBreadcrumbsLd}
+  />
+  <link
+    rel="alternate"
+    hreflang="x-default"
+    href={`${siteOrigin}${basePathForAlternates}`}
+  />
+  <OptimizedFonts />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content={`default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src ${connectSrcDirective}; worker-src 'self' blob:;`}
+  />
+  <script is:inline>
+    // Minimal inline script to prevent FOUC - matches ThemeManager utility implementation
+    const AVAILABLE_THEMES = ["light", "dark", "high-contrast", "dyslexic"];
+    let themeToApply = "light"; // Default theme
+
+    try {
+      const storedTheme = localStorage.getItem("theme");
+      if (storedTheme && AVAILABLE_THEMES.includes(storedTheme)) {
+        themeToApply = storedTheme;
+      } else {
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (prefersDark) {
+          themeToApply = "dark";
+        }
+      }
+    } catch (e) {
+      // localStorage might be unavailable
+    }
+
+    // Apply theme classes
+    AVAILABLE_THEMES.forEach(t => document.documentElement.classList.remove(t));
+    document.documentElement.classList.add(themeToApply);
+
+    // Special case for dark mode (for Tailwind)
+    if (themeToApply === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  </script>
+  <title>{pageTitle}</title>
+</head>
