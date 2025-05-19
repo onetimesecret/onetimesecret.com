@@ -3,8 +3,6 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useI18n } from "vue-i18n";
-import { GlobeAltIcon, ChevronDownIcon } from "@heroicons/vue/24/outline";
-// import OIcon from "@/components/vue/icons/OIcon.vue";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/vue";
 import {
   SUPPORTED_LANGUAGES,
@@ -12,12 +10,13 @@ import {
   type SupportedLanguage,
 } from "@config/astro/i18n";
 import { getLocaleFromUrl, createLanguageSwitcherUrl } from "@/i18n/utils";
-import { OIcon } from "@/components/vue/icons/OIcon.vue";
+import OIcon from "@/components/vue/icons/OIcon.vue";
 
 const props = defineProps<{
   size?: "xs" | "sm" | "md" | "lg";
   variant?: "minimal" | "full";
   locale?: string;
+  openDirection?: 'up' | 'down'; // Added to control menu opening direction
 }>();
 
 const { t } = useI18n();
@@ -68,6 +67,16 @@ const sizeClasses = computed(() => {
   }
 });
 
+// Classes for menu items positioning based on openDirection prop
+const menuItemsClasses = computed(() => {
+  const baseClasses =
+    "absolute left-0 z-10 w-40 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none";
+  if (props.openDirection === "up") {
+    return `${baseClasses} bottom-full mb-2 origin-top-right`; // Opens upwards
+  }
+  return `${baseClasses} mt-2 origin-bottom-right`; // Default: opens downwards
+});
+
 // Function to handle language change
 const changeLanguage = (path: string) => {
   window.location.href = path;
@@ -83,14 +92,18 @@ const changeLanguage = (path: string) => {
         <MenuButton
           class="inline-flex w-full items-center justify-center gap-x-1.5 rounded-md bg-white dark:bg-gray-800 px-2 py-1.5 font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2"
           :class="sizeClasses">
-          <GlobeAltIcon
-            class="size-4 -ml-0.5 mr-1 text-gray-400 dark:text-gray-500"
-            aria-hidden="true" />
+            <OIcon
+              collection="heroicons"
+              name="globe-alt"
+              class="size-4 -ml-0.5 mr-1 text-gray-400 dark:text-gray-500"
+              aria-hidden="true" />
           <span v-if="props.variant === 'full'">{{
             currentLanguage.name
           }}</span>
           <span v-else>{{ currentLocale.toUpperCase() }}</span>
-          <ChevronDownIcon
+          <OIcon
+            collection="heroicons"
+            name="chevron-up"
             class="size-5 ml-1 -mr-1 text-gray-400 dark:text-gray-500"
             aria-hidden="true" />
         </MenuButton>
@@ -104,7 +117,7 @@ const changeLanguage = (path: string) => {
         leave-from-class="transform opacity-100 scale-100"
         leave-to-class="transform opacity-0 scale-95">
         <MenuItems
-          class="absolute left-0 z-10 mt-2 w-40 origin-bottom-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+          :class="menuItemsClasses">
           <div class="py-1">
             <MenuItem
               v-for="item in languagePaths"
