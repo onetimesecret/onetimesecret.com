@@ -3,74 +3,12 @@
  * src/pages/[lang]/index.astro
  * Homepage implementation using Layout for consistent navigation
  */
-import Layout from "@/layouts/Layout.astro";
-import Homepage from "@/components/vue/homepage/Homepage.vue";
-// import "@/styles/global.css";
-// import "@/styles/tailwind.css";
-import { type SupportedLanguage } from "@config/astro/i18n";
+import IndexPage from "@/pages/index.astro";
 import { getLanguagePaths } from "@/i18n";
-import { createLocaleI18n, type MessageSchema } from "@/i18n";
-import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
-import enMessages from "@/i18n/ui/en.json"; // For MessageSchema type
 
 export async function getStaticPaths() {
   return getLanguagePaths();
 }
-
-interface Props {
-  lang: SupportedLanguage;
-  initialMessages: Record<string, MessageSchema>;
-  langMeta: {
-    name: string;
-    locale: string;
-    dir: string;
-  };
-}
-
-const effectiveLang = (Astro.props.lang ||
-  Astro.params.lang ||
-  DEFAULT_LANGUAGE) as SupportedLanguage;
-
-// Determine effective langMeta, falling back to default language's meta if necessary
-const effectiveLangMeta = Astro.props.langMeta || LANGUAGE_META[effectiveLang];
-
-// Determine effective initialMessages, falling back to just English messages if necessary
-// This ensures initialMessages is always an object.
-const effectiveInitialMessages = Astro.props.initialMessages || {
-  [DEFAULT_LANGUAGE]: enMessages as MessageSchema,
-};
-
-// Initialize a page-specific i18n instance for SSR content using initialMessages
-const pageI18n = await createLocaleI18n(
-  effectiveLang,
-  effectiveInitialMessages,
-);
-const t = pageI18n.global.t;
-
-// Translated title and description for the Layout
-// IMPORTANT: You'll need to add 'web.homepage.title' and 'web.homepage.description' keys
-// to your i18n JSON files (e.g., src/i18n/ui/en.json).
-const pageTitle = t("web.homepage.title");
-const pageDescription = t("web.homepage.description");
 ---
 
-<!-- The Component Template -->
-<Layout
-  title={pageTitle}
-  description={pageDescription}
-  htmlLang={effectiveLang}
-  langDir={effectiveLangMeta.dir}
-  initialMessages={effectiveInitialMessages}
-  showHero={true}
-  heroTitle="Onetime Secret"
-  heroDescription={pageDescription}>
-  <!-- Render the Homepage component -->
-  <!-- client:load ensures the Vue component hydrates and runs client-side -->
-  <Homepage
-    client:load
-    locale={effectiveLang}
-    htmlLang={effectiveLang}
-    langDir={effectiveLangMeta.dir}
-    initialMessages={effectiveInitialMessages}
-  />
-</Layout>
+<IndexPage />

@@ -7,7 +7,7 @@ import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
 
 const currentLang = DEFAULT_LANGUAGE;
 const currentLangMeta = LANGUAGE_META[currentLang];
-const pageScopedInitialMessages: Record<string, MessageSchema> = {
+const pageScopedInitialMessages: { [key: string]: MessageSchema } = {
   [currentLang]: enMessages,
 };
 
@@ -85,9 +85,10 @@ const pageDescription = t("web.homepage.description");
   <div
     slot="footer"
     class="bg-gradient-to-b from-gray-50 to-white py-4 dark:from-gray-800 dark:to-gray-900">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+    <div class="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
       <p class="text-sm text-gray-500 dark:text-gray-400">
-        Share your secrets securely with end-to-end encryption and automatic deletion.
+        Share your secrets securely with end-to-end encryption and automatic
+        deletion.
       </p>
     </div>
   </div>
