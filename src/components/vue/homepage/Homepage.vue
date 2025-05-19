@@ -6,14 +6,13 @@ import FeatureHighlights from "@/components/vue/homepage/FeatureHighlights.vue";
 import HeroTitle from "@/components/vue/homepage/HeroTitle.vue";
 import HowItWorks from "@/components/vue/homepage/HowItWorks.vue";
 import ClientOnlyRegionSelector from "@/components/vue/homepage/regions/ClientOnlyRegionSelector.vue";
-import type { Region } from "@/components/vue/homepage/regions/RegionSelector.vue";
 import ScreenshotViewHole from "@/components/vue/homepage/ScreenshotViewHole.vue";
 import MainNavigation from "@/components/vue/layouts/MainNavigation.vue";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { setLanguage } from "@/i18n";
 import { setLanguageWithMessages, type MessageSchema } from "@/i18n";
-import { jurisdictions } from "@/data/ops/jurisdictions.ts";
+import { useJurisdiction } from "@/composables/useJurisdiction";
 
 import SecretFormLite from "@/components/vue/homepage/SecretFormLite.vue";
 import UseCaseSelector from "@/components/vue/homepage/UseCaseSelector.vue";
@@ -35,47 +34,35 @@ if (props.initialMessages && props.locale) {
 
 const { t } = useI18n(); // Now uses the correctly configured global instance
 
-// --- State for Homepage ---
-const detectedRegion = ref("");
-const suggestedDomain = ref("");
-const baseUrl = import.meta.env.PUBLIC_API_BASE_URL;
-
-// Region configuration for the selector
-const availableRegions = computed(() => jurisdictions.map(j => j.identifier));
-
-// Default to EU region or determine from current domain
-const currentRegion = ref<Region>(availableRegions.value[0]);
+// --- Initialize jurisdiction composable ---
+const {
+  availableRegions,
+  currentRegion,
+  apiBaseUrl,
+  detectedJurisdiction,
+  suggestedDomain,
+  setJurisdiction,
+  detectJurisdiction,
+  clearSuggestion,
+  cleanup
+} = useJurisdiction();
 
 // Banner state managed inside ClientOnlyBanner component
 const apiCallResult = ref<ApiResult | null>(null); // State to hold result from SecretFormLite
 const apiCallError = ref<string | null>(null); // State to hold error from SecretFormLite
 
 // --- Methods for Homepage ---
-const switchRegion = (newRegion?: string) => {
-  // If specific region is provided, find it in available regions
-  if (newRegion) {
-    const region = availableRegions.value.find(
-      (r) => r.identifier === newRegion,
-    );
-    if (region) {
-      handleRegionChange(region);
+const switchRegion = (newRegion?: string | { identifier: string }) => {
+  // Handle both string identifier or Region object
+  const identifier = typeof newRegion === 'string'
+    ? newRegion
+    : newRegion?.identifier;
+
+  if (identifier) {
+    setJurisdiction(identifier);
+    if (secretFormRef.value) {
+      secretFormRef.value.resetForm();
     }
-  }
-};
-
-// Handle region change from the selector component
-const handleRegionChange = (region: Region) => {
-  currentRegion.value = region;
-
-  if (secretFormRef.value) {
-    secretFormRef.value.resetForm();
-  }
-
-  if (
-    typeof window !== "undefined" &&
-    window.location.hostname !== region.domain
-  ) {
-    console.log(`Region changed to ${region.displayName} (${region.domain})`);
   }
 };
 
@@ -94,22 +81,18 @@ const handleSecretCreationResult = (result: ApiResult) => {
   }
 };
 
-const apiBaseUrl = computed(() => {
-  return baseUrl || `https://${currentRegion.value.domain}`;
-});
-
 const isClient = ref(false);
 
 onMounted(async () => {
-
-  // Make onMounted async
   isClient.value = true;
-  // Initial language setup is now handled by the watcher with immediate: true
-  // However, ensure currentRegion is updated if availableRegions changes due to locale load
-  currentRegion.value =
-    availableRegions.value.find(
-      (r) => r.identifier === currentRegion.value.identifier,
-    ) || availableRegions.value[0];
+  // Detect appropriate jurisdiction for the user
+  const detected = await detectJurisdiction();
+  // Banner will show if detected jurisdiction differs from current
+});
+
+// Clean up store subscriptions when component is unmounted
+onUnmounted(() => {
+  cleanup();
 });
 </script>
 
@@ -117,9 +100,9 @@ onMounted(async () => {
   <div class="flex flex-col overflow-hidden" style="scroll-padding-top: var(--header-height, 4rem);">
     <!-- First Time Visitor Banner (Client-Only) -->
     <ClientOnlyBanner
-      :detected-region="detectedRegion"
+      :detected-jurisdiction="detectedJurisdiction"
       :suggested-domain="suggestedDomain"
-      @switch-region="switchRegion" />
+      @switch-jurisdiction="switchRegion" />
 
     <!-- Main Navigation -->
     <header class="sticky top-0 z-[99] bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm shadow-sm">
@@ -158,7 +141,7 @@ onMounted(async () => {
                     :current-region="currentRegion"
                     :available-regions="availableRegions"
                     class="rounded-lg px-2 py-1.5 bg-white/90 dark:bg-gray-700/90 border border-gray-200 dark:border-gray-600 shadow-sm"
-                    @region-change="handleRegionChange" />
+                    @region-change="region => switchRegion(region.identifier)" />
                 </div>
               </div>
             </div>

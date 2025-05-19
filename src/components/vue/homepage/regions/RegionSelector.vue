@@ -4,20 +4,8 @@
 import OIcon from "@/components/vue/icons/OIcon.vue";
 import { onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import type { Region } from "@/types/jurisdiction";
 
-
-/**
- * Region information interface representing a regional deployment option
- */
-export interface Region {
-  identifier: string;
-  displayName: string;
-  domain: string;
-  icon: {
-    collection: string;
-    name: string;
-  };
-}
 
 defineProps<{
   currentRegion: Region;

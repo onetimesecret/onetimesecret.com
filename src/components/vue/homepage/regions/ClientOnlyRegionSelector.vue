@@ -12,7 +12,7 @@
  */
 import { ref, onMounted } from "vue";
 import RegionSelector from "./RegionSelector.vue";
-import type { Region } from "./RegionSelector.vue";
+import type { Region } from "@/types/jurisdiction";
 import OIcon from "@/components/vue/icons/OIcon.vue";
 
 defineOptions({
