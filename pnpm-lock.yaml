@@ -68,6 +68,9 @@ importers:
       lucide-vue-next:
         specifier: ^0.507.0
         version: 0.507.0(vue@3.5.13(typescript@5.8.3))
+      nanostores:
+        specifier: ^1.0.1
+        version: 1.0.1
       remark:
         specifier: ^15.0.1
         version: 15.0.1
@@ -3389,6 +3392,10 @@ packages:
     resolution: {integrity: sha512-Ir/+ZpE9fDsNH0hQ3C68uyThDXzYcim2EqcZ8zn8Chtt1iylPT9xXJB0kPCnqzgcEGikO9RxSrh63MsmVCU7Fw==}
     engines: {node: ^18 || >=20}
     hasBin: true
+
+  nanostores@1.0.1:
+    resolution: {integrity: sha512-kNZ9xnoJYKg/AfxjrVL4SS0fKX++4awQReGqWnwTRHxeHGZ1FJFVgTqr/eMrNQdp0Tz7M7tG/TDaX8QfHDwVCw==}
+    engines: {node: ^20.0.0 || >=22.0.0}
 
   napi-postinstall@0.2.3:
     resolution: {integrity: sha512-Mi7JISo/4Ij2tDZ2xBE2WH+/KvVlkhA6juEjpEeRAVPNCpN3nxJo/5FhDNKgBcdmcmhaH6JjgST4xY/23ZYK0w==}
@@ -8640,6 +8647,8 @@ snapshots:
   nanoid@3.3.11: {}
 
   nanoid@5.1.5: {}
+
+  nanostores@1.0.1: {}
 
   napi-postinstall@0.2.3: {}
 
