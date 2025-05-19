@@ -39,9 +39,14 @@
     "blog": "Blog",
     "create-link": "Créer un lien secret",
     "docs": "Documentation",
-    "privacy": "Politique de confidentialité",
-    "terms": "Conditions générales",
+    "privacy-policy": "Politique de confidentialité",
+    "terms-and-conditions": "Conditions générales",
     "security": "Mesures de sécurité",
+    "learn-about-our-security-measures": "En savoir plus sur nos mesures de sécurité",
+    "terms": "Conditions",
+    "view-our-terms-and-conditions": "Consultez nos conditions générales",
+    "privacy": "Confidentialité",
+    "read-our-privacy-policy": "Lisez notre politique de confidentialité",
     "company": "Entreprise",
     "resources": "Ressources",
     "legals": "Mentions légales",
@@ -61,6 +66,12 @@
       "toggleTheme": "Changer de thème",
       "light": "Clair",
       "dark": "Sombre"
+    },
+    "help": {
+      "title": "Aide",
+      "toggleHelp": "Basculer l'aide",
+      "needHelp": "Besoin d'aide ?",
+      "learn_more": "En savoir plus"
     },
     "pricing": {
       "title": "Plans tarifaires | Onetime Secret",

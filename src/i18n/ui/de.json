@@ -39,9 +39,14 @@
     "blog": "Blog",
     "create-link": "Geheimen Link erstellen",
     "docs": "Dokumentation",
-    "privacy": "Datenschutzerklärung",
-    "terms": "Allgemeine Geschäftsbedingungen",
+    "privacy-policy": "Datenschutzerklärung",
+    "terms-and-conditions": "Allgemeine Geschäftsbedingungen",
     "security": "Sicherheitsmaßnahmen",
+    "learn-about-our-security-measures": "Informieren Sie sich über unsere Sicherheitsmaßnahmen",
+    "terms": "Allgemeine Geschäftsbedingungen",
+    "view-our-terms-and-conditions": "Lesen Sie unsere Allgemeinen Geschäftsbedingungen",
+    "privacy": "Datenschutzerklärung",
+    "read-our-privacy-policy": "Lesen Sie unsere Datenschutzerklärung",
     "company": "Unternehmen",
     "resources": "Ressourcen",
     "legals": "Rechtliches",
@@ -61,6 +66,12 @@
       "toggleTheme": "Thema umschalten",
       "light": "Hell",
       "dark": "Dunkel"
+    },
+    "help": {
+      "title": "Hilfe",
+      "toggleHelp": "Hilfe umschalten",
+      "needHelp": "Benötigen Sie Hilfe?",
+      "learn_more": "Mehr erfahren"
     },
     "pricing": {
       "title": "Preispläne | Onetime Secret",
