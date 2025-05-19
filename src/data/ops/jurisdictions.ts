@@ -1,7 +1,12 @@
 // src/data/ops/jurisdictions.ts
+import type { Jurisdiction } from '@/types/jurisdiction';
 
-export const jurisdictions = [
-  // Make availableRegions a computed property to use t() reactively
+/**
+ * List of available jurisdictions where user data can be stored
+ * Each jurisdiction represents a different data sovereignty region
+ * with its own regulatory framework and geographic location
+ */
+export const jurisdictions: Jurisdiction[] = [
   {
     identifier: "EU",
     displayName: "European Union",
