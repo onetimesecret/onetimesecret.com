@@ -3,7 +3,7 @@
 <script setup lang="ts">
 import { Dialog, DialogPanel } from "@headlessui/vue";
 import { Bars3Icon, XMarkIcon } from "@heroicons/vue/24/outline";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { localizeUrl } from '@/i18n/utils';
 import { setLanguage, setLanguageWithMessages, type MessageSchema } from "@/i18n";
@@ -11,6 +11,10 @@ import { setLanguage, setLanguageWithMessages, type MessageSchema } from "@/i18n
 const props = defineProps<{
   locale: string;
   initialMessages?: Record<string, MessageSchema>;
+  customNavItems?: Array<{name: string, href: string}>;
+  showAuthButtons?: boolean;
+  showLogo?: boolean;
+  stickyHeader?: boolean;
 }>();
 
 const { t } = useI18n();
@@ -25,28 +29,39 @@ if (props.initialMessages && props.locale) {
   });
 }
 
-// Define navigation items using i18n keys
-const navigation = [
-  { name: t("navigation.home"), href: localizeUrl("/", props.locale) },
-  { name: t("navigation.about"), href: localizeUrl("/about", props.locale) },
-  {
-    name: t("navigation.pricing"),
-    href: localizeUrl("/pricing", props.locale) ,
-  },
-];
+// Define navigation items using i18n keys or use custom items if provided
+const navigation = computed(() => {
+  if (props.customNavItems) {
+    return props.customNavItems;
+  }
+
+  return [
+    { name: t("navigation.home"), href: localizeUrl("/", props.locale) },
+    { name: t("navigation.about"), href: localizeUrl("/about", props.locale) },
+    { name: t("navigation.pricing"), href: localizeUrl("/pricing", props.locale) },
+  ];
+});
+
+// Default to showing auth buttons and logo if not specified
+const showAuthButtons = computed(() => props.showAuthButtons !== false);
+const showLogo = computed(() => props.showLogo !== false);
+const stickyHeader = computed(() => props.stickyHeader !== false);
 
 const mobileMenuOpen = ref(false);
 </script>
 
 <template>
   <div class="relative z-50">
-
-    <header class="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-sm">
+    <header :class="[
+      'z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-sm w-full',
+      stickyHeader ? 'sticky top-0' : ''
+    ]">
       <nav
-        class="flex items-center justify-between p-4 sm:p-6 md:px-8"
+        class="flex items-center justify-between p-4 sm:p-6 md:px-8 w-full mx-auto max-w-7xl"
         aria-label="Global">
         <div class="flex md:flex-1">
           <a
+            v-if="showLogo"
             href="/"
             class="-m-1.5 p-1.5">
             <span class="sr-only">{{ t("onetime-secret-literal") }}</span>
@@ -55,6 +70,7 @@ const mobileMenuOpen = ref(false);
               src="/etc/img/onetime-logo-sm.png"
               alt="Onetime Secret logo" />
           </a>
+          <slot name="logo" v-else></slot>
         </div>
         <div class="flex md:hidden">
           <button
@@ -77,15 +93,17 @@ const mobileMenuOpen = ref(false);
           </button>
         </div>
         <div class="hidden md:flex md:gap-x-8">
-          <a
-            v-for="item in navigation"
-            :key="item.name"
-            :href="item.href"
-            class="text-sm/6 font-semibold text-gray-900 dark:text-gray-100 hover:text-brand-600 dark:hover:text-brand-400 transition-colors focus-visible:outline-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:rounded-sm">
-            {{ item.name }}
-          </a>
+          <slot name="navigation-desktop">
+            <a
+              v-for="item in navigation"
+              :key="item.name"
+              :href="item.href"
+              class="text-sm/6 font-semibold text-gray-900 dark:text-gray-100 hover:text-brand-600 dark:hover:text-brand-400 transition-colors focus-visible:outline-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:rounded-sm">
+              {{ item.name }}
+            </a>
+          </slot>
         </div>
-        <div class="hidden md:flex md:flex-1 md:justify-end md:space-x-4 items-center">
+        <div v-if="showAuthButtons" class="hidden md:flex md:flex-1 md:justify-end md:space-x-4 items-center">
           <a
             href="/signin"
             class="text-sm/6 font-semibold text-gray-900 dark:text-gray-100 hover:text-brand-600 dark:hover:text-brand-400 transition-colors focus-visible:outline-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:rounded-sm">
@@ -97,6 +115,7 @@ const mobileMenuOpen = ref(false);
             {{ t("auth.sign-up", "Sign up") }} <span aria-hidden="true">&rarr;</span>
           </a>
         </div>
+        <slot name="end-items" v-else></slot>
       </nav>
 
       <!-- Mobile menu -->
@@ -111,6 +130,7 @@ const mobileMenuOpen = ref(false);
           :class="[mobileMenuOpen ? 'translate-x-0' : 'translate-x-full']">
           <div class="flex items-center justify-between">
             <a
+              v-if="showLogo"
               href="/"
               class="-m-1.5 p-1.5">
               <span class="sr-only">{{ t("onetime-secret-literal") }}</span>
@@ -119,6 +139,7 @@ const mobileMenuOpen = ref(false);
                 src="/etc/img/onetime-logo-sm.png"
                 alt="Onetime Secret logo" />
             </a>
+            <slot name="logo-mobile" v-else></slot>
             <button
               type="button"
               class="-m-2.5 rounded-md p-2.5 text-gray-700 dark:text-gray-300"
@@ -134,15 +155,17 @@ const mobileMenuOpen = ref(false);
           <div class="mt-6 flow-root">
             <div class="-my-6 divide-y divide-gray-500/10">
               <div class="space-y-2 py-6">
-                <a
-                  v-for="item in navigation"
-                  :key="item.name"
-                  :href="item.href"
-                  class="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 focus-visible:outline-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2">
-                  {{ item.name }}
-                </a>
+                <slot name="navigation-mobile">
+                  <a
+                    v-for="item in navigation"
+                    :key="item.name"
+                    :href="item.href"
+                    class="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 focus-visible:outline-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2">
+                    {{ item.name }}
+                  </a>
+                </slot>
               </div>
-              <div class="py-6 space-y-2">
+              <div v-if="showAuthButtons" class="py-6 space-y-2">
                 <a
                   href="/signin"
                   class="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 focus-visible:outline-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2">
@@ -154,10 +177,12 @@ const mobileMenuOpen = ref(false);
                   {{ t("auth.sign-up", "Sign up") }} <span aria-hidden="true">&rarr;</span>
                 </a>
               </div>
+              <slot name="mobile-end-items" v-else></slot>
             </div>
           </div>
         </DialogPanel>
       </Dialog>
     </header>
+    <slot></slot>
   </div>
 </template>

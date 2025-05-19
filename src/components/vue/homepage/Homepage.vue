@@ -114,19 +114,25 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900 overflow-hidden" style="scroll-padding-top: var(--header-height, 4rem);">
+  <div class="flex flex-col overflow-hidden" style="scroll-padding-top: var(--header-height, 4rem);">
     <!-- First Time Visitor Banner (Client-Only) -->
     <ClientOnlyBanner
       :detected-region="detectedRegion"
       :suggested-domain="suggestedDomain"
       @switch-region="switchRegion" />
 
+    <!-- Main Navigation -->
     <header class="sticky top-0 z-[99] bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm shadow-sm">
-      <!-- Main Navigation -->
-      <MainNavigation :locale="locale" />
+      <MainNavigation
+        :locale="locale"
+        :initialMessages="initialMessages"
+        :showLogo="true"
+        :showAuthButtons="true"
+        :stickyHeader="false"
+      />
     </header>
 
-    <main class="flex-grow">
+    <div class="flex-grow">
       <!-- Section 1: Branding and Benefits -->
       <HeroTitle />
 
@@ -189,7 +195,7 @@ onMounted(async () => {
 
       <!-- Section 5: Screenshot ViewHole -->
       <ScreenshotViewHole />
-    </main>
+    </div>
   </div>
 </template>
 
