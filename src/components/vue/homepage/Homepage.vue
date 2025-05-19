@@ -151,14 +151,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900 overflow-hidden">
+  <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900 overflow-hidden" style="scroll-padding-top: var(--header-height, 4rem);">
     <!-- First Time Visitor Banner (Client-Only) -->
     <ClientOnlyBanner
       :detected-region="detectedRegion"
       :suggested-domain="suggestedDomain"
       @switch-region="switchRegion" />
 
-    <header class="sticky top-0 z-[99] bg-white dark:bg-gray-800">
+    <header class="sticky top-0 z-[99] bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm shadow-sm">
       <!-- Main Navigation -->
       <MainNavigation :locale="locale" />
     </header>

@@ -171,8 +171,8 @@
         "sectionTitle": "Fonctionnalités principales",
         "sectionSubtitle": "Découvrez ce qui fait de Onetime Secret la solution préférée pour le partage sécurisé d'informations",
         "security": {
-          "title": "Chiffrement de bout en bout",
-          "description": "Vos informations sensibles sont chiffrées en transit et au repos, garantissant une sécurité maximale."
+          "title": "Options de confidentialité améliorées",
+          "description": "Ajoutez une phrase de passe pour une couche de sécurité supplémentaire. Seules les personnes connaissant la phrase de passe peuvent consulter le secret."
         },
         "selfDestruction": {
           "title": "Liens auto-destructibles",

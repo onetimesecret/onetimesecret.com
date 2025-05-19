@@ -171,8 +171,8 @@
         "sectionTitle": "Hauptfunktionen",
         "sectionSubtitle": "Entdecken Sie, was Onetime Secret zur bevorzugten Lösung für den sicheren Informationsaustausch macht",
         "security": {
-          "title": "Ende-zu-Ende-Verschlüsselung",
-          "description": "Ihre sensiblen Informationen werden während der Übertragung und im Ruhezustand verschlüsselt und gewährleisten so maximale Sicherheit."
+          "title": "Erweiterte Datenschutzoptionen",
+          "description": "Fügen Sie eine Passphrase für eine zusätzliche Sicherheitsebene hinzu. Nur wer die Passphrase kennt, kann das Geheimnis einsehen."
         },
         "selfDestruction": {
           "title": "Selbstzerstörende Links",
