@@ -9,9 +9,11 @@ import Layout from "@/layouts/Layout.astro";
 import Prose from "@/components/vue/Prose.astro";
 import Callout from "@/components/vue/Callout.vue";
 import type { MessageSchema } from "@/i18n";
+import { VueI18nTranslation } from "vue-i18n";
 
 // Interface for props
 export interface Props {
+  t: VueI18nTranslation;
   title?: string;
   description?: string;
   canonicalUrl?: string;
@@ -44,11 +46,12 @@ const {
   noindex,
   alternateLanguages,
   structuredData,
-  htmlLang = DEFAULT_LANGUAGE,
+  htmlLang,
   langDir,
   initialMessages,
   heroTitle,
   heroDescription,
+  t,
 } = Astro.props;
 ---
 
@@ -57,7 +60,6 @@ const {
   description={description}
   htmlLang={htmlLang}
   initialMessages={initialMessages}
-  description={description}
   canonicalUrl={canonicalUrl}
   ogImage={ogImage}
   ogType={ogType}
@@ -65,13 +67,11 @@ const {
   keywords={keywords}
   noindex={noindex}
   alternateLanguages={alternateLanguages}
-  structuredData={structuredData}
-  htmlLang={htmlLang}
-  initialMessages={initialMessages}>
+  structuredData={structuredData}>
   <ContentHero
     title={heroTitle}
     description={heroDescription}>
-    <slot name="badge">
+    <Fragment slot="badge">
       <span class="mr-1.5">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -85,8 +85,8 @@ const {
           ></path>
         </svg>
       </span>
-      Onetime Secret
-    </slot>
+      {t("onetime-secret-literal")}
+    </Fragment>
   </ContentHero>
   <div class="container mx-auto px-4 py-8">
     <Prose>

@@ -67,7 +67,8 @@ const { Content } = renderedContent;
 ---
 
 <ContentPageLayout
-  title={`${page.data.title} | Onetime Secret`}
+  t={t}
+  title={`${page.data.title} | ${t("onetime-secret-literal")}`}
   description={page.data.description || `${page.data.title} | Onetime Secret`}
   htmlLang={effectiveLang}
   initialMessages={effectiveInitialMessages}
