@@ -87,7 +87,8 @@ const changeLanguage = (path: string) => {
   <div class="relative">
     <Menu
       as="div"
-      class="relative inline-block text-left">
+      class="relative inline-block text-left"
+      v-slot="{ open }">
       <div>
         <MenuButton
           class="inline-flex w-full items-center justify-center gap-x-1.5 rounded-md bg-white dark:bg-gray-800 px-2 py-1.5 font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2"
@@ -103,8 +104,8 @@ const changeLanguage = (path: string) => {
           <span v-else>{{ currentLocale.toUpperCase() }}</span>
           <OIcon
             collection="heroicons"
-            name="chevron-up"
-            class="size-5 ml-1 -mr-1 text-gray-400 dark:text-gray-500"
+            name="chevron-down"
+            :class="['size-5 ml-1 -mr-1 text-gray-400 dark:text-gray-500', open ? 'transform rotate-180' : '']"
             aria-hidden="true" />
         </MenuButton>
       </div>
