@@ -24,7 +24,7 @@ const translations = enTranslations;
     <OIcon
       collection="heroicons"
       name="swatch"
-      class="h-5 w-5"
+      size="5"
     />
     <span class="ml-1.5 hidden sm:inline">
       {translations.web.theme?.toggleTheme}
@@ -44,7 +44,7 @@ const translations = enTranslations;
    * Applies the specified theme to the document and persists it.
    * @param {string} themeName - The name of the theme to apply.
    */
-  function applyTheme(themeName) {
+  function applyTheme(themeName: string) {
     if (!THEMES.includes(themeName)) {
       // console.warn(`Invalid theme: ${themeName}. Defaulting to ${THEMES[0]}.`);
       themeName = THEMES[0];

@@ -33,7 +33,7 @@ const switchToSuggestedRegion = () => {
       <div class="flex flex-wrap items-center justify-between">
         <div class="flex w-0 flex-1 items-center">
           <InformationCircleIcon
-            class="h-5 w-5 text-brand-400 dark:text-brand-800"
+            class="size-5 text-brand-400 dark:text-brand-800"
             aria-hidden="true" />
           <p
             class="ml-3 truncate font-medium text-brand-700 dark:text-slate-900 text-sm">
@@ -48,7 +48,7 @@ const switchToSuggestedRegion = () => {
             @click="dismissBanner">
             <span class="sr-only">Dismiss</span>
             <XMarkIcon
-              class="h-5 w-5"
+              class="size-5"
               aria-hidden="true" />
           </button>
         </div>

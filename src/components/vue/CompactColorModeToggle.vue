@@ -75,7 +75,7 @@ onMounted(() => {
     @click="toggleColorMode"
     :aria-label="t('web.accessibilityLabels.toggleColorTheme')"
   >
-    <SunIcon v-if="colorMode === 'dark'" class="h-5 w-5" aria-hidden="true" />
-    <MoonIcon v-else class="h-5 w-5" aria-hidden="true" />
+    <SunIcon v-if="colorMode === 'dark'" class="size-5" aria-hidden="true" />
+    <MoonIcon v-else class="size-5" aria-hidden="true" />
   </button>
 </template>

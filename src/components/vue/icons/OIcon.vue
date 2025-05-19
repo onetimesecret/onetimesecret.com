@@ -2,13 +2,13 @@
   Usage:
 
     <OIcon
-      class="size-5"
+      size="5"
       collection="heroicons-solid"
       name="ellipsis-vertical"
       aria-label="More options"  // Add aria-label for meaningful icons.
     />
     <OIcon
-      class="size-5"
+      size="5"
       collection="heroicons-solid"
       name="close"
       :aria-hidden="false"       // Override aria-hidden if the icon is interactive
