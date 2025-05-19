@@ -1,0 +1,40 @@
+---
+/**
+ * BrandBar.astro
+ *
+ * A fixed position colored bar at the top of the page using the brand color.
+ * This component is used to create a consistent brand identity across pages.
+ */
+
+export interface Props {
+  /**
+   * Height class for the bar (e.g., "h-1", "h-2")
+   * @default "h-1"
+   */
+  height?: string;
+
+  /**
+   * Z-index for the bar's positioning
+   * @default "z-[100]"
+   */
+  zIndex?: string;
+
+  /**
+   * Additional CSS classes to apply to the bar
+   */
+  class?: string;
+}
+
+const {
+  height = "h-1",
+  zIndex = "z-[100]",
+  class: additionalClasses = "",
+} = Astro.props;
+---
+
+<div class:list={[
+  "bg-brand-500 fixed top-0 left-0 w-full",
+  height,
+  zIndex,
+  additionalClasses
+]}></div>

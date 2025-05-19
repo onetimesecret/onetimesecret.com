@@ -34,7 +34,8 @@ export interface Props {
   langDir?: string;
   initialMessages?: Record<string, MessageSchema>;
   // Layout specific props
-  header?: boolean; // Whether to show the header
+  header?: boolean; // Whether to show the default header (true) or custom header via slot (false)
+  footer?: boolean; // Whether to show the footer (defaults to true)
 }
 
 // --------------------------
@@ -46,6 +47,7 @@ const {
   htmlLang = DEFAULT_LANGUAGE,
   initialMessages = { [DEFAULT_LANGUAGE]: enMessages as MessageSchema },
   header = true,
+  footer = true,
   // SEO related props are passed through to LayoutHead
   ...seoProps
 } = Astro.props;
@@ -67,7 +69,7 @@ if (import.meta.env.DEV) {
 }
 ---
 
-<!doctype html>
+<!DOCTYPE html>
 <html
   lang={effectiveLocale}
   dir={langDir}
@@ -77,24 +79,29 @@ if (import.meta.env.DEV) {
     langDir={langDir}
     {...seoProps}
   />
-  <body class="flex h-full flex-col bg-white dark:bg-gray-900">
+  <body class="flex h-full flex-col bg-white dark:bg-gray-900 overflow-x-hidden">
     {
-      header && (
+      /* If header prop is true, use LayoutHeader, otherwise render the header slot directly */
+      header ? (
         <LayoutHeader
           effectiveLocale={effectiveLocale}
           initialMessages={initialMessages}>
           <slot name="header" />
         </LayoutHeader>
+      ) : (
+        <slot name="header" />
       )
     }
-    <div class="flex-grow">
+    <main class="flex-grow bg-white dark:bg-gray-900">
       <slot />
-    </div>
-    <LayoutFooter
-      effectiveLocale={effectiveLocale}
-      initialMessages={initialMessages}>
-      <slot name="footer" />
-    </LayoutFooter>
+    </main>
+    {footer && (
+      <LayoutFooter
+        effectiveLocale={effectiveLocale}
+        initialMessages={initialMessages}>
+        <slot name="footer" />
+      </LayoutFooter>
+    )}
     <SvgSprites />
   </body>
 </html>
