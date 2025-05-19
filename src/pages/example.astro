@@ -1,0 +1,144 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { createLocaleI18n, type MessageSchema } from "@/i18n";
+import enMessages from "@/i18n/ui/en.json";
+import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
+import OIcon from "@/components/vue/icons/OIcon.vue";
+
+// Initialize i18n for the page
+const currentLang = DEFAULT_LANGUAGE;
+const currentLangMeta = LANGUAGE_META[currentLang];
+const pageScopedInitialMessages: Record<string, MessageSchema> = {
+  [currentLang]: enMessages,
+};
+
+// Initialize a page-specific i18n instance for SSR content
+const pageI18n = await createLocaleI18n(currentLang, pageScopedInitialMessages);
+const t = pageI18n.global.t;
+
+// Page metadata
+const pageTitle = "Example Page | Onetime Secret";
+const pageDescription = "An example page demonstrating the Onetime Secret layout structure";
+---
+
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  htmlLang={currentLang}
+  langDir={currentLangMeta.dir}
+  initialMessages={pageScopedInitialMessages}
+  header={true}
+>
+  <!-- Custom header content - this will appear inside the default header -->
+  <div slot="header">
+    <div class="bg-brand-600 text-white p-2 text-center">
+      Special announcement banner
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="py-12 bg-white dark:bg-gray-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="lg:text-center">
+        <h2 class="text-base text-brand-600 dark:text-brand-400 font-semibold tracking-wide uppercase">Example Page</h2>
+        <p class="mt-2 text-3xl leading-8 font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
+          Onetime Secret Layout Structure
+        </p>
+        <p class="mt-4 max-w-2xl text-xl text-gray-500 dark:text-gray-400 lg:mx-auto">
+          This page demonstrates how to use the new Astro layout components for consistent design across the site.
+        </p>
+      </div>
+
+      <div class="mt-16">
+        <div class="space-y-12">
+          <div class="relative">
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight mb-4">
+              Layout Features
+            </h3>
+            <div class="grid md:grid-cols-2 gap-8">
+              <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-gray-50 dark:bg-gray-800">
+                <div class="flex items-center mb-4">
+                  <OIcon collection="heroicons" name="code-bracket" class="h-6 w-6 text-brand-500" />
+                  <h4 class="ml-3 text-lg font-medium text-gray-900 dark:text-white">
+                    Modular Components
+                  </h4>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400">
+                  The layout is divided into modular components: LayoutHead, LayoutHeader, and LayoutFooter, all assembled by LayoutBase.
+                </p>
+              </div>
+
+              <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-gray-50 dark:bg-gray-800">
+                <div class="flex items-center mb-4">
+                  <OIcon collection="heroicons" name="adjustments-horizontal" class="h-6 w-6 text-brand-500" />
+                  <h4 class="ml-3 text-lg font-medium text-gray-900 dark:text-white">
+                    Customizable Slots
+                  </h4>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400">
+                  Use slots to customize header and footer content for specific pages while maintaining consistent structure.
+                </p>
+              </div>
+
+              <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-gray-50 dark:bg-gray-800">
+                <div class="flex items-center mb-4">
+                  <OIcon collection="heroicons" name="language" class="h-6 w-6 text-brand-500" />
+                  <h4 class="ml-3 text-lg font-medium text-gray-900 dark:text-white">
+                    Internationalization Support
+                  </h4>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400">
+                  Built-in support for multiple languages with automatic locale detection and text direction handling.
+                </p>
+              </div>
+
+              <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-gray-50 dark:bg-gray-800">
+                <div class="flex items-center mb-4">
+                  <OIcon collection="heroicons" name="swatch" class="h-6 w-6 text-brand-500" />
+                  <h4 class="ml-3 text-lg font-medium text-gray-900 dark:text-white">
+                    Theme Management
+                  </h4>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400">
+                  Centralized theme management with support for light, dark, high-contrast, and dyslexic themes.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-16 bg-brand-50 dark:bg-gray-800/50 p-8 rounded-xl border border-brand-100 dark:border-gray-700">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Using the Layout</h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-4">
+          Import the Layout component and use it as a wrapper for your page content:
+        </p>
+        <div class="bg-gray-800 text-gray-200 p-4 rounded-md overflow-x-auto text-sm font-mono">
+          <pre>&lt;Layout
+  title="Page Title"
+  description="Page description"
+  htmlLang="en"&gt;
+
+  &lt;!-- Main content --&gt;
+  &lt;div&gt;Your page content here&lt;/div&gt;
+
+  &lt;!-- Optional footer slot --&gt;
+  &lt;div slot="footer"&gt;Custom footer content&lt;/div&gt;
+&lt;/Layout&gt;</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom footer content - appears within the main footer component -->
+  <div slot="footer" class="bg-brand-50 dark:bg-gray-800/50 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <p class="text-sm font-medium text-brand-600 dark:text-brand-400">
+        This is a custom footer section added using the footer slot
+      </p>
+      <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+        The footer structure is provided by the Astro layout components
+      </p>
+    </div>
+  </div>
+</Layout>
