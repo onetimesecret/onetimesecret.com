@@ -94,8 +94,7 @@ const getPrice = (tier) => {
           <div class="relative mt-6">
             <p
               class="mx-auto max-w-2xl text-lg leading-8 text-white/60 dark:text-white/70">
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit. Velit
-              numquam eligendi quos odit doloribus molestiae voluptatum.
+              {{ t("web.pricing.secure-your-brand-and-build-customer-trust-with-") }}
             </p>
             <svg
               viewBox="0 0 1208 1024"
@@ -155,8 +154,8 @@ const getPrice = (tier) => {
                         :key="feature"
                         class="flex gap-x-3">
                         <OIcon
-                          collection="heroicons-solid"
-                          name="check"
+                          collection="heroicons"
+                          name="check-solid"
                           class="h-6 w-5 flex-none text-indigo-600 dark:text-indigo-400"
                           aria-hidden="true" />
                         {{ feature }}
@@ -166,9 +165,20 @@ const getPrice = (tier) => {
                   <a
                     :href="tier.href"
                     :aria-describedby="tier.id"
-                    class="mt-8 block rounded-md bg-indigo-600 px-3.5 py-2 text-center text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400"
-                    >Get started today</a
-                  >
+                    :class="[
+                      'mt-8 block font-brand rounded-md px-3.5 py-2 text-center text-lg font-semibold leading-6 shadow-sm',
+                      'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+                      tier.featured
+                        ? 'bg-brand-700 text-white dark:bg-brand-700 dark:text-white'
+                        : 'bg-brandcompdim-500 text-white dark:bg-brandcompdim-500 dark:text-white',
+                      tier.featured
+                        ? 'hover:bg-brand-500 hover:text-white dark:hover:bg-brand-500 dark:hover:text-white'
+                        : 'hover:bg-brandcomp-500 hover:text-white dark:hover:bg-brandcomp-500 dark:hover:text-white',
+                      tier.featured
+                        ? 'focus-visible:outline-brand-600'
+                        : 'focus-visible:outline-brandcomp-600',
+                    ]"
+                    >{{ tier.cta }}</a>
                 </div>
                 <div
                   class="flex flex-col items-start gap-x-8 gap-y-6 rounded-3xl p-8 ring-1 ring-gray-900/10 dark:ring-gray-700 sm:gap-y-10 sm:p-10 lg:col-span-2 lg:flex-row lg:items-center">
@@ -180,14 +190,16 @@ const getPrice = (tier) => {
                     </h3>
                     <p
                       class="mt-1 text-base leading-7 text-gray-600 dark:text-gray-300">
-                        Are you a student or a non-profit organization? Or maybe you really like discounts? We offer a discounte subscription for you.
+                      Are you a student or a non-profit organization? Or maybe
+                      you really like discounts? We offer a discounted
+                      subscription for you.
                     </p>
                   </div>
                   <a
-                    href="#"
+                    href="/feedback"
                     aria-describedby="discounted-tier"
                     class="rounded-md px-3.5 py-2 text-sm font-semibold leading-6 text-indigo-600 ring-1 ring-inset ring-indigo-200 hover:ring-indigo-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:text-indigo-400 dark:ring-indigo-700 dark:hover:ring-indigo-600 dark:focus-visible:outline-indigo-500"
-                    >Buy discounted license
+                    >Contact Us
                     <span aria-hidden="true">&rarr;</span></a
                   >
                 </div>
