@@ -145,7 +145,7 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
   />
   <script is:inline>
     // Minimal inline script to prevent FOUC - matches ThemeManager utility implementation
-    const AVAILABLE_THEMES = ["light", "dark", "high-contrast", "dyslexic"];
+    import AVAILABLE_THEMES from "@/utils/theme";
     let themeToApply = "light"; // Default theme
 
     try {
