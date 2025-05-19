@@ -11,6 +11,24 @@
   import { RadioGroup, RadioGroupOption } from '@headlessui/vue';
   import { onMounted, ref } from 'vue';
   import { useI18n } from 'vue-i18n';
+  import { setLanguage, setLanguageWithMessages, type MessageSchema } from '@/i18n';
+
+  const props = defineProps<{
+    locale: string;
+    htmlLang?: string;
+    langDir?: string;
+    initialMessages?: Record<string, MessageSchema>;
+  }>();
+
+  // Initialize i18n with provided messages
+  if (props.initialMessages && props.locale) {
+    setLanguageWithMessages(props.locale, props.initialMessages);
+  } else {
+    // Fallback initialization on mount if no messages provided
+    onMounted(async () => {
+      await setLanguage(props.locale);
+    });
+  }
 
   const { t } = useI18n();
   const frequency = ref<PaymentFrequency>(frequencies[0]);

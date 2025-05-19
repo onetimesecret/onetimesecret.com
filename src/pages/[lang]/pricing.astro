@@ -58,6 +58,8 @@ const pageDescription = t("web.pricing.description");
   <Pricing
     client:load
     locale={currentLang}
+    htmlLang={currentLang}
+    langDir={currentLangMeta.dir}
     initialMessages={pageScopedInitialMessages}
   />
 </MainLayout>

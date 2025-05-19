@@ -11,17 +11,38 @@ import {
 } from "@/i18n";
 import enMessages from "@/i18n/ui/en.json";
 import ContentPageLayout from "@/layouts/ContentPageLayout.astro";
-import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
+import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
 import { getCollection } from "astro:content";
 
 export async function getStaticPaths() {
   return getLanguagePaths();
 }
 
-const { lang = DEFAULT_LANGUAGE } = Astro.params as { lang: SupportedLanguage };
+interface Props {
+  lang: SupportedLanguage;
+  langMeta: {
+    name: string;
+    locale: string;
+    dir: string;
+  };
+  initialMessages: Record<string, MessageSchema>;
+}
+
+// Get props from Astro.props as well as params
+const {
+  lang: propsLang,
+  langMeta,
+  initialMessages: propsMessages,
+} = Astro.props;
+const { lang: paramsLang = DEFAULT_LANGUAGE } = Astro.params as {
+  lang?: SupportedLanguage;
+};
+
+// Use props lang if available, otherwise use params lang
+const lang = propsLang || paramsLang;
 
 // Setup initial messages for i18n
-const initialMessages = {
+const initialMessages = propsMessages || {
   [DEFAULT_LANGUAGE]: enMessages as MessageSchema,
 };
 
@@ -50,6 +71,7 @@ const { Content } = renderedContent;
   title={`${page.data.title} | Onetime Secret`}
   description={page.data.description || `${page.data.title} | Onetime Secret`}
   htmlLang={lang}
+  langDir={langMeta?.dir || LANGUAGE_META[lang]?.dir || "ltr"}
   initialMessages={initialMessages}
   heroTitle={page.data.title}
   heroDescription={page.data.description}>

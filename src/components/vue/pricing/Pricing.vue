@@ -11,6 +11,8 @@
 
   const props = defineProps<{
     locale: string;
+    htmlLang?: string;
+    langDir?: string;
     initialMessages?: Record<string, MessageSchema>;
   }>();
 
