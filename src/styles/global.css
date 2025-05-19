@@ -3,6 +3,5 @@
 /* Base styles */
 @layer base {
   html {
-    @apply antialiased;
   }
 }

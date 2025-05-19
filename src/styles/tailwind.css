@@ -1,8 +1,26 @@
 /* src/tailwind.css */
-@layer base, theme, components, utilities;
+@layer theme, base, components, utilities;
 
+@import "tailwindcss/preflight.css" layer(base);
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
+
+/**
+ * @see https://github.com/tailwindlabs/tailwindcss/blob/main/packages/tailwindcss/preflight.css
+ *
+ * In tailwind 4, this enables colour mode (similar to `darkMode: 'class'`
+ * in the `tailwind.config.ts` in 3.x). Also note that single-line comments
+ * are not supported in CSS and break colour mode. This breaks the colour mode.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/**
+ * Misc gotchas:
+ * - Unstyled lists are not announced as lists by VoiceOver.
+ * - Other than the initial `@import "tailwindcss";` in global.css,
+ *    all tailwind config should be in here. Even when the two css files
+ *    are imported sequentially, if they go in global.css things get weird.
+ */
 
 @theme {
   /* Custom accent colors (using brandColour). */
