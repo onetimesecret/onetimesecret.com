@@ -18,8 +18,8 @@ export function createConfig(): AstroUserConfig["env"] {
       }),
 
       // Public API base URL for homepage secret link UI
-      // import { PUBLIC_API_BASE_URL } from "astro:env/client";
-      PUBLIC_API_BASE_URL: envField.string({
+      // import { VITE_PUBLIC_API_BASE_URL } from "astro:env/client";
+      VITE_PUBLIC_API_BASE_URL: envField.string({
         context: "client",
         access: "public",
         default: "https://dev.onetime.dev",

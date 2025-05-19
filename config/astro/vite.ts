@@ -103,9 +103,9 @@ export function createConfig(
       "process.env.VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS": JSON.stringify(
         viteAdditionalServerAllowedHosts,
       ),
-      // Define PUBLIC_API_BASE_URL explicitly to ensure it's available in client code
-      "process.env.PUBLIC_API_BASE_URL": JSON.stringify(
-        env.PUBLIC_API_BASE_URL,
+      // Define VITE_PUBLIC_API_BASE_URL explicitly to ensure it's available in client code
+      "process.env.VITE_PUBLIC_API_BASE_URL": JSON.stringify(
+        env.VITE_PUBLIC_API_BASE_URL,
       ),
 
       /**

@@ -1,7 +1,6 @@
 // src/stores/jurisdictionStore.ts
-import { atom, computed } from 'nanostores';
-import { jurisdictions as initialJurisdictions } from '@/data/ops/jurisdictions';
-import { useI18n } from 'vue-i18n';
+import { jurisdictions as initialJurisdictions } from "@/data/ops/jurisdictions";
+import { atom, computed } from "nanostores";
 
 /**
  * Jurisdiction interface representing a regional deployment option with data sovereignty
@@ -21,14 +20,15 @@ export interface Jurisdiction {
 }
 
 // Store the available jurisdictions
-export const availableJurisdictions = atom<Jurisdiction[]>(initialJurisdictions);
+export const availableJurisdictions =
+  atom<Jurisdiction[]>(initialJurisdictions);
 
 // Store the currently selected jurisdiction
 export const currentJurisdiction = atom<Jurisdiction>(initialJurisdictions[0]);
 
 // Computed store for the API base URL based on the current jurisdiction
 export const apiBaseUrl = computed(currentJurisdiction, (jurisdiction) => {
-  const baseUrl = import.meta.env.PUBLIC_API_BASE_URL;
+  const baseUrl = import.meta.env.VITE_PUBLIC_API_BASE_URL;
   return baseUrl || `https://${jurisdiction.domain}`;
 });
 
@@ -37,8 +37,12 @@ export const apiBaseUrl = computed(currentJurisdiction, (jurisdiction) => {
  * @param identifier The jurisdiction identifier to set as current
  * @returns The newly set jurisdiction or undefined if not found
  */
-export function setJurisdictionByIdentifier(identifier: string): Jurisdiction | undefined {
-  const jurisdiction = availableJurisdictions.get().find(j => j.identifier === identifier);
+export function setJurisdictionByIdentifier(
+  identifier: string,
+): Jurisdiction | undefined {
+  const jurisdiction = availableJurisdictions
+    .get()
+    .find((j) => j.identifier === identifier);
 
   if (jurisdiction) {
     currentJurisdiction.set(jurisdiction);
