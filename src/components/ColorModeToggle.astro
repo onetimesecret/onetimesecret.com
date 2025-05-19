@@ -108,50 +108,74 @@ const translations = enTranslations;
 
   /**
    * Initializes the theme system on page load.
-   * Sets the theme based on localStorage or system preference.
-   * Adds listener for system preference changes for 'light'/'dark' themes.
+   * This function runs after an inline script in Layout.astro has already made an
+   * initial attempt to set the theme to prevent FOUC. This function ensures
+   * full synchronization (e.g., meta tags, localStorage consistency) and sets up
+   * listeners for dynamic theme changes.
    */
   function initThemeSystem() {
-    let initialTheme = THEMES[0]; // Default to the first theme in the list ('light')
+    let effectiveTheme = THEMES[0]; // Default to 'light'
+
     try {
       const storedTheme = localStorage.getItem("theme");
       if (storedTheme && THEMES.includes(storedTheme)) {
-        initialTheme = storedTheme;
+        effectiveTheme = storedTheme;
       } else {
-        // No valid theme in localStorage, check system preference for dark mode
-        // This only influences the choice between 'light' and 'dark' for the initial setup.
-        const prefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)",
-        ).matches;
-        if (prefersDark) {
-          initialTheme = "dark";
+        // If localStorage is not set or invalid, rely on the class set by the inline script
+        // or infer if the inline script based its decision on prefers-color-scheme and didn't store it.
+        for (const theme of THEMES) {
+          if (document.documentElement.classList.contains(theme)) {
+            effectiveTheme = theme;
+            break;
+          }
         }
-        // If not prefersDark, it remains the default 'light' (or THEMES[0])
+        // If no theme class found (highly unlikely if inline script ran), effectiveTheme remains THEMES[0].
+        // applyTheme below will then ensure localStorage is set.
       }
     } catch (e) {
-      // localStorage might be unavailable, try to guess from class
-      if (document.documentElement.classList.contains("dark"))
-        initialTheme = "dark";
-      // console.error("Failed to initialize theme from localStorage:", e);
+      // localStorage might be inaccessible. Fallback to checking documentElement.
+      // console.warn("localStorage access error during theme init. Checking documentElement.", e);
+      for (const theme of THEMES) {
+        if (document.documentElement.classList.contains(theme)) {
+          effectiveTheme = theme;
+          break;
+        }
+      }
     }
 
-    applyTheme(initialTheme); // Apply and save the determined initial theme
+    // Ensure all aspects of the theme are correctly applied/updated.
+    // This will update localStorage if it was missing or inferred from class,
+    // set meta tags, and ensure Tailwind's .dark class is correct.
+    applyTheme(effectiveTheme);
 
     // Listen for changes in system color scheme preference
     window
       .matchMedia("(prefers-color-scheme: dark)")
       .addEventListener("change", (e) => {
-        let themeToConsider = THEMES[0];
+        let currentThemeInStorage = THEMES[0]; // Default to 'light'
         try {
-          themeToConsider = localStorage.getItem("theme") || THEMES[0];
+          // Check localStorage first, as this reflects the user's explicit choice.
+          const stored = localStorage.getItem("theme");
+          if (stored && THEMES.includes(stored)) {
+            currentThemeInStorage = stored;
+          } else {
+            // If localStorage is invalid/empty, infer from current classes
+            currentThemeInStorage = document.documentElement.classList.contains("dark") ? "dark" : "light";
+            if (!THEMES.includes(currentThemeInStorage)) currentThemeInStorage = THEMES[0];
+          }
         } catch (err) {
-          /* ignore */
+          // Fallback if localStorage is inaccessible
+          // console.warn("localStorage access error in theme change listener.", err);
+          currentThemeInStorage = document.documentElement.classList.contains("dark") ? "dark" : "light";
+          if (!THEMES.includes(currentThemeInStorage)) currentThemeInStorage = THEMES[0];
         }
 
-        // Only adjust if the current theme is 'light' or 'dark'
-        if (themeToConsider === "light" || themeToConsider === "dark") {
+        // Only react to system changes if the user hasn't explicitly chosen a
+        // persistent theme like 'high-contrast' or 'dyslexic' (checked via localStorage).
+        if (currentThemeInStorage === "light" || currentThemeInStorage === "dark") {
           const newSystemTheme = e.matches ? "dark" : "light";
-          if (newSystemTheme !== themeToConsider) {
+          // Only apply if the system theme is different from the current theme
+          if (newSystemTheme !== currentThemeInStorage) {
             applyTheme(newSystemTheme);
           }
         }

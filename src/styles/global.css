@@ -2,8 +2,14 @@
 
 /* Base styles */
 @layer base {
+  :root {
+    --header-height: 4rem; /* Default header height */
+  }
+
   html {
     /* General HTML base styles can go here if needed */
+    scroll-behavior: smooth;
+    scroll-padding-top: var(--header-height);
   }
 
   /* Example high-contrast theme */
