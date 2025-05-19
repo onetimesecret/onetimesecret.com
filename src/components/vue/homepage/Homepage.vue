@@ -13,6 +13,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { setLanguage } from "@/i18n";
 import { setLanguageWithMessages, type MessageSchema } from "@/i18n";
+import { jurisdictions } from "@/data/ops/jurisdictions.ts";
 
 import SecretFormLite from "@/components/vue/homepage/SecretFormLite.vue";
 import UseCaseSelector from "@/components/vue/homepage/UseCaseSelector.vue";
@@ -40,45 +41,7 @@ const suggestedDomain = ref("");
 const baseUrl = import.meta.env.PUBLIC_API_BASE_URL;
 
 // Region configuration for the selector
-const availableRegions = computed(() => [
-  // Make availableRegions a computed property to use t() reactively
-  {
-    identifier: "EU",
-    displayName: t("web.secrets.europe") || "European Union",
-    domain: "eu.onetimesecret.com",
-    icon: {
-      collection: "fa6-solid",
-      name: "earth-europe",
-    },
-  },
-  {
-    identifier: "CA",
-    displayName: "Canada",
-    domain: "ca.onetimesecret.com",
-    icon: {
-      collection: "fa6-solid",
-      name: "earth-americas",
-    },
-  },
-  {
-    identifier: "NZ",
-    displayName: "Aotearoa New Zealand",
-    domain: "nz.onetimesecret.com",
-    icon: {
-      collection: "fa6-solid",
-      name: "earth-oceania",
-    },
-  },
-  {
-    identifier: "US",
-    displayName: "United States",
-    domain: "us.onetimesecret.com",
-    icon: {
-      collection: "fa6-solid",
-      name: "earth-americas",
-    },
-  },
-]);
+const availableRegions = computed(() => jurisdictions.map(j => j.identifier));
 
 // Default to EU region or determine from current domain
 const currentRegion = ref<Region>(availableRegions.value[0]);
