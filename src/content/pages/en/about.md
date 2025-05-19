@@ -3,22 +3,41 @@ title: About Us
 
 ---
 
-# About Us
+Hi, I'm Delano, the creator of Onetime Secret. What began in 2012 as a straightforward, secure way to share sensitive information has evolved far beyond the initial vision. More than a decade later, we're fully in the "secrets" service business, serving use cases I never imagined.
 
-Hi, I'm Delano, the creator of Onetime Secret. What started in 2012 as a simple, secure way to share sensitive information has grown beyond our wildest expectations. Over a decade later, we're facilitating the secure sharing of millions of secrets monthly, with use cases we never imagined.
+## Recent History
 
-The first half of 2024 has been our busiest period yet. We're grateful that people have continued to use and share our product for more than a decade. We're currently working on improvements that we think will make the service even more useful — we'll share more details soon.
+2024 was our biggest year yet by a slim margin (we had a week-long DDoS attack that also set us back in search results). Better yet, it marked a turning point for us in the numbers game: August 2024 saw the introduction of our first subscription offerings, turning a neat hobby into a fledgling business (we call them goslings in Canada).
 
-True to our roots, [our code remains open-source](https://github.com/onetimesecret/onetimesecret) on GitHub. As we navigate the evolving landscape of digital privacy and security, we're committed to transparency and continual improvement.
+This past year we've been on an incredible development streak:
+- Released 8 major versions from  [0.12](https://github.com/onetimesecret/onetimesecret/releases/tag/v0.12.0) -> [0.19](https://github.com/onetimesecret/onetimesecret/releases/tag/v0.19.0)
+- Introduced [custom domains and branding](https://docs.onetimesecret.com/en/custom-domains/)
+- Launched in multiple regions, including [US](https://us.onetimesecret.com), [Canada](https://ca.onetimesecret.com), and [Aotearoa New Zealand](https://nz.onetimesecret.com)
+- Published [20+ articles](https://blog.onetimesecret.com/) on our blog (with AI-generated artwork that's been an interesting experiment)
 
-Thank you for being part of our journey. Here's to another decade of secure, ephemeral sharing.
+## Moving Forward
 
-If you have any questions, there is a feedback form at the bottom of (almost) every page.
+It's 2025, and we're still sticking to the [core principles](https://docs.onetimesecret.com/en/principles/) that got us started. [Our code is open-source](https://github.com/onetimesecret/onetimesecret) because we believe in transparency, community input, and sharing good stuff.
 
----
+As digital privacy and internet challenges evolve, so do we – tweaking security, making things easier to use, and ensuring our service works well for everyone who needs it.
+
+Here's to another year of helping people share secrets safely.
+
+> Did you know? Back in 2011, Drew Carey suggested that "One Time Secret" would make a [good band name](https://x.com/DrewFromTV/status/142730130689761280). The music industry's loss was the internet's gain.
+
+## The Suggestion Box
+
+Got questions or ideas? There's a [feedback form](https://onetimesecret.com/feedback) at the bottom of (almost) every page.
 
 Happy sharing,
 Delano
+
+![Delano](@/assets/img/delano-g.png)
+
+---
+
+
+
 
 ## F.A.Q.
 
