@@ -13,19 +13,21 @@ const translations = enTranslations;
 
 <div class="flex flex-col items-end">
   <h3
-    class="mb-2 hidden text-sm font-medium text-gray-700 md:block dark:text-gray-300"
-  >
+    class="mb-2 hidden text-sm font-medium text-gray-700 md:block dark:text-gray-300">
     {translations.web.theme?.title || "Theme"}
   </h3>
   <button
     id="theme-cycler-button"
     class="focus:ring-brand-500 inline-flex items-center rounded-md px-2 py-1 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 focus:ring-2 focus:outline-none dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
     aria-label={translations.web.accessibilityLabels?.toggleColorTheme ||
-      "Cycle color theme"}
-  >
-    <OIcon collection="heroicons" name="swatch" class="h-5 w-5" />
+      "Cycle color theme"}>
+    <OIcon
+      collection="heroicons"
+      name="swatch"
+      class="h-5 w-5"
+    />
     <span class="ml-1.5 hidden sm:inline">
-      {translations.web.theme?.toggleTheme || "Cycle Theme"}
+      {translations.web.theme?.toggleTheme}
     </span>
   </button>
 </div>
@@ -35,7 +37,7 @@ const translations = enTranslations;
    * Theme management for Astro components, supporting multiple themes.
    * Manages theme persistence, cycling, and system preference detection for initial theme.
    */
-  const THEMES = ['light', 'dark', 'high-contrast', 'dyslexic'];
+  const THEMES = ["light", "dark", "high-contrast", "dyslexic"];
   let initialized = false;
 
   /**
@@ -49,20 +51,20 @@ const translations = enTranslations;
     }
 
     // Remove all known theme classes from <html>
-    THEMES.forEach(t => document.documentElement.classList.remove(t));
+    THEMES.forEach((t) => document.documentElement.classList.remove(t));
     // Explicitly remove 'dark' class that Tailwind uses, in case a previous theme was 'dark'
-    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.remove("dark");
 
     // Add the new theme class
     document.documentElement.classList.add(themeName);
 
     // If the current theme is 'dark', add the 'dark' class for Tailwind CSS dark variants
-    if (themeName === 'dark') {
-      document.documentElement.classList.add('dark');
+    if (themeName === "dark") {
+      document.documentElement.classList.add("dark");
     }
 
     try {
-      localStorage.setItem('theme', themeName);
+      localStorage.setItem("theme", themeName);
     } catch (e) {
       // console.error("Failed to save theme to localStorage:", e);
     }
@@ -70,13 +72,13 @@ const translations = enTranslations;
     // Update meta color-scheme for browser UI elements
     const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
     if (metaColorScheme) {
-      if (themeName === 'dark') {
-        metaColorScheme.setAttribute('content', 'dark light');
+      if (themeName === "dark") {
+        metaColorScheme.setAttribute("content", "dark light");
       } else {
         // For 'light', 'high-contrast', 'dyslexic', assume they are light-based
         // or define their own base colors. 'light dark' tells the browser
         // the component supports light mode primarily and dark mode secondarily.
-        metaColorScheme.setAttribute('content', 'light dark');
+        metaColorScheme.setAttribute("content", "light dark");
       }
     }
   }
@@ -85,16 +87,19 @@ const translations = enTranslations;
    * Cycles to the next theme in the THEMES array and applies it.
    */
   function cycleTheme() {
-    let currentTheme = 'light';
+    let currentTheme = "light";
     try {
-      currentTheme = localStorage.getItem('theme') || THEMES[0];
+      currentTheme = localStorage.getItem("theme") || THEMES[0];
     } catch (e) {
       // Fallback if localStorage is inaccessible
-      currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : THEMES[0];
+      currentTheme = document.documentElement.classList.contains("dark")
+        ? "dark"
+        : THEMES[0];
     }
 
     let currentIndex = THEMES.indexOf(currentTheme);
-    if (currentIndex === -1) { // Fallback if stored theme is invalid
+    if (currentIndex === -1) {
+      // Fallback if stored theme is invalid
       currentIndex = 0;
     }
     const nextIndex = (currentIndex + 1) % THEMES.length;
@@ -109,41 +114,48 @@ const translations = enTranslations;
   function initThemeSystem() {
     let initialTheme = THEMES[0]; // Default to the first theme in the list ('light')
     try {
-      const storedTheme = localStorage.getItem('theme');
+      const storedTheme = localStorage.getItem("theme");
       if (storedTheme && THEMES.includes(storedTheme)) {
         initialTheme = storedTheme;
       } else {
         // No valid theme in localStorage, check system preference for dark mode
         // This only influences the choice between 'light' and 'dark' for the initial setup.
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
         if (prefersDark) {
-          initialTheme = 'dark';
+          initialTheme = "dark";
         }
         // If not prefersDark, it remains the default 'light' (or THEMES[0])
       }
     } catch (e) {
       // localStorage might be unavailable, try to guess from class
-      if (document.documentElement.classList.contains('dark')) initialTheme = 'dark';
+      if (document.documentElement.classList.contains("dark"))
+        initialTheme = "dark";
       // console.error("Failed to initialize theme from localStorage:", e);
     }
 
     applyTheme(initialTheme); // Apply and save the determined initial theme
 
     // Listen for changes in system color scheme preference
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-      let themeToConsider = THEMES[0];
-       try {
-        themeToConsider = localStorage.getItem('theme') || THEMES[0];
-      } catch (err) { /* ignore */ }
-
-      // Only adjust if the current theme is 'light' or 'dark'
-      if (themeToConsider === 'light' || themeToConsider === 'dark') {
-        const newSystemTheme = e.matches ? 'dark' : 'light';
-        if (newSystemTheme !== themeToConsider) {
-          applyTheme(newSystemTheme);
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (e) => {
+        let themeToConsider = THEMES[0];
+        try {
+          themeToConsider = localStorage.getItem("theme") || THEMES[0];
+        } catch (err) {
+          /* ignore */
         }
-      }
-    });
+
+        // Only adjust if the current theme is 'light' or 'dark'
+        if (themeToConsider === "light" || themeToConsider === "dark") {
+          const newSystemTheme = e.matches ? "dark" : "light";
+          if (newSystemTheme !== themeToConsider) {
+            applyTheme(newSystemTheme);
+          }
+        }
+      });
   }
 
   /**
@@ -156,17 +168,17 @@ const translations = enTranslations;
 
     initThemeSystem();
 
-    const cycleButton = document.getElementById('theme-cycler-button');
+    const cycleButton = document.getElementById("theme-cycler-button");
     if (cycleButton) {
-      cycleButton.addEventListener('click', cycleTheme);
+      cycleButton.addEventListener("click", cycleTheme);
     }
   }
 
   // Initialize the theme system
-  if (typeof window !== 'undefined') {
-    if (document.readyState === 'loading') {
+  if (typeof window !== "undefined") {
+    if (document.readyState === "loading") {
       // Document is still loading, wait for DOMContentLoaded
-      document.addEventListener('DOMContentLoaded', runOnceInitialize);
+      document.addEventListener("DOMContentLoaded", runOnceInitialize);
     } else {
       // DOM is already interactive or complete
       runOnceInitialize();

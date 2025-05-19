@@ -191,6 +191,31 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
       http-equiv="Content-Security-Policy"
       content={`default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src ${connectSrcDirective}; worker-src 'self' blob:;`}
     />
+    <script is:inline>
+      // Minimal inline script to prevent FOUC
+      // Duplicates parts of ColorModeToggle.astro logic for immediate application
+      const THEMES = ["light", "dark", "high-contrast", "dyslexic"];
+      let themeToApply = "light"; // Default theme
+      try {
+        const storedTheme = localStorage.getItem("theme");
+        if (storedTheme && THEMES.includes(storedTheme)) {
+          themeToApply = storedTheme;
+        } else {
+          const prefersDark = window.matchMedia(
+            "(prefers-color-scheme: dark)",
+          ).matches;
+          if (prefersDark) {
+            themeToApply = "dark";
+          }
+        }
+      } catch (e) {
+        // localStorage might be unavailable
+      }
+      document.documentElement.classList.add(themeToApply);
+      if (themeToApply === "dark") {
+        document.documentElement.classList.add("dark"); // For Tailwind
+      }
+    </script>
     <title>{pageTitle}</title>
   </head>
   <body class="flex h-full flex-col bg-white dark:bg-gray-900">
