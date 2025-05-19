@@ -4,7 +4,7 @@
 @import "tailwindcss/preflight.css" layer(base);
 @import "tailwindcss/theme.css" layer(theme); /* Contains default Tailwind theme variables */
 @import "tailwindcss/utilities.css" layer(utilities);
-
+@plugin "@tailwindcss/typography";
 /**
  * @see https://github.com/tailwindlabs/tailwindcss/blob/main/packages/tailwindcss/preflight.css
  *
@@ -76,7 +76,8 @@
   --color-gray-950: var(--color-neutral-950);
 
   /* Custom brand font family. */
-  --font-brand: "Zilla Slab", var(--font-serif); /* var(--font-serif) is a Tailwind default */
+  --font-brand:
+    "Zilla Slab", var(--font-serif); /* var(--font-serif) is a Tailwind default */
 
   /* Custom brand color palette. */
   --color-brand-50: #fcf8f2;
@@ -136,3 +137,24 @@
   preferably within their respective layers (@layer components or @layer utilities).
   https://tailwindcss.com/docs/adding-custom-styles#using-custom-css
 */
+
+/**
+ * re: safelist support in TailwindCSS 4.
+ * @see https://github.com/tailwindlabs/tailwindcss/discussions/15291#discussioncomment-12875846
+ * safelist: [
+ *  "rounded-l-sm",
+ *  "rounded-r-sm",
+ *  "rounded-l-md",
+ *  "rounded-r-md",
+ *  "rounded-l-lg",
+ *  "rounded-r-lg",
+ *  "rounded-l-xl",
+ *  "rounded-r-xl",
+ *  "rounded-l-2xl",
+ *  "rounded-r-2xl",
+ *  "rounded-l-3xl",
+ *  "rounded-r-3xl",
+ *  "rounded-l-full",
+ *  "rounded-r-full",
+ * ],
+ */

@@ -26,8 +26,9 @@
   /* Example dyslexic-friendly theme */
   html.dyslexic {
     --background-color: #f0e8c0; /* Creamy background */
-    --text-color: #3a2b2b;      /* Dark brown text */
-    --font-family: "Arial", sans-serif; /* Or a specific dyslexic-friendly font */
+    --text-color: #3a2b2b; /* Dark brown text */
+    --font-family:
+      "Arial", sans-serif; /* Or a specific dyslexic-friendly font */
     /* ... other dyslexic-friendly variables */
   }
   body.dyslexic {

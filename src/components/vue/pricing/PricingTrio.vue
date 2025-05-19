@@ -161,6 +161,7 @@
                 :href="`${tier.href}${frequency.priceSuffix}`"
                 :aria-label="`${tier.cta} for ${tier.name} plan`"
                 :aria-describedby="`tier-${tier.id}`"
+                class="font-brand font-semibold"
                 :class="[
                   tier.featured
                     ? 'bg-brandcomp-800 text-white hover:bg-brandcomp-900 focus-visible:outline-brandcomp-500 dark:bg-brand-600 dark:hover:bg-brand-700'

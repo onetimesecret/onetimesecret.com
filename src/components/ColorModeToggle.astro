@@ -37,7 +37,7 @@ const translations = enTranslations;
    * Theme management for Astro components, supporting multiple themes.
    * Manages theme persistence, cycling, and system preference detection for initial theme.
    */
-  const THEMES = ["light", "dark", "high-contrast", "dyslexic"];
+  const THEMES = ["light", "dark"]; // , "high-contrast", "dyslexic"
   let initialized = false;
 
   /**
@@ -160,19 +160,32 @@ const translations = enTranslations;
             currentThemeInStorage = stored;
           } else {
             // If localStorage is invalid/empty, infer from current classes
-            currentThemeInStorage = document.documentElement.classList.contains("dark") ? "dark" : "light";
-            if (!THEMES.includes(currentThemeInStorage)) currentThemeInStorage = THEMES[0];
+            currentThemeInStorage = document.documentElement.classList.contains(
+              "dark",
+            )
+              ? "dark"
+              : "light";
+            if (!THEMES.includes(currentThemeInStorage))
+              currentThemeInStorage = THEMES[0];
           }
         } catch (err) {
           // Fallback if localStorage is inaccessible
           // console.warn("localStorage access error in theme change listener.", err);
-          currentThemeInStorage = document.documentElement.classList.contains("dark") ? "dark" : "light";
-          if (!THEMES.includes(currentThemeInStorage)) currentThemeInStorage = THEMES[0];
+          currentThemeInStorage = document.documentElement.classList.contains(
+            "dark",
+          )
+            ? "dark"
+            : "light";
+          if (!THEMES.includes(currentThemeInStorage))
+            currentThemeInStorage = THEMES[0];
         }
 
         // Only react to system changes if the user hasn't explicitly chosen a
         // persistent theme like 'high-contrast' or 'dyslexic' (checked via localStorage).
-        if (currentThemeInStorage === "light" || currentThemeInStorage === "dark") {
+        if (
+          currentThemeInStorage === "light" ||
+          currentThemeInStorage === "dark"
+        ) {
           const newSystemTheme = e.matches ? "dark" : "light";
           // Only apply if the system theme is different from the current theme
           if (newSystemTheme !== currentThemeInStorage) {
