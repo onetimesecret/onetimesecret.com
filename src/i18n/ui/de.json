@@ -64,7 +64,19 @@
     },
     "pricing": {
       "title": "Preispläne | Onetime Secret",
-      "description": "Wählen Sie den perfekten Plan für Ihre Bedürfnisse zum sicheren Informationsaustausch. Von kostenlosen Basisplänen bis hin zu Premium-Optionen mit benutzerdefinierten Domains und dedizierter Infrastruktur."
+      "description": "Wählen Sie den perfekten Plan für Ihre Bedürfnisse zum sicheren Informationsaustausch. Von kostenlosen Basisplänen bis hin zu Premium-Optionen mit benutzerdefinierten Domains und dedizierter Infrastruktur.",
+      "includes-all-features-and-unlimited-sharing-capa": "Alle Pläne beinhalten Datenschutzfunktionen und unbegrenzte Teilkapazität",
+      "includes-all-data-locality-options": "Alle Pläne beinhalten die Wahl der Datenlokalität: {0} Regionen",
+      "get-started": "Loslegen",
+      "frequency-value-annually-annual-monthly-subscrip": "{0} Abonnement",
+      "features": "Funktionen",
+      "elevate-your-secure-sharing-with-custom-domains-": "Verbessere dein sicheres Teilen mit benutzerdefinierten Domains, unbegrenzter Kapazität und Funktionen auf Unternehmensniveau.",
+      "payment-frequency": "Zahlungsfrequenz",
+      "secure-your-brand-and-build-customer-trust-with-": "Sichere deine Marke und baue Kundenvertrauen mit Links von deiner Domain auf. Perfekt für Unternehmen, die Wert auf Datenschutz und Professionalität legen.",
+      "secure-links-stronger-connections": "Sichere Links, stärkere Verbindungen",
+      "identity-tier-not-found-in-product-tiers": "Identity-Stufe in Produktstufen nicht gefunden",
+      "onetime-secret-helps-us-share-sensitive-informat": "Onetime Secret hilft uns, sensible Informationen sicher zu teilen und gleichzeitig unsere professionelle Fassade zu wahren.",
+      "information-shared-through-this-service-can-only": "Informationen, die über diesen Dienst geteilt werden, können nur einmal abgerufen werden. Nach dem Ansehen wird der Inhalt dauerhaft gelöscht, um die Vertraulichkeit zu gewährleisten."
     },
     "errors": {
       "errorTitle": "Nicht erfolgreich",

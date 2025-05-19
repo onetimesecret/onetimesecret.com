@@ -64,7 +64,19 @@
     },
     "pricing": {
       "title": "Plans tarifaires | Onetime Secret",
-      "description": "Choisissez le plan parfait pour vos besoins de partage d'informations sécurisées. Des plans gratuits de base aux options premium avec domaines personnalisés et infrastructure dédiée."
+      "description": "Choisissez le plan parfait pour vos besoins de partage d'informations sécurisées. Des plans gratuits de base aux options premium avec domaines personnalisés et infrastructure dédiée.",
+      "includes-all-features-and-unlimited-sharing-capa": "Comprend toutes les fonctionnalités et une capacité de partage illimitée",
+      "includes-all-data-locality-options": "Tous les forfaits incluent le choix de localité des données : régions {0}",
+      "get-started": "Commencer",
+      "frequency-value-annually-annual-monthly-subscrip": "{0} souscription",
+      "features": "Caractéristiques",
+      "elevate-your-secure-sharing-with-custom-domains-": "Améliorez votre partage sécurisé avec des domaines personnalisés, une capacité illimitée et des fonctionnalités de niveau entreprise.",
+      "payment-frequency": "Fréquence des paiements",
+      "secure-your-brand-and-build-customer-trust-with-": "Protégez votre marque et renforcez la confiance de vos clients grâce à des liens provenant de votre domaine. Parfait pour les entreprises qui accordent de l'importance à la confidentialité et au professionnalisme.",
+      "secure-links-stronger-connections": "Des liens sécurisés, des connexions plus fortes",
+      "identity-tier-not-found-in-product-tiers": "Le niveau d'identité n'est pas trouvé dans les niveaux de produits",
+      "onetime-secret-helps-us-share-sensitive-informat": "Onetime Secret nous aide à partager des informations sensibles en toute sécurité tout en conservant notre façade professionnelle.",
+      "information-shared-through-this-service-can-only": "Les informations partagées par l'intermédiaire de ce service ne peuvent être consultées qu'une seule fois. Une fois consulté, le contenu est définitivement supprimé afin de garantir la confidentialité."
     },
     "errors": {
       "errorTitle": "Échec",

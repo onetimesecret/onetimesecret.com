@@ -4,7 +4,7 @@
  * Pricing page implementation using MainLayout for consistent navigation
  */
 import MainLayout from "@/layouts/MainLayout.astro";
-import Pricing from "@/components/vue/pricing/Pricing.vue";
+import Pricing from "@/components/vue/pricing/PricingTrio.vue";
 import { getLanguagePaths } from "@/i18n";
 import { createLocaleI18n, type MessageSchema } from "@/i18n";
 import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
@@ -20,17 +20,21 @@ export async function getStaticPaths() {
 // Get the current language from URL parameters
 const { lang } = Astro.params;
 const currentLang = lang || DEFAULT_LANGUAGE;
-const currentLangMeta = LANGUAGE_META[currentLang as keyof typeof LANGUAGE_META] || LANGUAGE_META[DEFAULT_LANGUAGE];
+const currentLangMeta =
+  LANGUAGE_META[currentLang as keyof typeof LANGUAGE_META] ||
+  LANGUAGE_META[DEFAULT_LANGUAGE];
 
 // Set up messages for the current language
 const messagesMap: Record<string, MessageSchema> = {
   en: enMessages as MessageSchema,
   fr: frMessages as MessageSchema,
-  de: deMessages as MessageSchema
+  de: deMessages as MessageSchema,
 };
 
 const pageScopedInitialMessages: Record<string, MessageSchema> = {
-  [currentLang]: messagesMap[currentLang as keyof typeof messagesMap] || enMessages as MessageSchema,
+  [currentLang]:
+    messagesMap[currentLang as keyof typeof messagesMap] ||
+    (enMessages as MessageSchema),
 };
 
 // Initialize i18n for SSR content
