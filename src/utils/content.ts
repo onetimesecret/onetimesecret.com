@@ -1,7 +1,7 @@
 // onetimesecret.com/src/utils/content.ts
 import type { CollectionEntry, AnyEntryMap } from "astro:content";
 import { getCollection, getEntry } from "astro:content";
-import type { SupportedLanguage } from "@/i18n";
+import type { SupportedLanguage } from "@config/astro/i18n";
 import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
 
 /**

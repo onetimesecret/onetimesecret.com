@@ -18,7 +18,7 @@ SVG sprites are available in `src/components/vue/icons/IconSources.vue`.
 
 ## i18n
 
-Translations are managed in `src/locales/en.json` and other language files. Use the keys hierarchically:
+Translations are managed in `src/i18n/ui/en.json` and other language files. Use the keys hierarchically:
 
 ```vue
 {{ $t('web.secrets.enterPassphrase') }}
