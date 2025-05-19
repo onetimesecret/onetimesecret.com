@@ -16,7 +16,13 @@ export const DEFAULT_LANGUAGE: SupportedLanguage = "en";
 /**
  * Language metadata with additional information
  */
-export const LANGUAGE_META = {
+export const LANGUAGE_META: {
+  [Key in SupportedLanguage]: {
+    name: string;
+    locale: string;
+    dir: "ltr" | "rtl";
+  };
+} = {
   en: {
     name: "English",
     locale: "en-US",
@@ -32,7 +38,8 @@ export const LANGUAGE_META = {
     locale: "de-DE",
     dir: "ltr",
   },
-} as const;
+  // as const removed because explicit type is provided
+};
 
 /**
  * Astro i18n configuration
