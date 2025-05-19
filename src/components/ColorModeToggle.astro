@@ -15,9 +15,11 @@ const translations = enTranslations;
 <div class="flex flex-col items-end">
   <button
     id="theme-cycler-button"
-    class="focus:ring-brand-500 inline-flex items-center rounded-md px-2 py-1 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 focus:ring-2 focus:outline-none dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+    type="button"
+    class="focus:ring-brand-500 dark:focus:ring-brand-400 inline-flex items-center rounded-md px-2 py-1 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200 hover:text-gray-900 focus:ring-2 focus:outline-none dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
     aria-label={translations.web.accessibilityLabels?.toggleColorTheme ||
-      "Cycle color theme"}>
+      "Cycle color theme"}
+    data-tooltip-id="theme-tooltip">
     <OIcon
       collection="heroicons"
       name="swatch"
@@ -30,7 +32,10 @@ const translations = enTranslations;
 </div>
 
 <script>
-  import ThemeManager, { AVAILABLE_THEMES, type ThemeOption } from "@/utils/theme";
+  import ThemeManager, {
+    AVAILABLE_THEMES,
+    type ThemeOption,
+  } from "@/utils/theme";
 
   /**
    * Cycles to the next theme in the available themes and applies it
@@ -42,6 +47,18 @@ const translations = enTranslations;
     const nextTheme = AVAILABLE_THEMES[nextIndex] as ThemeOption;
 
     ThemeManager.setTheme(nextTheme);
+    updateTooltip(nextTheme);
+  }
+
+  /**
+   * Updates the tooltip text with current theme information
+   */
+  function updateTooltip(theme: ThemeOption) {
+    const tooltip = document.getElementById("theme-tooltip");
+    if (tooltip) {
+      const themeName = theme.charAt(0).toUpperCase() + theme.slice(1);
+      tooltip.textContent = `Current: ${themeName}`;
+    }
   }
 
   /**
@@ -53,8 +70,34 @@ const translations = enTranslations;
 
     // Set up event listener for the theme toggle button
     const cycleButton = document.getElementById("theme-cycler-button");
+    const tooltip = document.getElementById("theme-tooltip");
+
     if (cycleButton) {
       cycleButton.addEventListener("click", cycleTheme);
+
+      // Setup tooltip behavior
+      cycleButton.addEventListener("mouseenter", () => {
+        if (tooltip) {
+          updateTooltip(ThemeManager.getPreferredTheme());
+          tooltip.classList.remove("hidden");
+        }
+      });
+
+      cycleButton.addEventListener("mouseleave", () => {
+        if (tooltip) tooltip.classList.add("hidden");
+      });
+
+      // For accessibility - handle focus events
+      cycleButton.addEventListener("focus", () => {
+        if (tooltip) {
+          updateTooltip(ThemeManager.getPreferredTheme());
+          tooltip.classList.remove("hidden");
+        }
+      });
+
+      cycleButton.addEventListener("blur", () => {
+        if (tooltip) tooltip.classList.add("hidden");
+      });
     }
   }
 
