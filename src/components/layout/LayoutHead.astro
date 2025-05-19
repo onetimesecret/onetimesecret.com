@@ -50,49 +50,74 @@ const siteOrigin = Astro.url.origin.toString();
 // SEO Configuration
 const routeSpecificSeo = getRouteSeoConfig(currentPath, siteOrigin);
 
-const pageTitle = propsTitle || routeSpecificSeo.title || defaultSeoValues.title;
-const pageDescription = propsDescription || routeSpecificSeo.description || defaultSeoValues.description;
-const pageOgImage = propsOgImage || routeSpecificSeo.ogImage || defaultSeoValues.ogImage;
-const pageOgType = propsOgType || routeSpecificSeo.ogType || defaultSeoValues.ogType;
+const pageTitle =
+  propsTitle || routeSpecificSeo.title || defaultSeoValues.title;
+const pageDescription =
+  propsDescription ||
+  routeSpecificSeo.description ||
+  defaultSeoValues.description;
+const pageOgImage =
+  propsOgImage || routeSpecificSeo.ogImage || defaultSeoValues.ogImage;
+const pageOgType =
+  propsOgType || routeSpecificSeo.ogType || defaultSeoValues.ogType;
 const pageKeywords = propsKeywords || defaultSeoValues.keywords;
 const pageCanonicalUrl = propsCanonicalUrl || Astro.url.href;
 const pageTwitterCard = propsTwitterCard || defaultSeoValues.twitterCard;
 
-const pageNoindex = propsNoindex !== undefined
-  ? propsNoindex
-  : currentPath.startsWith("/secret/") ||
-    currentPath.startsWith("/private/") ||
-    currentPath.startsWith("/receipt/");
+const pageNoindex =
+  propsNoindex !== undefined
+    ? propsNoindex
+    : currentPath.startsWith("/secret/") ||
+      currentPath.startsWith("/private/") ||
+      currentPath.startsWith("/receipt/");
 
 // Generate alternate language links
 const languagePrefixes = ["/en", "/fr", "/de"];
-const hasLangPrefix = languagePrefixes.some((prefix) => currentPath.startsWith(prefix));
-const basePathForAlternates = hasLangPrefix ? currentPath.substring(3) : currentPath;
+const hasLangPrefix = languagePrefixes.some((prefix) =>
+  currentPath.startsWith(prefix),
+);
+const basePathForAlternates = hasLangPrefix
+  ? currentPath.substring(3)
+  : currentPath;
 
-const pageAlternateLanguages = propsAlternateLanguages ||
+const pageAlternateLanguages =
+  propsAlternateLanguages ||
   SUPPORTED_LANGUAGES.map((lang) => ({
     code: lang,
     url: `${siteOrigin}/${lang}${basePathForAlternates}`,
   }));
 
-const pageStructuredData = propsStructuredData ||
+const pageStructuredData =
+  propsStructuredData ||
   routeSpecificSeo.structuredData ||
   getDefaultWebApplicationLd(siteOrigin, pageDescription);
 
 const pageBreadcrumbsLd = generateBreadcrumbsLd(currentPath, siteOrigin);
 
 // Content Security Policy
-const apiUrl = import.meta.env.PUBLIC_API_BASE_URL;
+const apiUrl = import.meta.env.VITE_PUBLIC_API_BASE_URL;
 const isDebugMode = import.meta.env.DEV || import.meta.env.DEBUG;
 const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
 ---
 
 <head>
   <meta charset="utf-8" />
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="color-scheme" content="dark light contrast" />
-  <meta name="author" content="Onetime Secret" />
+  <meta
+    http-equiv="Content-Type"
+    content="text/html; charset=utf-8"
+  />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <meta
+    name="color-scheme"
+    content="dark light contrast"
+  />
+  <meta
+    name="author"
+    content="Onetime Secret"
+  />
   <Favicons />
   <SeoMeta
     title={pageTitle}
@@ -128,7 +153,9 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
       if (storedTheme && AVAILABLE_THEMES.includes(storedTheme)) {
         themeToApply = storedTheme;
       } else {
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
         if (prefersDark) {
           themeToApply = "dark";
         }
@@ -138,7 +165,9 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
     }
 
     // Apply theme classes
-    AVAILABLE_THEMES.forEach(t => document.documentElement.classList.remove(t));
+    AVAILABLE_THEMES.forEach((t) =>
+      document.documentElement.classList.remove(t),
+    );
     document.documentElement.classList.add(themeToApply);
 
     // Special case for dark mode (for Tailwind)
