@@ -41,7 +41,7 @@ import UseCaseSelector from '@/components/vue/homepage/UseCaseSelector.vue';
 
 ## Localization
 
-The component uses translations from `src/locales/en.json` under the `web.useCases` namespace. Make sure to add translations for all supported languages.
+The component uses translations from `src/i18n/ui/en.json` under the `web.useCases` namespace. Make sure to add translations for all supported languages.
 
 ## Customization
 

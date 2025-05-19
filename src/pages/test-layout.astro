@@ -1,0 +1,28 @@
+---
+import MainLayout from "@/layouts/MainLayout.astro";
+import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
+import enMessages from "@/i18n/ui/en.json";
+import type { MessageSchema } from "@/i18n";
+
+// Setup basic i18n
+const initialMessages = {
+  [DEFAULT_LANGUAGE]: enMessages as MessageSchema,
+};
+
+const lang = "en";
+---
+
+<MainLayout
+  title="Test Page"
+  description="Testing MainLayout implementation"
+  htmlLang={lang}
+  initialMessages={initialMessages}
+  showHero={true}
+  heroTitle="Test Layout Page"
+  heroDescription="This page tests the MainLayout implementation"
+>
+  <div class="p-8 text-center">
+    <h2 class="text-2xl font-bold mb-4">Content Area</h2>
+    <p>If you can see this content with the navigation above, the MainLayout is working!</p>
+  </div>
+</MainLayout>

@@ -1,5 +1,3 @@
-<!-- src/components/vue/icons/OIcon.vue -->
-
 <!--
   Usage:
 
@@ -25,7 +23,7 @@
 
   export interface Props {
     collection: string; // heroicons-solid
-    name: string; // ellipses-vertical
+    name?: string; // ellipses-vertical
     size?: string; // size-5
     ariaLabel?: string; // Add aria-label prop
   }

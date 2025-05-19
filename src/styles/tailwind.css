@@ -1,8 +1,52 @@
-/* src/tailwind.css */
-@layer base, theme, components, utilities;
+/* src/styles/tailwind.css */
+@layer theme, base, components, utilities;
 
-@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/theme.css" layer(theme); /* Contains default Tailwind theme variables */
 @import "tailwindcss/utilities.css" layer(utilities);
+@plugin "@tailwindcss/typography";
+/**
+ * @see https://github.com/tailwindlabs/tailwindcss/blob/main/packages/tailwindcss/preflight.css
+ *
+ * In tailwind 4, this enables colour mode (similar to `darkMode: 'class'`
+ * in the `tailwind.config.ts` in 3.x). Also note that single-line comments
+ * are not supported in CSS and break colour mode. This breaks the colour mode.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant high-contrast (&:where(.high-contrast, .high-contrast *));
+@custom-variant dyslexic (&:where(.dyslexic, .dyslexic *));
+
+/**
+ * Misc gotchas:
+ * - Unstyled lists are not announced as lists by VoiceOver.
+ * - Other than the initial `@import "tailwindcss";` in global.css,
+ *    all tailwind config should be in here. Even when the two css files
+ *    are imported sequentially, if they go in global.css things get weird.
+ */
+
+@layer base {
+  /* Enhance typography - Apply custom brand font to headings */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-brand);
+  }
+
+  /*
+   * Base styles for different themes can also be defined here if they are
+   * not covered by the CSS custom properties in global.css.
+   * For example, if a theme needs a specific link color not easily
+   * achievable with just variables.
+   *
+   * html.high-contrast a {
+   *   color: var(--high-contrast-link-color, yellow);
+   *   text-decoration: underline;
+   * }
+   */
+}
 
 @theme {
   /* Custom accent colors (using brandColour). */
@@ -32,7 +76,8 @@
   --color-gray-950: var(--color-neutral-950);
 
   /* Custom brand font family. */
-  --font-brand: "Zilla Slab", var(--font-serif);
+  --font-brand:
+    "Zilla Slab", var(--font-serif); /* var(--font-serif) is a Tailwind default */
 
   /* Custom brand color palette. */
   --color-brand-50: #fcf8f2;
@@ -88,16 +133,28 @@
 }
 
 /*
-Add additional Tailwind styles to this file:
-https://tailwindcss.com/docs/adding-custom-styles#using-custom-css
+  Additional custom component or utility styles can be added below,
+  preferably within their respective layers (@layer components or @layer utilities).
+  https://tailwindcss.com/docs/adding-custom-styles#using-custom-css
 */
 
-/* Enhance typography - Apply custom brand font to headings */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--font-brand);
-}
+/**
+ * re: safelist support in TailwindCSS 4.
+ * @see https://github.com/tailwindlabs/tailwindcss/discussions/15291#discussioncomment-12875846
+ * safelist: [
+ *  "rounded-l-sm",
+ *  "rounded-r-sm",
+ *  "rounded-l-md",
+ *  "rounded-r-md",
+ *  "rounded-l-lg",
+ *  "rounded-r-lg",
+ *  "rounded-l-xl",
+ *  "rounded-r-xl",
+ *  "rounded-l-2xl",
+ *  "rounded-r-2xl",
+ *  "rounded-l-3xl",
+ *  "rounded-r-3xl",
+ *  "rounded-l-full",
+ *  "rounded-r-full",
+ * ],
+ */

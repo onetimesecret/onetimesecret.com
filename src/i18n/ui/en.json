@@ -51,6 +51,39 @@
     "loading": "Loading"
   },
   "web": {
+    "accessibilityLabels": {
+      "lightMode": "Light Mode",
+      "darkMode": "Dark Mode",
+      "toggleColorTheme": "Toggle color theme"
+    },
+    "theme": {
+      "title": "Theme",
+      "toggleTheme": "Toggle theme",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "help": {
+      "title": "Help",
+      "toggleHelp": "Toggle help",
+      "needHelp": "Need help?",
+      "learn_more": "Learn more"
+    },
+    "pricing": {
+      "title": "Pricing Plans | Onetime Secret",
+      "description": "Choose the perfect plan for your secure information sharing needs. From basic free plans to premium options with custom domains and dedicated infrastructure.",
+      "includes-all-features-and-unlimited-sharing-capa": "All plans include privacy features and unlimited sharing capacity",
+      "includes-all-data-locality-options": "All plans include choice of data locality: {0} regions",
+      "get-started": "Get started",
+      "frequency-value-annually-annual-monthly-subscrip": "{0} subscription",
+      "features": "Features",
+      "elevate-your-secure-sharing-with-custom-domains-": "Elevate your secure sharing with custom domains, unlimited capacity, and enterprise-grade features.",
+      "payment-frequency": "Payment frequency",
+      "secure-your-brand-and-build-customer-trust-with-": "Secure your brand and build customer trust with links from your domain. Perfect for businesses that value privacy and professionalism.",
+      "secure-links-stronger-connections": "Secure Links, Stronger Connections",
+      "identity-tier-not-found-in-product-tiers": "Identity tier not found in product tiers",
+      "onetime-secret-helps-us-share-sensitive-informat": "Onetime Secret helps us share sensitive information securely while maintaining our professional facade.",
+      "information-shared-through-this-service-can-only": "Information shared through this service can only be accessed once. Once viewed, the content is permanently deleted to ensure confidentiality."
+    },
     "errors": {
       "errorTitle": "Not successful",
       "passphraseRequired": "Passphrase is required when option is selected."
@@ -130,6 +163,8 @@
       }
     },
     "homepage": {
+      "title": "Share Secrets Securely | Onetime Secret",
+      "description": "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever",
       "howItWorks": {
         "title": "How It Works",
         "subtitle": "Share your information once, then it's permanently deleted",
@@ -149,6 +184,26 @@
       "visualExamples": {
         "title": "Custom Domain & Branding",
         "subtitle": "Reinforce your brand and build trust by using your own domain and logo."
+      },
+      "featureHighlights": {
+        "sectionTitle": "Key Features",
+        "sectionSubtitle": "Discover what makes Onetime Secret the preferred solution for secure information sharing.",
+        "security": {
+          "title": "Enhanced Privacy Options",
+          "description": "Add a passphrase for an extra layer of security. Only those with the passphrase can view the secret."
+        },
+        "selfDestruction": {
+          "title": "Self-Destructing Links",
+          "description": "Once viewed or expired, your secret is permanently deleted from our servers. No copies, no traces."
+        },
+        "dataResidency": {
+          "title": "Regional Data Storage",
+          "description": "Choose where your data is stored to meet compliance requirements and data sovereignty needs."
+        },
+        "compliance": {
+          "title": "Compliance Ready",
+          "description": "Designed to help meet SOC2, GDPR, CCPA & HIPAA requirements for secure information handling."
+        }
       }
     }
   }

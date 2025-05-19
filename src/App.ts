@@ -1,7 +1,18 @@
-// src/vueSetup.ts
+// src/App.ts
 
 import type { App } from "vue";
-import i18n from "./i18n";
+import i18n, { setLanguage } from "./i18n";
+
+// Add this to your main Vue initialization file or Homepage.vue before component mounting
+// This ensures the language is set before hydration
+const preferredLanguage =
+  typeof localStorage !== "undefined"
+    ? localStorage.getItem("preferredLanguage")
+    : null;
+
+if (preferredLanguage) {
+  setLanguage(preferredLanguage);
+}
 
 /**
  * Setup Vue application with i18n

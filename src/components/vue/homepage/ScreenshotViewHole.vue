@@ -7,21 +7,21 @@ const { t } = useI18n();
 </script>
 
 <template>
-  <section class="pt-20 pb-16 bg-gray-50 w-full">
+  <section class="pt-20 pb-16 bg-gray-50 dark:bg-gray-800 w-full">
     <div class="text-center pb-8 sm:pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+      <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
         {{ t("web.homepage.visualExamples.title") }}
       </h2>
-      <p class="mt-4 text-lg leading-6 text-gray-600">
+      <p class="mt-4 text-lg leading-6 text-gray-600 dark:text-gray-300">
         {{ t("web.homepage.visualExamples.subtitle") }}
       </p>
     </div>
 
     <div class="relative h-64 sm:h-72 md:h-80 lg:h-84 xl:h-96 max-xl:line-t">
       <div
-        class="absolute inset-0 -mx-px bg-gray-950/5 py-2 pr-[calc(--spacing(2)+1px)] pl-2 xl:border-l xl:border-gray-950/5">
+        class="absolute inset-0 -mx-px bg-gray-950/5 dark:bg-gray-900/30 py-2 pr-[calc(--spacing(2)+1px)] pl-2 xl:border-l xl:border-gray-950/5 dark:xl:border-gray-700/20">
         <div
-          class="overflow-hidden rounded-2xl bg-gray-50 outline outline-gray-950/5 [--right:45%] flex size-full items-center justify-center saturate-80">
+          class="overflow-hidden rounded-2xl bg-gray-50 dark:bg-gray-700 outline outline-gray-950/5 dark:outline-gray-600/20 [--right:45%] flex size-full items-center justify-center saturate-80">
           <div class="size-430 shrink-0 scale-50 sm:scale-75 lg:scale-100">
             <div
               class="relative top-(--top,30%) right-(--right,54%) grid size-full origin-top-left rotate-x-55 rotate-y-0 -rotate-z-45 grid-cols-4 gap-8 transform-3d">

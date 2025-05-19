@@ -1,5 +1,7 @@
 // config/astro/redirects.ts
 
+import { AstroUserConfig } from "astro";
+
 /**
  * Astro's redirect configuration is static and evaluated at build time, not
  * runtime so we can't access browser language preferences here. For dynamic
@@ -9,7 +11,7 @@
  *    * Option 2: Server middleware (SSR mode only)
  *
  */
-export function createConfig() {
+export function createConfig(): AstroUserConfig["redirects"] {
   return {
     // "/info/security": {
     //   status: 302,

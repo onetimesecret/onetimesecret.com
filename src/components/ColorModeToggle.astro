@@ -1,0 +1,224 @@
+---
+import { getLocaleFromUrl } from "@/i18n/utils";
+import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
+import enTranslations from "@/i18n/ui/en.json";
+import OIcon from "@/components/vue/icons/OIcon.vue";
+
+// Get the current locale from the URL or use default
+const currentLocale = getLocaleFromUrl(Astro.url) || DEFAULT_LANGUAGE;
+
+// For now, we only use English translations at build time
+const translations = enTranslations;
+---
+
+<div class="flex flex-col items-end">
+  <h3
+    class="mb-2 hidden text-sm font-medium text-gray-700 md:block dark:text-gray-300">
+    {translations.web.theme?.title || "Theme"}
+  </h3>
+  <button
+    id="theme-cycler-button"
+    class="focus:ring-brand-500 inline-flex items-center rounded-md px-2 py-1 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 focus:ring-2 focus:outline-none dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+    aria-label={translations.web.accessibilityLabels?.toggleColorTheme ||
+      "Cycle color theme"}>
+    <OIcon
+      collection="heroicons"
+      name="swatch"
+      class="h-5 w-5"
+    />
+    <span class="ml-1.5 hidden sm:inline">
+      {translations.web.theme?.toggleTheme}
+    </span>
+  </button>
+</div>
+
+<script>
+  /**
+   * Theme management for Astro components, supporting multiple themes.
+   * Manages theme persistence, cycling, and system preference detection for initial theme.
+   */
+  const THEMES = ["light", "dark"]; // , "high-contrast", "dyslexic"
+  let initialized = false;
+
+  /**
+   * Applies the specified theme to the document and persists it.
+   * @param {string} themeName - The name of the theme to apply.
+   */
+  function applyTheme(themeName) {
+    if (!THEMES.includes(themeName)) {
+      // console.warn(`Invalid theme: ${themeName}. Defaulting to ${THEMES[0]}.`);
+      themeName = THEMES[0];
+    }
+
+    // Remove all known theme classes from <html>
+    THEMES.forEach((t) => document.documentElement.classList.remove(t));
+    // Explicitly remove 'dark' class that Tailwind uses, in case a previous theme was 'dark'
+    document.documentElement.classList.remove("dark");
+
+    // Add the new theme class
+    document.documentElement.classList.add(themeName);
+
+    // If the current theme is 'dark', add the 'dark' class for Tailwind CSS dark variants
+    if (themeName === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+
+    try {
+      localStorage.setItem("theme", themeName);
+    } catch (e) {
+      // console.error("Failed to save theme to localStorage:", e);
+    }
+
+    // Update meta color-scheme for browser UI elements
+    const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
+    if (metaColorScheme) {
+      if (themeName === "dark") {
+        metaColorScheme.setAttribute("content", "dark light");
+      } else {
+        // For 'light', 'high-contrast', 'dyslexic', assume they are light-based
+        // or define their own base colors. 'light dark' tells the browser
+        // the component supports light mode primarily and dark mode secondarily.
+        metaColorScheme.setAttribute("content", "light dark");
+      }
+    }
+  }
+
+  /**
+   * Cycles to the next theme in the THEMES array and applies it.
+   */
+  function cycleTheme() {
+    let currentTheme = "light";
+    try {
+      currentTheme = localStorage.getItem("theme") || THEMES[0];
+    } catch (e) {
+      // Fallback if localStorage is inaccessible
+      currentTheme = document.documentElement.classList.contains("dark")
+        ? "dark"
+        : THEMES[0];
+    }
+
+    let currentIndex = THEMES.indexOf(currentTheme);
+    if (currentIndex === -1) {
+      // Fallback if stored theme is invalid
+      currentIndex = 0;
+    }
+    const nextIndex = (currentIndex + 1) % THEMES.length;
+    applyTheme(THEMES[nextIndex]);
+  }
+
+  /**
+   * Initializes the theme system on page load.
+   * This function runs after an inline script in Layout.astro has already made an
+   * initial attempt to set the theme to prevent FOUC. This function ensures
+   * full synchronization (e.g., meta tags, localStorage consistency) and sets up
+   * listeners for dynamic theme changes.
+   */
+  function initThemeSystem() {
+    let effectiveTheme = THEMES[0]; // Default to 'light'
+
+    try {
+      const storedTheme = localStorage.getItem("theme");
+      if (storedTheme && THEMES.includes(storedTheme)) {
+        effectiveTheme = storedTheme;
+      } else {
+        // If localStorage is not set or invalid, rely on the class set by the inline script
+        // or infer if the inline script based its decision on prefers-color-scheme and didn't store it.
+        for (const theme of THEMES) {
+          if (document.documentElement.classList.contains(theme)) {
+            effectiveTheme = theme;
+            break;
+          }
+        }
+        // If no theme class found (highly unlikely if inline script ran), effectiveTheme remains THEMES[0].
+        // applyTheme below will then ensure localStorage is set.
+      }
+    } catch (e) {
+      // localStorage might be inaccessible. Fallback to checking documentElement.
+      // console.warn("localStorage access error during theme init. Checking documentElement.", e);
+      for (const theme of THEMES) {
+        if (document.documentElement.classList.contains(theme)) {
+          effectiveTheme = theme;
+          break;
+        }
+      }
+    }
+
+    // Ensure all aspects of the theme are correctly applied/updated.
+    // This will update localStorage if it was missing or inferred from class,
+    // set meta tags, and ensure Tailwind's .dark class is correct.
+    applyTheme(effectiveTheme);
+
+    // Listen for changes in system color scheme preference
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (e) => {
+        let currentThemeInStorage = THEMES[0]; // Default to 'light'
+        try {
+          // Check localStorage first, as this reflects the user's explicit choice.
+          const stored = localStorage.getItem("theme");
+          if (stored && THEMES.includes(stored)) {
+            currentThemeInStorage = stored;
+          } else {
+            // If localStorage is invalid/empty, infer from current classes
+            currentThemeInStorage = document.documentElement.classList.contains(
+              "dark",
+            )
+              ? "dark"
+              : "light";
+            if (!THEMES.includes(currentThemeInStorage))
+              currentThemeInStorage = THEMES[0];
+          }
+        } catch (err) {
+          // Fallback if localStorage is inaccessible
+          // console.warn("localStorage access error in theme change listener.", err);
+          currentThemeInStorage = document.documentElement.classList.contains(
+            "dark",
+          )
+            ? "dark"
+            : "light";
+          if (!THEMES.includes(currentThemeInStorage))
+            currentThemeInStorage = THEMES[0];
+        }
+
+        // Only react to system changes if the user hasn't explicitly chosen a
+        // persistent theme like 'high-contrast' or 'dyslexic' (checked via localStorage).
+        if (
+          currentThemeInStorage === "light" ||
+          currentThemeInStorage === "dark"
+        ) {
+          const newSystemTheme = e.matches ? "dark" : "light";
+          // Only apply if the system theme is different from the current theme
+          if (newSystemTheme !== currentThemeInStorage) {
+            applyTheme(newSystemTheme);
+          }
+        }
+      });
+  }
+
+  /**
+   * Main initialization function, sets up theme and event listeners.
+   * Ensures it only runs once.
+   */
+  function runOnceInitialize() {
+    if (initialized) return;
+    initialized = true;
+
+    initThemeSystem();
+
+    const cycleButton = document.getElementById("theme-cycler-button");
+    if (cycleButton) {
+      cycleButton.addEventListener("click", cycleTheme);
+    }
+  }
+
+  // Initialize the theme system
+  if (typeof window !== "undefined") {
+    if (document.readyState === "loading") {
+      // Document is still loading, wait for DOMContentLoaded
+      document.addEventListener("DOMContentLoaded", runOnceInitialize);
+    } else {
+      // DOM is already interactive or complete
+      runOnceInitialize();
+    }
+  }
+</script>

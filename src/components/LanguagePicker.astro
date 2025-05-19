@@ -1,18 +1,97 @@
 ---
-import {
-  DEFAULT_LANGUAGE,
-  SUPPORTED_LANGUAGES,
-  LANGUAGE_META,
-  type SupportedLanguage,
-} from "../../config/astro/i18n";
+// Assumed corrected version of onetimesecret.com/src/components/LanguagePicker.astro
+import { LANGUAGE_META } from "../../config/astro/i18n";
+
+export interface Props {
+  currentLocale: string;
+}
+const { currentLocale } = Astro.props;
+const currentPathname = Astro.url.pathname;
+let contentPath = "/"; // Default to root content path, e.g., "/"
+const langPrefix = `/${currentLocale}`; // e.g., "/en"
+
+if (currentPathname.startsWith(langPrefix)) {
+  contentPath = currentPathname.substring(langPrefix.length);
+  // If currentPathname was "/en/", contentPath is now "/".
+  // If currentPathname was "/en", contentPath is now "".
+  if (contentPath === "") {
+    // Normalizes "" (from "/en") to "/"
+    contentPath = "/";
+  }
+  // Ensures sub-paths like "about" become "/about" if substring resulted in no leading slash
+  // (though currentPathname.substring(langPrefix.length) usually preserves it for subpaths like "/about")
+  if (contentPath !== "/" && !contentPath.startsWith("/")) {
+    contentPath = `/${contentPath}`;
+  }
+} else {
+  // Fallback if currentPathname doesn't start with the expected language prefix.
+  // This might happen if on a non-prefixed default language path, though your config uses prefixDefaultLocale: true.
+  contentPath = currentPathname;
+  console.warn(
+    `LanguagePicker: Path "${currentPathname}" does not match locale prefix "${currentLocale}". Content path set to "${contentPath}".`,
+  );
+}
 ---
 
-<ul>
-  {
-    Object.entries(LANGUAGE_META).map(([lang, details]) => (
-      <li>
-        <a href={`/${lang}/`}>{details.name}</a>
-      </li>
-    ))
-  }
-</ul>
+<script>
+  // This script runs in the browser to update the language when links are clicked
+  document.addEventListener("DOMContentLoaded", () => {
+    // Select all language links
+    document.querySelectorAll("[data-lang-link]").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        // Store the target language in localStorage before navigation
+        // This helps with the transition between page loads
+        const targetLang = link.getAttribute("data-lang");
+        if (targetLang) {
+          localStorage.setItem("preferredLanguage", targetLang);
+        }
+      });
+    });
+  });
+</script>
+
+<div class="flex flex-col">
+  <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 hidden md:block">
+    Languages
+  </h3>
+  <ul class="flex flex-wrap gap-2">
+    {
+      Object.entries(LANGUAGE_META).map(([targetLang, details]) => {
+        let newHref = `/${targetLang}`; // Key line 1
+        if (contentPath !== "/") {
+          newHref += contentPath; // Key line 2
+        } else {
+          newHref += "/"; // Key line 3
+        }
+
+        // For debugging:
+        // console.log(
+        //   `Picker Debug: currentLocale="${currentLocale}", currentPathname="${currentPathname}", contentPath="${contentPath}", targetLang="${targetLang}", generatedHref="${newHref}"`,
+        // );
+
+        const isCurrent = targetLang === currentLocale;
+
+        return (
+          <li>
+            {isCurrent ? (
+              <span class="inline-flex items-center rounded-md bg-gray-100 dark:bg-gray-700 px-2 py-1 text-sm font-medium text-gray-800 dark:text-gray-200">
+                <span class="hidden sm:inline md:inline">{details.name}</span>
+                <span class="sm:hidden">{targetLang.toUpperCase()}</span>
+              </span>
+            ) : (
+              <a
+                href={newHref}
+                class="inline-flex items-center rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                data-lang-link
+                data-lang={targetLang}
+              >
+                <span class="hidden sm:inline md:inline">{details.name}</span>
+                <span class="sm:hidden">{targetLang.toUpperCase()}</span>
+              </a>
+            )}
+          </li>
+        );
+      })
+    }
+  </ul>
+</div>

@@ -2,41 +2,32 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import { localizeUrl } from '@/i18n/utils';
-import { watch, ref, onMounted } from 'vue';
-import { setLanguage } from "@/i18n";
+import { onMounted } from 'vue';
+import { setLanguage, setLanguageWithMessages, type MessageSchema } from "@/i18n";
 
 const props = defineProps<{
   locale: string;
+  initialMessages?: Record<string, MessageSchema>;
 }>();
 
-// Create reactive refs for i18n readiness
-const i18nReady = ref(false);
 const { t } = useI18n();
 
-// Watch for locale changes and update i18n
-watch(
-  () => props.locale,
-  async (newLocale) => {
-    i18nReady.value = false;
-    await setLanguage(newLocale);
-    i18nReady.value = true;
-  },
-  { immediate: true }, // Run immediately on component creation
-);
-
-onMounted(async () => {
-  if (!i18nReady.value) {
+// Initialize i18n with provided messages
+if (props.initialMessages && props.locale) {
+  setLanguageWithMessages(props.locale, props.initialMessages);
+} else {
+  // Fallback initialization on mount if no messages provided
+  onMounted(async () => {
     await setLanguage(props.locale);
-    i18nReady.value = true;
-  }
-});
+  });
+}
 
 // The locale to be used for translations and link generation
 const currentLocale = props.locale;
 </script>
 
 <template>
-  <div v-if="i18nReady" class="border-t border-gray-200 dark:border-gray-700">
+  <div class="border-t border-gray-200 dark:border-gray-700">
     <div class="mx-auto max-w-7xl px-6 py-12 lg:px-8">
       <div class="grid grid-cols-2 gap-8 md:grid-cols-3">
         <!-- Company links -->
@@ -156,11 +147,6 @@ const currentLocale = props.locale;
           </ul>
         </div>
       </div>
-    </div>
-  </div>
-  <div v-else class="border-t border-gray-200 dark:border-gray-700 py-12">
-    <div class="mx-auto max-w-7xl px-6 flex justify-center items-center">
-      <div class="animate-pulse h-4 w-24 bg-gray-200 rounded"></div>
     </div>
   </div>
 </template>

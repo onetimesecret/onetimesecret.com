@@ -4,10 +4,10 @@
   import OIcon from '@/components/vue/icons/OIcon.vue';
   import MovingGlobules from '@/components/vue/MovingGlobules.vue';
   import QuoteSection from '@/components/vue/QuoteSection.vue';
-  import type { PaymentFrequency } from '@/sources/productTiers';
-  import { paymentFrequencies as frequencies, productTiers as tiers } from '@/sources/productTiers';
-  import { testimonials as testimonialsData } from '@/sources/testimonials';
-  import { useJurisdictionStore } from '@/stores';
+  import type { PaymentFrequency } from '@/data/product/productTiers';
+  import { paymentFrequencies as frequencies, productTiers as tiers } from '@/data/product/productTiers';
+  import { testimonials as testimonialsData } from '@/data/product/testimonials';
+  import { jurisdictions as jurisdictionsData } from '@/data/ops/jurisdictions';
   import { RadioGroup, RadioGroupOption } from '@headlessui/vue';
   import { onMounted, ref } from 'vue';
   import { useI18n } from 'vue-i18n';
@@ -17,9 +17,7 @@
 
   const testimonials = ref(testimonialsData);
   const randomTestimonial = ref(testimonials.value[0]);
-
-  const { getJurisdictionIdentifiers: jurisdictions } = useJurisdictionStore();
-
+  const jurisdictions = jurisdictionsData.map(jurisdiction => jurisdiction.identifier);
   onMounted(() => {
     const randomIndex = Math.floor(Math.random() * testimonials.value.length);
     randomTestimonial.value = testimonials.value[randomIndex];
@@ -41,15 +39,15 @@
       <!-- Header section -->
       <div class="mx-auto max-w-4xl text-center">
         <h2 class="text-base/7 font-semibold text-brand-600 dark:text-brand-400">{{
-          t('pricing')
+          t('LABELS.pricing')
         }}</h2>
         <p class="mt-2 font-brand text-5xl font-bold tracking-tight text-gray-900 dark:text-white">
-          {{ t('secure-links-stronger-connections') }}
+          {{ t('web.pricing.secure-links-stronger-connections') }}
         </p>
       </div>
       <p
         class="mx-auto mt-6 max-w-2xl text-pretty text-center text-lg font-medium text-gray-600 dark:text-gray-300 sm:text-xl/8">
-        {{ t('secure-your-brand-and-build-customer-trust-with-') }}
+        {{ t('web.pricing.secure-your-brand-and-build-customer-trust-with-') }}
       </p>
 
       <!-- Payment Frequency Toggle -->
@@ -58,7 +56,7 @@
         <span
           id="frequency-label"
           class="sr-only">
-          {{ t('select-payment-frequency') }}
+          {{ t('web.pricing.select-payment-frequency') }}
         </span>
 
         <RadioGroup
@@ -163,6 +161,7 @@
                 :href="`${tier.href}${frequency.priceSuffix}`"
                 :aria-label="`${tier.cta} for ${tier.name} plan`"
                 :aria-describedby="`tier-${tier.id}`"
+                class="font-brand font-semibold"
                 :class="[
                   tier.featured
                     ? 'bg-brandcomp-800 text-white hover:bg-brandcomp-900 focus-visible:outline-brandcomp-500 dark:bg-brand-600 dark:hover:bg-brand-700'
@@ -205,7 +204,7 @@
 
       <!-- Data Locality Notice -->
       <p class="mt-10 text-center text-sm text-gray-600 dark:text-gray-400">
-        {{ t('includes-all-data-locality-options', [jurisdictions.join(', ')]) }}
+        {{ t('web.pricing.includes-all-data-locality-options', [jurisdictions.join(', ')]) }}
       </p>
     </div>
 

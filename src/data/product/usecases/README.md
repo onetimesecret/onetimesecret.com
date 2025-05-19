@@ -5,14 +5,14 @@ The primary goal of this architecture is to create a system for managing "Use Ca
 
 ## Core Components & Their Roles:
 
-1.  **Localization Files (`src/locales/*.json` - e.g., `en.json`)**
+1.  **Localization Files (`src/i18n/ui/*.json` - e.g., `en.json`)**
     *   **Purpose**: This is the single source of truth for all user-facing text strings.
     *   **Structure**: Standard JSON format where keys (e.g., `"web.useCases.developer.title"`) map to their corresponding translated strings (e.g., `"Developer"`).
     *   **Benefits**:
         *   **Centralized Translations**: Simplifies the translation workflow. Translators can work directly with these JSON files without needing to touch the codebase.
         *   **Easy Language Addition**: Adding a new language involves creating a new locale file (e.g., `es.json`) with the same keys.
 
-2.  **Individual Use Case Modules (`src/content/useCases/*UseCase.ts` - e.g., `developerUseCase.ts`)**
+2.  **Individual Use Case Modules (`src/data/product/usecases/*UseCase.ts` - e.g., `developerUseCase.ts`)**
     *   **Purpose**: Each file defines the complete data structure for a single, specific use case (Developer, IT Professional, HR Manager, Legal Team).
     *   **Structure**: Typically exports a function (e.g., `getDeveloperUseCase(t: Function): UseCase`) that accepts the translation function (`t`) from `vue-i18n` as an argument and returns a `UseCase` object.
     *   **Key Responsibilities**:
@@ -27,7 +27,7 @@ The primary goal of this architecture is to create a system for managing "Use Ca
         *   **Scalability**: Adding a new use case is as simple as creating a new module following the established pattern.
         *   **Type Safety**: Ensures that the object returned by each function conforms to the `UseCase` TypeScript type, catching errors early.
 
-3.  **Use Case Aggregator (`src/content/useCases/index.ts`)**
+3.  **Use Case Aggregator (`src/data/product/usecases/index.ts`)**
     *   **Purpose**: To collect and provide access to all defined use cases.
     *   **Structure**: Exports a primary function (e.g., `getUseCases(t: Function): UseCase[]`).
     *   **Responsibility**: This function imports the getter functions from each individual use case module, calls them with the passed-in `t` function, and returns an array of fully constituted `UseCase` objects (with translated strings).

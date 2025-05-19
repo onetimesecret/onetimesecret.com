@@ -1,0 +1,204 @@
+{
+  "onetime-secret-literal": "Onetime Secret",
+  "all-rights-reserved": "Alle Rechte vorbehalten",
+  "read-our-latest-blog-posts": "Lesen Sie unsere neuesten Blogbeiträge",
+  "view-our-subscription-pricing": "Sehen Sie unsere Abonnementpreise",
+  "learn-about-our-company": "Erfahren Sie mehr über unser Unternehmen",
+  "check-our-service-status": "Prüfen Sie unseren Servicestatus",
+  "explore-our-api-documentation": "Entdecken Sie unsere API-Dokumentation",
+  "learn-about-our-security-measures": "Informieren Sie sich über unsere Sicherheitsmaßnahmen",
+  "access-our-documentation": "Zugriff auf unsere Dokumentation",
+  "view-our-source-code-on-github": "Sehen Sie unseren Quellcode auf GitHub",
+  "read-our-privacy-policy": "Lesen Sie unsere Datenschutzerklärung",
+  "view-our-terms-and-conditions": "Lesen Sie unsere Allgemeinen Geschäftsbedingungen",
+  "status": "Status",
+  "tagline": {
+    "signed": "Signiert",
+    "sealed": "Versiegelt",
+    "delivered": "Zugestellt"
+  },
+  "banner": {
+    "try-it-out": "Jetzt ausprobieren",
+    "open-menu": "Hauptmenü öffnen",
+    "close-menu": "Menü schließen"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "features": "Funktionen",
+    "regions": "Regionen",
+    "about": "Über uns",
+    "pricing": "Preise"
+  },
+  "auth": {
+    "sign-in": "Anmelden",
+    "sign-up": "Registrieren"
+  },
+  "LABELS": {
+    "about": "Über uns",
+    "pricing": "Preise",
+    "blog": "Blog",
+    "create-link": "Geheimen Link erstellen",
+    "docs": "Dokumentation",
+    "privacy": "Datenschutzerklärung",
+    "terms": "Allgemeine Geschäftsbedingungen",
+    "security": "Sicherheitsmaßnahmen",
+    "company": "Unternehmen",
+    "resources": "Ressourcen",
+    "legals": "Rechtliches",
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "processing": "Wird verarbeitet",
+    "loading": "Wird geladen"
+  },
+  "web": {
+    "accessibilityLabels": {
+      "lightMode": "Heller Modus",
+      "darkMode": "Dunkler Modus",
+      "toggleColorTheme": "Farbthema umschalten"
+    },
+    "theme": {
+      "title": "Thema",
+      "toggleTheme": "Thema umschalten",
+      "light": "Hell",
+      "dark": "Dunkel"
+    },
+    "pricing": {
+      "title": "Preispläne | Onetime Secret",
+      "description": "Wählen Sie den perfekten Plan für Ihre Bedürfnisse zum sicheren Informationsaustausch. Von kostenlosen Basisplänen bis hin zu Premium-Optionen mit benutzerdefinierten Domains und dedizierter Infrastruktur.",
+      "includes-all-features-and-unlimited-sharing-capa": "Alle Pläne beinhalten Datenschutzfunktionen und unbegrenzte Teilkapazität",
+      "includes-all-data-locality-options": "Alle Pläne beinhalten die Wahl der Datenlokalität: {0} Regionen",
+      "get-started": "Loslegen",
+      "frequency-value-annually-annual-monthly-subscrip": "{0} Abonnement",
+      "features": "Funktionen",
+      "elevate-your-secure-sharing-with-custom-domains-": "Verbessere dein sicheres Teilen mit benutzerdefinierten Domains, unbegrenzter Kapazität und Funktionen auf Unternehmensniveau.",
+      "payment-frequency": "Zahlungsfrequenz",
+      "secure-your-brand-and-build-customer-trust-with-": "Sichere deine Marke und baue Kundenvertrauen mit Links von deiner Domain auf. Perfekt für Unternehmen, die Wert auf Datenschutz und Professionalität legen.",
+      "secure-links-stronger-connections": "Sichere Links, stärkere Verbindungen",
+      "identity-tier-not-found-in-product-tiers": "Identity-Stufe in Produktstufen nicht gefunden",
+      "onetime-secret-helps-us-share-sensitive-informat": "Onetime Secret hilft uns, sensible Informationen sicher zu teilen und gleichzeitig unsere professionelle Fassade zu wahren.",
+      "information-shared-through-this-service-can-only": "Informationen, die über diesen Dienst geteilt werden, können nur einmal abgerufen werden. Nach dem Ansehen wird der Inhalt dauerhaft gelöscht, um die Vertraulichkeit zu gewährleisten."
+    },
+    "errors": {
+      "errorTitle": "Nicht erfolgreich",
+      "passphraseRequired": "Passphrase ist erforderlich, wenn diese Option ausgewählt ist."
+    },
+    "secrets": {
+      "keepSensitiveInfo": "Halten Sie sensible Informationen aus Ihren E-Mails und Chat-Protokollen heraus.",
+      "securelyStored": "Sicher gespeichert in",
+      "europe": "Europa",
+      "createLink": "Link erstellen",
+      "expirationTime": "Lebensdauer verlängern",
+      "optionsHeading": "Datenschutzoptionen",
+      "addPassphrase": "Passphrase hinzufügen",
+      "secretPlaceholder": "Geben Sie hier Ihre geheime Nachricht ein...",
+      "secretPlaceholder-premium": "Geben Sie hier Ihre geheime Nachricht ein (gespeichert in {noun})",
+      "dataSovereignty": "Datensouveränität",
+      "regionExplanation": "Ihre Geheimnisse bleiben in der von Ihnen ausgewählten Region. Dies hilft, Anforderungen an den Datenstandort und Datenschutzbestimmungen wie die DSGVO zu erfüllen.",
+      "learnMoreRegions": "Erfahren Sie mehr über regionale Domains",
+      "selectRegionHeading": "Region auswählen",
+      "complianceNote": "Unterstützt die Einhaltung von SOC2, DSGVO, CCPA & HIPAA-Anforderungen zum Datenschutz",
+      "regionSelector": {
+        "currentDomain": "Aktuelle Domain",
+        "dataResidency": "Datenresidenz"
+      },
+      "successTitle": "Erfolg!",
+      "shareLinkDescription": "Teilen Sie Ihren geheimen Link mit anderen."
+    },
+    "useCases": {
+      "sectionTitle": "Sicherheit für Fachleute",
+      "sectionSubtitle": "Sehen Sie, wie Fachleute sichere Links in ihren täglichen Arbeitsabläufen nutzen",
+      "exampleSecret": "Beispiel-Geheimnis",
+      "keyBenefits": "Hauptvorteile",
+      "complianceInfo": "Compliance-Informationen",
+      "privacyNote": "Ihre Geheimnisse werden verschlüsselt, nie in Protokollen gespeichert und nach dem Anzeigen automatisch gelöscht.",
+      "it": {
+        "title": "IT-Fachkraft",
+        "description": "Teilen Sie Anmeldedaten und Zugriffsinformationen sicher mit Ihrem Team",
+        "benefits": {
+          "1": "Verhindern Sie das Auslaufen von Anmeldedaten in E-Mail- und Chat-Protokollen",
+          "2": "Überwachen Sie, wann auf Geheimnisse zugegriffen wird",
+          "3": "Durchsetzen von Sicherheitsprotokollen für sensible Informationen"
+        },
+        "compliance": "Hilft bei der Erfüllung der SOC 2- und ISO 27001-Sicherheitsanforderungen für die Zugriffskontrolle",
+        "cta": "Sichern Sie Ihre Anmeldedaten"
+      },
+      "developer": {
+        "title": "Entwickler",
+        "description": "Teilen Sie API-Schlüssel und Anmeldedaten sicher während der Entwicklung",
+        "benefits": {
+          "1": "Halten Sie API-Schlüssel und Tokens aus Code-Repositories heraus",
+          "2": "Integrieren Sie neue Teammitglieder sicher mit Zugangsdaten",
+          "3": "Teilen Sie Datenbankverbindungszeichenfolgen, ohne die Sicherheit zu gefährden"
+        },
+        "compliance": "Hilft bei der Durchsetzung von Sicherheitsstandards für CI/CD-Pipelines und Infrastrukturzugriff",
+        "cta": "Sichern Sie Ihre API-Schlüssel"
+      },
+      "hr": {
+        "title": "HR-Manager",
+        "description": "Teilen Sie sensible Mitarbeiterinformationen und Anmeldedaten sicher",
+        "benefits": {
+          "1": "Übermitteln Sie Onboarding-Anmeldedaten sicher an neue Mitarbeiter",
+          "2": "Teilen Sie vertrauliche Informationen mit einmaligem Zugriff",
+          "3": "Wahren Sie die Privatsphäre für sensible HR-Kommunikation"
+        },
+        "compliance": "Hilft bei der Einhaltung der DSGVO und anderer Datenschutzbestimmungen für den Umgang mit personenbezogenen Daten",
+        "cta": "Sichere HR-Kommunikation"
+      },
+      "legal": {
+        "title": "Rechtsteam",
+        "description": "Teilen Sie vertrauliche Rechtsdokumente und Informationen sicher",
+        "benefits": {
+          "1": "Wahren Sie das Anwaltsgeheimnis in der digitalen Kommunikation",
+          "2": "Teilen Sie fallsensible Informationen sicher mit Mandanten",
+          "3": "Kontrollieren Sie den Zugriff auf vertrauliche Vergleichsbedingungen"
+        },
+        "compliance": "Hilft, die Vertraulichkeit zu gewährleisten, die von rechtlichen Ethikregeln und Vertraulichkeitsvereinbarungen mit Mandanten gefordert wird",
+        "cta": "Sichere Rechtskommunikation"
+      }
+    },
+    "homepage": {
+      "title": "Teilen Sie Geheimnisse sicher | Onetime Secret",
+      "description": "Teilen Sie sensible Informationen sicher mit selbstzerstörenden Links. Fügen Sie Ihr Geheimnis ein, generieren Sie einen Link und teilen Sie ihn. Nach dem Anzeigen ist es für immer verschwunden.",
+      "howItWorks": {
+        "title": "Wie es funktioniert",
+        "subtitle": "Teilen Sie Ihre Informationen einmal, dann werden sie dauerhaft gelöscht",
+        "step1": {
+          "title": "Geheimnis erstellen",
+          "description": "Geben Sie Ihre sensiblen Informationen ein und generieren Sie einen sicheren Einmal-Link"
+        },
+        "step2": {
+          "title": "Link teilen",
+          "description": "Senden Sie den sicheren Link über eine beliebige Messaging-Plattform"
+        },
+        "step3": {
+          "title": "Funktioniert nur einmal",
+          "description": "Empfänger sieht das Geheimnis, dann wird es dauerhaft gelöscht"
+        }
+      },
+      "visualExamples": {
+        "title": "Eigene Domain & Branding",
+        "subtitle": "Stärken Sie Ihre Marke und schaffen Sie Vertrauen durch Verwendung Ihrer eigenen Domain und Ihres Logos."
+      },
+      "featureHighlights": {
+        "sectionTitle": "Hauptfunktionen",
+        "sectionSubtitle": "Entdecken Sie, was Onetime Secret zur bevorzugten Lösung für den sicheren Informationsaustausch macht",
+        "security": {
+          "title": "Erweiterte Datenschutzoptionen",
+          "description": "Fügen Sie eine Passphrase für eine zusätzliche Sicherheitsebene hinzu. Nur wer die Passphrase kennt, kann das Geheimnis einsehen."
+        },
+        "selfDestruction": {
+          "title": "Selbstzerstörende Links",
+          "description": "Nach dem Anzeigen wird Ihr Geheimnis dauerhaft von unseren Servern gelöscht. Keine Kopien, keine Spuren."
+        },
+        "dataResidency": {
+          "title": "Regionale Datenspeicherung",
+          "description": "Wählen Sie, wo Ihre Daten gespeichert werden, um Compliance-Anforderungen und Bedürfnisse der Datenhoheit zu erfüllen."
+        },
+        "compliance": {
+          "title": "Compliance-bereit",
+          "description": "Entwickelt, um die Anforderungen von SOC2, DSGVO, CCPA & HIPAA für den sicheren Umgang mit Informationen zu erfüllen."
+        }
+      }
+    }
+  }
+}

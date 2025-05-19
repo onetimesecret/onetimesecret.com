@@ -44,7 +44,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Configuration
-const LOCALES_DIR = path.join(__dirname, "../locales");
+const LOCALES_DIR = path.join(__dirname, "../i18n/ui");
 const CONTENT_DIR = path.join(__dirname, "../content/pages");
 
 // Variables that need replacement in the content
@@ -512,7 +512,7 @@ title: ${security["security-policy"] || "Security Policy"}
  * Main function to process all locale files
  *
  * This is the entry point for the script that:
- * 1. Loads all locale JSON files from src/locales/
+ * 1. Loads all locale JSON files from src/i18n/ui/
  * 2. Processes each language to generate static Markdown content
  * 3. Saves the generated content to src/content/pages/[lang]/
  *

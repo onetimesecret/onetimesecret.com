@@ -3,9 +3,9 @@
 import markdoc from "@astrojs/markdoc";
 import vue from "@astrojs/vue";
 import sentry from "@sentry/astro";
-import spotlightjs from "@spotlightjs/astro";
+import { AstroUserConfig } from "astro";
 
-export function createConfig() {
+export function createConfig(): AstroUserConfig["integrations"] {
   return [
     /**
      * Astro integrations
@@ -24,7 +24,7 @@ export function createConfig() {
        * @see https://docs.sentry.io/platforms/javascript/guides/astro/
        * @see https://github.com/getsentry/spotlight/blob/main/packages/astro/README.md
        */
-
+      dsn: process.env.SENTRY_DSN,
       // Build-time source map upload configuration
       sourceMapsUploadOptions: {
         // Disable Sentry telemetry during the upload process
@@ -40,15 +40,22 @@ export function createConfig() {
           "./dist/**/client/**/*.map",
           "./dist/**/server/**/*.map",
         ],
+
         // The integration should automatically handle deleting maps
         // based on vite.build.sourcemap setting ('hidden' deletes maps)
       },
       // Spotlight configuration can also be potentially moved here if preferred,
       // but keeping runtime config in sentry.config.ts is fine.
     }),
-    spotlightjs({
-      debug: false,
-    }),
+    // https://spotlightjs.com/reference/configuration/
+    // spotlightjs({
+    //   debug: false,
+    //   // sidecarUrl: "https://catch.onetimesecret.com/",
+    //   sidecarUrl: "http://localhost:8969", // Force using only the local sidecar
+    //   openOnInit: false,
+    //   injectImmediately: true,
+    //   fullPage: true,
+    // }),
     vue({
       devtools: {
         launchEditor: "zed",
@@ -58,8 +65,8 @@ export function createConfig() {
        * This entry point imports and runs setupGlobalVars() from src/env.ts
        * before initializing vue-i18n to prevent the reference error.
        */
-      appEntrypoint: "/src/vueSetup",
-      jsx: true,
+      appEntrypoint: "/src/App",
+      // jsx: true,
     }),
     markdoc(),
   ];

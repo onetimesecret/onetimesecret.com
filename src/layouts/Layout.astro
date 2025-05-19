@@ -1,6 +1,7 @@
 ---
 // Component imports
-import LanguagePicker from "@/components/LanguagePicker.astro";
+import LanguageSwitcher from "@/components/vue/LanguageSwitcher.vue";
+import ColorModeToggle from "@/components/ColorModeToggle.astro";
 import FooterLinkLists from "@/components/vue/layouts/FooterLinkLists.vue";
 import FooterSignOff from "@/components/vue/layouts/FooterSignOff.vue";
 import Favicons from "@/components/layout/Favicons.astro";
@@ -9,7 +10,7 @@ import SvgSprites from "@/components/layout/SvgSprites.astro";
 import OptimizedFonts from "@/components/layout/OptimizedFonts.astro";
 
 // Utilities
-import { getLocaleFromUrl } from "../i18n/utils";
+import { getLocaleFromUrl } from "@/i18n/utils";
 import { generateCspConnectSrc } from "@/utils/security";
 import {
   getRouteSeoConfig,
@@ -17,14 +18,17 @@ import {
   defaultSeoValues,
   getDefaultWebApplicationLd,
 } from "@/utils/seo";
+import {
+  DEFAULT_LANGUAGE,
+  LANGUAGE_META,
+  SUPPORTED_LANGUAGES,
+} from "@config/astro/i18n";
+import type { MessageSchema } from "@/i18n"; // For type
+import enMessages from "@/i18n/ui/en.json"; // For default initialMessages
 
 // Styles
 import "@/styles/global.css";
 import "@/styles/tailwind.css";
-
-// i18n setup
-const locale = getLocaleFromUrl(Astro.url);
-const { lang = "en" } = Astro.params;
 
 // Routing
 const currentPath = Astro.url.pathname;
@@ -32,7 +36,6 @@ const currentPath = Astro.url.pathname;
 // --------------------------
 // Props Interface
 // --------------------------
-
 export interface Props {
   title?: string;
   description?: string;
@@ -41,55 +44,100 @@ export interface Props {
   ogType?: string;
   twitterCard?: string;
   keywords?: string;
-  noindex?: boolean; // Allow explicitly setting noindex
+  noindex?: boolean;
   alternateLanguages?: { code: string; url: string }[];
   structuredData?: object;
+  // Props for i18n, with optional chaining for robustness
+  htmlLang?: string;
+  langDir?: string;
+  initialMessages?: Record<string, MessageSchema>;
 }
 
 // --------------------------
 // Configuration & Data Processing
 // --------------------------
 
+// Destructure props with defaults to ensure they are always defined
+const {
+  htmlLang = DEFAULT_LANGUAGE,
+  initialMessages = { [DEFAULT_LANGUAGE]: enMessages as MessageSchema },
+  // SEO related props
+  title: propsTitle,
+  description: propsDescription,
+  ogImage: propsOgImage,
+  ogType: propsOgType,
+  keywords: propsKeywords,
+  canonicalUrl: propsCanonicalUrl,
+  twitterCard: propsTwitterCard,
+  noindex: propsNoindex,
+  alternateLanguages: propsAlternateLanguages,
+  structuredData: propsStructuredData,
+} = Astro.props;
+
+// 1. DETERMINE EFFECTIVE LOCALE CONSISTENTLY
+// The URL locale takes precedence, fall back to htmlLang from props, then default
+const effectiveLocale =
+  getLocaleFromUrl(Astro.url) || htmlLang || DEFAULT_LANGUAGE;
+
+// 2. DERIVE langDir BASED ON EFFECTIVE LOCALE
+const langDir =
+  LANGUAGE_META[effectiveLocale as keyof typeof LANGUAGE_META]?.dir ||
+  LANGUAGE_META[DEFAULT_LANGUAGE].dir;
+
 const siteOrigin = Astro.url.origin.toString();
+
+// For debugging during build - keep this during development
+console.log(
+  `Layout: URL="${Astro.url.pathname}", htmlLang="${htmlLang}", effectiveLocale="${effectiveLocale}"`,
+);
 
 // SEO Configuration
 const routeSpecificSeo = getRouteSeoConfig(currentPath, siteOrigin);
 
 const pageTitle =
-  Astro.props.title || routeSpecificSeo.title || defaultSeoValues.title;
+  propsTitle || routeSpecificSeo.title || defaultSeoValues.title;
 const pageDescription =
-  Astro.props.description ||
+  propsDescription ||
   routeSpecificSeo.description ||
   defaultSeoValues.description;
 const pageOgImage =
-  Astro.props.ogImage || routeSpecificSeo.ogImage || defaultSeoValues.ogImage;
+  propsOgImage || routeSpecificSeo.ogImage || defaultSeoValues.ogImage;
 const pageOgType =
-  Astro.props.ogType || routeSpecificSeo.ogType || defaultSeoValues.ogType;
-const pageKeywords = Astro.props.keywords || defaultSeoValues.keywords;
-const pageCanonicalUrl = Astro.props.canonicalUrl || Astro.url.href;
-const pageTwitterCard = Astro.props.twitterCard || defaultSeoValues.twitterCard;
+  propsOgType || routeSpecificSeo.ogType || defaultSeoValues.ogType;
+const pageKeywords = propsKeywords || defaultSeoValues.keywords;
+const pageCanonicalUrl = propsCanonicalUrl || Astro.url.href;
+const pageTwitterCard = propsTwitterCard || defaultSeoValues.twitterCard;
 
-// Determine noindex status: explicitly set via prop, or based on path conventions
 const pageNoindex =
-  Astro.props.noindex !== undefined
-    ? Astro.props.noindex
+  propsNoindex !== undefined
+    ? propsNoindex
     : currentPath.startsWith("/secret/") ||
       currentPath.startsWith("/private/") ||
       currentPath.startsWith("/receipt/");
 
-const pageAlternateLanguages = Astro.props.alternateLanguages || [
-  { code: "en", url: `${siteOrigin}/en${Astro.url.pathname}` }, // ensure pathname starts with /
-];
+// 3. GENERATE ALTERNATE LANGUAGE LINKS CONSISTENTLY
+const languagePrefixes = ["/en", "/fr", "/de"];
+const hasLangPrefix = languagePrefixes.some((prefix) =>
+  currentPath.startsWith(prefix),
+);
+const basePathForAlternates = hasLangPrefix
+  ? currentPath.substring(3)
+  : currentPath;
 
-// Structured Data
+const pageAlternateLanguages =
+  propsAlternateLanguages ||
+  SUPPORTED_LANGUAGES.map((lang) => ({
+    code: lang,
+    url: `${siteOrigin}/${lang}${basePathForAlternates}`,
+  }));
+
 const pageStructuredData =
-  Astro.props.structuredData ||
+  propsStructuredData ||
   routeSpecificSeo.structuredData ||
   getDefaultWebApplicationLd(siteOrigin, pageDescription);
 
 const pageBreadcrumbsLd = generateBreadcrumbsLd(currentPath, siteOrigin);
 
-// Security Configuration
 const apiUrl = import.meta.env.PUBLIC_API_BASE_URL;
 const isDebugMode = import.meta.env.DEV || import.meta.env.DEBUG;
 const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
@@ -97,7 +145,8 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
 
 <!doctype html>
 <html
-  lang={locale}
+  lang={effectiveLocale}
+  dir={langDir}
   class="h-full">
   <head>
     <meta charset="utf-8" />
@@ -111,17 +160,13 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
     />
     <meta
       name="color-scheme"
-      content="dark light"
+      content="dark light contrast"
     />
     <meta
       name="author"
       content="Onetime Secret"
     />
-
-    <!-- Favicons and Web App Manifest -->
     <Favicons />
-
-    <!-- SEO Meta Tags (including Open Graph, Twitter, JSON-LD, etc.) -->
     <SeoMeta
       title={pageTitle}
       description={pageDescription}
@@ -136,46 +181,72 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
       structuredData={pageStructuredData}
       breadcrumbsLd={pageBreadcrumbsLd}
     />
-
-    <!-- Default alternate language link -->
     <link
       rel="alternate"
       hreflang="x-default"
-      href={siteOrigin + Astro.url.pathname}
+      href={`${siteOrigin}${basePathForAlternates}`}
     />
-
-    <!-- Font optimization using OptimizedFonts component -->
     <OptimizedFonts />
-
-    <!-- Security Headers -->
     <meta
       http-equiv="Content-Security-Policy"
       content={`default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src ${connectSrcDirective}; worker-src 'self' blob:;`}
     />
-
+    <script is:inline>
+      // Minimal inline script to prevent FOUC
+      // Duplicates parts of ColorModeToggle.astro logic for immediate application
+      const THEMES = ["light", "dark", "high-contrast", "dyslexic"];
+      let themeToApply = "light"; // Default theme
+      try {
+        const storedTheme = localStorage.getItem("theme");
+        if (storedTheme && THEMES.includes(storedTheme)) {
+          themeToApply = storedTheme;
+        } else {
+          const prefersDark = window.matchMedia(
+            "(prefers-color-scheme: dark)",
+          ).matches;
+          if (prefersDark) {
+            themeToApply = "dark";
+          }
+        }
+      } catch (e) {
+        // localStorage might be unavailable
+      }
+      document.documentElement.classList.add(themeToApply);
+      if (themeToApply === "dark") {
+        document.documentElement.classList.add("dark"); // For Tailwind
+      }
+    </script>
     <title>{pageTitle}</title>
   </head>
   <body class="flex h-full flex-col bg-white dark:bg-gray-900">
-    <!-- Site-wide progress indicator -->
-    <div class="bg-brand-500 fixed top-0 left-0 z-50 h-1 w-full"></div>
-
-    <!-- Main content area -->
+    <div class="bg-brand-500 fixed top-0 left-0 z-[100] h-1 w-full"></div>
     <div class="flex-grow">
       <slot />
     </div>
-
-    <!-- Footer section -->
     <footer class="bg-white dark:bg-gray-900">
       <FooterLinkLists
         client:load
-        locale={lang}
+        locale={effectiveLocale}
+        initialMessages={initialMessages}
       />
-      <LanguagePicker />
+      <div class="border-t border-gray-200 dark:border-gray-800">
+        <div
+          class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+          <LanguageSwitcher
+            client:load
+            locale={effectiveLocale}
+            size="sm"
+            variant="full"
+            openDirection="up"
+          />
+          <ColorModeToggle />
+        </div>
+      </div>
       <FooterSignOff
         client:load
-        locale={lang}
+        locale={effectiveLocale}
+        initialMessages={initialMessages}
       />
     </footer>
-  </body><!-- SVG sprites - hidden but available for use -->
-  <SvgSprites />
+  </body><SvgSprites />
 </html>

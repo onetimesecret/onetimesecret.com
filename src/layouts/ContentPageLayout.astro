@@ -1,0 +1,46 @@
+---
+/**
+ * src/layouts/ContentPageLayout.astro
+ * A standardized layout for content pages like About, Privacy, etc.
+ * Uses MainLayout as a base but adds consistent styling for content-heavy pages
+ */
+import MainLayout from "@/layouts/MainLayout.astro";
+import Prose from "@/components/vue/Prose.astro";
+import Callout from "@/components/vue/Callout.vue";
+import type { MessageSchema } from "@/i18n";
+
+export interface Props {
+  title: string;
+  description?: string;
+  htmlLang?: string;
+  initialMessages?: Record<string, MessageSchema>;
+  heroTitle?: string;
+  heroDescription?: string;
+}
+
+const {
+  title,
+  description,
+  htmlLang,
+  initialMessages,
+  heroTitle,
+  heroDescription,
+} = Astro.props;
+---
+
+<MainLayout
+  title={title}
+  description={description}
+  htmlLang={htmlLang}
+  initialMessages={initialMessages}
+  showHero={true}
+  heroTitle={heroTitle}
+  heroDescription={heroDescription}>
+  <div class="container mx-auto px-4 py-8">
+    <Prose>
+      <article>
+        <slot />
+      </article>
+    </Prose>
+  </div>
+</MainLayout>

@@ -63,7 +63,7 @@ defineExpose({
 
 <template>
   <!-- Premium section structure with refined visual connection -->
-  <section class="bg-gradient-to-b from-brandcomp-0 to-white w-full pt-8 sm:pt-5">
+  <section class="bg-gradient-to-b from-brandcomp-0 to-white dark:from-gray-800 dark:to-gray-900 w-full pt-8 sm:pt-5">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-3xl">
         <!-- Use the BaseSecretFormLite component -->

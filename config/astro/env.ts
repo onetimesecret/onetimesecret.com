@@ -1,11 +1,12 @@
 // config/astro/env.ts
 
+import { AstroUserConfig } from "astro";
 import { envField } from "astro/config";
 
 // https://docs.astro.build/en/guides/environment-variables/#in-the-astro-config-file
 
 // register variables as a string, number, enum, or boolean
-export function createConfig() {
+export function createConfig(): AstroUserConfig["env"] {
   return {
     schema: {
       // Debug mode for development

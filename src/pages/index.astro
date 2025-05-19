@@ -1,9 +1,15 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import Homepage from "@/components/vue/homepage/Homepage.vue";
-import "@/styles/global.css";
-import "@/styles/tailwind.css";
-import "@/i18n";
+import { createLocaleI18n, type MessageSchema } from "@/i18n";
+import enMessages from "@/i18n/ui/en.json";
+import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
+
+const currentLang = DEFAULT_LANGUAGE;
+const currentLangMeta = LANGUAGE_META[currentLang];
+const pageScopedInitialMessages: Record<string, MessageSchema> = {
+  [currentLang]: enMessages,
+};
 
 /**
  * Component Script:
@@ -43,22 +49,32 @@ import "@/i18n";
  * will get an error."
  */
 
-const { lang } = Astro.props;
-console.log("[plop]", lang);
-const pageTitle = "Share Secrets Securely | Onetime Secret";
-const pageDescription =
-  "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever.";
+// Initialize a page-specific i18n instance for SSR content (for English)
+const pageI18n = await createLocaleI18n(currentLang, pageScopedInitialMessages);
+const t = pageI18n.global.t;
+
+// Translated title and description for the Layout using English
+// IMPORTANT: Ensure 'web.homepage.title' and 'web.homepage.description' keys exist in en.json
+const pageTitle = t("web.homepage.title");
+const pageDescription = t("web.homepage.description");
+
+// The import "@/i18n"; was already here.
+// Homepage.vue will call setLanguage('en') on the client.
 ---
 
 <!-- The Component Template -->
 <Layout
   title={pageTitle}
-  description={pageDescription}>
+  description={pageDescription}
+  htmlLang={currentLang}
+  langDir={currentLangMeta.dir}
+  initialMessages={pageScopedInitialMessages}>
   <!-- Render the Homepage component -->
   <!-- client:load ensures the Vue component hydrates and runs client-side -->
   <Homepage
     client:load
-    locale="en"
+    locale={currentLang}
+    initialMessages={pageScopedInitialMessages}
   />
   <!-- <slot />  -->
 </Layout>

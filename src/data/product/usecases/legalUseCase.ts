@@ -1,4 +1,4 @@
-import { type UseCase } from "../../types/useCase";
+import { type UseCase } from "@/types/useCase";
 
 export function getLegalUseCase(t: (key: string) => string): UseCase {
   // Legal team example secret

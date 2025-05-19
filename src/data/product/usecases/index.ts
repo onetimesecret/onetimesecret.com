@@ -1,7 +1,7 @@
-import { type UseCase } from "../../types/useCase";
-import { getITUseCase } from "./itUseCase";
+import { type UseCase } from "@/types/useCase";
 import { getDeveloperUseCase } from "./developerUseCase";
 import { getHRUseCase } from "./hrUseCase";
+import { getITUseCase } from "./itUseCase";
 import { getLegalUseCase } from "./legalUseCase";
 
 /**

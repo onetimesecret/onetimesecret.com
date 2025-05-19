@@ -1,35 +1,57 @@
 ---
-// src/pages/[lang]/about.astro
-
-import Layout from "@/layouts/Layout.astro";
-import { createLocaleI18n } from "@/i18n";
-import { loadLocalizedPage } from "@/utils/content";
-
-import { getLanguagePaths } from "@config/astro/i18n";
+/**
+ * src/pages/[lang]/about.astro
+ * About page implementation using content collections and ContentPageLayout
+ */
+import type { MessageSchema } from "@/i18n";
+import {
+  createLocaleI18n,
+  getLanguagePaths,
+  type SupportedLanguage,
+} from "@/i18n";
+import enMessages from "@/i18n/ui/en.json";
+import ContentPageLayout from "@/layouts/ContentPageLayout.astro";
+import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
+import { getCollection } from "astro:content";
 
 export async function getStaticPaths() {
   return getLanguagePaths();
 }
 
-const { lang = "en" } = Astro.params;
+const { lang = DEFAULT_LANGUAGE } = Astro.params as { lang: SupportedLanguage };
 
-// Initialize i18n asynchronously
-const i18n = await createLocaleI18n(lang);
-const { t } = i18n.global;
+// Setup initial messages for i18n
+const initialMessages = {
+  [DEFAULT_LANGUAGE]: enMessages as MessageSchema,
+};
 
-// Use the utility function to load content
-const { Content, headings, data } = await loadLocalizedPage(
-  "pages",
-  lang,
-  "about",
+// Initialize i18n for page content
+const pageI18n = await createLocaleI18n(lang, initialMessages);
+const t = pageI18n.global.t;
+
+// Get the page by language/slug using Astro content collection API
+const allPages = await getCollection("pages");
+const page = allPages.find(
+  (page) =>
+    page.id === `${lang}/about.md` ||
+    (lang !== DEFAULT_LANGUAGE && page.id === `${DEFAULT_LANGUAGE}/about.md`),
 );
+
+if (!page) {
+  throw new Error(`Page not found: ${lang}/about.md`);
+}
+
+// Render the content
+const renderedContent = await page.render();
+const { Content } = renderedContent;
 ---
 
-<Layout
-  title={`${data.title} | Onetime Secret`}
-  description={data.description ||
-    "Learn about Onetime Secret, our mission to provide secure one-time sharing, and the team behind our service."}>
-  <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900">
-    <Content />
-  </div>
-</Layout>
+<ContentPageLayout
+  title={`${page.data.title} | Onetime Secret`}
+  description={page.data.description || `${page.data.title} | Onetime Secret`}
+  htmlLang={lang}
+  initialMessages={initialMessages}
+  heroTitle={page.data.title}
+  heroDescription={page.data.description}>
+  <Content />
+</ContentPageLayout>
