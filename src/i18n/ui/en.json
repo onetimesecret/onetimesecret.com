@@ -12,6 +12,9 @@
   "read-our-privacy-policy": "Read our Privacy Policy",
   "view-our-terms-and-conditions": "View our Terms and Conditions",
   "status": "Status",
+  "$config": {
+    "layout-footer-style": "horizontal"
+  },
   "tagline": {
     "signed": "Signed",
     "sealed": "Sealed",

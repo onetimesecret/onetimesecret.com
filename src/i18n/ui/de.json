@@ -12,6 +12,9 @@
   "read-our-privacy-policy": "Lesen Sie unsere Datenschutzerklärung",
   "view-our-terms-and-conditions": "Lesen Sie unsere Allgemeinen Geschäftsbedingungen",
   "status": "Status",
+  "$config": {
+    "layout-footer-style": "grid"
+  },
   "tagline": {
     "signed": "Signiert",
     "sealed": "Versiegelt",
