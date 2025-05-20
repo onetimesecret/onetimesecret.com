@@ -163,7 +163,7 @@ const getPrice = (tier: ProductTier) => {
                     </ul>
                   </div>
                   <a
-                    :href="tier.href"
+                    :href="tier.frequencySuffixEnabled ? `${tier.href}${frequency.priceSuffix}` : tier.href"
                     :aria-describedby="tier.id"
                     :class="[
                       'mt-8 block font-brand rounded-md px-3.5 py-2 text-center text-xl font-semibold leading-6 shadow-sm',

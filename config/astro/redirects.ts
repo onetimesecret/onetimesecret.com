@@ -53,7 +53,23 @@ export function createConfig(): AstroUserConfig["redirects"] {
       status: 302,
       destination: "https://eu.onetimesecret.com/plans/identity",
     },
+    "/plans/identity/month": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/plans/identity/month",
+    },
+    "/plans/identity/year": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/plans/identity/year",
+    },
     "/plans/free": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/plans/free",
+    },
+    "/plans/free/month": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/plans/free",
+    },
+    "/plans/free/year": {
       status: 302,
       destination: "https://eu.onetimesecret.com/plans/free",
     },

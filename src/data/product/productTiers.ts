@@ -19,6 +19,7 @@ export interface ProductTier {
   description: string;
   features: string[];
   featured: boolean;
+  frequencySuffixEnabled?: boolean;
   learn_more?: string;
 }
 
@@ -50,6 +51,7 @@ export const productTiers: Array<ProductTier> = [
       "REST API",
     ],
     featured: false,
+    frequencySuffixEnabled: false,
     learn_more: "https://docs.onetimesecret.com/en/secret-links/",
   },
   {
@@ -78,6 +80,7 @@ export const productTiers: Array<ProductTier> = [
       "No rate limits",
     ],
     featured: false,
+    frequencySuffixEnabled: true,
     learn_more: "https://docs.onetimesecret.com/en/custom-domains/",
   },
   {
@@ -101,5 +104,6 @@ export const productTiers: Array<ProductTier> = [
       "Helps meet and exceed compliance requirements",
     ],
     featured: true,
+    frequencySuffixEnabled: false,
   },
 ];

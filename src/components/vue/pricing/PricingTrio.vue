@@ -24,7 +24,7 @@ const props = defineProps<{
   locale: string;
   htmlLang?: string;
   langDir?: string;
-  initialMessages?: Record;
+  initialMessages?: Record<string, MessageSchema>;
 }>();
 
 // Initialize i18n with provided messages
@@ -54,7 +54,7 @@ onMounted(() => {
 <template>
   <div
     class="relative isolate py-24 sm:py-32"
-    :lang="currentLocale">
+    :lang="locale">
     <!-- Background Globules -->
     <MovingGlobules
       from-colour="#23b5dd"
@@ -198,7 +198,7 @@ onMounted(() => {
               </p>
               <!-- CTA Button -->
               <a
-                :href="`${tier.href}${frequency.priceSuffix}`"
+                :href="tier.frequencySuffixEnabled ? `${tier.href}${frequency.priceSuffix}` : tier.href"
                 :aria-label="`${tier.cta} for ${tier.name} plan`"
                 :aria-describedby="`tier-${tier.id}`"
                 class="font-brand font-semibold"

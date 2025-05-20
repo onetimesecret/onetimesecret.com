@@ -140,7 +140,7 @@ import { useI18n } from "vue-i18n";
                 </span>
               </p>
               <a
-                :href="`/plans/identity${frequency.priceSuffix}`"
+                :href="identityTier.frequencySuffixEnabled ? `${identityTier.href}${frequency.priceSuffix}` : identityTier.href"
                 class="mt-10 block w-full rounded-md bg-brand-600 px-4 py-3 text-center text-base font-semibold text-white shadow-lg hover:bg-brand-500 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 light:bg-brand-500 light:hover:bg-brand-400">
                 {{ $t('get-started') }}
               </a>

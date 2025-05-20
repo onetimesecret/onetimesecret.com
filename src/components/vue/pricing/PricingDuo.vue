@@ -165,7 +165,7 @@ import { useI18n } from "vue-i18n";
           </li>
         </ul>
         <form
-          :action="`${tier.href}${frequency.priceSuffix}`"
+          :action="tier.frequencySuffixEnabled ? `${tier.href}${frequency.priceSuffix}` : tier.href"
           method="GET">
           <button
             type="submit"
