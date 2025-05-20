@@ -27,10 +27,9 @@
  * components with browser API dependencies work correctly in Astro's
  * static site generation model.
  */
-import { ref, onMounted } from "vue";
 import FirstTimeVisitorBannerAlt from "@/components/vue/homepage/FirstTimeVisitorBannerAlt.vue";
 import { useDismissableBanner } from "@/composables/useDismissableBanner";
-import type { Jurisdiction } from "@/types/jurisdiction";
+import { onMounted, ref } from "vue";
 
 defineProps<{
   detectedJurisdiction: string;
@@ -48,7 +47,8 @@ const isClient = ref(false);
  * Uses localStorage to persist dismissal state across page visits
  * The 30-day parameter controls how long the banner stays dismissed
  */
-const { isVisible: showJurisdictionBanner, dismiss: dismissBanner } = useDismissableBanner('jurisdiction-banner', 30);
+const { isVisible: showJurisdictionBanner, dismiss: dismissBanner } =
+  useDismissableBanner("jurisdiction-banner", 30);
 
 defineExpose({ isVisible: showJurisdictionBanner });
 
@@ -88,6 +88,5 @@ const handleSwitchJurisdiction = (jurisdictionId: string) => {
     :suggested-domain="suggestedDomain"
     :show-banner="true"
     @dismiss="dismissBanner"
-    @switch-region="handleSwitchJurisdiction"
-  />
+    @switch-region="handleSwitchJurisdiction" />
 </template>

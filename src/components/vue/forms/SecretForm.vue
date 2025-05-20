@@ -92,7 +92,9 @@ onMounted(() => {
 
 // --- Computed ---
 const showPassphraseInput = computed(() => secretOptions.value.addPassphrase);
-const showSuccessView = computed(() => apiResult.value?.success && apiResult.value.record);
+const showSuccessView = computed(
+  () => apiResult.value?.success && apiResult.value.record,
+);
 const showFormView = computed(() => !showSuccessView.value);
 
 // --- Methods ---
@@ -136,7 +138,9 @@ watch(secretText, () => {
   // If user starts typing again after a success or error, reset for a new submission
   if (secretText.value.trim() && (apiResult.value || apiError.value)) {
     // Check if this is real user input (not the asterisks from a success state)
-    const isAllAsterisks = secretText.value.split('').every(char => char === '*');
+    const isAllAsterisks = secretText.value
+      .split("")
+      .every((char) => char === "*");
     if (!isAllAsterisks) {
       apiResult.value = null;
       apiError.value = null;
@@ -212,17 +216,16 @@ const handleCreateLink = async () => {
       // Obscure the secret text with asterisks
       const minLen = 6;
       const maxLen = 32;
-      const fuzzyLen = Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
+      const fuzzyLen =
+        Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
       secretText.value = "*".repeat(fuzzyLen);
     }
-
   } catch (error: any) {
     console.error("API call failed:", error);
     apiError.value =
       (error.message ||
-      t("web.errors.apiGenericError") ||
-      "An unexpected error occurred.") +
-      ` (API URL: ${props.apiBaseUrl})`;
+        t("web.errors.apiGenericError") ||
+        "An unexpected error occurred.") + ` (API URL: ${props.apiBaseUrl})`;
     // Emit failure result
     emit("createLink", { success: false, message: apiError.value });
   } finally {
@@ -240,7 +243,10 @@ const buildSecretUrl = (result: ApiResult): string => {
 
   // Use the stored original base URL if available, otherwise use current base URL
   // This ensures the URL doesn't change when switching regions
-  const baseUrl = (createdWithBaseUrl.value || props.apiBaseUrl).replace(/\/api$/, ""); // Remove /api if present
+  const baseUrl = (createdWithBaseUrl.value || props.apiBaseUrl).replace(
+    /\/api$/,
+    "",
+  ); // Remove /api if present
 
   // Construct the secret URL
   return `${baseUrl}/secret/${secretKey}`; // Direct secret link
@@ -284,18 +290,25 @@ const createAnotherSecret = () => {
 
 <template>
   <div class="mx-auto max-w-xl">
-    <transition name="fade" mode="out-in" @after-enter="focusTextArea">
+    <transition
+      name="fade"
+      mode="out-in"
+      @after-enter="focusTextArea">
       <!-- Form View -->
-      <div v-if="showFormView" key="form-view" @click="focusTextArea">
+      <div
+        v-if="showFormView"
+        key="form-view"
+        @click="focusTextArea">
         <!-- Text Area Input -->
         <div class="relative">
           <textarea
             v-model="secretText"
             rows="3"
             class="block w-full rounded-md border-0 py-3 pl-4 pr-32 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm disabled:opacity-50 bg-white dark:bg-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-brand-500 focus:ring-opacity-50"
-            :placeholder="props.placeholder || t('web.secrets.secretPlaceholder')"
+            :placeholder="
+              props.placeholder || t('web.secrets.secretPlaceholder')
+            "
             ref="secretTextArea"
-
             :disabled="isLoading"></textarea>
 
           <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5 z-10">
@@ -387,19 +400,21 @@ const createAnotherSecret = () => {
         </div>
 
         <!-- Error Display -->
-        <div v-if="apiError" class="mt-4 mb-10">
+        <div
+          v-if="apiError"
+          class="mt-4 mb-10">
           <div
             class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
             role="alert">
-            <strong class="font-bold">{{
-              t("web.errors.errorTitle")
-            }}</strong>
+            <strong class="font-bold">{{ t("web.errors.errorTitle") }}</strong>
             <span class="block sm:inline sm:pl-2"> {{ apiError }}</span>
           </div>
         </div>
 
         <!-- Loading Indicator -->
-        <div v-if="isLoading" class="mt-4 mb-10 text-center text-gray-500">
+        <div
+          v-if="isLoading"
+          class="mt-4 mb-10 text-center text-gray-500">
           {{ t("LABELS.processing") }}...
         </div>
       </div>
@@ -414,8 +429,17 @@ const createAnotherSecret = () => {
         <!-- Success Header with Animation -->
         <div class="mb-4 flex items-center">
           <div class="bg-green-100 dark:bg-green-900/30 rounded-full p-2 mr-3">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 text-green-600 dark:text-green-400">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-6 text-green-600 dark:text-green-400">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <h2 class="text-xl font-bold text-gray-800 dark:text-white">
@@ -428,8 +452,17 @@ const createAnotherSecret = () => {
             rel="noopener noreferrer"
             class="ml-auto p-2 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 focus:outline-none focus:ring-2 focus:ring-green-500 rounded"
             :title="t('web.actions.openNewTab') || 'Open in new tab'">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-5">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
             </svg>
           </a>
         </div>
@@ -454,17 +487,17 @@ const createAnotherSecret = () => {
             type="button"
             class="relative -ml-px min-w-[6rem] inline-flex items-center justify-center space-x-2 rounded-r-md shadow-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
             :class="{
-              'bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 hover:bg-green-300 dark:hover:bg-green-700': copySuccess,
+              'bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 hover:bg-green-300 dark:hover:bg-green-700':
+                copySuccess,
             }">
-            <span v-if="!copySuccess">{{
-              t("LABELS.copy")
-            }}</span>
+            <span v-if="!copySuccess">{{ t("LABELS.copy") }}</span>
             <span v-else>{{ t("LABELS.copied") }}</span>
           </button>
         </div>
 
         <!-- Create Another Secret Button -->
-        <div class="text-center border-t border-gray-100 dark:border-gray-700 pt-4">
+        <div
+          class="text-center border-t border-gray-100 dark:border-gray-700 pt-4">
           <button
             @click="createAnotherSecret"
             type="button"
@@ -473,7 +506,10 @@ const createAnotherSecret = () => {
           </button>
           <!-- Region hint message -->
           <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
-            {{ t("web.secrets.regionSwitchHint") || "Try creating secrets in different regions for your various needs." }}
+            {{
+              t("web.secrets.regionSwitchHint") ||
+              "Try creating secrets in different regions for your various needs."
+            }}
           </p>
         </div>
       </div>

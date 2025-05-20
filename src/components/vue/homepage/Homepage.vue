@@ -5,21 +5,19 @@ import ClientOnlyBanner from "@/components/vue/homepage/ClientOnlyBanner.vue";
 import FeatureHighlights from "@/components/vue/homepage/FeatureHighlights.vue";
 import HeroTitle from "@/components/vue/homepage/HeroTitle.vue";
 import HowItWorks from "@/components/vue/homepage/HowItWorks.vue";
-import ClientOnlyRegionSelector from "@/components/vue/homepage/regions/ClientOnlyRegionSelector.vue";
 import ScreenshotViewHole from "@/components/vue/homepage/ScreenshotViewHole.vue";
-import { computed, onMounted, ref, watch, onUnmounted } from "vue";
-import { useI18n } from "vue-i18n";
-import { setLanguage } from "@/i18n";
-import { setLanguageWithMessages, type MessageSchema } from "@/i18n";
 import { useJurisdiction } from "@/composables/useJurisdiction";
+import { setLanguageWithMessages, type MessageSchema } from "@/i18n";
+import { onMounted, onUnmounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
+import type { ApiResult } from "@/components/vue/forms/SecretForm.vue";
 import SecretRegionExperience from "@/components/vue/homepage/SecretRegionExperience.vue";
 import UseCaseSelector from "@/components/vue/homepage/UseCaseSelector.vue";
-import type { ApiResult } from "@/components/vue/forms/SecretForm.vue";
 
 const props = defineProps<{
   locale: string;
-  initialMessages: Record<string, MessageSchema>;
+  initialMessages: Record;
   // other component-specific props like 'now' for Homepage
   now?: number;
 }>();
@@ -43,7 +41,7 @@ const {
   setJurisdiction,
   detectJurisdiction,
   clearSuggestion,
-  cleanup
+  cleanup,
 } = useJurisdiction();
 
 // Banner state managed inside ClientOnlyBanner component
@@ -53,9 +51,8 @@ const apiCallError = ref<string | null>(null); // State to hold error from Secre
 // --- Methods for Homepage ---
 const switchRegion = (newRegion?: string | { identifier: string }) => {
   // Handle both string identifier or Region object
-  const identifier = typeof newRegion === 'string'
-    ? newRegion
-    : newRegion?.identifier;
+  const identifier =
+    typeof newRegion === "string" ? newRegion : newRegion?.identifier;
 
   if (identifier) {
     setJurisdiction(identifier);
@@ -103,7 +100,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col overflow-hidden" style="scroll-padding-top: var(--header-height, 4rem);">
+  <div
+    class="flex flex-col overflow-hidden"
+    style="scroll-padding-top: var(--header-height, 4rem)">
     <!-- First Time Visitor Banner (Client-Only) -->
     <ClientOnlyBanner
       :detected-jurisdiction="detectedJurisdiction"
@@ -122,8 +121,7 @@ onUnmounted(() => {
         :api-base-url="apiBaseUrl"
         :is-client="isClient"
         @region-change="handleRegionChange"
-        @create-secret="handleSecretCreationResult"
-      />
+        @create-secret="handleSecretCreationResult" />
 
       <!-- Section 3: Feature Highlights -->
       <FeatureHighlights />

@@ -71,53 +71,57 @@ defineExpose({
       secretFormRef.value.resetForm();
       showingResult.value = false;
     }
-  }
+  },
 });
 </script>
 
 <template>
-  <section class="bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 py-8">
+  <section
+    class="bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 py-8">
     <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
       <div
-              class="flex flex-col min-h-[400px] sm:min-h-[350px] md:min-h-[400px] lg:min-h-[400px] bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700">
-              <div
-                class="bg-gradient-to-r from-brand-500/10 to-brand-600/5 dark:from-brand-500/20 dark:to-brand-600/10 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <div class="flex flex-wrap justify-between items-center gap-4">
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                    {{ t("LABELS.create-link") || "Create a secure, self-destructing message" }}
-                  </h3>
+        class="flex flex-col min-h-[400px] sm:min-h-[350px] md:min-h-[400px] lg:min-h-[400px] bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700">
+        <div
+          class="bg-gradient-to-r from-brand-500/10 to-brand-600/5 dark:from-brand-500/20 dark:to-brand-600/10 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex flex-wrap justify-between items-center gap-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {{
+                t("LABELS.create-link") ||
+                "Create a secure, self-destructing message"
+              }}
+            </h3>
 
-                  <!-- Premium region selector with enhanced styling and animations -->
-                  <div class="flex-shrink-0">
-                    <ClientOnlyRegionSelector
-                      v-if="isClient"
-                      :current-region="currentRegion"
-                      :available-regions="availableRegions"
-                      class="rounded-lg px-2 py-1.5 bg-white/90 dark:bg-gray-700/90 border border-gray-200 dark:border-gray-600 shadow-sm transition-all duration-300"
-                      :class="{
-                        'pulse-attention ring-2 ring-brand-400 dark:ring-brand-500 shadow-md': secretCreatedSuccessfully
-                      }"
-                      @region-change="handleRegionChange" />
-                  </div>
-                </div>
-              </div>
-
-              <div class="px-6 py-5 flex-grow">
-                <HomepageSecretForm
-                  ref="secretFormRef"
-                  :region-name="currentRegion.displayName"
-                  :api-base-url="apiBaseUrl"
-                  :with-options="false"
-                  @create-link="handleSecretCreationResult" />
-              </div>
-
-              <div
-                v-if="!showingResult"
-                class="mt-auto bg-gray-50 dark:bg-gray-700 px-6 py-3 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-600">
-                {{ t("web.secrets.complianceNote") }}
-              </div>
+            <!-- Premium region selector with enhanced styling and animations -->
+            <div class="flex-shrink-0">
+              <ClientOnlyRegionSelector
+                v-if="isClient"
+                :current-region="currentRegion"
+                :available-regions="availableRegions"
+                class="rounded-lg px-2 py-1.5 bg-white/90 dark:bg-gray-700/90 border border-gray-200 dark:border-gray-600 shadow-sm transition-all duration-300"
+                :class="{
+                  'pulse-attention ring-2 ring-brand-400 dark:ring-brand-500 shadow-md':
+                    secretCreatedSuccessfully,
+                }"
+                @region-change="handleRegionChange" />
             </div>
+          </div>
+        </div>
 
+        <div class="px-6 py-5 flex-grow">
+          <HomepageSecretForm
+            ref="secretFormRef"
+            :region-name="currentRegion.displayName"
+            :api-base-url="apiBaseUrl"
+            :with-options="false"
+            @create-link="handleSecretCreationResult" />
+        </div>
+
+        <div
+          v-if="!showingResult"
+          class="mt-auto bg-gray-50 dark:bg-gray-700 px-6 py-3 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-600">
+          {{ t("web.secrets.complianceNote") }}
+        </div>
+      </div>
     </div>
   </section>
 </template>

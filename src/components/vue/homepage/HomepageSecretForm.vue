@@ -1,9 +1,9 @@
 <!-- src/components/vue/homepage/HomepageSecretForm.vue -->
 <script setup lang="ts">
+import type { ApiResult } from "@/components/vue/forms/SecretForm.vue";
+import SecretForm from "@/components/vue/forms/SecretForm.vue";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import SecretForm from "@/components/vue/forms/SecretForm.vue";
-import type { ApiResult } from "@/components/vue/forms/SecretForm.vue";
 
 interface Props {
   apiBaseUrl: string;
@@ -29,8 +29,8 @@ const secretFormRef = ref();
 // Generate placeholder based on region
 const placeholderText = computed(() => {
   return props.regionName
-    ? t('web.secrets.secretPlaceholder-premium', { noun: props.regionName })
-    : t('web.secrets.secretPlaceholder');
+    ? t("web.secrets.secretPlaceholder-premium", { noun: props.regionName })
+    : t("web.secrets.secretPlaceholder");
 });
 
 // Handler to relay the event from the base component
@@ -44,13 +44,14 @@ defineExpose({
     if (secretFormRef.value) {
       secretFormRef.value.resetForm();
     }
-  }
+  },
 });
 </script>
 
 <template>
   <!-- Premium section structure with refined visual connection -->
-  <section class="bg-gradient-to-b from-brand-50 via-brand-100/30 to-white dark:from-brand-900 dark:via-gray-900 dark:to-gray-800 w-full pt-8 sm:pt-5 rounded-xl">
+  <section
+    class="bg-gradient-to-b from-brand-50 via-brand-100/30 to-white dark:from-brand-900 dark:via-gray-900 dark:to-gray-800 w-full pt-8 sm:pt-5 rounded-xl">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-3xl">
         <SecretForm
@@ -65,6 +66,4 @@ defineExpose({
   </section>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
