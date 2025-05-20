@@ -42,6 +42,7 @@
     "privacy-policy": "Privacy Policy",
     "terms-and-conditions": "Terms and Conditions",
     "security": "Security",
+    "feedback": "Feedback",
     "learn-about-our-security-measures": "Learn about our security measures",
     "terms": "Terms",
     "view-our-terms-and-conditions": "View our Terms and Conditions",
@@ -170,6 +171,7 @@
     "homepage": {
       "title": "Share Secrets Securely | Onetime Secret",
       "description": "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever",
+      "a-trusted-way-to-share-sensitive-information-etc": "A trusted way to share sensitive information that self-destructs after being viewed.",
       "howItWorks": {
         "title": "How It Works",
         "subtitle": "Share your information once, then it's permanently deleted",

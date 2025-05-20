@@ -8,7 +8,7 @@ import ContentHero from "@/components/ContentHero.astro";
 import Layout from "@/layouts/Layout.astro";
 import Prose from "@/components/vue/Prose.astro";
 import Callout from "@/components/vue/Callout.vue";
-import type { MessageSchema } from "@/i18n";
+import { createLocaleI18n, type MessageSchema } from "@/i18n";
 import "remark-github-blockquote-alert/alert.css";
 
 // Interface for props
@@ -51,6 +51,10 @@ const {
   heroTitle,
   heroDescription,
 } = Astro.props;
+
+// Initialize a page-specific i18n instance for SSR content (for English)
+const pageI18n = await createLocaleI18n(htmlLang, initialMessages);
+const t = pageI18n.global.t;
 ---
 
 <Layout

@@ -20,7 +20,7 @@ import type { ApiResult } from "@/components/vue/forms/BaseSecretFormLite.vue";
 
 const props = defineProps<{
   locale: string;
-  initialMessages: Record;
+  initialMessages: Record<string, MessageSchema>;
   // other component-specific props like 'now' for Homepage
   now?: number;
 }>();
