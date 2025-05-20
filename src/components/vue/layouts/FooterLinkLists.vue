@@ -3,10 +3,10 @@
 import { useI18n } from "vue-i18n";
 import { localizeUrl } from '@/i18n/utils';
 import { onMounted } from 'vue';
-import { setLanguage, setLanguageWithMessages, type MessageSchema } from "@/i18n";
+import { setLanguage, setLanguageWithMessages, SupportedLanguage, type MessageSchema } from "@/i18n";
 
 const props = defineProps<{
-  locale: string;
+  locale: SupportedLanguage;
   initialMessages?: Record<string, MessageSchema>;
 }>();
 

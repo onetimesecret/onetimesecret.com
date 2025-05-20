@@ -33,13 +33,28 @@ const { header = true, ...props } = Astro.props;
 const showHeader = header;
 ---
 
-<LayoutBase {...props} header={showHeader}>
-  {!showHeader && (
-    <slot name="header" slot="header" />
-  )}
-  {showHeader && (
-    <slot name="header" slot="header" />
-  )}
+<LayoutBase
+  {...props}
+  header={showHeader}>
+  {
+    !showHeader && (
+      <slot
+        name="header"
+        slot="header"
+      />
+    )
+  }
+  {
+    showHeader && (
+      <slot
+        name="header"
+        slot="header"
+      />
+    )
+  }
   <slot />
-  <slot name="footer" slot="footer" />
+  <slot
+    name="footer"
+    slot="footer"
+  />
 </LayoutBase>

@@ -9,12 +9,10 @@ import Layout from "@/layouts/Layout.astro";
 import Prose from "@/components/vue/Prose.astro";
 import Callout from "@/components/vue/Callout.vue";
 import type { MessageSchema } from "@/i18n";
-import { VueI18nTranslation } from "vue-i18n";
 import "remark-github-blockquote-alert/alert.css";
 
 // Interface for props
 export interface Props {
-  t: VueI18nTranslation;
   title?: string;
   description?: string;
   canonicalUrl?: string;
@@ -52,7 +50,6 @@ const {
   initialMessages,
   heroTitle,
   heroDescription,
-  t,
 } = Astro.props;
 ---
 

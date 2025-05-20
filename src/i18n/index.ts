@@ -170,7 +170,7 @@ export const createLocaleI18n = async (
   locale: string = "en",
   ssrMessages?: Record<string, MessageSchema>,
 ) => {
-  let messages: Record<string, MessageSchema> = {
+  const messages: Record<string, MessageSchema> = {
     en: enMessagesImport, // Always include English
   };
 
