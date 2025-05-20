@@ -7,7 +7,6 @@ import HeroTitle from "@/components/vue/homepage/HeroTitle.vue";
 import HowItWorks from "@/components/vue/homepage/HowItWorks.vue";
 import ClientOnlyRegionSelector from "@/components/vue/homepage/regions/ClientOnlyRegionSelector.vue";
 import ScreenshotViewHole from "@/components/vue/homepage/ScreenshotViewHole.vue";
-import MainNavigation from "@/components/vue/layouts/MainNavigation.vue";
 import { computed, onMounted, ref, watch, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { setLanguage } from "@/i18n";
@@ -103,17 +102,6 @@ onUnmounted(() => {
       :detected-jurisdiction="detectedJurisdiction"
       :suggested-domain="suggestedDomain"
       @switch-jurisdiction="switchRegion" />
-
-    <!-- Main Navigation -->
-    <header class="sticky top-0 z-[99] bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm shadow-sm">
-      <MainNavigation
-        :locale="locale"
-        :initialMessages="initialMessages"
-        :showLogo="true"
-        :showAuthButtons="true"
-        :stickyHeader="false"
-      />
-    </header>
 
     <div class="flex-grow">
       <!-- Section 1: Branding and Benefits -->

@@ -27,9 +27,12 @@ const t = pageI18n.global.t;
 // We'll use direct text here since Astro components don't have Vue's i18n system
 // In a real implementation, you would import these from i18n json files
 const navigation = [
-  { name: t("Home"), href: localizeUrl("/", effectiveLocale) },
-  { name: t("About"), href: localizeUrl("/about", effectiveLocale) },
-  { name: t("Pricing"), href: localizeUrl("/pricing", effectiveLocale) },
+  { name: t("navigation.home"), href: localizeUrl("/", effectiveLocale) },
+  { name: t("navigation.about"), href: localizeUrl("/about", effectiveLocale) },
+  {
+    name: t("navigation.pricing"),
+    href: localizeUrl("/pricing", effectiveLocale),
+  },
 ];
 
 // Get current path for highlighting active link
@@ -45,11 +48,11 @@ const currentPath = Astro.url.pathname;
       aria-label="Global">
       <div class="flex flex-1">
         <a
-          href={localizeUrl("/", effectiveLocale)}
+          href="/"
           class="-m-1.5 p-1.5">
           <span class="sr-only">{t("onetime-secret-literal")}</span>
           <img
-            class="h-10 w-auto rounded-lg"
+            class="h-12 w-auto rounded-lg"
             src="/etc/img/onetime-logo-sm.png"
             alt="Onetime Secret logo"
           />
@@ -164,8 +167,7 @@ const currentPath = Astro.url.pathname;
                     href={item.href}
                     class:list={[
                       "focus-visible:outline-brand-500 -mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2",
-                      currentPath === item.href ||
-                      (item.href !== "/")
+                      currentPath === item.href || item.href !== "/"
                         ? "text-brand-600 dark:text-brand-400 bg-gray-50 dark:bg-gray-800"
                         : "text-gray-900 hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-800",
                     ]}>

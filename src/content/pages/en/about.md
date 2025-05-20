@@ -27,7 +27,7 @@ Here's to another year of helping people share secrets safely.
 
 ## The Suggestion Box
 
-Got questions or ideas? There's a [feedback form](https://onetimesecret.com/feedback) at the bottom of (almost) every page.
+Got questions or ideas? There's a [feedback form](/feedback) at the bottom of (almost) every page.
 
 Happy sharing,
 Delano
