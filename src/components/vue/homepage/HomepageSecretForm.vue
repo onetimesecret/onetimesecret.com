@@ -1,55 +1,42 @@
-<!-- src/components/vue/homepage/SecretFormLite.vue -->
-
-<!--
-  This lite secret form relies on the relevant onetime secret instance
-  returning the proper OPTIONS headers to allow this 2000's Ajax style
-  request to succeed.
-
-    $ curl -v -k -X OPTIONS https://dev.onetime.dev/api/v2/conceal
-    < HTTP/2 204
-    < access-control-allow-origin: https://web.onetime.dev
-    < access-control-allow-methods: GET, POST, OPTIONS
-    < access-control-allow-headers: Content-Type, Authorization, O-*
-    < access-control-allow-credentials: true
-    < access-control-max-age: 1200
--->
+<!-- src/components/vue/homepage/HomepageSecretForm.vue -->
 <script setup lang="ts">
-import type { ApiResult } from "@/components/vue/forms/BaseSecretFormLite.vue";
-import BaseSecretFormLite from "@/components/vue/forms/BaseSecretFormLite.vue";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import SecretForm from "@/components/vue/forms/SecretForm.vue";
+import type { ApiResult } from "@/components/vue/forms/SecretForm.vue";
 
 interface Props {
   apiBaseUrl: string;
-  placeholder?: string;
+  regionName?: string;
   withOptions?: boolean;
 }
 
-// Define props again for this wrapper component
 const props = withDefaults(defineProps<Props>(), {
-  placeholder: "",
-  apiBaseUrl: "https://eu.onetimesecret.com", // Default API base URL
+  apiBaseUrl: "https://eu.onetimesecret.com",
+  regionName: "",
   withOptions: false,
 });
 
-// Define emits again to relay from the base component
 const emit = defineEmits<{
   createLink: [result: ApiResult];
 }>();
 
-// Initialize i18n for any potential text in this wrapper
-const { t } = useI18n({
-  inheritLocale: true,
-  useScope: "global",
+const { t } = useI18n({ inheritLocale: true, useScope: "global" });
+
+// Reference to the SecretForm component
+const secretFormRef = ref();
+
+// Generate placeholder based on region
+const placeholderText = computed(() => {
+  return props.regionName
+    ? t('web.secrets.secretPlaceholder-premium', { noun: props.regionName })
+    : t('web.secrets.secretPlaceholder');
 });
 
 // Handler to relay the event from the base component
-const handleCreateLinkRelay = (result: ApiResult) => {
+const handleCreateLink = (result: ApiResult) => {
   emit("createLink", result);
 };
-
-// Reference to the BaseSecretFormLite component
-const secretFormRef = ref();
 
 // Expose the resetForm method to parent components
 defineExpose({
@@ -64,13 +51,17 @@ defineExpose({
 <template>
   <!-- Premium section structure with refined visual connection -->
   <section class="bg-gradient-to-b from-brand-50 via-brand-100/30 to-white dark:from-brand-900 dark:via-gray-900 dark:to-gray-800 w-full pt-8 sm:pt-5 rounded-xl">
-    <BaseSecretFormLite
-      ref="secretFormRef"
-      class="z-0 rounded-xl rounded"
-      :placeholder="props.placeholder"
-      :api-base-url="props.apiBaseUrl"
-      :with-options="props.withOptions"
-      @create-link="handleCreateLinkRelay" />
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-3xl">
+        <SecretForm
+          ref="secretFormRef"
+          class="z-0 rounded-xl"
+          :placeholder="placeholderText"
+          :api-base-url="props.apiBaseUrl"
+          :with-options="props.withOptions"
+          @create-link="handleCreateLink" />
+      </div>
+    </div>
   </section>
 </template>
 
