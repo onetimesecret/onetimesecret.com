@@ -116,7 +116,7 @@ onUnmounted(() => {
         class="ml-1.5 rounded-full bg-gray-100 p-0.5 inline-flex items-center justify-center hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
         @click="toggleInfoPopover"
         @keydown.escape="closeAll"
-        aria-label="Learn about data sovereignty">
+        :aria-label="t('web.help.learn-more-about-data-sovereignty')">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"

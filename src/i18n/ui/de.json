@@ -75,7 +75,9 @@
       "title": "Hilfe",
       "toggleHelp": "Hilfe umschalten",
       "needHelp": "Benötigen Sie Hilfe?",
-      "learn_more": "Mehr erfahren"
+      "learn_more": "Mehr erfahren",
+      "open-new-tab": "In neuem Tab öffnen",
+      "learn-more-about-data-sovereignty": "Mehr über Datensouveränität erfahren"
     },
     "pricing": {
       "title": "Preispläne | Onetime Secret",

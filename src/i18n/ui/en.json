@@ -75,7 +75,9 @@
       "title": "Help",
       "toggleHelp": "Toggle help",
       "needHelp": "Need help?",
-      "learn_more": "Learn more"
+      "learn_more": "Learn more",
+      "open-new-tab": "Open in new tab",
+      "learn-more-about-data-sovereignty": "Learn more about data sovereignty"
     },
     "pricing": {
       "title": "Pricing Plans | Onetime Secret",

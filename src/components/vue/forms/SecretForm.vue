@@ -446,11 +446,11 @@ const createAnotherSecret = () => {
           </h2>
           <!-- Open in New Tab Button -->
           <a
-            :href="buildSecretUrl(apiResult)"
+          :href="buildSecretUrl(apiResult as ApiResult)"
             target="_blank"
             rel="noopener noreferrer"
             class="ml-auto p-2 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 focus:outline-none focus:ring-2 focus:ring-green-500 rounded"
-            :title="t('web.actions.openNewTab') || 'Open in new tab'">
+            :title="t('web.help.open-new-tab')">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -475,7 +475,7 @@ const createAnotherSecret = () => {
         <div class="flex rounded-md shadow-sm mb-6">
           <input
             type="text"
-            :value="buildSecretUrl(apiResult)"
+            :value="buildSecretUrl(apiResult as ApiResult)"
             readonly
             aria-label="Secret URL"
             class="block w-full rounded-none rounded-l-md border-gray-300 dark:border-gray-600 shadow-md focus:border-green-500 focus:ring-green-500 sm:text-sm bg-white text-black dark:bg-gray-700 dark:text-white p-2"
