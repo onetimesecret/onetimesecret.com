@@ -69,8 +69,8 @@ const currentPath = Astro.url.pathname;
             id="open-icon"
             class="block">
             <OIcon
-              collection="heroicons"
-              name="bars-3"
+              collection="heroicons-outline"
+              name="menu"
               size="6"
             />
           </span>
@@ -94,8 +94,7 @@ const currentPath = Astro.url.pathname;
               href={item.href}
               class:list={[
                 "focus-visible:outline-brand-500 text-sm/6 font-semibold transition-colors focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2",
-                currentPath === item.href ||
-                (item.href !== "/" && currentPath.startsWith(item.href))
+                currentPath === item.href
                   ? "text-brand-600 dark:text-brand-400"
                   : "hover:text-brand-600 dark:hover:text-brand-400 text-gray-900 dark:text-gray-100",
               ]}>
@@ -125,14 +124,14 @@ const currentPath = Astro.url.pathname;
     <!-- Mobile menu (hidden by default) -->
     <div
       id="mobile-navigation-menu"
-      class="fixed inset-0 z-50 hidden md:hidden">
+      class="fixed inset-0 z-[100] hidden md:hidden">
       <div
         class="fixed inset-0 bg-black/25 backdrop-blur-sm"
         id="mobile-menu-backdrop">
       </div>
       <div
         id="mobile-menu-panel"
-        class="fixed inset-y-0 right-0 z-50 w-full translate-x-full overflow-y-auto bg-white px-6 py-6 transition-transform duration-300 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 dark:bg-gray-900 dark:sm:ring-gray-700/30">
+        class="fixed inset-y-0 right-0 z-[101] w-full translate-x-full overflow-y-auto bg-white px-6 py-6 transition-transform duration-300 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 dark:bg-gray-900 dark:sm:ring-gray-700/30">
         <div class="flex items-center justify-between">
           <a
             href="/"
@@ -151,7 +150,7 @@ const currentPath = Astro.url.pathname;
             <span class="sr-only">{t("banner.close-menu")}</span>
             <OIcon
               collection="heroicons"
-              name="x-mark"
+              name="x-mark-solid"
               size="6"
             />
           </button>
@@ -166,7 +165,7 @@ const currentPath = Astro.url.pathname;
                     class:list={[
                       "focus-visible:outline-brand-500 -mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2",
                       currentPath === item.href ||
-                      (item.href !== "/" && currentPath.startsWith(item.href))
+                      (item.href !== "/")
                         ? "text-brand-600 dark:text-brand-400 bg-gray-50 dark:bg-gray-800"
                         : "text-gray-900 hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-800",
                     ]}>
