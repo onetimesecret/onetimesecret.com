@@ -15,18 +15,18 @@ export function createConfig(): AstroUserConfig["redirects"] {
   return {
     "/info/security": {
       status: 301,
-      destination: "https://onetimesecret.com/en/security",
+      destination: "/en/security",
     },
     "/info/terms": {
       status: 301,
-      destination: "https://onetimesecret.com/terms",
+      destination: "/terms",
     },
     "/info/privacy": {
       status: 301,
-      destination: "https://onetimesecret.com/privacy",
+      destination: "/privacy",
     },
     "/feedback": {
-      status: 301,
+      status: 302,
       destination: "https://eu.onetimesecret.com/feedback",
     },
     "/security": {
@@ -48,6 +48,14 @@ export function createConfig(): AstroUserConfig["redirects"] {
     "/pricing": {
       status: 301,
       destination: "/en/pricing",
+    },
+    "/plans/identity": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/plans/identity",
+    },
+    "/plans/free": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/plans/free",
     },
     "/signup": {
       status: 302,
