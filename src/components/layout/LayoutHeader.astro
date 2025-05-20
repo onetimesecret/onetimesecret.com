@@ -17,12 +17,38 @@ export interface Props {
   large?: boolean;
 }
 
-const { initialMessages = {}, large = false } = Astro.props;
+const {
+  initialMessages = {},
+  large = false,
+  effectiveLocale: propsLocale,
+} = Astro.props;
 const effectiveLocale: SupportedLanguage =
-  getLocaleFromUrl(Astro.url) || DEFAULT_LANGUAGE;
+  propsLocale || getLocaleFromUrl(Astro.url) || DEFAULT_LANGUAGE;
+
+// Import all language message files
+import enMessages from "@/i18n/ui/en.json";
+import frMessages from "@/i18n/ui/fr.json";
+import deMessages from "@/i18n/ui/de.json";
+
+// Set up messages for the current language
+const messagesMap: Record<string, MessageSchema> = {
+  en: enMessages as MessageSchema,
+  fr: frMessages as MessageSchema,
+  de: deMessages as MessageSchema,
+};
+
+// Ensure we have the messages for the current language
+const effectiveMessages =
+  initialMessages && Object.keys(initialMessages).length > 0
+    ? initialMessages
+    : {
+        [effectiveLocale]:
+          messagesMap[effectiveLocale as keyof typeof messagesMap] ||
+          (enMessages as MessageSchema),
+      };
 
 // Initialize a page-specific i18n instance for SSR content
-const pageI18n = await createLocaleI18n(effectiveLocale, initialMessages);
+const pageI18n = await createLocaleI18n(effectiveLocale, effectiveMessages);
 const t = pageI18n.global.t;
 
 // Define navigation items
