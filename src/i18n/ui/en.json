@@ -106,6 +106,8 @@
       "optionsHeading": "Privacy Options",
       "addPassphrase": "Add passphrase",
       "secretPlaceholder": "Type your secret message here...",
+      "secret-label": "Secret text input",
+      "secret-description": "Enter the sensitive text you want to share securely. This text will be encrypted and available only once.",
       "secretPlaceholder-premium": "Type your secret message here (stored in {noun})",
       "dataSovereignty": "Data Sovereignty",
       "regionExplanation": "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR.",

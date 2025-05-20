@@ -27,7 +27,7 @@ const { t } = useI18n();
           <a
             href="https://eu.onetimesecret.com/"
             class="ml-2 inline-flex items-center text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 font-medium transition-colors duration-200 focus-visible:outline-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:rounded-sm"
-            aria-label="Try Onetime Secret now">
+            aria-label="Navigate to Onetime Secret hosted in Europe">
             {{ t("banner.try-it-out") }}
             <span
               aria-hidden="true"

@@ -106,6 +106,8 @@
       "optionsHeading": "Options de confidentialité",
       "addPassphrase": "Ajouter une phrase de passe",
       "secretPlaceholder": "Saisissez votre message secret ici...",
+      "secret-label": "Saisie de texte secret",
+      "secret-description": "Saisissez le texte sensible que vous souhaitez partager en toute sécurité. Ce texte sera crypté et disponible une seule fois.",
       "secretPlaceholder-premium": "Saisissez votre message secret ici (stocké en {noun})",
       "dataSovereignty": "Souveraineté des données",
       "regionExplanation": "Vos secrets restent dans la région que vous avez sélectionnée. Cela permet de répondre aux exigences de résidence des données et aux réglementations sur la confidentialité telles que le RGPD.",

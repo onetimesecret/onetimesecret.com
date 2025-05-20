@@ -106,6 +106,8 @@
       "optionsHeading": "Datenschutzoptionen",
       "addPassphrase": "Passphrase hinzufügen",
       "secretPlaceholder": "Geben Sie hier Ihre geheime Nachricht ein...",
+      "secret-label": "Geheimtext-Eingabe",
+      "secret-description": "Geben Sie den vertraulichen Text ein, den Sie sicher teilen möchten. Dieser Text wird verschlüsselt und ist nur einmal verfügbar.",
       "secretPlaceholder-premium": "Geben Sie hier Ihre geheime Nachricht ein (gespeichert in {noun})",
       "dataSovereignty": "Datensouveränität",
       "regionExplanation": "Ihre Geheimnisse bleiben in der von Ihnen ausgewählten Region. Dies hilft, Anforderungen an den Datenstandort und Datenschutzbestimmungen wie die DSGVO zu erfüllen.",
