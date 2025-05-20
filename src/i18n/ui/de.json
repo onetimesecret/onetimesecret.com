@@ -45,6 +45,7 @@
     "privacy-policy": "Datenschutzerklärung",
     "terms-and-conditions": "Allgemeine Geschäftsbedingungen",
     "security": "Sicherheitsmaßnahmen",
+    "feedback": "Rückmeldung",
     "learn-about-our-security-measures": "Informieren Sie sich über unsere Sicherheitsmaßnahmen",
     "terms": "Allgemeine Geschäftsbedingungen",
     "view-our-terms-and-conditions": "Lesen Sie unsere Allgemeinen Geschäftsbedingungen",
@@ -173,6 +174,7 @@
     "homepage": {
       "title": "Teilen Sie Geheimnisse sicher | Onetime Secret",
       "description": "Teilen Sie sensible Informationen sicher mit selbstzerstörenden Links. Fügen Sie Ihr Geheimnis ein, generieren Sie einen Link und teilen Sie ihn. Nach dem Anzeigen ist es für immer verschwunden.",
+      "a-trusted-way-to-share-sensitive-information-etc": "Eine vertrauenswürdige Methode zum Teilen vertraulicher Informationen, die nach dem Anzeigen automatisch gelöscht werden.",
       "howItWorks": {
         "title": "Wie es funktioniert",
         "subtitle": "Teilen Sie Ihre Informationen einmal, dann werden sie dauerhaft gelöscht",
