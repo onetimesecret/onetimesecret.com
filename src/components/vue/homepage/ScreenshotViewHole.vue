@@ -15,6 +15,21 @@ const { t } = useI18n();
       <p class="mt-4 text-lg leading-6 text-gray-600 dark:text-gray-300">
         {{ t("web.homepage.visualExamples.subtitle") }}
       </p>
+      <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4 justify-center">
+
+        <a
+          href="https://docs.onetimesecret.com/en/custom-domains/"
+          class="inline-flex font-brand items-center justify-center rounded-md border border-brandcompdim-600 bg-white px-6 py-3 text-base font-medium text-brandcompdim-600 shadow-sm hover:bg-brandcompdim-50 focus:outline-none focus:ring-2 focus:ring-brandcompdim-500 focus:ring-offset-2 dark:border-brandcompdim-500 dark:bg-gray-700 dark:text-brandcompdim-400 dark:hover:bg-gray-600 dark:focus:ring-offset-gray-800"
+        >
+          {{ t("web.homepage.visualExamples.learnMore") }}
+        </a>
+        <a
+          href="/pricing"
+          class="inline-flex font-brand items-center justify-center rounded-md border border-transparent bg-brandcompdim-600 px-6 py-3 text-lg font-medium text-white shadow-sm hover:bg-brandcompdim-700 focus:outline-none focus:ring-2 focus:ring-brandcompdim-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+        >
+          {{ t("web.homepage.visualExamples.viewPricing") }}
+        </a>
+      </div>
     </div>
 
     <div class="relative h-64 sm:h-72 md:h-80 lg:h-84 xl:h-96 max-xl:line-t">

@@ -193,7 +193,9 @@
       },
       "visualExamples": {
         "title": "Custom Domain & Branding",
-        "subtitle": "Reinforce your brand and build trust by using your own domain and logo."
+        "subtitle": "Reinforce your brand and build trust by using your own domain and logo.",
+        "learnMore": "Learn More",
+        "viewPricing": "View Pricing"
       },
       "featureHighlights": {
         "sectionTitle": "Key Features",
