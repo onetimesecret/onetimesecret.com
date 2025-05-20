@@ -1,7 +1,7 @@
 <!-- src/components/vue/forms/BaseSecretFormLite.vue -->
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 
 // Define the options model
@@ -103,6 +103,7 @@ const updateOption = (option: keyof SecretOptions, value: boolean) => {
 };
 const isTyping = ref(false);
 const typingTimerId = ref<number | null>(null);
+const urlInputRef = ref<HTMLInputElement | null>(null);
 
 const showOptions = computed(() => {
   return (
@@ -117,7 +118,9 @@ watch(secretText, () => {
   // If user starts typing again after a success or error, reset for a new submission
   if (secretText.value.trim() && (apiResult.value || apiError.value)) {
     // Check if this is real user input (not the asterisks from a success state)
-    const isAllAsterisks = secretText.value.split('').every(char => char === '*');
+    const isAllAsterisks = secretText.value
+      .split("")
+      .every((char) => char === "*");
     if (!isAllAsterisks) {
       apiResult.value = null;
       apiError.value = null;
@@ -194,22 +197,29 @@ const handleCreateLink = async () => {
       // Obscure the secret text with asterisks
       const minLen = 6;
       const maxLen = 32;
-      const fuzzyLen = Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
+      const fuzzyLen =
+        Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
       secretText.value = "*".repeat(fuzzyLen);
     }
-
   } catch (error: any) {
     console.error("API call failed:", error);
     apiError.value =
       (error.message ||
-      t("web.errors.apiGenericError") ||
-      "An unexpected error occurred.") +
-      ` (API URL: ${props.apiBaseUrl})`;
+        t("web.errors.apiGenericError") ||
+        "An unexpected error occurred.") + ` (API URL: ${props.apiBaseUrl})`;
     // Emit failure result
     emit("createLink", { success: false, message: apiError.value });
   } finally {
     isLoading.value = false;
   }
+
+  // Manage focus when state changes
+  nextTick(() => {
+    if (urlInputRef.value) {
+      urlInputRef.value.focus();
+      urlInputRef.value.select();
+    }
+  });
 };
 
 // Store the original API base URL used when creating the secret
@@ -223,7 +233,10 @@ const buildSecretUrl = (result: ApiResult): string => {
 
   // Use the stored original base URL if available, otherwise use current base URL
   // This ensures the URL doesn't change when switching regions
-  const baseUrl = (createdWithBaseUrl.value || props.apiBaseUrl).replace(/\/api$/, ""); // Remove /api if present
+  const baseUrl = (createdWithBaseUrl.value || props.apiBaseUrl).replace(
+    /\/api$/,
+    "",
+  ); // Remove /api if present
 
   // Construct the secret URL
   // return `${baseUrl}/receipt/${metadataKey}`; // Receipt link
@@ -248,7 +261,9 @@ const copyUrlToClipboard = async () => {
 </script>
 
 <template>
-  <div class="mx-auto max-w-xl">
+  <form
+    @submit.prevent="handleCreateLink"
+    class="mx-auto max-w-xl">
     <!-- Text Area Input -->
     <div class="relative">
       <textarea
@@ -260,10 +275,9 @@ const copyUrlToClipboard = async () => {
 
       <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
         <button
-          type="button"
-          class="inline-flex font-brand items-center justify-center min-w-[7rem] rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-base font-medium text-white font-semibold shadow-sm hover:bg-brand-600 dark:bg-brand-600 dark:hover:bg-brand-500 focus:outline-none disabled:opacity-50 disabled:bg-gray-400"
-          :disabled="isLoading || !secretText.trim() || apiResult?.success"
-          @click="handleCreateLink">
+          type="submit"
+          class="inline-flex font-brand items-center justify-center min-w-[7rem] rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-base font-medium text-white font-semibold shadow-sm hover:bg-brand-600 dark:bg-brand-600 dark:hover:bg-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500 disabled:opacity-50 disabled:bg-gray-400 transition-colors duration-200"
+          :disabled="isLoading || !secretText.trim() || apiResult?.success">
           <span v-if="!isLoading">{{
             t("web.secrets.createLink") || "Create Link"
           }}</span>
@@ -278,7 +292,7 @@ const copyUrlToClipboard = async () => {
       class="mt-3 mb-4">
       <div class="bg-gray-50 dark:bg-gray-700 rounded-md p-3">
         <h3
-          class="text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider mb-2">
+          class="text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider mb-2">
           {{ t("web.secrets.optionsHeading") || "Secret Options" }}
         </h3>
         <div
@@ -341,7 +355,24 @@ const copyUrlToClipboard = async () => {
             :placeholder="
               t('web.secrets.passphrasePlaceholder') || 'Enter passphrase'
             "
-            :disabled="isLoading" />
+            :disabled="isLoading"
+            :required="secretOptions.addPassphrase"
+            :aria-invalid="
+              secretOptions.addPassphrase && !passphrase.trim()
+                ? 'true'
+                : undefined
+            "
+            :aria-describedby="
+              secretOptions.addPassphrase && !passphrase.trim()
+                ? 'passphrase-error'
+                : undefined
+            " />
+          <div
+            v-if="secretOptions.addPassphrase && !passphrase.trim() && apiError"
+            id="passphrase-error"
+            class="mt-1 text-red-600 dark:text-red-400 text-sm">
+            {{ t("web.errors.passphraseRequired") }}
+          </div>
         </div>
       </div>
     </div>
@@ -350,58 +381,73 @@ const copyUrlToClipboard = async () => {
     <div class="mt-4 mb-10 min-h-[4rem]">
       <div
         v-if="isLoading"
-        class="text-center text-gray-500 dark:text-gray-400">
+        class="text-center text-gray-700 dark:text-gray-200"
+        aria-live="polite">
         {{ t("LABELS.processing") }}...
       </div>
+      <!-- Error alert - add dark mode variants -->
       <div
         v-else-if="apiError"
-        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative dark:bg-red-900 dark:border-red-700 dark:text-red-100"
         role="alert">
-        <strong class="font-bold">{{
-          t("web.errors.errorTitle")
-        }}</strong>
+        <strong class="font-bold">{{ t("web.errors.errorTitle") }}</strong>
         <span class="block sm:inline sm:pl-2"> {{ apiError }}</span>
       </div>
+
+      <!-- Success alert - add dark mode variants -->
       <div
         v-else-if="apiResult?.success && apiResult.record"
-        class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+        class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative dark:bg-green-900 dark:border-green-700 dark:text-green-100"
+        role="alert"
+        aria-live="polite">
         <!-- Open in New Tab Icon Button -->
         <a
           :href="buildSecretUrl(apiResult)"
           target="_blank"
           rel="noopener noreferrer"
-          type="button"
-          class="absolute top-2 right-2 p-1 text-green-600 hover:text-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 rounded"
-          :title="t('web.actions.openNewTab')">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+          class="absolute top-2 right-2 p-1 text-green-600 dark:text-green-300 hover:text-green-800 dark:hover:text-green-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500 rounded transition-colors duration-200"
+          :title="t('web.actions.openNewTab')"
+          aria-label="Open link in new tab">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="size-5"
+            aria-hidden="true">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
           </svg>
         </a>
-        <strong class="font-bold block mb-1">{{ t("web.secrets.successTitle") }}</strong>
+        <strong class="font-bold block mb-1">{{
+          t("web.secrets.successTitle")
+        }}</strong>
         <p class="text-sm pr-8">
           {{ t("web.secrets.shareLinkDescription") }}
         </p>
         <div class="mt-1 flex rounded-md shadow-sm">
           <input
+            ref="urlInputRef"
             type="text"
             :value="buildSecretUrl(apiResult)"
             readonly
-            class="block w-full rounded-none rounded-l-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm bg-white dark:bg-gray-800 dark:text-gray-100 p-2"
+            class="block w-full rounded-none rounded-l-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 p-2"
             @focus="($event.target as HTMLInputElement).select()" />
-          <button
-            @click="copyUrlToClipboard"
-            type="button"
-            class="relative -ml-px min-w-[6rem] inline-flex items-center justify-center space-x-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
-            :class="{
-              'bg-green-200 text-green-800 hover:bg-green-300': copySuccess,
-            }">
-            <span v-if="!copySuccess">{{
-              t("LABELS.copy")
-            }}</span>
+            <button
+              @click="copyUrlToClipboard"
+              type="button"
+              class="relative -ml-px min-w-[6rem] inline-flex items-center justify-center space-x-2 rounded-r-md border border-gray-300 dark:border-gray-500 bg-gray-50 dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:border-green-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500"
+              :class="{
+                'bg-green-200 text-green-800 hover:bg-green-300 dark:bg-green-800 dark:text-green-200 dark:hover:bg-green-700': copySuccess,
+              }">
+            <span v-if="!copySuccess">{{ t("LABELS.copy") }}</span>
             <span v-else>{{ t("LABELS.copied") }}</span>
           </button>
         </div>
       </div>
     </div>
-  </div>
+  </form>
 </template>
