@@ -36,6 +36,7 @@ export interface Props {
   // Layout specific props
   header?: boolean; // Whether to show the default header (true) or custom header via slot (false)
   footer?: boolean; // Whether to show the footer (defaults to true)
+  large?: boolean; // Whether to show the logo in large mode (defaults to false)
 }
 
 // --------------------------
@@ -48,6 +49,7 @@ const {
   initialMessages = { [DEFAULT_LANGUAGE]: enMessages as MessageSchema },
   header = true,
   footer = true,
+  large = false,
   // SEO related props are passed through to LayoutHead
   ...seoProps
 } = Astro.props;
@@ -88,9 +90,7 @@ if (import.meta.env.DEV) {
     {
       /* If header prop is true, use LayoutHeader, otherwise render the header slot directly */
       header ? (
-        <LayoutHeader
-          effectiveLocale={effectiveLocale}
-          initialMessages={initialMessages}>
+        <LayoutHeader large={large}>
           <slot name="header" />
         </LayoutHeader>
       ) : (
@@ -103,7 +103,6 @@ if (import.meta.env.DEV) {
     {
       footer && (
         <LayoutFooter
-          t={t}
           effectiveLocale={effectiveLocale}
           initialMessages={initialMessages}>
           <slot name="footer" />

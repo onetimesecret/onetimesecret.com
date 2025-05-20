@@ -14,9 +14,10 @@ import BrandBar from "./BrandBar.astro";
 export interface Props {
   effectiveLocale?: string;
   initialMessages?: Record<string, MessageSchema>;
+  large?: boolean;
 }
 
-const { initialMessages = {} } = Astro.props;
+const { initialMessages = {}, large = false } = Astro.props;
 const effectiveLocale: SupportedLanguage =
   getLocaleFromUrl(Astro.url) || DEFAULT_LANGUAGE;
 
@@ -51,8 +52,8 @@ const currentPath = Astro.url.pathname;
           class="-m-1.5 p-1.5">
           <span class="sr-only">{t("onetime-secret-literal")}</span>
           <img
-            class="h-12 w-auto rounded-lg"
-            src="/etc/img/onetime-logo-sm.png"
+            class:list={["w-auto rounded-lg", large ? "size-18" : "size-14"]}
+            src="/etc/img/onetime-logo-md.png"
             alt="Onetime Secret logo"
           />
         </a>
