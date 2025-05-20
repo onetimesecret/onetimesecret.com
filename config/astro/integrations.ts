@@ -1,15 +1,32 @@
 // config/astro/integrations.ts
 
 import markdoc from "@astrojs/markdoc";
+import sitemap from "@astrojs/sitemap";
 import vue from "@astrojs/vue";
 import sentry from "@sentry/astro";
 import { AstroUserConfig } from "astro";
+import { getLocalesMap } from "./i18n";
 
 export function createConfig(): AstroUserConfig["integrations"] {
   return [
     /**
      * Astro integrations
+     */
+
+    /**
+     * Requires `site` to be set in `astro.config.ts`.
      *
+     * @see https://docs.astro.build/en/guides/integrations-guide/sitemap/
+     */
+    sitemap({
+      xslURL: "/sitemap.xsl",
+      i18n: {
+        defaultLocale: "en",
+        locales: getLocalesMap(),
+      },
+    }),
+
+    /**
      * In production, ensure to bind the DSN and source map configuration properly.
      * Each integration is configured with appropriate settings for the project.
      */
