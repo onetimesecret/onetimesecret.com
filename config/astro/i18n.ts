@@ -42,6 +42,19 @@ export const LANGUAGE_META: {
 };
 
 /**
+ * Flattened locale mapping for i18n configuration
+ */
+export function getLocalesMap(): { [Key in SupportedLanguage]: string } {
+  return Object.entries(LANGUAGE_META).reduce(
+    (acc, [lang, meta]) => ({
+      ...acc,
+      [lang]: meta.locale,
+    }),
+    {} as { [Key in SupportedLanguage]: string },
+  );
+}
+
+/**
  * Astro i18n configuration
  */
 export function createConfig() {
