@@ -1,43 +1,86 @@
 # CLAUDE.md - Agent Guidelines for OnetimeSecret.com
 
-## i18n
+## Project Overview
 
-The default english translation is provided in the `src/locales/en.json` file.
-Look at the heirarchical keys in the JSON file to understand the structure and
-how properly reference them in Vue components (e.g. `$t('web.secrets.enterPassphrase')`).
+Onetime Secret is an Astro 5+ static site generation (SSG) website that allows users to securely share sensitive information through self-destructing links. The site is built with Vue 3 and Tailwind CSS.
 
 Proper stylization of project name: "Onetime Secret".
 
-DO NOT ADD TEXT unless using the i18n system. Use existing keys or create new ones.
+## Icons
 
-## Build/Lint/Test Commands
-- Build: `pnpm build` (production) or `pnpm build:local` (development)
+Use `<OIcon>` component from `src/components/vue/icons/OIcon.vue` for all icons:
+
+```vue
+<OIcon collection="name" class="optional-classes" />
+```
+
+SVG sprites are available in `src/components/vue/icons/IconSources.vue`.
+
+## i18n
+
+Translations are managed in `src/i18n/ui/en.json` and other language files. Use the keys hierarchically:
+
+```vue
+{{ $t('web.secrets.enterPassphrase') }}
+```
+
+**IMPORTANT**: All text must use the i18n system. Use existing keys or create new ones.
+
+## Build Commands
+
+Development:
 - Dev server: `pnpm dev` or `pnpm dev:local` (with local config)
-- Lint: `pnpm lint` or `pnpm lint:fix` (auto-fix issues)
 - Type check: `pnpm type-check` or `pnpm type-check:watch` (watch mode)
+
+Production:
+- Build: `pnpm build` (production) or `pnpm build:local` (development)
+
+Quality:
+- Lint: `pnpm lint` or `pnpm lint:fix` (auto-fix issues)
 - Vue tests: `pnpm test` (all) or `pnpm test:base run --filter=<test-name>` (single)
 - Ruby tests: `pnpm rspec` or `bundle exec rspec <file_path>`
 - E2E tests: `pnpm playwright` or `pnpm exec playwright test <test-file>`
 
 ## Code Style Guidelines
-- **EOF newlines**: when adding a file, it needs a newline at the end
-- **Commit Messages**: Use imperative mood, prefix with issue number `[#123]`
-- **TypeScript**: Strict mode, explicit types, max 100 chars per line
-- **Vue Components**: Use Composition API with `<script setup>`, camelCase props
-- **Error Handling**: Use typed error handling with Zod for validations
-- **State Management**: Use Pinia stores with `storeToRefs()` for reactive props
-- **Imports**: Group imports (builtin → external → internal), alphabetize
-- **Testing**: Max 300 lines per test file, use descriptive test names
-- **API Logic**: Prefer small, focused functions (max 50 lines)
-- **Styling**: Use Tailwind classes with consistent ordering
-- **Accessibility**: Ensure all components are accessible, a11y, and follow WCAG guidelines
-- Vue components should be written in a consistent style, using the Composition API with `<script setup lang="ts>`.
-- Vue components should be styled using Tailwind classes with class lists should wrap long lines.
-- Avoid deep nesting (max 3 levels) and limit function parameters (max 3).
 
-### Project Version Reference
+### General
+- Max line length: 100 characters
+- EOF newlines required
+- Commit message format: `[#123] Add feature` (imperative mood with issue number)
+- Avoid deep nesting (max 3 levels)
+- Limit function parameters (max 3)
 
-## Astro Vuejs 3 Frontend Framework Versions
+### TypeScript
+- Use strict mode and explicit types
+- Use Zod for validation and typed error handling
+
+### Vue Components
+- Use Composition API with `<script setup lang="ts">`
+- Use camelCase for props
+- Use Tailwind classes with consistent ordering
+- Long class lists should wrap lines
+
+### State Management
+- Use nanostores (@see https://docs.astro.build/en/recipes/sharing-state-islands/)
+- UI frameworks like React/Vue use "context" providers, but these won't work when partially hydrating components in Astro/Markdown. Nano Stores are framework-agnostic. Astro values flexibility with consistent developer experience regardless of framework preference.
+
+### Imports
+- Group and alphabetize: built-in → external → internal
+
+### Testing
+- Max 300 lines per test file
+- Use descriptive test names
+
+### Accessibility
+- Ensure WCAG compliance
+- Use proper ARIA attributes
+
+## Design TODOs
+
+See [DESIGN_TODOS.md](./DESIGN_TODOS.md) for the list of design issues and their recommended solutions.
+
+## Project Dependencies
+
 ```json
 {
   "astro": "^5.7.10",
@@ -59,3 +102,4 @@ DO NOT ADD TEXT unless using the i18n system. Use existing keys or create new on
   "eslint": "9.25.1",
   "axios": "^1.7.7"
 }
+```

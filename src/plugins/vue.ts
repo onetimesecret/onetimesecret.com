@@ -1,19 +1,19 @@
-import type { App, Plugin } from 'vue';
-import { createI18n } from 'vue-i18n';
+import type { App, Plugin } from "vue";
+import { createI18n } from "vue-i18n";
 
 // Import translations
-import en from '../locales/en.json';
+import en from "../i18n/ui/en.json";
 
 /**
  * i18n instance with translations
  */
 export const i18n = createI18n({
   legacy: false, // Use Composition API
-  locale: 'en',
-  fallbackLocale: 'en',
+  locale: "en",
+  fallbackLocale: "en",
   messages: {
-    en
-  }
+    en,
+  },
 });
 
 /**
@@ -26,12 +26,12 @@ export const VuePlugin: Plugin = {
 
     // Configure global properties
     app.config.errorHandler = (err, instance, info) => {
-      console.error('Vue Error:', err);
-      console.info('Error Info:', info);
+      console.error("Vue Error:", err);
+      console.info("Error Info:", info);
     };
 
     // Add other plugins here as needed
-  }
+  },
 };
 
 export default VuePlugin;

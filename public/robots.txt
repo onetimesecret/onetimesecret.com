@@ -1,6 +1,14 @@
 # robots.txt for onetimesecret.com
 
 User-agent: *
+# Allow specific public pages first so they take precedence
+Allow: /about
+Allow: /pricing
+Allow: /info/
+Allow: /translations
+Allow: /
+
+# Disallow sensitive or private areas
 Disallow: /private/
 Disallow: /secret/
 Disallow: /receipt/
@@ -13,15 +21,27 @@ Disallow: /signup
 Disallow: /logout
 Disallow: /incoming
 
-# Allow specific public pages
-Allow: /about
-Allow: /pricing
-Allow: /info/
-Allow: /translations
-Allow: /
-
 # Crawl delay recommendation for high-traffic bots
 Crawl-delay: 1
+
+# Allow Puppeteer and LLM fetch requests
+User-agent: Puppeteer
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
 
 # Sitemap declaration
 Sitemap: https://onetimesecret.com/sitemap.xml

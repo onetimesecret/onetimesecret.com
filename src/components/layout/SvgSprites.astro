@@ -1,0 +1,29 @@
+---
+// src/components/layout/SvgSprites.astro
+// This component consolidates all SVG sprite components for the application.
+// It's intended to be included once in the main layout to make all SVGs available.
+
+// Icon sprite imports
+import CarbonSprites from "@/components/vue/icons/CarbonSprites.vue";
+import FontAwesome6Sprites from "@/components/vue/icons/FontAwesome6Sprites.vue";
+import HeroiconsSprites from "@/components/vue/icons/HeroiconsSprites.vue";
+import MaterialSymbolsSprites from "@/components/vue/icons/MaterialSymbolsSprites.vue";
+import MdiSprites from "@/components/vue/icons/MdiSprites.vue";
+import PhosphorSprites from "@/components/vue/icons/PhosphorSprites.vue";
+import SimpleIconsSprites from "@/components/vue/icons/SimpleIconsSprites.vue";
+import TablerSprites from "@/components/vue/icons/TablerSprites.vue";
+---
+
+<div
+  id="sprites"
+  class="hidden"
+>
+  <HeroiconsSprites />
+  <CarbonSprites />
+  <FontAwesome6Sprites />
+  <MdiSprites />
+  <MaterialSymbolsSprites />
+  <TablerSprites />
+  <PhosphorSprites />
+  <SimpleIconsSprites />
+</div>

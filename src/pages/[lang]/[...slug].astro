@@ -1,0 +1,108 @@
+---
+/**
+ * src/pages/[lang]/[...slug].astro
+ *
+ * Generic template for rendering any page from the content collections
+ * Supports:
+ * - Multiple content collections (pages, product, useCases)
+ * - Language fallback (preferred language -> default language)
+ * - Consistent styling and layout
+ */
+import { getCollection } from "astro:content";
+import ContentPage from "@/components/ContentPage.astro";
+import { getLanguagePaths, type SupportedLanguage } from "@/i18n";
+import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
+import { createLocaleI18n } from "@/i18n";
+import enMessages from "@/i18n/ui/en.json";
+import type { MessageSchema } from "@/i18n";
+
+export async function getStaticPaths() {
+  // Get all available content from collections
+  const pagesEntries = await getCollection("pages");
+  const productEntries = await getCollection("product");
+  const useCasesEntries = await getCollection("useCases");
+
+  // Get all supported language paths
+  const langPaths = await getLanguagePaths();
+
+  // Create a map for all available content
+  const paths = [];
+
+  // Process each content collection
+  for (const lang of langPaths) {
+    const langCode = lang.params.lang as SupportedLanguage;
+
+    // Helper function to add paths for a collection
+    const addCollectionPaths = (entries, collection) => {
+      for (const entry of entries) {
+        // Entry ID format is expected to be "[lang]/[slug]"
+        const [entryLang, ...slugParts] = entry.id.split('/');
+        const slug = slugParts.join('/');
+
+        // Only add if this is for the current language or we have no entry for this language yet
+        if (entryLang === langCode || !entries.some(e => e.id.endsWith(`/${slug}`) && e.id.startsWith(langCode))) {
+          paths.push({
+            params: {
+              lang: langCode,
+              slug
+            },
+            props: {
+              entry,
+              collection,
+              entryLang
+            }
+          });
+        }
+      }
+    };
+
+    // Add paths for each collection
+    addCollectionPaths(pagesEntries, "pages");
+    addCollectionPaths(productEntries, "product");
+    addCollectionPaths(useCasesEntries, "useCases");
+  }
+
+  return paths;
+}
+
+// Props interface
+interface Props {
+  entry: any;
+  collection: "pages" | "product" | "useCases";
+  entryLang: string;
+}
+
+// Props from getStaticPaths
+const { entry, collection, entryLang } = Astro.props;
+const { lang = DEFAULT_LANGUAGE } = Astro.params as { lang: SupportedLanguage };
+
+// Setup initial messages for i18n
+const initialMessages = {
+  [DEFAULT_LANGUAGE]: enMessages as MessageSchema,
+};
+
+// Initialize i18n for page content
+await createLocaleI18n(lang, initialMessages);
+
+// Flag to indicate if we're using a fallback language
+const isFallback = entryLang !== lang;
+
+// Render the content
+const renderedContent = await entry.render();
+---
+
+<ContentPage
+  page={entry}
+  renderedContent={renderedContent}
+  lang={lang}
+  initialMessages={initialMessages}
+/>
+
+{isFallback && (
+  <div class="fixed bottom-4 right-4 z-50 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-600 shadow-md dark:bg-amber-900/30 dark:text-amber-400">
+    <p>
+      This content is not available in your preferred language ({lang}).
+      Showing the {entryLang} version instead.
+    </p>
+  </div>
+)}

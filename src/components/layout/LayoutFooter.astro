@@ -1,0 +1,131 @@
+---
+import ColorModeToggle from "@/components/ColorModeToggle.astro";
+import LanguageSwitcher from "@/components/vue/LanguageSwitcher.vue";
+import FooterLinkLists from "@/components/vue/layouts/FooterLinkLists.vue";
+import FooterSignOff from "@/components/vue/layouts/FooterSignOff.vue";
+import {
+  createLocaleI18n,
+  type MessageSchema,
+  type SupportedLanguage,
+} from "@/i18n";
+import { getLocaleFromUrl } from "@/i18n/utils";
+import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
+
+export interface Props {
+  effectiveLocale?: string;
+  initialMessages?: Record<string, MessageSchema>;
+}
+
+const {
+  effectiveLocale = getLocaleFromUrl(Astro.url) || DEFAULT_LANGUAGE,
+  initialMessages = {},
+} = Astro.props;
+
+// Initialize a page-specific i18n instance for SSR content (for English)
+const pageI18n = await createLocaleI18n(effectiveLocale, initialMessages);
+const t = pageI18n.global.t;
+
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="bg-white dark:bg-gray-900">
+  <!-- Custom footer content slot - can be used to inject page-specific content -->
+  <slot />
+
+  <!-- Main footer content with link lists -->
+  <div class="mx-auto max-w-7xl px-6 py-12 lg:px-8 lg:py-16">
+    <div class="xl:grid xl:grid-cols-3 xl:gap-8">
+      <div class="space-y-8 xl:col-span-1">
+        <a
+          href="/"
+          class="flex items-center">
+          <img
+            class="h-10 w-auto rounded-lg"
+            src="/etc/img/onetime-logo-sm.png"
+            alt="Onetime Secret"
+          />
+          <span
+            class="font-brand ml-3 text-2xl font-bold text-gray-900 dark:text-white"
+            >{t("onetime-secret-literal")}</span
+          >
+        </a>
+        <p class="text-base text-gray-500 dark:text-gray-400">
+          {t("web.homepage.a-trusted-way-to-share-sensitive-information-etc")}
+        </p>
+      </div>
+
+      <!-- Footer link lists from Vue component -->
+      <div class="mt-12 xl:col-span-2 xl:mt-0">
+        <FooterLinkLists
+          client:load
+          locale={effectiveLocale as SupportedLanguage}
+          initialMessages={initialMessages}
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Language switcher and theme toggle -->
+  <div class="border-t border-gray-200 dark:border-gray-800">
+    <div
+      class="mx-auto flex max-w-7xl flex-col flex-row items-center justify-between gap-4 px-6 py-4 lg:px-8">
+      <LanguageSwitcher
+        client:load
+        locale={effectiveLocale as SupportedLanguage}
+        size="sm"
+        variant="full"
+        openDirection="up"
+      />
+      <div class="flex items-center gap-4">
+        <ColorModeToggle />
+      </div>
+    </div>
+  </div>
+
+  <!-- Copyright and legal links -->
+  <div class="border-t border-gray-200 dark:border-gray-800">
+    <div
+      class="mx-auto max-w-7xl px-6 py-6 md:flex md:items-center md:justify-between lg:px-8">
+      <div class="md:order-1">
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+          &copy; {currentYear}
+          {t("onetime-secret-literal")}. {t("all-rights-reserved")}
+        </p>
+      </div>
+      <div
+        class={`md:order-2 ${
+          t("$config.layout-footer-style") === "horizontal"
+            ? "mt-4 flex justify-center space-x-6 md:mt-0"
+            : "mt-4 grid grid-cols-1 gap-y-2 sm:grid-cols-2 md:mt-0 md:grid-cols-2 md:gap-x-6 lg:grid-cols-4"
+        }`}>
+        <a
+          href="/privacy"
+          class="text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+          >{t("LABELS.privacy")}</a
+        >
+        <a
+          href="/terms"
+          class="text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+          >{t("LABELS.terms")}</a
+        >
+        <a
+          href="/security"
+          class="text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+          >{t("LABELS.security")}</a
+        >
+        <a
+          href="/contact"
+          class="text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+          >{t("LABELS.feedback")}</a
+        >
+      </div>
+    </div>
+  </div>
+
+  <!-- Social links from FooterSignOff component -->
+  <FooterSignOff
+    client:load
+    locale={effectiveLocale}
+    initialMessages={initialMessages}
+  />
+</footer>

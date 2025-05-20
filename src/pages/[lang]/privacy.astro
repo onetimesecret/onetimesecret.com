@@ -3,34 +3,23 @@
 
 import Layout from "@/layouts/Layout.astro";
 import "@/i18n";
-
-import StaticPageNavigation from "@/components/layouts/static/StaticPageNavigation.vue";
-import StaticPageContent from "@/components/layouts/static/StaticPageContent.vue";
-import MarkdownContent from "@/components/layouts/static/MarkdownContent.vue";
-// Directly copied from our site-policy repo:
-// https://github.com/onetimesecret/site-policy/blob/main/onetime-terms-of-service.md
-import Privacy from "@/content/info/privacy.md";
-import content from "@/locales/en.json";
+import { getLanguagePaths } from "@/i18n";
 
 export async function getStaticPaths() {
-  return [{ params: { lang: "en" } }];
+  return getLanguagePaths();
 }
+
+// Directly copied from our site-policy repo:
+// https://github.com/onetimesecret/site-policy/blob/main/onetime-terms-of-service.md
+import { Content, frontmatter } from "@/content/pages/privacy.md";
 
 const { lang } = Astro.params;
 ---
 
 <Layout
-  title="Privacy Policy | Onetime Secret"
+  title={`${frontmatter.title} | Onetime Secret`}
   description="Our privacy policy explains how we handle your information when using Onetime Secret.">
   <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900">
-    <StaticPageNavigation client:load />
-    <StaticPageContent
-      title="Privacy Policy"
-      withNavPadding={true}
-      client:load>
-      <MarkdownContent>
-        <Privacy />
-      </MarkdownContent>
-    </StaticPageContent>
+    <Content />
   </div>
 </Layout>

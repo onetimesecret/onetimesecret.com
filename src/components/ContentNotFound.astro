@@ -1,0 +1,77 @@
+---
+/**
+ * ContentNotFound.astro
+ * Error component for when content isn't found in a collection
+ */
+import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
+import type { SupportedLanguage } from "@/i18n";
+import Layout from "@/layouts/Layout.astro";
+
+export interface Props {
+  lang: SupportedLanguage;
+  collection: string;
+  slug: string;
+}
+
+const { lang = DEFAULT_LANGUAGE, collection, slug } = Astro.props;
+
+// Construct paths for debugging
+const requestedPath = `${collection}/${lang}/${slug}`;
+const fallbackPath = `${collection}/${DEFAULT_LANGUAGE}/${slug}`;
+---
+
+<Layout
+  title="Content Not Found | Onetime Secret"
+  description="The requested content could not be found."
+  htmlLang={lang}>
+  <div class="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-900">
+    <main class="flex flex-grow flex-col items-center justify-center px-4 py-16 text-center">
+      <div class="mx-auto max-w-md space-y-8">
+        <div class="space-y-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            class="mx-auto h-16 w-16 text-blue-500 dark:text-blue-300"
+            stroke-width="1.5">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+            />
+          </svg>
+          <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Content Not Found
+          </h1>
+          <p class="text-slate-600 dark:text-slate-300">
+            We couldn't find the content you were looking for.
+          </p>
+        </div>
+
+        <div class="rounded-lg bg-white p-4 shadow-md dark:bg-slate-800">
+          <p class="mb-2 font-medium text-slate-700 dark:text-slate-200">
+            Requested content:
+          </p>
+          <pre class="rounded bg-slate-100 p-2 text-left text-sm font-mono dark:bg-slate-700">
+            <code>{requestedPath}</code>
+          </pre>
+          <p class="mt-4 mb-2 font-medium text-slate-700 dark:text-slate-200">
+            Fallback attempted:
+          </p>
+          <pre class="rounded bg-slate-100 p-2 text-left text-sm font-mono dark:bg-slate-700">
+            <code>{fallbackPath}</code>
+          </pre>
+        </div>
+
+        <div class="space-y-4">
+          <a
+            href="/"
+            class="inline-block rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600">
+            Return to Home
+          </a>
+        </div>
+      </div>
+    </main>
+  </div>
+</Layout>

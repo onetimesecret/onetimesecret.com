@@ -1,32 +1,90 @@
 ---
-// src/pages/[lang]/about.astro
-
-import Layout from "@/layouts/Layout.astro";
-import "@/i18n";
-
-import StaticPageNavigation from "@/components/layouts/static/StaticPageNavigation.vue";
-import StaticPageContent from "@/components/layouts/static/StaticPageContent.vue";
-import MarkdownContent from "@/components/layouts/static/MarkdownContent.vue";
-import AboutContent from "@/components/about/AboutContent.vue";
-import content from "@/locales/en.json";
+/**
+ * src/pages/[lang]/about.astro
+ * About page implementation using content collections and ContentPageLayout
+ */
+import {
+  createLocaleI18n,
+  getLanguagePaths,
+  type MessageSchema,
+  type SupportedLanguage,
+} from "@/i18n";
+import enMessages from "@/i18n/ui/en.json";
+import frMessages from "@/i18n/ui/fr.json";
+import deMessages from "@/i18n/ui/de.json";
+import ContentPageLayout from "@/layouts/ContentPageLayout.astro";
+import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
+import { getCollection } from "astro:content";
 
 export async function getStaticPaths() {
-  return [{ params: { lang: "en" } }];
+  return getLanguagePaths();
 }
 
-const { lang } = Astro.params;
+interface Props {
+  lang: SupportedLanguage;
+  initialMessages: Record<string, MessageSchema>;
+  langMeta: {
+    name: string;
+    locale: string;
+    dir: string;
+  };
+}
+
+const effectiveLang = (Astro.props.lang ||
+  Astro.params.lang ||
+  DEFAULT_LANGUAGE) as SupportedLanguage;
+
+// Determine effective langMeta, falling back to default language's meta if necessary
+const effectiveLangMeta = Astro.props.langMeta || LANGUAGE_META[effectiveLang];
+
+// Set up messages for the current language
+const messagesMap: Record<string, MessageSchema> = {
+  en: enMessages as MessageSchema,
+  fr: frMessages as MessageSchema,
+  de: deMessages as MessageSchema,
+};
+
+// Determine effective initialMessages, including the current language messages
+const effectiveInitialMessages = Astro.props.initialMessages || {
+  [effectiveLang]:
+    messagesMap[effectiveLang as keyof typeof messagesMap] ||
+    (enMessages as MessageSchema),
+};
+
+// Initialize i18n for page content
+const pageI18n = await createLocaleI18n(
+  effectiveLang,
+  effectiveInitialMessages,
+);
+const t = pageI18n.global.t;
+
+// Get the page by language/slug using Astro content collection API
+const allPages = await getCollection("pages");
+// First try to find the page in the target language
+let page = allPages.find((page) => page.id === `${effectiveLang}/about.md`);
+
+// If page isn't found in the target language, fall back to default language
+if (!page && effectiveLang !== DEFAULT_LANGUAGE) {
+  page = allPages.find((page) => page.id === `${DEFAULT_LANGUAGE}/about.md`);
+}
+
+if (!page) {
+  throw new Error(
+    `Page not found: ${effectiveLang}/about.md or ${DEFAULT_LANGUAGE}/about.md`,
+  );
+}
+
+// Render the content
+const renderedContent = await page.render();
+const { Content } = renderedContent;
 ---
 
-<Layout
-  title="About Us | Onetime Secret"
-  description="Learn about Onetime Secret, our mission to provide secure one-time sharing, and the team behind our service.">
-  <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900">
-    <StaticPageNavigation client:load />
-    <StaticPageContent
-      title="About Us"
-      withNavPadding={true}
-      client:load>
-      <AboutContent />
-    </StaticPageContent>
-  </div>
-</Layout>
+<ContentPageLayout
+  title={`${page.data.title} | ${t("onetime-secret-literal")}`}
+  description={page.data.description || `${page.data.title} | Onetime Secret`}
+  htmlLang={effectiveLang}
+  initialMessages={effectiveInitialMessages}
+  heroTitle={page.data.title}
+  heroDescription={page.data.description}>
+  <Content />
+</ContentPageLayout>

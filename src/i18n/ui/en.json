@@ -1,0 +1,228 @@
+{
+  "onetime-secret-literal": "Onetime Secret",
+  "all-rights-reserved": "All rights reserved",
+  "read-our-latest-blog-posts": "Read our latest blog posts",
+  "view-our-subscription-pricing": "View our subscription pricing",
+  "learn-about-our-company": "Learn about our company",
+  "check-our-service-status": "Check our service status",
+  "explore-our-api-documentation": "Explore our API documentation",
+  "learn-about-our-security-measures": "Learn about our security measures",
+  "access-our-documentation": "Access our documentation",
+  "view-our-source-code-on-github": "View our source code on GitHub",
+  "read-our-privacy-policy": "Read our Privacy Policy",
+  "view-our-terms-and-conditions": "View our Terms and Conditions",
+  "status": "Status",
+  "$config": {
+    "layout-footer-style": "horizontal"
+  },
+  "tagline": {
+    "signed": "Signed",
+    "sealed": "Sealed",
+    "delivered": "Delivered"
+  },
+  "banner": {
+    "try-it-out": "Try it out",
+    "open-menu": "Open main menu",
+    "close-menu": "Close menu"
+  },
+  "navigation": {
+    "home": "Home",
+    "features": "Features",
+    "regions": "Regions",
+    "about": "About",
+    "pricing": "Pricing"
+  },
+  "auth": {
+    "sign-in": "Sign In",
+    "sign-up": "Sign Up"
+  },
+  "LABELS": {
+    "about": "About",
+    "pricing": "Pricing",
+    "blog": "Blog",
+    "create-link": "Create Secret Link",
+    "docs": "Documentation",
+    "privacy-policy": "Privacy Policy",
+    "terms-and-conditions": "Terms and Conditions",
+    "security": "Security",
+    "feedback": "Feedback",
+    "learn-about-our-security-measures": "Learn about our security measures",
+    "terms": "Terms",
+    "view-our-terms-and-conditions": "View our Terms and Conditions",
+    "privacy": "Privacy",
+    "read-our-privacy-policy": "Read our Privacy Policy",
+    "company": "Company",
+    "resources": "Resources",
+    "legals": "Legals",
+    "copy": "Copy",
+    "copied": "Copied",
+    "processing": "Processing",
+    "loading": "Loading"
+  },
+  "web": {
+    "accessibilityLabels": {
+      "lightMode": "Light Mode",
+      "darkMode": "Dark Mode",
+      "toggleColorTheme": "Toggle color theme"
+    },
+    "theme": {
+      "title": "Theme",
+      "toggleTheme": "Toggle theme",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "help": {
+      "title": "Help",
+      "toggleHelp": "Toggle help",
+      "needHelp": "Need help?",
+      "learn_more": "Learn more",
+      "open-new-tab": "Open in new tab",
+      "learn-more-about-data-sovereignty": "Learn more about data sovereignty"
+    },
+    "pricing": {
+      "title": "Pricing Plans | Onetime Secret",
+      "description": "Choose the perfect plan for your secure information sharing needs. From basic free plans to premium options with custom domains and dedicated infrastructure.",
+      "includes-all-features-and-unlimited-sharing-capa": "All plans include privacy features and unlimited sharing capacity",
+      "includes-all-data-locality-options": "All plans include choice of data locality: {0} regions",
+      "get-started": "Get started",
+      "frequency-value-annually-annual-monthly-subscrip": "{0} subscription",
+      "features": "Features",
+      "elevate-your-secure-sharing-with-custom-domains-": "Elevate your secure sharing with custom domains, unlimited capacity, and enterprise-grade features.",
+      "payment-frequency": "Payment frequency",
+      "secure-your-brand-and-build-customer-trust-with-": "Secure your brand and build customer trust with links from your domain. Perfect for businesses that value privacy and professionalism.",
+      "secure-links-stronger-connections": "Secure Links, Stronger Connections",
+      "identity-tier-not-found-in-product-tiers": "Identity tier not found in product tiers",
+      "onetime-secret-helps-us-share-sensitive-informat": "Onetime Secret helps us share sensitive information securely while maintaining our professional facade.",
+      "information-shared-through-this-service-can-only": "Information shared through this service can only be accessed once. Once viewed, the content is permanently deleted to ensure confidentiality."
+    },
+    "errors": {
+      "errorTitle": "Not successful",
+      "passphraseRequired": "Passphrase is required when option is selected."
+    },
+    "secrets": {
+      "keepSensitiveInfo": "Keep sensitive info out of your email and chat logs.",
+      "securelyStored": "Securely stored in",
+      "europe": "Europe",
+      "createLink": "Create Link",
+      "expirationTime": "Extend lifetime",
+      "optionsHeading": "Privacy Options",
+      "addPassphrase": "Add passphrase",
+      "secretPlaceholder": "Type your secret message here...",
+      "secret-label": "Secret text input",
+      "secret-description": "Enter the sensitive text you want to share securely. This text will be encrypted and available only once.",
+      "secretPlaceholder-premium": "Type your secret message here (stored in {noun})",
+      "dataSovereignty": "Data Sovereignty",
+      "regionExplanation": "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR.",
+      "learnMoreRegions": "Learn more about regional domains",
+      "selectRegionHeading": "Select Region",
+      "complianceNote": "Helps with SOC2, GDPR, CCPA & HIPAA requirements for data privacy",
+      "regionSelector": {
+        "currentDomain": "Current domain",
+        "dataResidency": ""
+      },
+      "successTitle": "Success!",
+      "shareLinkDescription": "Share your secret link with others.",
+      "createAnother": "Create Another Secret",
+      "regionSwitchHint": "Try creating secrets in different regions for your various needs."
+    },
+    "useCases": {
+      "sectionTitle": "Security for Professionals",
+      "sectionSubtitle": "See how professionals use secure links in their daily workflows",
+      "exampleSecret": "Example Secret",
+      "keyBenefits": "Key Benefits",
+      "complianceInfo": "Compliance Information",
+      "privacyNote": "Your secrets are encrypted, never stored in logs, and automatically deleted after viewing.",
+      "it": {
+        "title": "IT Professional",
+        "description": "Securely share credentials and access information with your team",
+        "benefits": {
+          "1": "Prevent credential leaks in email and chat logs",
+          "2": "Audit when secrets are accessed",
+          "3": "Enforce security protocols for sensitive information"
+        },
+        "compliance": "Helps meet SOC 2 and ISO 27001 security requirements for access control",
+        "cta": "Secure Your Credentials"
+      },
+      "developer": {
+        "title": "Developer",
+        "description": "Share API keys and credentials securely during development",
+        "benefits": {
+          "1": "Keep API keys and tokens out of code repositories",
+          "2": "Securely onboard new team members with access credentials",
+          "3": "Share database connection strings without compromising security"
+        },
+        "compliance": "Helps enforce security best practices for CI/CD pipelines and infrastructure access",
+        "cta": "Secure Your API Keys"
+      },
+      "hr": {
+        "title": "HR Manager",
+        "description": "Securely share sensitive employee information and credentials",
+        "benefits": {
+          "1": "Safely transmit onboarding credentials to new employees",
+          "2": "Share confidential information with one-time access",
+          "3": "Maintain privacy for sensitive HR communications"
+        },
+        "compliance": "Helps meet GDPR and other privacy regulations for handling personal data",
+        "cta": "Secure HR Communications"
+      },
+      "legal": {
+        "title": "Legal Team",
+        "description": "Share confidential legal documents and information securely",
+        "benefits": {
+          "1": "Maintain attorney-client privilege in digital communications",
+          "2": "Securely share case-sensitive information with clients",
+          "3": "Control access to confidential settlement terms"
+        },
+        "compliance": "Helps ensure confidentiality required by legal ethics rules and client confidentiality agreements",
+        "cta": "Secure Legal Communications"
+      }
+    },
+    "homepage": {
+      "title": "Share Secrets Securely | Onetime Secret",
+      "description": "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever",
+      "a-trusted-way-to-share-sensitive-information-etc": "A trusted way to share sensitive information that self-destructs after being viewed.",
+      "howItWorks": {
+        "title": "How It Works",
+        "subtitle": "Share your information once, then it's permanently deleted",
+        "step1": {
+          "title": "Create a Secret",
+          "description": "Enter your sensitive information and generate a secure one-time link"
+        },
+        "step2": {
+          "title": "Share the Link",
+          "description": "Send the secure link through any messaging platform"
+        },
+        "step3": {
+          "title": "Works only Once",
+          "description": "Recipient views the secret, then it's permanently deleted"
+        }
+      },
+      "visualExamples": {
+        "title": "Custom Domain & Branding",
+        "subtitle": "Reinforce your brand and build trust by using your own domain and logo.",
+        "learnMore": "Learn More",
+        "viewPricing": "View Pricing"
+      },
+      "featureHighlights": {
+        "sectionTitle": "Key Features",
+        "sectionSubtitle": "Discover what makes Onetime Secret the preferred solution for secure information sharing.",
+        "security": {
+          "title": "Enhanced Privacy Options",
+          "description": "Add a passphrase for an extra layer of security. Only those with the passphrase can view the secret."
+        },
+        "selfDestruction": {
+          "title": "Self-Destructing Links",
+          "description": "Once viewed or expired, your secret is permanently deleted from our servers. No copies, no traces."
+        },
+        "dataResidency": {
+          "title": "Regional Data Storage",
+          "description": "Choose where your data is stored to meet compliance requirements and data sovereignty needs."
+        },
+        "compliance": {
+          "title": "Compliance Ready",
+          "description": "Designed to help meet SOC2, GDPR, CCPA & HIPAA requirements for secure information handling."
+        }
+      }
+    }
+  }
+}

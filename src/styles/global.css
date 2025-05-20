@@ -2,7 +2,55 @@
 
 /* Base styles */
 @layer base {
+  :root {
+    --header-height: 4rem; /* Default header height */
+  }
+
   html {
-    @apply antialiased;
+    /* General HTML base styles can go here if needed */
+    scroll-behavior: smooth;
+    scroll-padding-top: var(--header-height);
+  }
+
+  /* Example high-contrast theme */
+  html.high-contrast {
+    --background-color: black;
+    --text-color: white;
+    /* ... other high-contrast variables */
+  }
+  body.high-contrast {
+    background-color: var(--background-color);
+    color: var(--text-color);
+  }
+
+  /* Example dyslexic-friendly theme */
+  html.dyslexic {
+    --background-color: #f0e8c0; /* Creamy background */
+    --text-color: #3a2b2b; /* Dark brown text */
+    --font-family:
+      "Arial", sans-serif; /* Or a specific dyslexic-friendly font */
+    /* ... other dyslexic-friendly variables */
+  }
+  body.dyslexic {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: var(--font-family);
   }
 }
+
+/* Custom component styles can go into @layer components if needed */
+/* @layer components { */
+/*   .custom-component { */
+/*      Apply theme variables here if needed */
+/*     background-color: var(--component-bg, var(--background-color)); */
+/*     color: var(--component-text, var(--text-color)); */
+/*   } */
+/* } */
+
+/* Custom utility classes can go into @layer utilities if needed */
+/* @layer utilities { */
+/*   .custom-utility { */
+/*      Apply theme variables here if needed */
+/*     border-color: var(--border-color, var(--text-color)); */
+/*   } */
+/* } */

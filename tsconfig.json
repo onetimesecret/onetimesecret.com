@@ -1,12 +1,17 @@
+// https://docs.astro.build/en/guides/imports/#aliases
 {
   "extends": "astro/tsconfigs/strict",
-  "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"],
+  "include": [".astro/types.d.ts", "config/**/*", "src/**/*", "tests/**/*"],
+  "exclude": ["dist", "tmp"],
   "compilerOptions": {
+    "baseUrl": ".",
     "jsx": "preserve",
     "verbatimModuleSyntax": false,
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "paths": {
       "@/*": ["./src/*"],
+      "@root/*": ["./*"],
+      "@config/*": ["./config/*"],
       "@tests/*": ["./tests/*"]
     }
   }

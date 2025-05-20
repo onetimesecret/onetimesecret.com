@@ -1,0 +1,48 @@
+name: Lighthouse CI Test
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lighthouse:
+    name: Lighthouse Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.11 # Specify pnpm version
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Onetime Secret site
+        # This command is based on your CLAUDE.md; output is expected in ./dist
+        run: pnpm build
+
+      - name: Run Lighthouse CI
+        # pnpm dlx executes @lhci/cli without needing a global or project install
+        # It will generate reports in the .lighthouseci/ directory
+        run: pnpm dlx @lhci/cli autorun --collect.staticDistDir=./dist
+        env:
+          CI: true # Ensures LHCI runs in CI mode and uses appropriate configurations
+
+      - name: Upload Lighthouse report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/ # Directory where lhci saves HTML reports
+          if-no-files-found: error # Fails the step if reports are not found
+        if: always() # Upload reports even if previous steps (like assertions in lhci) fail

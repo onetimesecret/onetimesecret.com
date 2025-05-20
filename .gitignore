@@ -52,6 +52,7 @@ pnpm-debug.log*
 .rspec
 appendonlydir/
 data/
+!src/data
 node_modules/
 vendor/
 log/
