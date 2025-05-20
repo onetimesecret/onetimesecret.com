@@ -1,4 +1,11 @@
-<!-- src/components/vue/homepage/SecretRegionExperience.vue -->
+<!--
+  src/components/vue/homepage/SecretRegionExperience.vue
+
+  This component provides an interactive experience for users to create and share secrets
+  with regional data sovereignty.
+
+  An interactive experience enabling users to create secret messages across multiple regions, fostering confidence in data sovereignty while maintaining a frictionless workflow.
+-->
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -27,6 +34,9 @@ const { t } = useI18n();
 // Reference to the HomepageSecretForm component
 const secretFormRef = ref();
 
+// Track if a secret was just created successfully to animate the region selector
+const secretCreatedSuccessfully = ref(false);
+
 // Handler for region changes from the selector component
 const handleRegionChange = (region: Region) => {
   // Reset form when region changes
@@ -34,12 +44,25 @@ const handleRegionChange = (region: Region) => {
     secretFormRef.value.resetForm();
   }
 
+  // Turn off the animation when region is changed
+  secretCreatedSuccessfully.value = false;
+
   // Emit the region change to parent
   emit("regionChange", region);
 };
 
 // Handler for secret creation results
 const handleSecretCreationResult = (result: ApiResult) => {
+  // Set the success state if secret was created successfully
+  secretCreatedSuccessfully.value = result.success;
+
+  // If successful, set a timeout to reset the animation after 5 seconds
+  if (result.success) {
+    setTimeout(() => {
+      secretCreatedSuccessfully.value = false;
+    }, 5000);
+  }
+
   emit("createSecret", result);
 };
 
@@ -71,7 +94,10 @@ defineExpose({
                 v-if="isClient"
                 :current-region="currentRegion"
                 :available-regions="availableRegions"
-                class="rounded-lg px-2 py-1.5 bg-white/90 dark:bg-gray-700/90 border border-gray-200 dark:border-gray-600 shadow-sm"
+                class="rounded-lg px-2 py-1.5 bg-white/90 dark:bg-gray-700/90 border border-gray-200 dark:border-gray-600 shadow-sm transition-all duration-300"
+                :class="{
+                  'pulse-attention ring-2 ring-brand-400 dark:ring-brand-500 shadow-md': secretCreatedSuccessfully
+                }"
                 @region-change="handleRegionChange" />
             </div>
           </div>
@@ -95,4 +121,20 @@ defineExpose({
   </section>
 </template>
 
-<style scoped></style>
+<style scoped>
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 139, 230, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(34, 139, 230, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 139, 230, 0);
+  }
+}
+
+.pulse-attention {
+  animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+}
+</style>

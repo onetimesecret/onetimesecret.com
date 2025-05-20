@@ -242,6 +242,13 @@ const copyUrlToClipboard = async () => {
     // Optionally, provide error feedback to the user
   }
 };
+
+// Function to reset form and create another secret
+const createAnotherSecret = () => {
+  resetForm();
+  apiResult.value = null;
+  apiError.value = null;
+};
 </script>
 
 <template>
@@ -398,6 +405,21 @@ const copyUrlToClipboard = async () => {
             <span v-else>{{ t("LABELS.copied") }}</span>
           </button>
         </div>
+
+        <!-- Create Another Secret Button -->
+        <div class="mt-4 text-center">
+          <button
+            @click="createAnotherSecret"
+            type="button"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-brand-700 bg-brand-50 hover:bg-brand-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500">
+            {{ t("web.secrets.createAnother") || "Create Another Secret" }}
+          </button>
+          <!-- Region hint message -->
+          <p class="mt-3 text-xs text-gray-500">
+            {{ t("web.secrets.regionSwitchHint") || "Try creating secrets in different regions for your various needs." }}
+          </p>
+        </div>
+
       </div>
     </div>
   </div>

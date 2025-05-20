@@ -66,39 +66,5 @@ defineExpose({
 </template>
 
 <style scoped>
-section {
-  position: relative;
-}
 
-section::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 70%;
-  background-image: radial-gradient(circle at 30% 20%, rgba(var(--color-brand-300), 0.15) 0%, transparent 60%),
-                    radial-gradient(circle at 80% 30%, rgba(var(--color-brand-200), 0.1) 0%, transparent 50%);
-  z-index: -1;
-}
-
-/* Dark mode header styling */
-.dark section::before {
-  background-image: radial-gradient(circle at 30% 20%, rgba(var(--color-brand-500), 0.15) 0%, transparent 60%),
-                    radial-gradient(circle at 80% 30%, rgba(var(--color-brand-600), 0.1) 0%, transparent 50%);
-}
-
-/* Add styles for the header section */
-section::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
-  background-color: var(--color-brand-700);
-  background-image: linear-gradient(to right, var(--color-brand-800), var(--color-brand-700));
-  z-index: -2;
-  border-bottom: 1px solid var(--color-brand-600);
-}
 </style>
