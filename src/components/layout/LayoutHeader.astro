@@ -1,6 +1,10 @@
 ---
 import { getLocaleFromUrl } from "@/i18n/utils";
-import type { MessageSchema, SupportedLanguage } from "@/i18n";
+import {
+  createLocaleI18n,
+  type MessageSchema,
+  type SupportedLanguage,
+} from "@/i18n";
 import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
 import OIcon from "@/components/vue/icons/OIcon.vue";
 import { localizeUrl } from "@/i18n/utils";
@@ -15,13 +19,17 @@ const { initialMessages = {} } = Astro.props;
 const effectiveLocale: SupportedLanguage =
   getLocaleFromUrl(Astro.url) || DEFAULT_LANGUAGE;
 
+// Initialize a page-specific i18n instance for SSR content (for English)
+const pageI18n = await createLocaleI18n(effectiveLocale, initialMessages);
+const t = pageI18n.global.t;
+
 // Define navigation items
 // We'll use direct text here since Astro components don't have Vue's i18n system
 // In a real implementation, you would import these from i18n json files
 const navigation = [
-  { name: "Home", href: localizeUrl("/", effectiveLocale) },
-  { name: "About", href: localizeUrl("/about", effectiveLocale) },
-  { name: "Pricing", href: localizeUrl("/pricing", effectiveLocale) },
+  { name: t("Home"), href: localizeUrl("/", effectiveLocale) },
+  { name: t("About"), href: localizeUrl("/about", effectiveLocale) },
+  { name: t("Pricing"), href: localizeUrl("/pricing", effectiveLocale) },
 ];
 
 // Get current path for highlighting active link
@@ -39,7 +47,7 @@ const currentPath = Astro.url.pathname;
         <a
           href={localizeUrl("/", effectiveLocale)}
           class="-m-1.5 p-1.5">
-          <span class="sr-only">Onetime Secret</span>
+          <span class="sr-only">{t("onetime-secret-literal")}</span>
           <img
             class="h-10 w-auto rounded-lg"
             src="/etc/img/onetime-logo-sm.png"
@@ -103,12 +111,13 @@ const currentPath = Astro.url.pathname;
         <a
           href={localizeUrl("/signin", effectiveLocale)}
           class="hover:text-brand-600 dark:hover:text-brand-400 focus-visible:outline-brand-500 text-sm/6 font-semibold text-gray-900 transition-colors focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-gray-100">
-          Sign in
+          {t("auth.sign-in")}
         </a>
         <a
           href={localizeUrl("/signup", effectiveLocale)}
           class="bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 rounded-md px-4 py-2 text-sm/6 font-semibold text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-          Sign up <span aria-hidden="true">&rarr;</span>
+          {t("auth.sign-up")}
+          <span aria-hidden="true">&rarr;</span>
         </a>
       </div>
     </nav>
@@ -128,7 +137,7 @@ const currentPath = Astro.url.pathname;
           <a
             href="/"
             class="-m-1.5 p-1.5">
-            <span class="sr-only">Onetime Secret</span>
+            <span class="sr-only">{t("onetime-secret-literal")}</span>
             <img
               class="h-12 w-auto rounded-lg"
               src="/etc/img/onetime-logo-sm.png"
@@ -139,7 +148,7 @@ const currentPath = Astro.url.pathname;
             type="button"
             id="mobile-menu-close"
             class="-m-2.5 rounded-md p-2.5 text-gray-700 dark:text-gray-300">
-            <span class="sr-only">Close menu</span>
+            <span class="sr-only">{t("banner.close-menu")}</span>
             <OIcon
               collection="heroicons"
               name="x-mark"
@@ -170,12 +179,13 @@ const currentPath = Astro.url.pathname;
               <a
                 href={localizeUrl("/signin", effectiveLocale)}
                 class="focus-visible:outline-brand-500 -mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-gray-100 dark:hover:bg-gray-800">
-                Sign in
+                {t("auth.sign-in")}
               </a>
               <a
                 href={localizeUrl("/signup", effectiveLocale)}
                 class="bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 -mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-                Sign up <span aria-hidden="true">&rarr;</span>
+                {t("auth.sign-up")}
+                <span aria-hidden="true">&rarr;</span>
               </a>
             </div>
           </div>
