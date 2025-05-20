@@ -6,7 +6,8 @@ import {
   type SupportedLanguage,
 } from "@/i18n";
 import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
-import OIcon from "@/components/vue/icons/OIcon.vue";
+import { Bars3Icon, XMarkIcon } from "@heroicons/vue/24/outline";
+// import OIcon from "@/components/vue/icons/OIcon.vue"; // OIcon is not used for menu toggles anymore
 import { localizeUrl } from "@/i18n/utils";
 import BrandBar from "./BrandBar.astro";
 
@@ -19,13 +20,11 @@ const { initialMessages = {} } = Astro.props;
 const effectiveLocale: SupportedLanguage =
   getLocaleFromUrl(Astro.url) || DEFAULT_LANGUAGE;
 
-// Initialize a page-specific i18n instance for SSR content (for English)
+// Initialize a page-specific i18n instance for SSR content
 const pageI18n = await createLocaleI18n(effectiveLocale, initialMessages);
 const t = pageI18n.global.t;
 
 // Define navigation items
-// We'll use direct text here since Astro components don't have Vue's i18n system
-// In a real implementation, you would import these from i18n json files
 const navigation = [
   { name: t("navigation.home"), href: localizeUrl("/", effectiveLocale) },
   { name: t("navigation.about"), href: localizeUrl("/about", effectiveLocale) },
@@ -67,23 +66,21 @@ const currentPath = Astro.url.pathname;
           class="focus-visible:outline-brand-500 -m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700 focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-gray-300"
           aria-expanded="false"
           aria-controls="mobile-navigation-menu">
-          <span class="sr-only">Open main menu</span>
+          <span class="sr-only">{t("banner.open-menu")}</span>
           <span
             id="open-icon"
             class="block">
-            <OIcon
-              collection="heroicons-outline"
-              name="menu"
-              size="6"
+            <Bars3Icon
+              class="size-6"
+              aria-hidden="true"
             />
           </span>
           <span
             id="close-icon"
             class="hidden">
-            <OIcon
-              collection="heroicons"
-              name="x-mark"
-              size="6"
+            <XMarkIcon
+              class="size-6"
+              aria-hidden="true"
             />
           </span>
         </button>
@@ -111,12 +108,12 @@ const currentPath = Astro.url.pathname;
       <div
         class="hidden md:flex md:flex-1 md:items-center md:justify-end md:space-x-4">
         <a
-          href={localizeUrl("/signin", effectiveLocale)}
+          href="/signin"
           class="hover:text-brand-600 dark:hover:text-brand-400 focus-visible:outline-brand-500 text-sm/6 font-semibold text-gray-900 transition-colors focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-gray-100">
           {t("auth.sign-in")}
         </a>
         <a
-          href={localizeUrl("/signup", effectiveLocale)}
+          href="/signup"
           class="bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 rounded-md px-4 py-2 text-sm/6 font-semibold text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
           {t("auth.sign-up")}
           <span aria-hidden="true">&rarr;</span>
@@ -124,80 +121,82 @@ const currentPath = Astro.url.pathname;
       </div>
     </nav>
 
-    <!-- Mobile menu (hidden by default) -->
-    <div
-      id="mobile-navigation-menu"
-      class="fixed inset-0 z-[100] hidden md:hidden">
-      <div
-        class="fixed inset-0 bg-black/25 backdrop-blur-sm"
-        id="mobile-menu-backdrop">
-      </div>
-      <div
-        id="mobile-menu-panel"
-        class="fixed inset-y-0 right-0 z-[101] w-full translate-x-full overflow-y-auto bg-white px-6 py-6 transition-transform duration-300 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 dark:bg-gray-900 dark:sm:ring-gray-700/30">
-        <div class="flex items-center justify-between">
-          <a
-            href="/"
-            class="-m-1.5 p-1.5">
-            <span class="sr-only">{t("onetime-secret-literal")}</span>
-            <img
-              class="h-12 w-auto rounded-lg"
-              src="/etc/img/onetime-logo-sm.png"
-              alt="Onetime Secret logo"
-            />
-          </a>
-          <button
-            type="button"
-            id="mobile-menu-close"
-            class="-m-2.5 rounded-md p-2.5 text-gray-700 dark:text-gray-300">
-            <span class="sr-only">{t("banner.close-menu")}</span>
-            <OIcon
-              collection="heroicons"
-              name="x-mark-solid"
-              size="6"
-            />
-          </button>
-        </div>
-        <div class="mt-6 flow-root">
-          <div class="-my-6 divide-y divide-gray-500/10">
-            <div class="space-y-2 py-6">
-              {
-                navigation.map((item) => (
-                  <a
-                    href={item.href}
-                    class:list={[
-                      "focus-visible:outline-brand-500 -mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2",
-                      currentPath === item.href || item.href !== "/"
-                        ? "text-brand-600 dark:text-brand-400 bg-gray-50 dark:bg-gray-800"
-                        : "text-gray-900 hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-800",
-                    ]}>
-                    {item.name}
-                  </a>
-                ))
-              }
-            </div>
-            <div class="space-y-2 py-6">
-              <a
-                href={localizeUrl("/signin", effectiveLocale)}
-                class="focus-visible:outline-brand-500 -mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-gray-100 dark:hover:bg-gray-800">
-                {t("auth.sign-in")}
-              </a>
-              <a
-                href={localizeUrl("/signup", effectiveLocale)}
-                class="bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 -mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-                {t("auth.sign-up")}
-                <span aria-hidden="true">&rarr;</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div class="w-full">
       <slot />
     </div>
   </header>
+
+  <!-- Mobile menu (hidden by default) -->
+  <div
+    id="mobile-navigation-menu"
+    class="fixed inset-0 z-[100] hidden md:hidden">
+    <div
+      class="fixed inset-0 bg-black/25 backdrop-blur-sm"
+      id="mobile-menu-backdrop">
+    </div>
+    <div
+      id="mobile-menu-panel"
+      class="fixed inset-y-0 right-0 z-[101] w-full translate-x-full overflow-y-auto bg-white px-6 py-6 transition-transform duration-300 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 dark:bg-gray-900 dark:sm:ring-gray-700/30">
+      <div class="flex items-center justify-between">
+        <a
+          href="/"
+          class="-m-1.5 p-1.5">
+          <span class="sr-only">{t("onetime-secret-literal")}</span>
+          <img
+            class="h-12 w-auto rounded-lg"
+            src="/etc/img/onetime-logo-sm.png"
+            alt="Onetime Secret logo"
+          />
+        </a>
+        <button
+          type="button"
+          id="mobile-menu-close"
+          class="-m-2.5 rounded-md p-2.5 text-gray-700 dark:text-gray-300">
+          <span class="sr-only">{t("banner.close-menu")}</span>
+          <span class="block">
+            <XMarkIcon
+              class="size-6"
+              aria-hidden="true"
+            />
+          </span>
+        </button>
+      </div>
+      <div class="mt-6 flow-root">
+        <div class="-my-6 divide-y divide-gray-500/10 dark:divide-gray-700/30">
+          <div class="space-y-2 py-6">
+            {
+              navigation.map((item) => (
+                <a
+                  href={item.href}
+                  class:list={[
+                    "focus-visible:outline-brand-500 -mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2",
+                    currentPath === item.href ||
+                    (currentPath === "/" && item.href === "/") // Logic for active link
+                      ? "text-brand-600 dark:text-brand-400 bg-gray-50 dark:bg-gray-800"
+                      : "text-gray-900 hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-800",
+                  ]}>
+                  {item.name}
+                </a>
+              ))
+            }
+          </div>
+          <div class="space-y-2 py-6">
+            <a
+              href="/signin"
+              class="focus-visible:outline-brand-500 -mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-gray-100 dark:hover:bg-gray-800">
+              {t("auth.sign-in")}
+            </a>
+            <a
+              href="/signup"
+              class="bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 -mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+              {t("auth.sign-up")}
+              <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -207,67 +206,95 @@ const currentPath = Astro.url.pathname;
     const mobileMenu = document.getElementById("mobile-navigation-menu");
     const mobileMenuPanel = document.getElementById("mobile-menu-panel");
     const mobileMenuBackdrop = document.getElementById("mobile-menu-backdrop");
-    const mobileMenuClose = document.getElementById("mobile-menu-close");
-    const openIcon = document.getElementById("open-icon");
-    const closeIcon = document.getElementById("close-icon");
+    const mobileMenuCloseButton = document.getElementById("mobile-menu-close"); // This is the button in the panel
+
+    // Icons on the main toggle button
+    const openIcon = document.getElementById("open-icon"); // Span for Bars3Icon on the toggle button
+    const closeIcon = document.getElementById("close-icon"); // Span for XMarkIcon on the toggle button
 
     function openMenu() {
+      if (
+        !mobileMenu ||
+        !mobileMenuPanel ||
+        !openIcon ||
+        !closeIcon ||
+        !mobileMenuButton
+      )
+        return;
       mobileMenu.classList.remove("hidden");
-      document.body.classList.add("overflow-hidden");
+      document.body.classList.add("overflow-hidden"); // Prevent body scroll
 
-      // Show close icon, hide open icon
-      openIcon.classList.add("hidden");
+      // Toggle icons on the mobile-menu-button
       openIcon.classList.remove("block");
-      closeIcon.classList.add("block");
+      openIcon.classList.add("hidden");
       closeIcon.classList.remove("hidden");
+      closeIcon.classList.add("block");
 
-      // Button is now expanded
       mobileMenuButton.setAttribute("aria-expanded", "true");
+      // Optionally, set focus to the panel or first item
+      // mobileMenuPanel.setAttribute('tabindex', '-1'); // If not already focusable
+      // mobileMenuPanel.focus();
+      // Or mobileMenuCloseButton.focus();
 
-      // Animate in the panel after a small delay
-      setTimeout(() => {
+      // Animate in the panel
+      requestAnimationFrame(() => {
         mobileMenuPanel.classList.remove("translate-x-full");
         mobileMenuPanel.classList.add("translate-x-0");
-      }, 10);
+      });
     }
 
     function closeMenu() {
-      // First animate out
+      if (
+        !mobileMenu ||
+        !mobileMenuPanel ||
+        !openIcon ||
+        !closeIcon ||
+        !mobileMenuButton
+      )
+        return;
       mobileMenuPanel.classList.add("translate-x-full");
       mobileMenuPanel.classList.remove("translate-x-0");
 
-      // Show open icon, hide close icon
+      // Toggle icons on the mobile-menu-button
       openIcon.classList.add("block");
       openIcon.classList.remove("hidden");
       closeIcon.classList.add("hidden");
       closeIcon.classList.remove("block");
 
-      // Button is now collapsed
       mobileMenuButton.setAttribute("aria-expanded", "false");
+      // Optionally, return focus to the toggle button
+      // mobileMenuButton.focus();
 
-      // Wait for animation to finish before hiding menu
       setTimeout(() => {
         mobileMenu.classList.add("hidden");
-        document.body.classList.remove("overflow-hidden");
-      }, 300); // Match the transition duration
+        document.body.classList.remove("overflow-hidden"); // Re-enable body scroll
+      }, 300); // Match the transition duration (duration-300)
     }
 
-    mobileMenuButton.addEventListener("click", () => {
-      if (mobileMenu.classList.contains("hidden")) {
-        openMenu();
-      } else {
-        closeMenu();
-      }
-    });
+    if (
+      mobileMenuButton &&
+      mobileMenu &&
+      mobileMenuCloseButton && // Changed from mobileMenuClose to mobileMenuCloseButton
+      mobileMenuBackdrop &&
+      openIcon && // ensure icons are present
+      closeIcon
+    ) {
+      mobileMenuButton.addEventListener("click", () => {
+        if (mobileMenu.classList.contains("hidden")) {
+          openMenu();
+        } else {
+          closeMenu();
+        }
+      });
 
-    mobileMenuClose.addEventListener("click", closeMenu);
-    mobileMenuBackdrop.addEventListener("click", closeMenu);
+      mobileMenuCloseButton.addEventListener("click", closeMenu);
+      mobileMenuBackdrop.addEventListener("click", closeMenu);
 
-    // Close on escape key
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && !mobileMenu.classList.contains("hidden")) {
-        closeMenu();
-      }
-    });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !mobileMenu.classList.contains("hidden")) {
+          closeMenu();
+        }
+      });
+    }
   });
 </script>
