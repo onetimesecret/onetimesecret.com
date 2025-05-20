@@ -49,7 +49,7 @@ const selectedUseCase = ref(useCases[0]);
               <span
                 class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                 <ChevronUpDownIcon
-                  class="h-5 w-5 text-gray-400"
+                  class="size-5 text-gray-400"
                   aria-hidden="true" />
               </span>
             </ListboxButton>
@@ -82,7 +82,7 @@ const selectedUseCase = ref(useCases[0]);
                       v-if="selected"
                       class="absolute inset-y-0 left-0 flex items-center pl-3 text-brand-600">
                       <CheckIcon
-                        class="h-5 w-5"
+                        class="size-5"
                         aria-hidden="true" />
                     </span>
                   </li>
@@ -124,8 +124,8 @@ const selectedUseCase = ref(useCases[0]);
                 v-for="(benefit, index) in selectedUseCase.benefits"
                 :key="index"
                 class="flex items-start">
-                <span class="flex-shrink-0 h-5 w-5 text-brand-500 mr-2">
-                  <CheckIcon class="h-5 w-5" />
+                <span class="flex-shrink-0 size-5 text-brand-500 mr-2">
+                  <CheckIcon class="size-5" />
                 </span>
                 <span class="text-gray-700 dark:text-gray-300">{{ benefit }}</span>
               </li>

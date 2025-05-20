@@ -12,7 +12,7 @@ title: Mō Mātou
   </p>
 
   <p>
-    Ko te wāhanga tuatahi o te tau 2024 tā mātou wā pukumahi rawa. E mihi ana mātou kua haere tonu te tangata ki te whakamahi me te tuari i tā mātou hua mō te tekau tau neke atu. Kei te mahi mātou i ngā whakapaitanga e whakaaro ana mātou ka pai ake ai te ratonga — ka tuari mātou i ētahi atu taipitopito ā tōna wā.
+    Ko te wāhanga tuatahi o te tau 2025 tā mātou wā pukumahi rawa. E mihi ana mātou kua haere tonu te tangata ki te whakamahi me te tuari i tā mātou hua mō te tekau tau neke atu. Kei te mahi mātou i ngā whakapaitanga e whakaaro ana mātou ka pai ake ai te ratonga — ka tuari mātou i ētahi atu taipitopito ā tōna wā.
   </p>
 
   <p>

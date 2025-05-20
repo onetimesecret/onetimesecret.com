@@ -12,7 +12,7 @@ title: Hakkımızda
   </p>
 
   <p>
-    2024`ün ilk yarısı, şimdiye kadarki en yoğun dönemimiz oldu. İnsanların on yıldan fazla bir süredir ürünümüzü kullanmaya ve paylaşmaya devam etmelerine minnettarız. Şu anda hizmeti daha da kullanışlı hale getireceğini düşündüğümüz iyileştirmeler üzerinde çalışıyoruz. Yakında daha fazla ayrıntı paylaşacağız.
+    2025'in ilk yarısı, şimdiye kadarki en yoğun dönemimiz oldu. İnsanların on yıldan fazla bir süredir ürünümüzü kullanmaya ve paylaşmaya devam etmelerine minnettarız. Şu anda hizmeti daha da kullanışlı hale getireceğini düşündüğümüz iyileştirmeler üzerinde çalışıyoruz. Yakında daha fazla ayrıntı paylaşacağız.
   </p>
 
   <p>

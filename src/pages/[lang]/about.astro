@@ -3,42 +3,62 @@
  * src/pages/[lang]/about.astro
  * About page implementation using content collections and ContentPageLayout
  */
-import type { MessageSchema } from "@/i18n";
 import {
   createLocaleI18n,
   getLanguagePaths,
+  type MessageSchema,
   type SupportedLanguage,
 } from "@/i18n";
 import enMessages from "@/i18n/ui/en.json";
 import ContentPageLayout from "@/layouts/ContentPageLayout.astro";
-import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
+import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
 import { getCollection } from "astro:content";
 
 export async function getStaticPaths() {
   return getLanguagePaths();
 }
 
-const { lang = DEFAULT_LANGUAGE } = Astro.params as { lang: SupportedLanguage };
+interface Props {
+  lang: SupportedLanguage;
+  initialMessages: Record<string, MessageSchema>;
+  langMeta: {
+    name: string;
+    locale: string;
+    dir: string;
+  };
+}
 
-// Setup initial messages for i18n
-const initialMessages = {
+const effectiveLang = (Astro.props.lang ||
+  Astro.params.lang ||
+  DEFAULT_LANGUAGE) as SupportedLanguage;
+
+// Determine effective langMeta, falling back to default language's meta if necessary
+const effectiveLangMeta = Astro.props.langMeta || LANGUAGE_META[effectiveLang];
+
+// Determine effective initialMessages, falling back to just English messages if necessary
+// This ensures initialMessages is always an object.
+const effectiveInitialMessages = Astro.props.initialMessages || {
   [DEFAULT_LANGUAGE]: enMessages as MessageSchema,
 };
 
 // Initialize i18n for page content
-const pageI18n = await createLocaleI18n(lang, initialMessages);
+const pageI18n = await createLocaleI18n(
+  effectiveLang,
+  effectiveInitialMessages,
+);
 const t = pageI18n.global.t;
 
 // Get the page by language/slug using Astro content collection API
 const allPages = await getCollection("pages");
 const page = allPages.find(
   (page) =>
-    page.id === `${lang}/about.md` ||
-    (lang !== DEFAULT_LANGUAGE && page.id === `${DEFAULT_LANGUAGE}/about.md`),
+    page.id === `${effectiveLang}/about.md` ||
+    (effectiveLang !== DEFAULT_LANGUAGE &&
+      page.id === `${DEFAULT_LANGUAGE}/about.md`),
 );
 
 if (!page) {
-  throw new Error(`Page not found: ${lang}/about.md`);
+  throw new Error(`Page not found: ${effectiveLang}/about.md`);
 }
 
 // Render the content
@@ -47,10 +67,11 @@ const { Content } = renderedContent;
 ---
 
 <ContentPageLayout
-  title={`${page.data.title} | Onetime Secret`}
+  t={t}
+  title={`${page.data.title} | ${t("onetime-secret-literal")}`}
   description={page.data.description || `${page.data.title} | Onetime Secret`}
-  htmlLang={lang}
-  initialMessages={initialMessages}
+  htmlLang={effectiveLang}
+  initialMessages={effectiveInitialMessages}
   heroTitle={page.data.title}
   heroDescription={page.data.description}>
   <Content />

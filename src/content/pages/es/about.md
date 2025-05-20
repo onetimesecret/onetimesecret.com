@@ -12,7 +12,7 @@ title: Acerca de Nosotros
   </p>
 
   <p>
-    La primera mitad de 2024 ha sido nuestro período más ocupado hasta ahora. Agradecemos que la gente haya seguido usando y compartiendo nuestro producto durante más de una década. Actualmente estamos trabajando en mejoras que creemos que harán el servicio aún más útil; compartiremos más detalles pronto.
+    La primera mitad de 2025 ha sido nuestro período más ocupado hasta ahora. Agradecemos que la gente haya seguido usando y compartiendo nuestro producto durante más de una década. Actualmente estamos trabajando en mejoras que creemos que harán el servicio aún más útil; compartiremos más detalles pronto.
   </p>
 
   <p>

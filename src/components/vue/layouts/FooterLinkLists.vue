@@ -3,10 +3,10 @@
 import { useI18n } from "vue-i18n";
 import { localizeUrl } from '@/i18n/utils';
 import { onMounted } from 'vue';
-import { setLanguage, setLanguageWithMessages, type MessageSchema } from "@/i18n";
+import { setLanguage, setLanguageWithMessages, SupportedLanguage, type MessageSchema } from "@/i18n";
 
 const props = defineProps<{
-  locale: string;
+  locale: SupportedLanguage;
   initialMessages?: Record<string, MessageSchema>;
 }>();
 
@@ -27,9 +27,7 @@ const currentLocale = props.locale;
 </script>
 
 <template>
-  <div class="border-t border-gray-200 dark:border-gray-700">
-    <div class="mx-auto max-w-7xl px-6 py-12 lg:px-8">
-      <div class="grid grid-cols-2 gap-8 md:grid-cols-3">
+  <div class="grid grid-cols-2 gap-8 md:grid-cols-3">
         <!-- Company links -->
         <div class="space-y-4">
           <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
@@ -146,7 +144,5 @@ const currentLocale = props.locale;
             </li>
           </ul>
         </div>
-      </div>
-    </div>
   </div>
 </template>

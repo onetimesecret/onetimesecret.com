@@ -12,7 +12,7 @@ title: Über uns
   </p>
 
   <p>
-    Die erste Hälfte des Jahres 2024 war unsere bisher arbeitsreichste Zeit. Wir sind dankbar, dass die Menschen unser Produkt seit mehr als einem Jahrzehnt nutzen und weitergeben. Wir arbeiten derzeit an Verbesserungen, die den Dienst noch nützlicher machen werden - wir werden bald weitere Details bekannt geben.
+    Die erste Hälfte des Jahres 2025 war unsere bisher arbeitsreichste Zeit. Wir sind dankbar, dass die Menschen unser Produkt seit mehr als einem Jahrzehnt nutzen und weitergeben. Wir arbeiten derzeit an Verbesserungen, die den Dienst noch nützlicher machen werden - wir werden bald weitere Details bekannt geben.
   </p>
 
   <p>

@@ -5,8 +5,6 @@
  */
 import Layout from "@/layouts/Layout.astro";
 import Homepage from "@/components/vue/homepage/Homepage.vue";
-// import "@/styles/global.css";
-// import "@/styles/tailwind.css";
 import { type SupportedLanguage } from "@config/astro/i18n";
 import { getLanguagePaths } from "@/i18n";
 import { createLocaleI18n, type MessageSchema } from "@/i18n";
@@ -61,16 +59,15 @@ const pageDescription = t("web.homepage.description");
   htmlLang={effectiveLang}
   langDir={effectiveLangMeta.dir}
   initialMessages={effectiveInitialMessages}
-  showHero={true}
-  heroTitle="Onetime Secret"
-  heroDescription={pageDescription}>
+  header={true}>
+  <!-- Homepage has its own navigation so we disable the default header -->
+  <div slot="header"></div>
+
   <!-- Render the Homepage component -->
   <!-- client:load ensures the Vue component hydrates and runs client-side -->
   <Homepage
     client:load
     locale={effectiveLang}
-    htmlLang={effectiveLang}
-    langDir={effectiveLangMeta.dir}
     initialMessages={effectiveInitialMessages}
   />
 </Layout>

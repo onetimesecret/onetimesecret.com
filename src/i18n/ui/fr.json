@@ -12,6 +12,9 @@
   "read-our-privacy-policy": "Lisez notre politique de confidentialité",
   "view-our-terms-and-conditions": "Consultez nos conditions générales",
   "status": "État",
+  "$config": {
+    "layout-footer-style": "grid"
+  },
   "tagline": {
     "signed": "Signé",
     "sealed": "Scellé",
@@ -39,9 +42,15 @@
     "blog": "Blog",
     "create-link": "Créer un lien secret",
     "docs": "Documentation",
-    "privacy": "Politique de confidentialité",
-    "terms": "Conditions générales",
+    "privacy-policy": "Politique de confidentialité",
+    "terms-and-conditions": "Conditions générales",
     "security": "Mesures de sécurité",
+    "feedback": "Avis",
+    "learn-about-our-security-measures": "En savoir plus sur nos mesures de sécurité",
+    "terms": "Conditions",
+    "view-our-terms-and-conditions": "Consultez nos conditions générales",
+    "privacy": "Confidentialité",
+    "read-our-privacy-policy": "Lisez notre politique de confidentialité",
     "company": "Entreprise",
     "resources": "Ressources",
     "legals": "Mentions légales",
@@ -61,6 +70,12 @@
       "toggleTheme": "Changer de thème",
       "light": "Clair",
       "dark": "Sombre"
+    },
+    "help": {
+      "title": "Aide",
+      "toggleHelp": "Basculer l'aide",
+      "needHelp": "Besoin d'aide ?",
+      "learn_more": "En savoir plus"
     },
     "pricing": {
       "title": "Plans tarifaires | Onetime Secret",
@@ -159,6 +174,7 @@
     "homepage": {
       "title": "Partager des secrets en toute sécurité | Onetime Secret",
       "description": "Partagez des informations sensibles en toute sécurité avec des liens auto-destructibles. Collez votre secret, générez un lien et partagez-le. Une fois consulté, il disparaît à jamais.",
+      "a-trusted-way-to-share-sensitive-information-etc": "Une méthode fiable pour partager des informations confidentielles qui s'autodétruisent après consultation.",
       "howItWorks": {
         "title": "Comment ça marche",
         "subtitle": "Partagez vos informations une seule fois, puis elles sont définitivement supprimées.",
@@ -177,7 +193,9 @@
       },
       "visualExamples": {
         "title": "Domaine personnalisé et image de marque",
-        "subtitle": "Renforcez votre marque et instaurez la confiance en utilisant votre propre domaine et logo."
+        "subtitle": "Renforcez votre marque et établissez la confiance en utilisant votre propre domaine et logo.",
+        "learnMore": "En savoir plus",
+        "viewPricing": "Voir les tarifs"
       },
       "featureHighlights": {
         "sectionTitle": "Fonctionnalités principales",

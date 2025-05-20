@@ -1,21 +1,25 @@
 ---
-import Layout from '@/layouts/Layout.astro';
+import Layout from "@/layouts/Layout.astro";
 
 // Try to access all environment variables
 const allEnvVars = Object.entries(import.meta.env)
-  .filter(([key]) => !key.startsWith('_') && key !== 'SSR' && key !== 'BASE_URL')
+  .filter(
+    ([key]) => !key.startsWith("_") && key !== "SSR" && key !== "BASE_URL",
+  )
   .sort();
 ---
 
 <Layout title="Environment Variables Debug">
   <main class="p-8">
-    <h1 class="text-2xl font-bold mb-4">Environment Variables</h1>
+    <h1 class="mb-4 text-2xl font-bold">Environment Variables</h1>
 
-    <h2 class="text-xl font-semibold mt-4 mb-2">PUBLIC_API_BASE_URL</h2>
-    <pre class="bg-gray-100 p-4 rounded-md">{import.meta.env.PUBLIC_API_BASE_URL || 'Not defined'}</pre>
+    <h2 class="mt-4 mb-2 text-xl font-semibold">VITE_PUBLIC_API_BASE_URL</h2>
+    <pre
+      class="rounded-md bg-gray-100 p-4">{import.meta.env.VITE_PUBLIC_API_BASE_URL || 'Not defined'}</pre>
 
-    <h2 class="text-xl font-semibold mt-4 mb-2">All Environment Variables</h2>
-    <pre class="bg-gray-100 p-4 rounded-md">
+    <h2 class="mt-4 mb-2 text-xl font-semibold">All Environment Variables</h2>
+    <pre
+      class="rounded-md bg-gray-100 p-4">
 {allEnvVars.map(([key, value]) => `${key}: ${typeof value === 'string' ? value : JSON.stringify(value)}`).join('\n')}
     </pre>
   </main>

@@ -4,20 +4,8 @@
 import OIcon from "@/components/vue/icons/OIcon.vue";
 import { onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import type { Region } from "@/types/jurisdiction";
 
-
-/**
- * Region information interface representing a regional deployment option
- */
-export interface Region {
-  identifier: string;
-  displayName: string;
-  domain: string;
-  icon: {
-    collection: string;
-    name: string;
-  };
-}
 
 defineProps<{
   currentRegion: Region;
@@ -197,7 +185,7 @@ onUnmounted(() => {
           @click="closeAll">
           <span class="sr-only">Close</span>
           <svg
-            class="h-5 w-5"
+            class="size-5"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
             fill="currentColor">

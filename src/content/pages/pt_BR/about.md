@@ -12,7 +12,7 @@ title: Sobre Nós
   </p>
 
   <p>
-    O primeiro semestre de 2024 foi nosso período mais movimentado até agora. Somos gratos por as pessoas continuarem a usar e compartilhar nosso produto por mais de uma década. Estamos atualmente trabalhando em melhorias que acreditamos que tornarão o serviço ainda mais útil — compartilharemos mais detalhes em breve.
+    O primeiro semestre de 2025 foi nosso período mais movimentado até agora. Somos gratos por as pessoas continuarem a usar e compartilhar nosso produto por mais de uma década. Estamos atualmente trabalhando em melhorias que acreditamos que tornarão o serviço ainda mais útil — compartilharemos mais detalhes em breve.
   </p>
 
   <p>

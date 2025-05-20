@@ -13,45 +13,57 @@ import { AstroUserConfig } from "astro";
  */
 export function createConfig(): AstroUserConfig["redirects"] {
   return {
-    // "/info/security": {
-    //   status: 302,
-    //   destination: "https://eu.onetimesecret.com/info/security",
-    // },
-    // "/info/terms": {
-    //   status: 302,
-    //   destination: "https://eu.onetimesecret.com/info/terms",
-    // },
-    // "/info/privacy": {
-    //   status: 302,
-    //   destination: "https://eu.onetimesecret.com/info/privacy",
-    // },
-    // "/security": {
-    //   status: 302,
-    //   destination: "https://eu.onetimesecret.com/info/security",
-    // },
-    // "/terms": {
-    //   status: 302,
-    //   destination: "https://eu.onetimesecret.com/info/terms",
-    // },
-    // "/privacy": {
-    //   status: 302,
-    //   destination: "https://eu.onetimesecret.com/info/privacy",
-    // },
-    // "/about": {
-    //   status: 302,
-    //   destination: "https://eu.onetimesecret.com/about",
-    // },
-    // "/pricing": {
-    //   status: 302,
-    //   destination: "https://eu.onetimesecret.com/pricing",
-    // },
-    // "/signup": {
-    //   status: 302,
-    //   destination: "https://eu.onetimesecret.com/signup",
-    // },
-    // "/signin": {
-    //   status: 302,
-    //   destination: "https://eu.onetimesecret.com/signin",
-    // },
+    "/info/security": {
+      status: 301,
+      destination: "/en/security",
+    },
+    "/info/terms": {
+      status: 301,
+      destination: "/terms",
+    },
+    "/info/privacy": {
+      status: 301,
+      destination: "/privacy",
+    },
+    "/feedback": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/feedback",
+    },
+    "/security": {
+      status: 301,
+      destination: "/en/security",
+    },
+    "/terms": {
+      status: 301,
+      destination: "/en/terms",
+    },
+    "/privacy": {
+      status: 301,
+      destination: "/en/privacy",
+    },
+    "/about": {
+      status: 301,
+      destination: "/en/about",
+    },
+    "/pricing": {
+      status: 301,
+      destination: "/en/pricing",
+    },
+    "/plans/identity": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/plans/identity",
+    },
+    "/plans/free": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/plans/free",
+    },
+    "/signup": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/signup",
+    },
+    "/signin": {
+      status: 302,
+      destination: "https://eu.onetimesecret.com/signin",
+    },
   };
 }

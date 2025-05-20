@@ -12,7 +12,7 @@ title: O nas
   </p>
 
   <p>
-    Pierwsza połowa 2024 roku była naszym najbardziej pracowitym okresem. Jesteśmy wdzięczni, że ludzie nadal używają i udostępniają nasz produkt od ponad dekady. Obecnie pracujemy nad ulepszeniami, które naszym zdaniem uczynią usługę jeszcze bardziej użyteczną — wkrótce podzielimy się szczegółami.
+    Pierwsza połowa 2025 roku była naszym najbardziej pracowitym okresem. Jesteśmy wdzięczni, że ludzie nadal używają i udostępniają nasz produkt od ponad dekady. Obecnie pracujemy nad ulepszeniami, które naszym zdaniem uczynią usługę jeszcze bardziej użyteczną — wkrótce podzielimy się szczegółami.
   </p>
 
   <p>

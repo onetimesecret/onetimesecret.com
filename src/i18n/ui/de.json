@@ -12,6 +12,9 @@
   "read-our-privacy-policy": "Lesen Sie unsere Datenschutzerklärung",
   "view-our-terms-and-conditions": "Lesen Sie unsere Allgemeinen Geschäftsbedingungen",
   "status": "Status",
+  "$config": {
+    "layout-footer-style": "grid"
+  },
   "tagline": {
     "signed": "Signiert",
     "sealed": "Versiegelt",
@@ -39,9 +42,15 @@
     "blog": "Blog",
     "create-link": "Geheimen Link erstellen",
     "docs": "Dokumentation",
-    "privacy": "Datenschutzerklärung",
-    "terms": "Allgemeine Geschäftsbedingungen",
+    "privacy-policy": "Datenschutzerklärung",
+    "terms-and-conditions": "Allgemeine Geschäftsbedingungen",
     "security": "Sicherheitsmaßnahmen",
+    "feedback": "Rückmeldung",
+    "learn-about-our-security-measures": "Informieren Sie sich über unsere Sicherheitsmaßnahmen",
+    "terms": "Allgemeine Geschäftsbedingungen",
+    "view-our-terms-and-conditions": "Lesen Sie unsere Allgemeinen Geschäftsbedingungen",
+    "privacy": "Datenschutzerklärung",
+    "read-our-privacy-policy": "Lesen Sie unsere Datenschutzerklärung",
     "company": "Unternehmen",
     "resources": "Ressourcen",
     "legals": "Rechtliches",
@@ -61,6 +70,12 @@
       "toggleTheme": "Thema umschalten",
       "light": "Hell",
       "dark": "Dunkel"
+    },
+    "help": {
+      "title": "Hilfe",
+      "toggleHelp": "Hilfe umschalten",
+      "needHelp": "Benötigen Sie Hilfe?",
+      "learn_more": "Mehr erfahren"
     },
     "pricing": {
       "title": "Preispläne | Onetime Secret",
@@ -159,6 +174,7 @@
     "homepage": {
       "title": "Teilen Sie Geheimnisse sicher | Onetime Secret",
       "description": "Teilen Sie sensible Informationen sicher mit selbstzerstörenden Links. Fügen Sie Ihr Geheimnis ein, generieren Sie einen Link und teilen Sie ihn. Nach dem Anzeigen ist es für immer verschwunden.",
+      "a-trusted-way-to-share-sensitive-information-etc": "Eine vertrauenswürdige Methode zum Teilen vertraulicher Informationen, die nach dem Anzeigen automatisch gelöscht werden.",
       "howItWorks": {
         "title": "Wie es funktioniert",
         "subtitle": "Teilen Sie Ihre Informationen einmal, dann werden sie dauerhaft gelöscht",
@@ -177,7 +193,9 @@
       },
       "visualExamples": {
         "title": "Eigene Domain & Branding",
-        "subtitle": "Stärken Sie Ihre Marke und schaffen Sie Vertrauen durch Verwendung Ihrer eigenen Domain und Ihres Logos."
+        "subtitle": "Stärken Sie Ihre Marke und schaffen Sie Vertrauen durch Verwendung Ihrer eigenen Domain und Ihres Logos.",
+        "learnMore": "Mehr erfahren",
+        "viewPricing": "Preise anzeigen"
       },
       "featureHighlights": {
         "sectionTitle": "Hauptfunktionen",

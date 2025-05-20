@@ -1,7 +1,7 @@
 <!-- src/components/vue/forms/BaseSecretFormLite.vue -->
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 
 // Define the options model
@@ -103,11 +103,10 @@ const updateOption = (option: keyof SecretOptions, value: boolean) => {
 };
 const isTyping = ref(false);
 const typingTimerId = ref<number | null>(null);
+const urlInputRef = ref<HTMLInputElement | null>(null);
 
 const showOptions = computed(() => {
-  return (
-    props.withOptions && !isTyping.value && secretText.value.trim().length > 0
-  );
+  return false; // Always hide options
 });
 
 watch(secretText, () => {
@@ -117,7 +116,9 @@ watch(secretText, () => {
   // If user starts typing again after a success or error, reset for a new submission
   if (secretText.value.trim() && (apiResult.value || apiError.value)) {
     // Check if this is real user input (not the asterisks from a success state)
-    const isAllAsterisks = secretText.value.split('').every(char => char === '*');
+    const isAllAsterisks = secretText.value
+      .split("")
+      .every((char) => char === "*");
     if (!isAllAsterisks) {
       apiResult.value = null;
       apiError.value = null;
@@ -194,22 +195,29 @@ const handleCreateLink = async () => {
       // Obscure the secret text with asterisks
       const minLen = 6;
       const maxLen = 32;
-      const fuzzyLen = Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
+      const fuzzyLen =
+        Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
       secretText.value = "*".repeat(fuzzyLen);
     }
-
   } catch (error: any) {
     console.error("API call failed:", error);
     apiError.value =
       (error.message ||
-      t("web.errors.apiGenericError") ||
-      "An unexpected error occurred.") +
-      ` (API URL: ${props.apiBaseUrl})`;
+        t("web.errors.apiGenericError") ||
+        "An unexpected error occurred.") + ` (API URL: ${props.apiBaseUrl})`;
     // Emit failure result
     emit("createLink", { success: false, message: apiError.value });
   } finally {
     isLoading.value = false;
   }
+
+  // Manage focus when state changes
+  nextTick(() => {
+    if (urlInputRef.value) {
+      urlInputRef.value.focus();
+      urlInputRef.value.select();
+    }
+  });
 };
 
 // Store the original API base URL used when creating the secret
@@ -223,7 +231,10 @@ const buildSecretUrl = (result: ApiResult): string => {
 
   // Use the stored original base URL if available, otherwise use current base URL
   // This ensures the URL doesn't change when switching regions
-  const baseUrl = (createdWithBaseUrl.value || props.apiBaseUrl).replace(/\/api$/, ""); // Remove /api if present
+  const baseUrl = (createdWithBaseUrl.value || props.apiBaseUrl).replace(
+    /\/api$/,
+    "",
+  ); // Remove /api if present
 
   // Construct the secret URL
   // return `${baseUrl}/receipt/${metadataKey}`; // Receipt link
@@ -248,160 +259,189 @@ const copyUrlToClipboard = async () => {
 </script>
 
 <template>
-  <div class="mx-auto max-w-xl">
+  <form
+    @submit.prevent="handleCreateLink"
+    class="mx-auto max-w-xl relative z-10">
     <!-- Text Area Input -->
     <div class="relative">
       <textarea
         v-model="secretText"
         rows="3"
-        class="block w-full rounded-md border-0 py-3 pl-4 pr-16 text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 dark:bg-gray-800 sm:text-sm disabled:opacity-50"
+        class="block w-full rounded-md border-0 py-3 pl-4 pr-16 text-gray-900 dark:text-gray-300 ring-1 ring-inset bg-white ring-gray-200/80 dark:ring-gray-700 placeholder:text-brand-300/70 dark:placeholder:text-gray-500 dark:bg-gray-800/90 sm:text-sm disabled:opacity-50 focus:ring-2 focus:ring-brand-300 dark:focus:ring-brand-600 focus:ring-opacity-50 transition-all duration-200 shadow-inner dark:shadow-gray-950/50"
         :placeholder="props.placeholder || t('web.secrets.secretPlaceholder')"
         :disabled="isLoading || apiResult?.success"></textarea>
 
-      <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
-        <button
-          type="button"
-          class="inline-flex font-brand items-center justify-center min-w-[7rem] rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-base font-medium text-white font-semibold shadow-sm hover:bg-brand-600 dark:bg-brand-600 dark:hover:bg-brand-500 focus:outline-none disabled:opacity-50 disabled:bg-gray-400"
-          :disabled="isLoading || !secretText.trim() || apiResult?.success"
-          @click="handleCreateLink">
-          <span v-if="!isLoading">{{
-            t("web.secrets.createLink") || "Create Link"
-          }}</span>
-          <span v-else>{{ t("LABELS.loading") }}</span>
-        </button>
-      </div>
+      <button
+        type="submit"
+        class="absolute right-0 top-0 bottom-0 inline-flex font-brand items-center justify-center min-w-[7rem] rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1.5 text-base font-medium text-white font-semibold hover:bg-brand-600 dark:bg-brand-600 dark:hover:bg-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500 disabled:opacity-50 disabled:bg-gray-400 transition-all duration-200 shadow-md shadow-brand-300/30 dark:shadow-brand-800/50 hover:shadow-lg hover:shadow-brand-400/40 dark:hover:shadow-brand-700/70"
+        :disabled="isLoading || !secretText.trim() || apiResult?.success">
+        <span v-if="!isLoading">{{
+          t("web.secrets.createLink") || "Create Link"
+        }}</span>
+        <span v-else>{{ t("LABELS.loading") }}</span>
+      </button>
     </div>
 
     <!-- Secret Options -->
     <div
       v-if="showOptions"
-      class="mt-3 mb-4">
-      <div class="bg-gray-50 dark:bg-gray-700 rounded-md p-3">
-        <h3
-          class="text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider mb-2">
-          {{ t("web.secrets.optionsHeading") || "Secret Options" }}
-        </h3>
-        <div
-          class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-sm text-gray-600 dark:text-gray-300">
-          <!-- Expiration Time Option -->
-          <div class="flex items-center">
-            <input
-              id="burn-after-reading"
-              type="checkbox"
-              class="size-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500 disabled:opacity-50"
-              :checked="secretOptions.expirationTime"
-              @change="
-                updateOption(
-                  'expirationTime',
-                  ($event.target as HTMLInputElement).checked,
-                )
-              "
-              :disabled="isLoading" />
-            <label
-              for="burn-after-reading"
-              class="ml-2 block text-sm text-gray-600 dark:text-gray-300">
-              {{ t("web.secrets.expirationTime") || "Burn after reading" }}
-            </label>
-          </div>
-          <!-- Add Passphrase Option -->
-          <div class="flex items-center">
-            <input
-              id="add-passphrase"
-              type="checkbox"
-              class="size-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500 disabled:opacity-50"
-              :checked="secretOptions.addPassphrase"
-              @change="
-                updateOption(
-                  'addPassphrase',
-                  ($event.target as HTMLInputElement).checked,
-                )
-              "
-              :disabled="isLoading" />
-            <label
-              for="add-passphrase"
-              class="ml-2 block text-sm text-gray-600 dark:text-gray-300">
-              {{ t("web.secrets.addPassphrase") || "Add passphrase" }}
-            </label>
-          </div>
-        </div>
-        <!-- Passphrase Input (Conditional) -->
-        <div
-          v-if="showPassphraseInput"
-          class="mt-3">
-          <label
-            for="passphrase-input"
-            class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            {{ t("web.secrets.passphraseLabel") || "Passphrase" }}
-          </label>
+      class="mt-3 mb-4 bg-gray-50 dark:bg-gray-700 rounded-md p-3">
+      <h3
+        class="text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider mb-2">
+        {{ t("web.secrets.optionsHeading") || "Secret Options" }}
+      </h3>
+      <div
+        class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-sm text-gray-600 dark:text-gray-300">
+        <!-- Expiration Time Option -->
+        <div class="flex items-center">
           <input
-            type="password"
-            id="passphrase-input"
-            v-model="passphrase"
-            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:bg-gray-800 dark:text-gray-100 sm:text-sm disabled:opacity-50"
-            :placeholder="
-              t('web.secrets.passphrasePlaceholder') || 'Enter passphrase'
+            id="burn-after-reading"
+            type="checkbox"
+            class="size-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500 disabled:opacity-50"
+            :checked="secretOptions.expirationTime"
+            @change="
+              updateOption(
+                'expirationTime',
+                ($event.target as HTMLInputElement).checked,
+              )
             "
             :disabled="isLoading" />
+          <label
+            for="burn-after-reading"
+            class="ml-2 block text-sm text-gray-600 dark:text-gray-300">
+            {{ t("web.secrets.expirationTime") || "Burn after reading" }}
+          </label>
+        </div>
+        <!-- Add Passphrase Option -->
+        <div class="flex items-center">
+          <input
+            id="add-passphrase"
+            type="checkbox"
+            class="size-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500 disabled:opacity-50"
+            :checked="secretOptions.addPassphrase"
+            @change="
+              updateOption(
+                'addPassphrase',
+                ($event.target as HTMLInputElement).checked,
+              )
+            "
+            :disabled="isLoading" />
+          <label
+            for="add-passphrase"
+            class="ml-2 block text-sm text-gray-600 dark:text-gray-300">
+            {{ t("web.secrets.addPassphrase") || "Add passphrase" }}
+          </label>
+        </div>
+      </div>
+      <!-- Passphrase Input (Conditional) -->
+      <div
+        v-if="showPassphraseInput"
+        class="mt-3">
+        <label
+          for="passphrase-input"
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          {{ t("web.secrets.passphraseLabel") || "Passphrase" }}
+        </label>
+        <input
+          type="password"
+          id="passphrase-input"
+          v-model="passphrase"
+          class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:bg-gray-800 dark:text-gray-100 sm:text-sm disabled:opacity-50"
+          :placeholder="
+            t('web.secrets.passphrasePlaceholder') || 'Enter passphrase'
+          "
+          :disabled="isLoading"
+          :required="secretOptions.addPassphrase"
+          :aria-invalid="
+            secretOptions.addPassphrase && !passphrase.trim()
+              ? 'true'
+              : undefined
+          "
+          :aria-describedby="
+            secretOptions.addPassphrase && !passphrase.trim()
+              ? 'passphrase-error'
+              : undefined
+          " />
+        <div
+          v-if="secretOptions.addPassphrase && !passphrase.trim() && apiError"
+          id="passphrase-error"
+          class="mt-1 text-red-600 dark:text-red-400 text-sm">
+          {{ t("web.errors.passphraseRequired") }}
         </div>
       </div>
     </div>
 
     <!-- API Result/Error Display -->
-    <div class="mt-4 mb-10 min-h-[4rem]">
+    <div class="mt-4 mb-10 min-h-[4rem] relative z-10">
       <div
         v-if="isLoading"
-        class="text-center text-gray-500 dark:text-gray-400">
+        class="text-center text-brand-600 dark:text-brand-400 font-medium animate-pulse"
+        aria-live="polite">
         {{ t("LABELS.processing") }}...
       </div>
+      <!-- Error alert - add dark mode variants -->
       <div
         v-else-if="apiError"
-        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+        class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg relative dark:bg-red-900/80 dark:border-red-800/80 dark:text-red-200 shadow-md shadow-red-100/30 dark:shadow-red-900/30"
         role="alert">
-        <strong class="font-bold">{{
-          t("web.errors.errorTitle")
-        }}</strong>
+        <strong class="font-bold">{{ t("web.errors.errorTitle") }}</strong>
         <span class="block sm:inline sm:pl-2"> {{ apiError }}</span>
       </div>
+
+      <!-- Success alert - add dark mode variants -->
       <div
         v-else-if="apiResult?.success && apiResult.record"
-        class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+        class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg relative dark:bg-green-900/80 dark:border-green-800/80 dark:text-green-200 shadow-md shadow-green-100/30 dark:shadow-green-900/30"
+        role="alert"
+        aria-live="polite">
         <!-- Open in New Tab Icon Button -->
         <a
           :href="buildSecretUrl(apiResult)"
           target="_blank"
           rel="noopener noreferrer"
-          type="button"
-          class="absolute top-2 right-2 p-1 text-green-600 hover:text-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 rounded"
-          :title="t('web.actions.openNewTab')">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+          class="absolute top-2 right-2 p-1 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500 rounded transition-colors duration-200 hover:bg-green-100/50 dark:hover:bg-green-800/50"
+          :title="t('web.actions.openNewTab')"
+          aria-label="Open link in new tab">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="size-5"
+            aria-hidden="true">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
           </svg>
         </a>
-        <strong class="font-bold block mb-1">{{ t("web.secrets.successTitle") }}</strong>
+        <strong class="font-bold block mb-1">{{
+          t("web.secrets.successTitle")
+        }}</strong>
         <p class="text-sm pr-8">
           {{ t("web.secrets.shareLinkDescription") }}
         </p>
-        <div class="mt-1 flex rounded-md shadow-sm">
+        <div class="mt-1 flex rounded-md">
           <input
+            ref="urlInputRef"
             type="text"
             :value="buildSecretUrl(apiResult)"
             readonly
-            class="block w-full rounded-none rounded-l-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm bg-white dark:bg-gray-800 dark:text-gray-100 p-2"
+            class="block w-full rounded-none rounded-l-md border-gray-200 dark:border-gray-700 focus:border-green-500 focus:ring-green-500 sm:text-sm bg-white/90 text-gray-900 dark:bg-gray-800 dark:text-gray-200 p-2 shadow-inner shadow-green-100 dark:shadow-gray-950/50"
             @focus="($event.target as HTMLInputElement).select()" />
           <button
             @click="copyUrlToClipboard"
             type="button"
-            class="relative -ml-px min-w-[6rem] inline-flex items-center justify-center space-x-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+            class="relative -ml-px min-w-[6rem] inline-flex items-center justify-center space-x-2 rounded-r-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:border-green-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500 transition-all duration-200"
             :class="{
-              'bg-green-200 text-green-800 hover:bg-green-300': copySuccess,
+              'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-700 dark:text-green-100 dark:hover:bg-green-600 shadow-md shadow-green-200/50 dark:shadow-green-900/50': copySuccess,
             }">
-            <span v-if="!copySuccess">{{
-              t("LABELS.copy")
-            }}</span>
-            <span v-else>{{ t("LABELS.copied") }}</span>
+          <span v-if="!copySuccess">{{ t("LABELS.copy") }}</span>
+          <span v-else>{{ t("LABELS.copied") }}</span>
           </button>
         </div>
       </div>
     </div>
-  </div>
+  </form>
 </template>

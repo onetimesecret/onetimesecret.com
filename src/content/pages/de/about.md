@@ -12,7 +12,7 @@ title: Über uns
   </p>
 
   <p>
-    Die erste Hälfte des Jahres 2024 war unsere bisher geschäftigste Zeit. Wir sind dankbar, dass die Menschen unser Produkt seit mehr als einem Jahrzehnt weiterhin nutzen und teilen. Wir arbeiten derzeit an Verbesserungen, von denen wir glauben, dass sie den Dienst noch nützlicher machen werden – weitere Details werden wir bald bekannt geben.
+    Die erste Hälfte des Jahres 2025 war unsere bisher geschäftigste Zeit. Wir sind dankbar, dass die Menschen unser Produkt seit mehr als einem Jahrzehnt weiterhin nutzen und teilen. Wir arbeiten derzeit an Verbesserungen, von denen wir glauben, dass sie den Dienst noch nützlicher machen werden – weitere Details werden wir bald bekannt geben.
   </p>
 
   <p>

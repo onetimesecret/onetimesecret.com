@@ -2,40 +2,94 @@
 /**
  * src/layouts/ContentPageLayout.astro
  * A standardized layout for content pages like About, Privacy, etc.
- * Uses MainLayout as a base but adds consistent styling for content-heavy pages
+ * Uses Layout as a base but adds consistent styling for content-heavy pages
  */
-import MainLayout from "@/layouts/MainLayout.astro";
+import ContentHero from "@/components/ContentHero.astro";
+import Layout from "@/layouts/Layout.astro";
 import Prose from "@/components/vue/Prose.astro";
 import Callout from "@/components/vue/Callout.vue";
-import type { MessageSchema } from "@/i18n";
+import { createLocaleI18n, type MessageSchema } from "@/i18n";
+import "remark-github-blockquote-alert/alert.css";
 
+// Interface for props
 export interface Props {
-  title: string;
+  title?: string;
   description?: string;
+  canonicalUrl?: string;
+  ogImage?: string;
+  ogType?: string;
+  twitterCard?: string;
+  keywords?: string;
+  noindex?: boolean;
+  alternateLanguages?: { code: string; url: string }[];
+  structuredData?: object;
+  // Props for i18n
   htmlLang?: string;
+  langDir?: string;
   initialMessages?: Record<string, MessageSchema>;
+  // Determine if hero should be shown
+  showHero?: boolean;
   heroTitle?: string;
   heroDescription?: string;
 }
 
+// Destructure props with defaults
 const {
   title,
   description,
+  canonicalUrl,
+  ogImage,
+  ogType,
+  twitterCard,
+  keywords,
+  noindex,
+  alternateLanguages,
+  structuredData,
   htmlLang,
+  langDir,
   initialMessages,
   heroTitle,
   heroDescription,
 } = Astro.props;
+
+// Initialize a page-specific i18n instance for SSR content (for English)
+const pageI18n = await createLocaleI18n(htmlLang, initialMessages);
+const t = pageI18n.global.t;
 ---
 
-<MainLayout
+<Layout
   title={title}
   description={description}
   htmlLang={htmlLang}
   initialMessages={initialMessages}
-  showHero={true}
-  heroTitle={heroTitle}
-  heroDescription={heroDescription}>
+  canonicalUrl={canonicalUrl}
+  ogImage={ogImage}
+  ogType={ogType}
+  twitterCard={twitterCard}
+  keywords={keywords}
+  noindex={noindex}
+  alternateLanguages={alternateLanguages}
+  structuredData={structuredData}>
+  <ContentHero
+    title={heroTitle}
+    description={heroDescription}>
+    <Fragment slot="badge">
+      <span class="mr-1.5">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          class="size-4">
+          <path
+            fill-rule="evenodd"
+            d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z"
+            clip-rule="evenodd"
+          ></path>
+        </svg>
+      </span>
+      {t("onetime-secret-literal")}
+    </Fragment>
+  </ContentHero>
   <div class="container mx-auto px-4 py-8">
     <Prose>
       <article>
@@ -43,4 +97,4 @@ const {
       </article>
     </Prose>
   </div>
-</MainLayout>
+</Layout>

@@ -33,10 +33,10 @@ const switchToSuggestedRegion = () => {
       <div class="flex flex-wrap items-center justify-between">
         <div class="flex w-0 flex-1 items-center">
           <InformationCircleIcon
-            class="h-5 w-5 text-brand-400 dark:text-brand-800"
+            class="size-5 text-brand-400 dark:text-brand-800"
             aria-hidden="true" />
           <p
-            class="ml-3 truncate font-medium text-brand-700 dark:text-slate-900 text-sm">
+            class="ml-3 font-medium text-brand-700 dark:text-slate-900 text-sm">
             OnetimeSecret uses regional domains to keep your secrets in your
             chosen region.
           </p>
@@ -48,18 +48,25 @@ const switchToSuggestedRegion = () => {
             @click="dismissBanner">
             <span class="sr-only">Dismiss</span>
             <XMarkIcon
-              class="h-5 w-5"
+              class="size-5"
               aria-hidden="true" />
           </button>
         </div>
         <div
-          class="order-4 mt-2 w-full flex-shrink-0 sm:order-2 sm:mt-0 sm:w-auto">
+          class="order-4 mt-2 w-full flex-shrink-0 sm:order-2 sm:mt-0 sm:w-auto flex space-x-2">
           <a
             href="https://docs.onetimesecret.com/en/regions/"
-            class="flex items-center justify-center rounded-md border border-transparent bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600"
-            @click.prevent="switchToSuggestedRegion">
+            target="_blank"
+            rel="noopener noreferrer"
+            class="flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600">
             Learn more
           </a>
+          <!--<button
+            type="button"
+            class="flex items-center justify-center rounded-md border border-transparent bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600"
+            @click="switchToSuggestedRegion">
+            Use {{ suggestedDomain.split('.')[0].toUpperCase() }} region
+          </button>-->
         </div>
       </div>
     </div>

@@ -63,21 +63,51 @@ defineExpose({
 
 <template>
   <!-- Premium section structure with refined visual connection -->
-  <section class="bg-gradient-to-b from-brandcomp-0 to-white dark:from-gray-800 dark:to-gray-900 w-full pt-8 sm:pt-5">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-3xl">
-        <!-- Use the BaseSecretFormLite component -->
-        <BaseSecretFormLite
-          ref="secretFormRef"
-          class="z-0 backdrop-blur-sm"
-          :placeholder="props.placeholder"
-          :api-base-url="props.apiBaseUrl"
-          :with-options="props.withOptions"
-          @create-link="handleCreateLinkRelay" />
-      </div>
-    </div>
+  <section class="bg-gradient-to-b from-brand-50 via-brand-100/30 to-white dark:from-brand-900 dark:via-gray-900 dark:to-gray-800 w-full pt-8 sm:pt-5 rounded-xl">
+    <BaseSecretFormLite
+      ref="secretFormRef"
+      class="z-0 rounded-xl rounded"
+      :placeholder="props.placeholder"
+      :api-base-url="props.apiBaseUrl"
+      :with-options="props.withOptions"
+      @create-link="handleCreateLinkRelay" />
   </section>
 </template>
 
 <style scoped>
+section {
+  position: relative;
+}
+
+section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 70%;
+  background-image: radial-gradient(circle at 30% 20%, rgba(var(--color-brand-300), 0.15) 0%, transparent 60%),
+                    radial-gradient(circle at 80% 30%, rgba(var(--color-brand-200), 0.1) 0%, transparent 50%);
+  z-index: -1;
+}
+
+/* Dark mode header styling */
+.dark section::before {
+  background-image: radial-gradient(circle at 30% 20%, rgba(var(--color-brand-500), 0.15) 0%, transparent 60%),
+                    radial-gradient(circle at 80% 30%, rgba(var(--color-brand-600), 0.1) 0%, transparent 50%);
+}
+
+/* Add styles for the header section */
+section::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: var(--color-brand-700);
+  background-image: linear-gradient(to right, var(--color-brand-800), var(--color-brand-700));
+  z-index: -2;
+  border-bottom: 1px solid var(--color-brand-600);
+}
 </style>

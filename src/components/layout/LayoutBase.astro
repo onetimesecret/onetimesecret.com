@@ -1,0 +1,114 @@
+---
+// Import layout components
+import LayoutHead from "./LayoutHead.astro";
+import LayoutHeader from "./LayoutHeader.astro";
+import LayoutFooter from "./LayoutFooter.astro";
+import SvgSprites from "./SvgSprites.astro";
+
+// Import styles
+import "@/styles/global.css";
+import "@/styles/tailwind.css";
+
+// Utilities
+import { getLocaleFromUrl } from "@/i18n/utils";
+import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
+import { createLocaleI18n, type MessageSchema } from "@/i18n"; // For type
+import enMessages from "@/i18n/ui/en.json"; // For default initialMessages
+
+// --------------------------
+// Props Interface
+// --------------------------
+export interface Props {
+  title?: string;
+  description?: string;
+  canonicalUrl?: string;
+  ogImage?: string;
+  ogType?: string;
+  twitterCard?: string;
+  keywords?: string;
+  noindex?: boolean;
+  alternateLanguages?: { code: string; url: string }[];
+  structuredData?: object;
+  // Props for i18n, with optional chaining for robustness
+  htmlLang?: string;
+  langDir?: string;
+  initialMessages?: Record<string, MessageSchema>;
+  // Layout specific props
+  header?: boolean; // Whether to show the default header (true) or custom header via slot (false)
+  footer?: boolean; // Whether to show the footer (defaults to true)
+  large?: boolean; // Whether to show the logo in large mode (defaults to false)
+}
+
+// --------------------------
+// Configuration & Data Processing
+// --------------------------
+
+// Destructure props with defaults
+const {
+  htmlLang = DEFAULT_LANGUAGE,
+  initialMessages = { [DEFAULT_LANGUAGE]: enMessages as MessageSchema },
+  header = true,
+  footer = true,
+  large = false,
+  // SEO related props are passed through to LayoutHead
+  ...seoProps
+} = Astro.props;
+
+// Determine effective locale consistently
+const effectiveLocale =
+  getLocaleFromUrl(Astro.url) || htmlLang || DEFAULT_LANGUAGE;
+
+// Initialize a page-specific i18n instance for SSR content (for English)
+const pageI18n = await createLocaleI18n(effectiveLocale, initialMessages);
+const t = pageI18n.global.t;
+
+// Derive langDir based on effective locale
+const langDir =
+  LANGUAGE_META[effectiveLocale as keyof typeof LANGUAGE_META]?.dir ||
+  LANGUAGE_META[DEFAULT_LANGUAGE].dir;
+
+// For debugging during build
+if (import.meta.env.DEV) {
+  console.log(
+    `LayoutBase: URL="${Astro.url.pathname}", htmlLang="${htmlLang}", effectiveLocale="${effectiveLocale}"`,
+  );
+}
+---
+
+<!doctype html>
+<html
+  lang={effectiveLocale}
+  dir={langDir}
+  class="h-full">
+  <LayoutHead
+    effectiveLocale={effectiveLocale}
+    langDir={langDir}
+    {...seoProps}
+  />
+  <body
+    class="flex h-full flex-col overflow-x-hidden bg-white dark:bg-gray-900">
+    {
+      /* If header prop is true, use LayoutHeader, otherwise render the header slot directly */
+      header ? (
+        <LayoutHeader large={large}>
+          <slot name="header" />
+        </LayoutHeader>
+      ) : (
+        <slot name="header" />
+      )
+    }
+    <main class="flex-grow bg-white dark:bg-gray-900">
+      <slot />
+    </main>
+    {
+      footer && (
+        <LayoutFooter
+          effectiveLocale={effectiveLocale}
+          initialMessages={initialMessages}>
+          <slot name="footer" />
+        </LayoutFooter>
+      )
+    }
+    <SvgSprites />
+  </body>
+</html>

@@ -6,7 +6,7 @@ title: À propos de nous
 
 Bonjour, je suis {nom}, le créateur de Onetime Secret. Ce qui a commencé en 2012 comme un moyen simple et sécurisé de partager des informations sensibles s'est développé au-delà de nos attentes les plus folles. Plus d'une décennie plus tard, nous facilitons le partage sécurisé de millions de secrets chaque mois, avec des cas d'utilisation que nous n'aurions jamais imaginés.
 
-Le premier semestre 2024 a été notre période la plus chargée. Nous sommes reconnaissants que les gens continuent à utiliser et à partager notre produit depuis plus de dix ans. Nous travaillons actuellement sur des améliorations qui, selon nous, rendront le service encore plus utile.
+Le premier semestre 2025 a été notre période la plus chargée. Nous sommes reconnaissants que les gens continuent à utiliser et à partager notre produit depuis plus de dix ans. Nous travaillons actuellement sur des améliorations qui, selon nous, rendront le service encore plus utile.
 
 Fidèles à nos racines, [our code remains open-source](https://github.com/onetimesecret/onetimesecret) sur GitHub. Alors que nous naviguons dans le paysage en constante évolution de la protection de la vie privée et de la sécurité numérique, nous nous engageons à faire preuve de transparence et à nous améliorer continuellement.
 

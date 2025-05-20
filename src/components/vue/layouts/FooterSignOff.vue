@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import OIcon from "@/components/vue/icons/OIcon.vue";
-
 import { useI18n } from "vue-i18n";
 import { setLanguage, setLanguageWithMessages, type MessageSchema } from "@/i18n";
-import { computed, onMounted } from "vue";
+import { onMounted } from "vue";
 
 const props = defineProps<{
   locale: string;
@@ -22,57 +21,41 @@ if (props.initialMessages && props.locale) {
   });
 }
 
-const navigation = {
-  social: [
-    {
-      name: "BlueSky",
-      href: "https://bsky.app/profile/onetimesecret.com",
-    },
-    {
-      name: "GitHub",
-      href: "https://github.com/onetimesecret",
-    },
-  ],
-};
-
-const currentYear = computed(() => new Date().getFullYear());
+// Social media links that can be dynamically updated or i18n translated
+const socialLinks = [
+  {
+    name: "BlueSky",
+    href: "https://bsky.app/profile/onetimesecret.com",
+    icon: "bluesky",
+    collection: "simple-icons"
+  },
+  {
+    name: "GitHub",
+    href: "https://github.com/onetimesecret",
+    icon: "github",
+    collection: "simple-icons"
+  }
+];
 </script>
 
 <template>
-  <div>
-    <div class="mx-auto max-w-7xl px-6 py-8 lg:px-8">
-      <div
-        class="flex flex-col items-center justify-between gap-y-4 sm:flex-row">
-        <div class="flex space-x-6">
-          <a
-            v-for="item in navigation.social"
-            :key="item.name"
-            :href="item.href"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
-            <span class="sr-only">{{ item.name }}</span>
-            <!-- BlueSky Icon -->
-            <OIcon
-              v-if="item.name === 'BlueSky'"
-              collection="simple-icons"
-              name="bluesky"
-              size="6"
-            />
-            <!-- GitHub Icon -->
-            <OIcon
-              v-if="item.name === 'GitHub'"
-              collection="simple-icons"
-              name="github"
-              size="6"
-            />
-          </a>
-        </div>
-        <p class="text-xs leading-5 text-gray-500 dark:text-gray-400">
-          &copy; {{ currentYear }} {{ t("onetime-secret-literal") }}.
-          {{ t("all-rights-reserved") }}.
-        </p>
-      </div>
+  <div class="mx-auto max-w-7xl px-6 py-4 md:py-2 lg:px-8">
+    <div class="flex justify-center space-x-6">
+      <a
+        v-for="item in socialLinks"
+        :key="item.name"
+        :href="item.href"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+        :aria-label="item.name">
+        <span class="sr-only">{{ item.name }}</span>
+        <OIcon
+          :collection="item.collection"
+          :name="item.icon"
+          size="6"
+        />
+      </a>
     </div>
   </div>
 </template>

@@ -30,9 +30,10 @@
 import { ref, onMounted } from "vue";
 import FirstTimeVisitorBannerAlt from "@/components/vue/homepage/FirstTimeVisitorBannerAlt.vue";
 import { useDismissableBanner } from "@/composables/useDismissableBanner";
+import type { Jurisdiction } from "@/types/jurisdiction";
 
 defineProps<{
-  detectedRegion: string;
+  detectedJurisdiction: string;
   suggestedDomain: string;
 }>();
 
@@ -47,12 +48,12 @@ const isClient = ref(false);
  * Uses localStorage to persist dismissal state across page visits
  * The 30-day parameter controls how long the banner stays dismissed
  */
-const { isVisible: showRegionBanner, dismiss: dismissBanner } = useDismissableBanner('region-banner', 30);
+const { isVisible: showJurisdictionBanner, dismiss: dismissBanner } = useDismissableBanner('jurisdiction-banner', 30);
 
-defineExpose({ isVisible: showRegionBanner });
+defineExpose({ isVisible: showJurisdictionBanner });
 
 const emit = defineEmits<{
-  (e: "switchRegion", region: string): void;
+  (e: "switchJurisdiction", jurisdictionId: string): void;
 }>();
 
 /**
@@ -64,11 +65,11 @@ onMounted(() => {
 });
 
 /**
- * Handler for the switchRegion event from the banner
+ * Handler for the switchJurisdiction event from the banner
  * Forwards the event to the parent component
  */
-const handleSwitchRegion = (region: string) => {
-  emit("switchRegion", region);
+const handleSwitchJurisdiction = (jurisdictionId: string) => {
+  emit("switchJurisdiction", jurisdictionId);
 };
 </script>
 
@@ -76,17 +77,17 @@ const handleSwitchRegion = (region: string) => {
   <!--
     Conditional rendering that only shows the banner:
     1. After client-side hydration is complete (isClient === true)
-    2. When the banner hasn't been dismissed (showRegionBanner === true)
+    2. When the banner hasn't been dismissed (showJurisdictionBanner === true)
 
     During SSR/build, this component renders nothing at all,
     avoiding any hydration mismatches completely.
   -->
   <FirstTimeVisitorBannerAlt
-    v-if="isClient && showRegionBanner"
-    :detected-region="detectedRegion"
+    v-if="isClient && showJurisdictionBanner"
+    :detected-region="detectedJurisdiction"
     :suggested-domain="suggestedDomain"
     :show-banner="true"
     @dismiss="dismissBanner"
-    @switch-region="handleSwitchRegion"
+    @switch-region="handleSwitchJurisdiction"
   />
 </template>

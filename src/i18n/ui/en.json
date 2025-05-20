@@ -12,6 +12,9 @@
   "read-our-privacy-policy": "Read our Privacy Policy",
   "view-our-terms-and-conditions": "View our Terms and Conditions",
   "status": "Status",
+  "$config": {
+    "layout-footer-style": "horizontal"
+  },
   "tagline": {
     "signed": "Signed",
     "sealed": "Sealed",
@@ -39,9 +42,15 @@
     "blog": "Blog",
     "create-link": "Create Secret Link",
     "docs": "Documentation",
-    "privacy": "Privacy Policy",
-    "terms": "Terms and Conditions",
-    "security": "Security Measures",
+    "privacy-policy": "Privacy Policy",
+    "terms-and-conditions": "Terms and Conditions",
+    "security": "Security",
+    "feedback": "Feedback",
+    "learn-about-our-security-measures": "Learn about our security measures",
+    "terms": "Terms",
+    "view-our-terms-and-conditions": "View our Terms and Conditions",
+    "privacy": "Privacy",
+    "read-our-privacy-policy": "Read our Privacy Policy",
     "company": "Company",
     "resources": "Resources",
     "legals": "Legals",
@@ -165,6 +174,7 @@
     "homepage": {
       "title": "Share Secrets Securely | Onetime Secret",
       "description": "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever",
+      "a-trusted-way-to-share-sensitive-information-etc": "A trusted way to share sensitive information that self-destructs after being viewed.",
       "howItWorks": {
         "title": "How It Works",
         "subtitle": "Share your information once, then it's permanently deleted",
@@ -183,7 +193,9 @@
       },
       "visualExamples": {
         "title": "Custom Domain & Branding",
-        "subtitle": "Reinforce your brand and build trust by using your own domain and logo."
+        "subtitle": "Reinforce your brand and build trust by using your own domain and logo.",
+        "learnMore": "Learn More",
+        "viewPricing": "View Pricing"
       },
       "featureHighlights": {
         "sectionTitle": "Key Features",

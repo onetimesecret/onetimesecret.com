@@ -1,10 +1,10 @@
 ---
 /**
  * src/pages/[lang]/pricing.astro
- * Pricing page implementation using MainLayout for consistent navigation
+ * Pricing page implementation using Layout for consistent navigation
  */
-import MainLayout from "@/layouts/MainLayout.astro";
-import Pricing from "@/components/vue/pricing/PricingTrio.vue";
+import Layout from "@/layouts/Layout.astro";
+import PricingComponent from "@/components/vue/pricing/Pricing.vue";
 import { getLanguagePaths } from "@/i18n";
 import { createLocaleI18n, type MessageSchema } from "@/i18n";
 import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
@@ -46,18 +46,19 @@ const pageTitle = t("web.pricing.title");
 const pageDescription = t("web.pricing.description");
 ---
 
-<MainLayout
+<Layout
   title={pageTitle}
   description={pageDescription}
   htmlLang={currentLang}
   langDir={currentLangMeta.dir}
   initialMessages={pageScopedInitialMessages}
-  showHero={true}
   heroTitle={pageTitle}
   heroDescription={pageDescription}>
-  <Pricing
+  <PricingComponent
     client:load
     locale={currentLang}
+    htmlLang={currentLang}
+    langDir={currentLangMeta.dir}
     initialMessages={pageScopedInitialMessages}
   />
-</MainLayout>
+</Layout>

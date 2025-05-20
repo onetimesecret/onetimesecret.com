@@ -12,7 +12,7 @@ title: Om os
   </p>
 
   <p>
-    Den første halvdel af 2024 har været vores travleste periode hidtil. Vi er taknemmelige for, at folk er blevet ved med at bruge og dele vores produkt i mere end et årti. Vi arbejder i øjeblikket på forbedringer, som vi tror vil gøre tjenesten endnu mere nyttig - vi vil snart dele flere detaljer.
+    Den første halvdel af 2025 har været vores travleste periode hidtil. Vi er taknemmelige for, at folk er blevet ved med at bruge og dele vores produkt i mere end et årti. Vi arbejder i øjeblikket på forbedringer, som vi tror vil gøre tjenesten endnu mere nyttig - vi vil snart dele flere detaljer.
   </p>
 
   <p>
