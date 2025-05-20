@@ -117,7 +117,9 @@
         "dataResidency": ""
       },
       "successTitle": "Success!",
-      "shareLinkDescription": "Share your secret link with others."
+      "shareLinkDescription": "Share your secret link with others.",
+      "createAnother": "Create Another Secret",
+      "regionSwitchHint": "Try creating secrets in different regions for your various needs."
     },
     "useCases": {
       "sectionTitle": "Security for Professionals",

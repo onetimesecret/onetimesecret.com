@@ -13,7 +13,8 @@ const { t } = useI18n();
           class="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
           {{ t("web.homepage.howItWorks.title") }}
         </h2>
-        <p class="mt-4 max-w-2xl text-xl text-gray-500 dark:text-gray-300 mx-auto">
+        <p
+          class="mt-4 max-w-2xl text-xl text-gray-500 dark:text-gray-300 mx-auto">
           {{ t("web.homepage.howItWorks.subtitle") }}
         </p>
       </div>
@@ -39,7 +40,7 @@ const { t } = useI18n();
         <div class="relative">
           <div
             class="absolute flex items-center justify-center size-12 rounded-md bg-brand-500/80 text-white dark:bg-brand-600">
-            <span class="text-xl font-bold ">2</span>
+            <span class="text-xl font-bold">2</span>
           </div>
           <div class="ml-16">
             <h3 class="text-xl font-medium text-gray-900 dark:text-white">
@@ -66,7 +67,6 @@ const { t } = useI18n();
             </p>
           </div>
         </div>
-
       </div>
     </div>
   </section>
