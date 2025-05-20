@@ -9,6 +9,12 @@ export interface ProductTier {
   name: string;
   href: string;
   cta: string;
+
+  icon: {
+    collection: string;
+    name: string;
+  };
+
   price: { [key: string]: string };
   description: string;
   features: string[];
@@ -27,6 +33,10 @@ export const productTiers: Array<ProductTier> = [
     name: "Basic",
     href: "/plans/free",
     cta: "Get Started",
+    icon: {
+      collection: "heroicons",
+      name: "check-circle-20-solid",
+    },
     price: {
       monthly: "$0",
       annually: "$0",
@@ -47,6 +57,10 @@ export const productTiers: Array<ProductTier> = [
     name: "Identity Plus",
     href: "/plans/identity",
     cta: "Start today",
+    icon: {
+      collection: "mdi",
+      name: "shield-lock",
+    },
     price: {
       monthly: "$35",
       annually: "$365",
@@ -70,7 +84,11 @@ export const productTiers: Array<ProductTier> = [
     id: "tier-dedicated",
     name: "Global Elite",
     href: "mailto:dedicated@onetimesecret.com",
-    cta: "Contact Us",
+    cta: "Get a Custom Quote",
+    icon: {
+      collection: "fa6",
+      name: "solid-globe",
+    },
     price: {
       monthly: "$125",
       annually: "$1150",
