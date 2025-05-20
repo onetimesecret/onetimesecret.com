@@ -68,7 +68,7 @@ const selectedUseCase = ref(useCases[0]);
                   as="template">
                   <li
                     :class="[
-                      active ? 'bg-brand-100 text-brand-900 dark:bg-brand-800 dark:text-brand-100' : 'text-gray-900 dark:text-gray-100',
+                      active ? 'bg-brandcompdim-100 text-brandcompdim-900 dark:bg-brandcompdim-800 dark:text-brandcompdim-100' : 'text-gray-900 dark:text-gray-100',
                       'relative cursor-default select-none py-3 pl-10 pr-4',
                     ]">
                     <span
@@ -80,7 +80,7 @@ const selectedUseCase = ref(useCases[0]);
                     </span>
                     <span
                       v-if="selected"
-                      class="absolute inset-y-0 left-0 flex items-center pl-3 text-brand-600">
+                      class="absolute inset-y-0 left-0 flex items-center pl-3 text-brandcompdim-600">
                       <CheckIcon
                         class="size-5"
                         aria-hidden="true" />
@@ -124,7 +124,7 @@ const selectedUseCase = ref(useCases[0]);
                 v-for="(benefit, index) in selectedUseCase.benefits"
                 :key="index"
                 class="flex items-start">
-                <span class="flex-shrink-0 size-5 text-brand-500 mr-2">
+                <span class="flex-shrink-0 size-5 text-brandcompdim-500 mr-2">
                   <CheckIcon class="size-5" />
                 </span>
                 <span class="text-gray-700 dark:text-gray-300">{{ benefit }}</span>
@@ -139,7 +139,7 @@ const selectedUseCase = ref(useCases[0]);
           <!-- Compliance Info -->
           <div class="mb-8">
             <h4
-              class="text-sm font-medium text-brand-600 dark:text-brand-400 uppercase tracking-wider mb-2">
+              class="text-sm font-medium text-brandcompdim-600 dark:text-brandcompdim-400 uppercase tracking-wider mb-2">
               {{ t("web.useCases.complianceInfo", "Compliance Information") }}
             </h4>
             <p class="text-gray-700 dark:text-gray-300">
@@ -151,7 +151,7 @@ const selectedUseCase = ref(useCases[0]);
           <div class="mt-auto">
             <a
               :href="selectedUseCase.ctaLink"
-              class="block w-full bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 text-white font-medium py-3 px-4 rounded-md text-center transition-colors duration-150 ease-in-out">
+              class="block w-full bg-brandcompdim-600 hover:bg-brandcompdim-700 dark:bg-brandcompdim-700 dark:hover:bg-brandcompdim-600 text-white font-medium py-3 px-4 rounded-md text-center transition-colors duration-150 ease-in-out">
               {{ selectedUseCase.ctaText }}
             </a>
             <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-3">

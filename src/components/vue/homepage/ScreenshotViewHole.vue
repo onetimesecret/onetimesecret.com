@@ -19,13 +19,13 @@ const { t } = useI18n();
 
         <a
           href="https://docs.onetimesecret.com/en/custom-domains/"
-          class="inline-flex font-brand items-center justify-center rounded-md border border-brandcompdim-600 bg-white px-6 py-3 text-base font-medium text-brandcompdim-600 shadow-sm hover:bg-brandcompdim-50 focus:outline-none focus:ring-2 focus:ring-brandcompdim-500 focus:ring-offset-2 dark:border-brandcompdim-500 dark:bg-gray-700 dark:text-brandcompdim-400 dark:hover:bg-gray-600 dark:focus:ring-offset-gray-800"
+          class="inline-flex font-brand items-center justify-center rounded-md border border-brand-600 bg-white px-6 py-3 text-base font-medium text-brand-600 shadow-sm hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:border-brand-500 dark:bg-gray-700 dark:text-brand-400 dark:hover:bg-gray-600 dark:focus:ring-offset-gray-800"
         >
           {{ t("web.homepage.visualExamples.learnMore") }}
         </a>
         <a
           href="/pricing"
-          class="inline-flex font-brand items-center justify-center rounded-md border border-transparent bg-brandcompdim-600 px-6 py-3 text-lg font-medium text-white shadow-sm hover:bg-brandcompdim-700 focus:outline-none focus:ring-2 focus:ring-brandcompdim-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+          class="inline-flex font-brand items-center justify-center rounded-md border border-transparent bg-brand-600 px-6 py-3 text-lg font-medium text-white shadow-sm hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
         >
           {{ t("web.homepage.visualExamples.viewPricing") }}
         </a>
