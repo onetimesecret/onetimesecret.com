@@ -1,7 +1,7 @@
 <!-- src/components/vue/forms/SecretForm.vue -->
 
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from "vue";
+import { computed, ref, watch, nextTick, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 
 // Define the options model
@@ -64,8 +64,8 @@ const { t } = useI18n({
 // --- State ---
 const secretText = ref("");
 const secretOptions = ref<SecretOptions>({
-  expirationTime: false,
   addPassphrase: false,
+  expirationTime: false,
 });
 const passphrase = ref("");
 const isLoading = ref(false);
@@ -73,6 +73,22 @@ const apiResult = ref<ApiResult | null>(null);
 const apiError = ref<string | null>(null);
 const copySuccess = ref(false); // State for copy feedback
 const copyButtonRef = ref<HTMLButtonElement | null>(null);
+const secretTextArea = ref<HTMLTextAreaElement | null>(null);
+
+// Function to focus the textarea
+const focusTextArea = () => {
+  if (secretTextArea.value && showFormView.value) {
+    secretTextArea.value.focus();
+  }
+};
+
+// Initialize focus when component is mounted
+onMounted(() => {
+  // Wait a tick to ensure DOM is ready
+  nextTick(() => {
+    focusTextArea();
+  });
+});
 
 // --- Computed ---
 const showPassphraseInput = computed(() => secretOptions.value.addPassphrase);
@@ -268,22 +284,24 @@ const createAnotherSecret = () => {
 
 <template>
   <div class="mx-auto max-w-xl">
-    <transition name="fade" mode="out-in">
+    <transition name="fade" mode="out-in" @after-enter="focusTextArea">
       <!-- Form View -->
-      <div v-if="showFormView" key="form-view">
+      <div v-if="showFormView" key="form-view" @click="focusTextArea">
         <!-- Text Area Input -->
         <div class="relative">
           <textarea
             v-model="secretText"
             rows="3"
-            class="block w-full rounded-md border-0 py-3 pl-4 pr-16 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm disabled:opacity-50 bg-white dark:bg-gray-800 dark:text-gray-100"
+            class="block w-full rounded-md border-0 py-3 pl-4 pr-32 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm disabled:opacity-50 bg-white dark:bg-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-brand-500 focus:ring-opacity-50"
             :placeholder="props.placeholder || t('web.secrets.secretPlaceholder')"
+            ref="secretTextArea"
+
             :disabled="isLoading"></textarea>
 
-          <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
+          <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5 z-10">
             <button
               type="button"
-              class="inline-flex font-brand items-center justify-center min-w-[7rem] rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-base font-medium text-white font-semibold shadow-sm hover:bg-brand-600 focus:outline-none disabled:opacity-50 disabled:bg-gray-400"
+              class="inline-flex font-brand items-center justify-center min-w-[7rem] rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-sm text-white font-semibold shadow-sm hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 disabled:opacity-50 disabled:bg-gray-400"
               :disabled="isLoading || !secretText.trim()"
               @click="handleCreateLink">
               <span v-if="!isLoading">{{

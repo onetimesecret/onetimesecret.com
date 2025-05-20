@@ -84,10 +84,15 @@ onUnmounted(() => {
 
     <!-- Current region button that opens the dropdown -->
     <div
-      class="relative ml-2 inline-flex items-center rounded-md bg-white px-2.5 py-0.5 text-sm font-medium text-gray-700 border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
+      class="relative ml-2 inline-flex items-center rounded-md bg-white px-2.5 py-0.5 text-sm font-medium text-gray-700 border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors focus-within:ring-2 focus-within:ring-brand-500 focus-within:ring-offset-2"
       @click="toggleDropdown"
-      aria-haspopup="true"
-      :aria-expanded="isOpen">
+      @keydown.enter="toggleDropdown"
+      @keydown.space.prevent="toggleDropdown"
+      @keydown.escape="closeAll"
+      aria-haspopup="listbox"
+      :aria-expanded="isOpen"
+      tabindex="0"
+      role="button">
       <OIcon
         :collection="currentRegion.icon.collection"
         :name="currentRegion.icon.name"
@@ -108,8 +113,9 @@ onUnmounted(() => {
       <!-- Info icon -->
       <button
         type="button"
-        class="ml-1.5 rounded-full bg-gray-100 p-0.5 inline-flex items-center justify-center hover:bg-gray-200 transition-colors"
+        class="ml-1.5 rounded-full bg-gray-100 p-0.5 inline-flex items-center justify-center hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
         @click="toggleInfoPopover"
+        @keydown.escape="closeAll"
         aria-label="Learn about data sovereignty">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -127,8 +133,11 @@ onUnmounted(() => {
     <!-- Region selection dropdown -->
     <div
       v-if="isOpen"
-      class="absolute top-full mt-2 z-40 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 divide-y divide-gray-100"
-      role="menu">
+      class="absolute top-full left-0 mt-2 z-50 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 divide-y divide-gray-100"
+      style="transform: translateY(0);"
+      role="listbox"
+      tabindex="-1"
+      @keydown.escape="closeAll">
       <div
         class="py-1 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
         {{ t("web.secrets.selectRegionHeading") || "Select Region" }}
@@ -138,11 +147,13 @@ onUnmounted(() => {
           v-for="region in availableRegions"
           :key="region.identifier"
           @click="selectRegion(region)"
-          class="group flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+          class="group flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors focus:outline-none focus:bg-gray-100 focus:text-gray-900"
           :class="{
             'bg-gray-50': currentRegion.identifier === region.identifier,
           }"
-          role="menuitem">
+          role="option"
+          :aria-selected="currentRegion.identifier === region.identifier"
+          tabindex="0">
           <OIcon
             :collection="region.icon.collection"
             :name="region.icon.name"
@@ -173,7 +184,8 @@ onUnmounted(() => {
     <!-- Educational info popover -->
     <div
       v-if="showInfoPopover"
-      class="absolute top-full mt-2 z-40 w-72 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 p-4 text-left"
+      class="absolute top-full right-0 mt-2 z-50 w-72 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 p-4 text-left"
+      style="transform: translateY(0);"
       role="tooltip">
       <div class="flex justify-between items-start">
         <h3 class="text-sm font-medium text-gray-900">

@@ -34,16 +34,12 @@ const { t } = useI18n();
 // Reference to the HomepageSecretForm component
 const secretFormRef = ref();
 
-// Track if a secret was just created successfully to animate the region selector
+// Track form state
 const secretCreatedSuccessfully = ref(false);
+const showingResult = ref(false);
 
 // Handler for region changes from the selector component
 const handleRegionChange = (region: Region) => {
-  // Reset form when region changes
-  if (secretFormRef.value) {
-    secretFormRef.value.resetForm();
-  }
-
   // Turn off the animation when region is changed
   secretCreatedSuccessfully.value = false;
 
@@ -55,6 +51,8 @@ const handleRegionChange = (region: Region) => {
 const handleSecretCreationResult = (result: ApiResult) => {
   // Set the success state if secret was created successfully
   secretCreatedSuccessfully.value = result.success;
+  // Track when we're showing a result (success or error)
+  showingResult.value = true;
 
   // If successful, set a timeout to reset the animation after 5 seconds
   if (result.success) {
@@ -71,6 +69,7 @@ defineExpose({
   resetForm: () => {
     if (secretFormRef.value) {
       secretFormRef.value.resetForm();
+      showingResult.value = false;
     }
   }
 });
@@ -113,6 +112,7 @@ defineExpose({
         </div>
 
         <div
+          v-if="!showingResult"
           class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-600">
           {{ t("web.secrets.complianceNote") }}
         </div>
