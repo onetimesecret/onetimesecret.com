@@ -44,4 +44,4 @@ User-agent: Claude-Web
 Allow: /
 
 # Sitemap declaration
-Sitemap: https://onetimesecret.com/sitemap.xml
+Sitemap: https://onetimesecret.com/sitemap-index.xml
