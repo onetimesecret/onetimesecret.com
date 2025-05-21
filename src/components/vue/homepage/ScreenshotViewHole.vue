@@ -36,7 +36,7 @@ function handleMouseMove(e: MouseEvent) {
 
 onMounted(() => {
   if (imageContainer.value) {
-    // imageContainer.value.addEventListener('mousemove', handleMouseMove);
+    imageContainer.value.addEventListener('mousemove', handleMouseMove);
 
     // Get all columns
     columns.value = Array.from(imageContainer.value.querySelectorAll('.scroll-column'));
@@ -44,7 +44,13 @@ onMounted(() => {
     // Set initial animation speeds with staggered delays
     columns.value.forEach((column, index) => {
       column.style.animationDuration = `${defaultSpeed.value}s`;
-      column.style.animationDelay = `-${index * (defaultSpeed.value / columns.value.length)}s`;
+
+      // Create staggered delays so columns don't all scroll together
+      column.style.animationDelay = `-${index * 5}s`;
+
+      // Clone the images to ensure seamless looping
+      const originalContent = column.innerHTML;
+      column.innerHTML = originalContent + originalContent;
     });
   }
 });
@@ -90,7 +96,7 @@ onUnmounted(() => {
           class="overflow-hidden rounded-2xl bg-gray-50 dark:bg-gray-700 outline outline-gray-950/5 dark:outline-gray-600/20 [--right:45%] flex size-full items-center justify-center saturate-80">
             <div class="size-430 shrink-0 group" ref="imageContainer">
               <div
-                class="relative top-(--top,30%) right-(--right,54%) grid size-full origin-top-left rotate-x-55 rotate-y-0 -rotate-z-45 grid-cols-4 gap-8 transform-3d">
+                class="relative top-(--top,50%) right-(--right,54%) grid size-full origin-top-left rotate-x-55 rotate-y-0 -rotate-z-45 grid-cols-4 gap-8 transform-3d">
                   <div class="flex flex-col gap-8 scroll-column">
                     <img
                       src="/etc/examples/custom-domain-us-1.jpeg"
@@ -216,33 +222,41 @@ onUnmounted(() => {
 .scroll-column {
   animation: scrollUpInfinite 40s linear infinite;
   will-change: transform;
-}
-
-/* Clone the first few images and append to the bottom to create seamless loop */
-.scroll-column > img {
-  box-sizing: border-box;
-}
-
-.scroll-column > img:first-child,
-.scroll-column > img:nth-child(2) {
+  /* Double the content to ensure seamless looping */
   position: relative;
 }
 
-.scroll-column > img:first-child::after,
-.scroll-column > img:nth-child(2)::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
+/* Container styling to ensure proper overflow */
+.size-430 {
+  position: relative;
+  overflow: hidden;
 }
 
+/* Ensure columns have enough height */
+.grid {
+  overflow: hidden;
+}
+
+/* The scrolling animation */
 @keyframes scrollUpInfinite {
   0% {
     transform: translateY(0);
   }
   100% {
-    transform: translateY(-100%);
+    /* Move exactly by the height of the original content */
+    transform: translateY(calc(-50%));
   }
+}
+
+/* Clone all images for each column for seamless looping */
+.scroll-column::after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: inherit;
 }
 </style>
