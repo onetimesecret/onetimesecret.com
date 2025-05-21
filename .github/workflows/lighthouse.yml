@@ -2,9 +2,9 @@ name: Lighthouse CI Test
 
 on:
   push:
-    branches: [develop]
+    branches: [develop, main]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 jobs:
   lighthouse:
@@ -35,14 +35,87 @@ jobs:
       - name: Run Lighthouse CI
         # pnpm dlx executes @lhci/cli without needing a global or project install
         # It will generate reports in the .lighthouseci/ directory
-        run: pnpm dlx @lhci/cli autorun --collect.staticDistDir=./dist
+        run: pnpm dlx @lhci/cli autorun
         env:
-          CI: true # Ensures LHCI runs in CI mode and uses appropriate configurations
+          CI: true
+          LHCI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Lighthouse report artifact
         uses: actions/upload-artifact@v4
         with:
           name: lighthouse-reports
-          path: .lighthouseci/ # Directory where lhci saves HTML reports
-          if-no-files-found: error # Fails the step if reports are not found
-        if: always() # Upload reports even if previous steps (like assertions in lhci) fail
+          path: .lighthouseci/
+          if-no-files-found: error
+          retention-days: 14
+        if: always() # Upload reports even if previous steps fail
+
+      - name: Comment on PR with Lighthouse results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            try {
+              // Find the manifest file
+              const reportDir = '.lighthouseci';
+              const manifestPath = path.join(reportDir, 'manifest.json');
+
+              if (!fs.existsSync(manifestPath)) {
+                console.log('No Lighthouse manifest found.');
+                return;
+              }
+
+              const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+              const latestReport = manifest.filter(entry => entry.isRepresentativeRun)[0];
+
+              if (!latestReport) {
+                console.log('No representative run found in the manifest.');
+                return;
+              }
+
+              const htmlPath = path.join(reportDir, latestReport.htmlPath);
+              const lhr = JSON.parse(fs.readFileSync(path.join(reportDir, latestReport.jsonPath), 'utf8'));
+
+              // Build the comment
+              let comment = `## 🚦 Lighthouse Performance Results\n\n`;
+
+              // Add performance scores
+              comment += `| Category | Score |\n`;
+              comment += `| --- | --- |\n`;
+              comment += `| Performance | ${Math.round(lhr.categories.performance.score * 100)} |\n`;
+              comment += `| Accessibility | ${Math.round(lhr.categories.accessibility.score * 100)} |\n`;
+              comment += `| Best Practices | ${Math.round(lhr.categories['best-practices'].score * 100)} |\n`;
+              comment += `| SEO | ${Math.round(lhr.categories.seo.score * 100)} |\n\n`;
+
+              // Add key metrics
+              comment += `### Core Web Vitals\n\n`;
+              comment += `| Metric | Value |\n`;
+              comment += `| --- | --- |\n`;
+
+              const lcpAudit = lhr.audits['largest-contentful-paint'];
+              const clsAudit = lhr.audits['cumulative-layout-shift'];
+              const tbtAudit = lhr.audits['total-blocking-time'];
+              const fcpAudit = lhr.audits['first-contentful-paint'];
+
+              comment += `| First Contentful Paint | ${fcpAudit.displayValue} |\n`;
+              comment += `| Largest Contentful Paint | ${lcpAudit.displayValue} |\n`;
+              comment += `| Cumulative Layout Shift | ${clsAudit.displayValue} |\n`;
+              comment += `| Total Blocking Time | ${tbtAudit.displayValue} |\n\n`;
+
+              // Add link to full report
+              const runUrl = latestReport.url;
+              comment += `[📋 View Full Report](${runUrl})\n`;
+
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+
+            } catch (error) {
+              console.error('Error creating Lighthouse comment:', error);
+            }
