@@ -8,7 +8,7 @@ import {
   type MessageSchema,
   type SupportedLanguage,
 } from "@/i18n";
-import { getLocaleFromUrl } from "@/i18n/utils";
+import { getLocaleFromUrl, localizeUrl } from "@/i18n/utils";
 import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
 
 export interface Props {
@@ -100,22 +100,22 @@ const currentYear = new Date().getFullYear();
             : "mt-4 grid grid-cols-1 gap-y-2 sm:grid-cols-2 md:mt-0 md:grid-cols-2 md:gap-x-6 lg:grid-cols-4"
         }`}>
         <a
-          href="/privacy"
+          href="/privacy?"
           class="text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
           {t("LABELS.privacy")}
         </a>
         <a
-          href="/terms"
+          href="/terms?"
           class="text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
           {t("LABELS.terms")}
         </a>
         <a
-          href="/security"
+          href={localizeUrl("/security", effectiveLocale as SupportedLanguage)}
           class="text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
           {t("LABELS.security")}
         </a>
         <a
-          href="/contact"
+          href="/feedback"
           class="text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
           {t("LABELS.feedback")}
         </a>

@@ -2,11 +2,10 @@
  * src/utils/createContentPage.ts
  * Factory function for creating standardized content pages from collections
  */
-import { getCollection } from "astro:content";
-import type { AstroGlobal } from "astro";
 import type { SupportedLanguage } from "@/i18n";
-import { getLanguagePaths, DEFAULT_LANGUAGE } from "@/i18n";
+import { DEFAULT_LANGUAGE, getLanguagePaths } from "@/i18n";
 import { getContentPageData } from "@/utils/contentPage";
+import type { AstroGlobal } from "astro";
 
 interface ContentPageFactoryOptions {
   /**
@@ -51,7 +50,7 @@ export function createContentPageFactory(options: ContentPageFactoryOptions) {
   const {
     slug,
     titleSuffix = "| Onetime Secret",
-    descriptionFn = (title) => `${title} | Onetime Secret`
+    descriptionFn = (title) => `${title} | Onetime Secret`,
   } = options;
 
   /**
@@ -65,15 +64,13 @@ export function createContentPageFactory(options: ContentPageFactoryOptions) {
    * Process the Astro context to get content and related props
    */
   async function processAstroContext(astro: AstroGlobal) {
-    const { lang = DEFAULT_LANGUAGE } = astro.params as { lang: SupportedLanguage };
+    const { lang = DEFAULT_LANGUAGE } = astro.params as {
+      lang: SupportedLanguage;
+    };
 
     // Get all page data including content, i18n setup, and fallback status
-    const {
-      page,
-      renderedContent,
-      initialMessages,
-      isFallback
-    } = await getContentPageData(lang, slug);
+    const { page, renderedContent, initialMessages, isFallback } =
+      await getContentPageData(lang, slug);
 
     return {
       Content: renderedContent.Content,
@@ -84,14 +81,18 @@ export function createContentPageFactory(options: ContentPageFactoryOptions) {
         lang,
         title: `${page.data.title} ${titleSuffix}`.trim(),
         description: page.data.description || descriptionFn(page.data.title),
+        heroTitle: page.data.heroTitle || page.data.title,
+        heroDescription: page.data.heroDescription || page.data.description,
+        // alternateLanguages: getAlternateLanguages(lang),
+        // structuredData: getStructuredData(page.data),
       },
-      isFallback
+      isFallback,
     };
   }
 
   return {
     getStaticPaths,
-    processAstroContext
+    processAstroContext,
   };
 }
 
@@ -120,6 +121,6 @@ export function createContentPage(slug: string) {
 
   return {
     getStaticPaths: factory.getStaticPaths,
-    processAstroContext: factory.processAstroContext
+    processAstroContext: factory.processAstroContext,
   };
 }

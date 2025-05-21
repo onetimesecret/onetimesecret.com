@@ -13,7 +13,8 @@ import "remark-github-blockquote-alert/alert.css";
 
 // Interface for props
 export interface Props {
-  title?: string;
+  title: string;
+  heroTitle: string;
   description?: string;
   canonicalUrl?: string;
   ogImage?: string;
@@ -29,7 +30,6 @@ export interface Props {
   initialMessages?: Record<string, MessageSchema>;
   // Determine if hero should be shown
   showHero?: boolean;
-  heroTitle?: string;
   heroDescription?: string;
 }
 

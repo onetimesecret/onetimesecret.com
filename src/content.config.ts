@@ -12,6 +12,8 @@ const pageCollection = defineCollection({
     title: z.string(),
     description: z.string().optional(),
     layout: z.string().optional().default("ContentPageLayout"),
+    heroTitle: z.string().optional(),
+    heroDescription: z.string().optional(),
     heroType: z
       .enum(["simple", "feature", "none"])
       .optional()
