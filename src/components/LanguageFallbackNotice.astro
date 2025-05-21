@@ -1,0 +1,94 @@
+---
+/**
+ * src/components/LanguageFallbackNotice.astro
+ *
+ * A reusable component to display a notification when content
+ * is not available in the user's preferred language and a fallback
+ * is being used instead.
+ *
+ * This component should only be displayed when:
+ * 1. The requested language is NOT the default language (English)
+ * 2. The content is not available in the requested language
+ *
+ * Note: Pages that only exist in the root content directory (without
+ * language-specific versions) will not show this notice when viewed
+ * in the default language.
+ */
+import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
+import type { SupportedLanguage } from "@/i18n";
+
+interface Props {
+  /**
+   * The current language code being requested by the user
+   */
+  lang: SupportedLanguage;
+
+  /**
+   * Position of the notification (fixed or relative)
+   * @default "fixed"
+   */
+  position?: "fixed" | "relative";
+
+  /**
+   * Whether to allow the user to dismiss the notification
+   * @default false
+   */
+  dismissable?: boolean;
+}
+
+const {
+  lang,
+  position = "fixed",
+  dismissable = false
+} = Astro.props;
+
+// Determine positioning classes
+const positionClasses = position === "fixed"
+  ? "fixed right-4 bottom-4 z-50"
+  : "relative w-full mb-4";
+---
+
+<div
+  class:list={[
+    positionClasses,
+    "rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-600",
+    "shadow-md dark:bg-amber-900/30 dark:text-amber-400",
+    "flex items-center justify-between"
+  ]}
+  data-language-fallback
+>
+  <p>
+    This content is not available in your preferred language ({lang}).
+    Showing the {DEFAULT_LANGUAGE} version instead.
+  </p>
+
+  {dismissable && (
+    <button
+      type="button"
+      aria-label="Dismiss notification"
+      class="ml-2 text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300"
+      data-dismiss-fallback
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5">
+        <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+      </svg>
+    </button>
+  )}
+</div>
+
+{dismissable && (
+  <script>
+    // Add client-side dismiss functionality when enabled
+    document.addEventListener('DOMContentLoaded', () => {
+      const dismissButtons = document.querySelectorAll('[data-dismiss-fallback]');
+      dismissButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const notice = button.closest('[data-language-fallback]');
+          if (notice) {
+            notice.remove();
+          }
+        });
+      });
+    });
+  </script>
+)}
