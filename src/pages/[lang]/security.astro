@@ -4,7 +4,7 @@
  * Security page implementation using content collections
  */
 import { getCollection } from "astro:content";
-import ContentPage from "@/components/ContentPage.astro";
+import ContentPageLayout from "@/layouts/ContentPageLayout.astro";
 import { getLanguagePaths, type SupportedLanguage } from "@/i18n";
 import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
 import { createLocaleI18n } from "@/i18n";
@@ -30,7 +30,8 @@ const allPages = await getCollection("pages");
 const page = allPages.find(
   (page) =>
     page.id === `${lang}/security.md` ||
-    (lang !== DEFAULT_LANGUAGE && page.id === `${DEFAULT_LANGUAGE}/security.md`),
+    (lang !== DEFAULT_LANGUAGE &&
+      page.id === `${DEFAULT_LANGUAGE}/security.md`),
 );
 
 if (!page) {
@@ -41,7 +42,7 @@ if (!page) {
 const renderedContent = await page.render();
 ---
 
-<ContentPage
+<ContentPageLayout
   page={page}
   renderedContent={renderedContent}
   lang={lang}
