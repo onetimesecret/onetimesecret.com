@@ -1,90 +1,27 @@
 ---
 /**
  * src/pages/[lang]/about.astro
- * About page implementation using content collections and ContentPageLayout
+ * About page using content collections
  */
-import {
-  createLocaleI18n,
-  getLanguagePaths,
-  type MessageSchema,
-  type SupportedLanguage,
-} from "@/i18n";
-import enMessages from "@/i18n/ui/en.json";
-import frMessages from "@/i18n/ui/fr.json";
-import deMessages from "@/i18n/ui/de.json";
 import ContentPageLayout from "@/layouts/ContentPageLayout.astro";
-import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
-import { getCollection } from "astro:content";
+import LanguageFallbackNotice from "@/components/LanguageFallbackNotice.astro";
+import { createContentPage } from "@/utils/createContentPage";
 
-export async function getStaticPaths() {
-  return getLanguagePaths();
-}
+// Generate static paths for all supported languages
+export const getStaticPaths = createContentPage("about").getStaticPaths;
 
-interface Props {
-  lang: SupportedLanguage;
-  initialMessages: Record<string, MessageSchema>;
-  langMeta: {
-    name: string;
-    locale: string;
-    dir: string;
-  };
-}
+// Process the page content and get all necessary props
+const { lang = "en" } = Astro.params;
+const { Content, pageProps, isFallback } =
+  await createContentPage("about").processAstroContext(Astro);
 
-const effectiveLang = (Astro.props.lang ||
-  Astro.params.lang ||
-  DEFAULT_LANGUAGE) as SupportedLanguage;
-
-// Determine effective langMeta, falling back to default language's meta if necessary
-const effectiveLangMeta = Astro.props.langMeta || LANGUAGE_META[effectiveLang];
-
-// Set up messages for the current language
-const messagesMap: Record<string, MessageSchema> = {
-  en: enMessages as MessageSchema,
-  fr: frMessages as MessageSchema,
-  de: deMessages as MessageSchema,
-};
-
-// Determine effective initialMessages, including the current language messages
-const effectiveInitialMessages = Astro.props.initialMessages || {
-  [effectiveLang]:
-    messagesMap[effectiveLang as keyof typeof messagesMap] ||
-    (enMessages as MessageSchema),
-};
-
-// Initialize i18n for page content
-const pageI18n = await createLocaleI18n(
-  effectiveLang,
-  effectiveInitialMessages,
-);
-const t = pageI18n.global.t;
-
-// Get the page by language/slug using Astro content collection API
-const allPages = await getCollection("pages");
-// First try to find the page in the target language
-let page = allPages.find((page) => page.id === `${effectiveLang}/about.md`);
-
-// If page isn't found in the target language, fall back to default language
-if (!page && effectiveLang !== DEFAULT_LANGUAGE) {
-  page = allPages.find((page) => page.id === `${DEFAULT_LANGUAGE}/about.md`);
-}
-
-if (!page) {
-  throw new Error(
-    `Page not found: ${effectiveLang}/about.md or ${DEFAULT_LANGUAGE}/about.md`,
-  );
-}
-
-// Render the content
-const renderedContent = await page.render();
-const { Content } = renderedContent;
+// Ensure title is set properly
+pageProps.title = pageProps.title || "About | Onetime Secret";
 ---
 
-<ContentPageLayout
-  title={`${page.data.title} | ${t("onetime-secret-literal")}`}
-  description={page.data.description || `${page.data.title} | Onetime Secret`}
-  htmlLang={effectiveLang}
-  initialMessages={effectiveInitialMessages}
-  heroTitle={page.data.title}
-  heroDescription={page.data.description}>
+<ContentPageLayout {...pageProps}>
   <Content />
 </ContentPageLayout>
+
+{/* Show fallback notice only when necessary */}
+{isFallback && <LanguageFallbackNotice lang={lang} />}

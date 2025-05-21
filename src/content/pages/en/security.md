@@ -29,7 +29,7 @@ title: Security Policy
     <tbody>
       <tr class="border-b dark:border-gray-600">
         <td class="p-2 dark:text-gray-300">
-          0.21.x+
+          0.22.x+
         </td>
         <td class="p-2 dark:text-gray-300">
           ✅
@@ -37,7 +37,7 @@ title: Security Policy
       </tr>
       <tr class="border-b dark:border-gray-600">
         <td class="p-2 dark:text-gray-300">
-          0.20.x
+          0.21.x
         </td>
         <td class="p-2 dark:text-gray-300">
           ✅
@@ -45,7 +45,7 @@ title: Security Policy
       </tr>
       <tr>
         <td class="p-2 dark:text-gray-300">
-          &lt; 0.19.x
+          &lt; 0.20.x
         </td>
         <td class="p-2 dark:text-gray-300">
           ❌
