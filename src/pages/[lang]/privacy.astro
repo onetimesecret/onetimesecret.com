@@ -3,7 +3,7 @@
  * src/pages/[lang]/privacy.astro
  * Privacy policy page using content collections
  */
-import ContentPage from "@/components/ContentPage.astro";
+import ContentPageLayout from "@/layouts/ContentPageLayout.astro";
 import LanguageFallbackNotice from "@/components/LanguageFallbackNotice.astro";
 import { createContentPage } from "@/utils/createContentPage";
 
@@ -12,11 +12,12 @@ export const getStaticPaths = createContentPage("privacy").getStaticPaths;
 
 // Process the page content and get all necessary props
 const { lang = "en" } = Astro.params;
-const { Content, pageProps, isFallback } = await createContentPage("privacy").processAstroContext(Astro);
+const { Content, pageProps, isFallback } =
+  await createContentPage("privacy").processAstroContext(Astro);
 ---
 
-<ContentPage {...pageProps}>
+<ContentPageLayout {...pageProps}>
   <Content />
-</ContentPage>
+</ContentPageLayout>
 
 {isFallback && <LanguageFallbackNotice lang={lang} />}

@@ -11,7 +11,7 @@ const pageCollection = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string().optional(),
-    layout: z.string().optional().default("MarkdownLayout"),
+    layout: z.string().optional().default("ContentPageLayout"),
     heroType: z
       .enum(["simple", "feature", "none"])
       .optional()

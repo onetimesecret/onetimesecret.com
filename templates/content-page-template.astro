@@ -11,7 +11,7 @@
  * 3. Add your content in src/content/pages/your-page-name.md or
  *    src/content/pages/{lang}/your-page-name.md for localized versions
  */
-import ContentPage from "@/components/ContentPage.astro";
+import ContentPageLayout from "@/layouts/ContentPageLayout.astro";
 import LanguageFallbackNotice from "@/components/LanguageFallbackNotice.astro";
 import { createContentPage } from "@/utils/createContentPage";
 
@@ -28,9 +28,9 @@ const { Content, pageProps, isFallback } =
 // pageProps.title = `Custom title ${pageProps.title}`;
 ---
 
-<ContentPage {...pageProps}>
+<ContentPageLayout {...pageProps}>
   <Content />
-</ContentPage>
+</ContentPageLayout>
 
 {/* Show fallback notice if content isn't available in requested language */}
 {isFallback && <LanguageFallbackNotice lang={lang} />}
