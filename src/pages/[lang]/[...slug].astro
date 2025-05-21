@@ -9,7 +9,7 @@
  * - Consistent styling and layout
  */
 import { getCollection } from "astro:content";
-import ContentPage from "@/components/ContentPage.astro";
+import ContentPageLayout from "@/layouts/ContentPageLayout.astro";
 import { getLanguagePaths, type SupportedLanguage } from "@/i18n";
 import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
 import { createLocaleI18n } from "@/i18n";
@@ -36,21 +36,26 @@ export async function getStaticPaths() {
     const addCollectionPaths = (entries, collection) => {
       for (const entry of entries) {
         // Entry ID format is expected to be "[lang]/[slug]"
-        const [entryLang, ...slugParts] = entry.id.split('/');
-        const slug = slugParts.join('/');
+        const [entryLang, ...slugParts] = entry.id.split("/");
+        const slug = slugParts.join("/");
 
         // Only add if this is for the current language or we have no entry for this language yet
-        if (entryLang === langCode || !entries.some(e => e.id.endsWith(`/${slug}`) && e.id.startsWith(langCode))) {
+        if (
+          entryLang === langCode ||
+          !entries.some(
+            (e) => e.id.endsWith(`/${slug}`) && e.id.startsWith(langCode),
+          )
+        ) {
           paths.push({
             params: {
               lang: langCode,
-              slug
+              slug,
             },
             props: {
               entry,
               collection,
-              entryLang
-            }
+              entryLang,
+            },
           });
         }
       }
@@ -91,18 +96,20 @@ const isFallback = entryLang !== lang;
 const renderedContent = await entry.render();
 ---
 
-<ContentPage
+<ContentPageLayout
   page={entry}
   renderedContent={renderedContent}
   lang={lang}
   initialMessages={initialMessages}
 />
 
-{isFallback && (
-  <div class="fixed bottom-4 right-4 z-50 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-600 shadow-md dark:bg-amber-900/30 dark:text-amber-400">
-    <p>
-      This content is not available in your preferred language ({lang}).
-      Showing the {entryLang} version instead.
-    </p>
-  </div>
-)}
+{
+  isFallback && (
+    <div class="fixed right-4 bottom-4 z-50 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-600 shadow-md dark:bg-amber-900/30 dark:text-amber-400">
+      <p>
+        This content is not available in your preferred language ({lang}).
+        Showing the {entryLang} version instead.
+      </p>
+    </div>
+  )
+}

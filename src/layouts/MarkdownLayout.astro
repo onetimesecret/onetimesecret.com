@@ -1,6 +1,6 @@
 ---
 // Simplified MarkdownLayout.astro
-import Layout from "./Layout.astro";
+import ContentPageLayout from "./ContentPageLayout.astro";
 import TableOfContents from "@/components/TableOfContents.astro";
 import type { MessageSchema } from "@/i18n";
 
@@ -27,7 +27,7 @@ const {
 } = Astro.props;
 ---
 
-<Layout
+<ContentPageLayout
   title={title}
   description={description}
   htmlLang={htmlLang}
@@ -54,4 +54,4 @@ const {
       </div>
     </main>
   </div>
-</Layout>
+</ContentPageLayout>
