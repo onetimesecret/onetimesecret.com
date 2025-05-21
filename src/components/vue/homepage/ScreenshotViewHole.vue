@@ -41,12 +41,19 @@ onMounted(() => {
     // Get all columns
     columns.value = Array.from(imageContainer.value.querySelectorAll('.scroll-column'));
 
-    // Set initial animation speeds with staggered delays
+    // Set different animation speeds and directions per column
     columns.value.forEach((column, index) => {
-      column.style.animationDuration = `${defaultSpeed.value}s`;
+      // Vary base speeds between columns (35-45s)
+      const columnSpeed = defaultSpeed.value - 5 + (index * 3);
+      column.style.animationDuration = `${columnSpeed}s`;
 
-      // Create staggered delays so columns don't all scroll together
+      // Create staggered delays
       column.style.animationDelay = `-${index * 5}s`;
+
+      // Alternate direction for even/odd columns
+      if (index % 2 === 1) {
+        column.style.animationDirection = 'reverse';
+      }
 
       // Clone the images to ensure seamless looping
       const originalContent = column.innerHTML;
@@ -54,6 +61,7 @@ onMounted(() => {
     });
   }
 });
+
 
 onUnmounted(() => {
   if (imageContainer.value) {
