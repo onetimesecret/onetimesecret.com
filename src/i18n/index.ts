@@ -2,6 +2,7 @@
 
 import enMessagesImport from "@/i18n/ui/en.json"; // Default English messages
 import {
+  DEFAULT_LANGUAGE,
   LANGUAGE_META,
   SUPPORTED_LANGUAGES,
   SupportedLanguage,
@@ -27,7 +28,12 @@ import { createI18n } from "vue-i18n";
 // // https://www.i18next.com/overview/configuration-options#languages-namespaces-resources
 // i18next.use(Backend).init(i18nextOptions);
 
-export { type SupportedLanguage };
+export {
+  DEFAULT_LANGUAGE,
+  LANGUAGE_META,
+  SUPPORTED_LANGUAGES,
+  type SupportedLanguage,
+};
 
 // Define a type for the message schema based on the English messages
 export type MessageSchema = typeof enMessagesImport;

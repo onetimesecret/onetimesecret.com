@@ -1,25 +1,22 @@
 ---
-// src/pages/privacy.astro
+/**
+ * src/pages/[lang]/privacy.astro
+ * Privacy policy page using content collections
+ */
+import ContentPage from "@/components/ContentPage.astro";
+import LanguageFallbackNotice from "@/components/LanguageFallbackNotice.astro";
+import { createContentPage } from "@/utils/createContentPage";
 
-import Layout from "@/layouts/Layout.astro";
-import "@/i18n";
-import { getLanguagePaths } from "@/i18n";
+// Generate static paths for all supported languages
+export const getStaticPaths = createContentPage("privacy").getStaticPaths;
 
-export async function getStaticPaths() {
-  return getLanguagePaths();
-}
-
-// Directly copied from our site-policy repo:
-// https://github.com/onetimesecret/site-policy/blob/main/onetime-terms-of-service.md
-import { Content, frontmatter } from "@/content/pages/privacy.md";
-
-const { lang } = Astro.params;
+// Process the page content and get all necessary props
+const { lang = "en" } = Astro.params;
+const { Content, pageProps, isFallback } = await createContentPage("privacy").processAstroContext(Astro);
 ---
 
-<Layout
-  title={`${frontmatter.title} | Onetime Secret`}
-  description="Our privacy policy explains how we handle your information when using Onetime Secret.">
-  <div class="flex min-h-screen flex-col bg-white dark:bg-gray-900">
-    <Content />
-  </div>
-</Layout>
+<ContentPage {...pageProps}>
+  <Content />
+</ContentPage>
+
+{isFallback && <LanguageFallbackNotice lang={lang} />}
