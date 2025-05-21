@@ -6,38 +6,46 @@ import { ref, onMounted, onUnmounted } from "vue";
 
 const { t } = useI18n();
 const imageContainer = ref<HTMLElement | null>(null);
+const columns = ref<HTMLElement[]>([]);
+const defaultSpeed = ref(40); // seconds for one complete cycle
 
 function handleMouseMove(e: MouseEvent) {
   if (!imageContainer.value) return;
 
-  // Get container boundaries
   const rect = imageContainer.value.getBoundingClientRect();
   const centerX = rect.left + rect.width / 2;
   const centerY = rect.top + rect.height / 2;
 
-  // Calculate distance from center
   const dx = e.clientX - centerX;
   const dy = e.clientY - centerY;
   const distance = Math.sqrt(dx * dx + dy * dy);
 
-  // Define maximal distance
   const maxDistance = Math.sqrt(Math.pow(rect.width / 2, 2) + Math.pow(rect.height / 2, 2));
-
-  // Normalize (1 = center, 0 = edge)
   const normalized = 1 - Math.min(distance / maxDistance, 1);
 
-  // Map to duration range
-  const minDuration = 300;
-  const maxDuration = 1000;
-  const newDuration = minDuration + (maxDuration - minDuration) * (1 - normalized);
+  // Map to animation speed (faster in center, slower at edges)
+  const minSpeed = 20; // faster
+  const maxSpeed = 60; // slower
+  const newSpeed = minSpeed + (maxSpeed - minSpeed) * (1 - normalized);
 
-  // Apply duration
-  imageContainer.value.style.transitionDuration = `${newDuration}ms`;
+  // Apply new animation duration to each column
+  columns.value.forEach(column => {
+    column.style.animationDuration = `${newSpeed}s`;
+  });
 }
 
 onMounted(() => {
   if (imageContainer.value) {
-    imageContainer.value.addEventListener('mousemove', handleMouseMove);
+    // imageContainer.value.addEventListener('mousemove', handleMouseMove);
+
+    // Get all columns
+    columns.value = Array.from(imageContainer.value.querySelectorAll('.scroll-column'));
+
+    // Set initial animation speeds with staggered delays
+    columns.value.forEach((column, index) => {
+      column.style.animationDuration = `${defaultSpeed.value}s`;
+      column.style.animationDelay = `-${index * (defaultSpeed.value / columns.value.length)}s`;
+    });
   }
 });
 
@@ -47,6 +55,7 @@ onUnmounted(() => {
   }
 });
 </script>
+
 
 
 <template>
@@ -79,147 +88,161 @@ onUnmounted(() => {
         class="absolute inset-0 -mx-px bg-gray-950/5 dark:bg-gray-900/30 py-2 pr-[calc(--spacing(2)+1px)] pl-2 xl:border-l xl:border-gray-950/5 dark:xl:border-gray-700/20">
         <div
           class="overflow-hidden rounded-2xl bg-gray-50 dark:bg-gray-700 outline outline-gray-950/5 dark:outline-gray-600/20 [--right:45%] flex size-full items-center justify-center saturate-80">
-          <div class="size-430 shrink-0 group" ref="imageContainer">
-            <div
-              class="relative top-(--top,30%) right-(--right,54%) grid size-full origin-top-left rotate-x-55 rotate-y-0 -rotate-z-45 grid-cols-4 gap-8 transform-3d">
-                <div class="flex flex-col gap-8 transform translate-y-[750px] transition-transform duration-1000 ease-linear group-hover:translate-y-0" style="will-change: transform;">
-                <img
-                  src="/etc/examples/custom-domain-us-1.jpeg"
-                  class="aspect-[2488/2298] ring ring-gray-950/5"
-                  width="2488"
-                  height="2298"
-                  alt="" /><img
-                  src="/etc/examples/homepage-expanded.png"
-                  class="aspect-[1954/2124] ring ring-gray-950/5"
-                  width="1954"
-                  height="2124"
-                  alt="" /><img
-                  src="/etc/examples/custom-domain-eu-2.jpeg"
-                  class="aspect-[2488/2306] ring ring-gray-950/5"
-                  width="2488"
-                  height="2306"
-                  alt="" /><img
-                  src="/etc/examples/homepage.png"
-                  class="aspect-[1970/2108] ring ring-gray-950/5"
-                  width="1970"
-                  height="2108"
-                  alt="" />
-              </div>
-              <div class="flex flex-col gap-8 transform translate-y-[750px] transition-transform duration-1000 ease-linear group-hover:translate-y-0" style="will-change: transform;">
-                <img
-                  src="/etc/examples/custom-domain-eu-5.jpeg"
-                  class="aspect-[2488/2554] ring ring-gray-950/5"
-                  width="2488"
-                  height="2554"
-                  alt="" /><img
-                  src="/etc/examples/custom-domain-us-3.jpeg"
-                  class="aspect-[2488/2554] ring ring-gray-950/5"
-                  width="2488"
-                  height="2554"
-                  alt="" /><img
-                  src="/etc/examples/custom-domain-us-6.jpeg"
-                  class="aspect-[2488/2910] ring ring-gray-950/5"
-                  width="2488"
-                  height="2910"
-                  alt="" /><img
-                  src="/etc/examples/custom-domain-eu-3.jpeg"
-                  class="aspect-[2488/2634] ring ring-gray-950/5"
-                  width="2488"
-                  height="2634"
-                  alt="" />
-              </div>
-              <div class="flex flex-col gap-8 transform translate-y-[750px] transition-transform duration-1000 ease-linear group-hover:translate-y-0" style="will-change: transform;">
-                <img
-                  src="/etc/examples/custom-domain-nz.jpeg"
-                  class="aspect-[2488/2298] ring ring-gray-950/5"
-                  width="2488"
-                  height="2298"
-                  alt="" /><img
-                  src="/etc/examples/custom-domain-us-4.jpeg"
-                  class="aspect-[2488/2554] ring ring-gray-950/5"
-                  width="2488"
-                  height="2554"
-                  alt="" /><img
-                  src="/etc/examples/custom-domain-eu-1.jpeg"
-                  class="aspect-[2488/2306] ring ring-gray-950/5"
-                  width="2488"
-                  height="2306"
-                  alt="" /><img
-                  src="/etc/examples/custom-domain-us-5.jpeg"
-                  class="aspect-[2488/2554] ring ring-gray-950/5"
-                  width="2488"
-                  height="2554"
-                  alt="" /><img
-                  src="/etc/examples/homepage-attempt4.png"
-                  class="aspect-[1189/1892] ring ring-gray-950/5"
-                  width="1189"
-                  height="1892"
-                  alt="" /><img
-                  src="/etc/examples/custom-domain-eu-4.jpeg"
-                  class="aspect-[2488/2792] ring ring-gray-950/5"
-                  width="2488"
-                  height="2792"
-                  alt="" />
-              </div>
-              <div class="flex flex-col gap-8 transform translate-y-[750px] transition-transform duration-1000 ease-linear group-hover:translate-y-0" style="will-change: transform;">
-                <img
-                  src="/etc/examples/custom-domain-us-2.jpeg"
-                  class="aspect-[2488/2298] ring ring-gray-950/5"
-                  width="2488"
-                  height="2298"
-                  alt="" /><img
-                  src="/etc/examples/screenshot-custom-domain.png"
-                  class="aspect-[2470/2292] ring ring-gray-950/5"
-                  width="2470"
-                  height="2292"
-                  alt="" /><img
-                  src="/etc/examples/custom-domain-eu.jpeg"
-                  class="aspect-[2488/2298] ring ring-gray-950/5"
-                  width="2488"
-                  height="2298"
-                  alt="" /><img
-                  src="/etc/examples/homepage-attemp1.png"
-                  class="aspect-[1058/1036] ring ring-gray-950/5"
-                  width="1058"
-                  height="1036"
-                  alt="" /><img
-                  src="/etc/examples/custom-domain-us.jpeg"
-                  class="aspect-[2488/2306] ring ring-gray-950/5"
-                  width="2488"
-                  height="2306"
-                  alt="" /><img
-                  src="/etc/examples/homepage-attempt5.png"
-                  class="aspect-[1189/1892] ring ring-gray-950/5"
-                  width="1189"
-                  height="1892"
-                  alt="" />
-              </div>
+            <div class="size-430 shrink-0 group" ref="imageContainer">
               <div
-                class="flex flex-col gap-8"
-                style="transform: translateY(1400px)">
-                <img
-                  src="/etc/examples/custom-domain-nz-1.jpeg"
-                  class="aspect-[2488/2534] ring ring-gray-950/5"
-                  width="2488"
-                  height="2534"
-                  alt="" /><img
-                  src="/etc/examples/custom-domain-us-3.jpeg"
-                  class="aspect-[2488/2298] ring ring-gray-950/5"
-                  width="2488"
-                  height="2298"
-                  alt="" /><img
-                  src="/etc/examples/custom-domain-eu-3.jpeg"
-                  class="aspect-[2488/2554] ring ring-gray-950/5"
-                  width="2488"
-                  height="2554"
-                  alt="" />
+                class="relative top-(--top,30%) right-(--right,54%) grid size-full origin-top-left rotate-x-55 rotate-y-0 -rotate-z-45 grid-cols-4 gap-8 transform-3d">
+                  <div class="flex flex-col gap-8 scroll-column">
+                    <img
+                      src="/etc/examples/custom-domain-us-1.jpeg"
+                      class="aspect-[2488/2298] ring ring-gray-950/5"
+                      width="2488"
+                      height="2298"
+                      alt="" /><img
+                      src="/etc/examples/homepage-expanded.png"
+                      class="aspect-[1954/2124] ring ring-gray-950/5"
+                      width="1954"
+                      height="2124"
+                      alt="" /><img
+                      src="/etc/examples/custom-domain-eu-2.jpeg"
+                      class="aspect-[2488/2306] ring ring-gray-950/5"
+                      width="2488"
+                      height="2306"
+                      alt="" /><img
+                      src="/etc/examples/homepage.png"
+                      class="aspect-[1970/2108] ring ring-gray-950/5"
+                      width="1970"
+                      height="2108"
+                      alt="" />
+                  </div>
+                  <div class="flex flex-col gap-8 scroll-column">
+                    <img
+                      src="/etc/examples/custom-domain-eu-5.jpeg"
+                      class="aspect-[2488/2554] ring ring-gray-950/5"
+                      width="2488"
+                      height="2554"
+                      alt="" /><img
+                      src="/etc/examples/custom-domain-us-3.jpeg"
+                      class="aspect-[2488/2554] ring ring-gray-950/5"
+                      width="2488"
+                      height="2554"
+                      alt="" /><img
+                      src="/etc/examples/custom-domain-us-6.jpeg"
+                      class="aspect-[2488/2910] ring ring-gray-950/5"
+                      width="2488"
+                      height="2910"
+                      alt="" /><img
+                      src="/etc/examples/custom-domain-eu-3.jpeg"
+                      class="aspect-[2488/2634] ring ring-gray-950/5"
+                      width="2488"
+                      height="2634"
+                      alt="" />
+                  </div>
+                  <div class="flex flex-col gap-8 scroll-column">
+                    <img
+                      src="/etc/examples/custom-domain-nz.jpeg"
+                      class="aspect-[2488/2298] ring ring-gray-950/5"
+                      width="2488"
+                      height="2298"
+                      alt="" /><img
+                      src="/etc/examples/custom-domain-us-4.jpeg"
+                      class="aspect-[2488/2554] ring ring-gray-950/5"
+                      width="2488"
+                      height="2554"
+                      alt="" /><img
+                      src="/etc/examples/custom-domain-eu-1.jpeg"
+                      class="aspect-[2488/2306] ring ring-gray-950/5"
+                      width="2488"
+                      height="2306"
+                      alt="" /><img
+                      src="/etc/examples/custom-domain-us-5.jpeg"
+                      class="aspect-[2488/2554] ring ring-gray-950/5"
+                      width="2488"
+                      height="2554"
+                      alt="" /><img
+                      src="/etc/examples/homepage-attempt4.png"
+                      class="aspect-[1189/1892] ring ring-gray-950/5"
+                      width="1189"
+                      height="1892"
+                      alt="" /><img
+                      src="/etc/examples/custom-domain-eu-4.jpeg"
+                      class="aspect-[2488/2792] ring ring-gray-950/5"
+                      width="2488"
+                      height="2792"
+                      alt="" />
+                  </div>
+                  <div class="flex flex-col gap-8 scroll-column">
+                    <img
+                      src="/etc/examples/custom-domain-us-2.jpeg"
+                      class="aspect-[2488/2298] ring ring-gray-950/5"
+                      width="2488"
+                      height="2298"
+                      alt="" /><img
+                      src="/etc/examples/screenshot-custom-domain.png"
+                      class="aspect-[2470/2292] ring ring-gray-950/5"
+                      width="2470"
+                      height="2292"
+                      alt="" /><img
+                      src="/etc/examples/custom-domain-eu.jpeg"
+                      class="aspect-[2488/2298] ring ring-gray-950/5"
+                      width="2488"
+                      height="2298"
+                      alt="" /><img
+                      src="/etc/examples/homepage-attemp1.png"
+                      class="aspect-[1058/1036] ring ring-gray-950/5"
+                      width="1058"
+                      height="1036"
+                      alt="" /><img
+                      src="/etc/examples/custom-domain-us.jpeg"
+                      class="aspect-[2488/2306] ring ring-gray-950/5"
+                      width="2488"
+                      height="2306"
+                      alt="" /><img
+                      src="/etc/examples/homepage-attempt5.png"
+                      class="aspect-[1189/1892] ring ring-gray-950/5"
+                      width="1189"
+                      height="1892"
+                      alt="" />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+
         </div>
       </div>
     </div>
   </section>
 </template>
 
-<style scoped></style>
+<style scoped>
+.scroll-column {
+  animation: scrollUpInfinite 40s linear infinite;
+  will-change: transform;
+}
+
+/* Clone the first few images and append to the bottom to create seamless loop */
+.scroll-column > img {
+  box-sizing: border-box;
+}
+
+.scroll-column > img:first-child,
+.scroll-column > img:nth-child(2) {
+  position: relative;
+}
+
+.scroll-column > img:first-child::after,
+.scroll-column > img:nth-child(2)::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+}
+
+@keyframes scrollUpInfinite {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+}
+</style>
