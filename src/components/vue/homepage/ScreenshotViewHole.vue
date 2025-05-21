@@ -2,9 +2,52 @@
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
+import { ref, onMounted, onUnmounted } from "vue";
 
 const { t } = useI18n();
+const imageContainer = ref<HTMLElement | null>(null);
+
+function handleMouseMove(e: MouseEvent) {
+  if (!imageContainer.value) return;
+
+  // Get container boundaries
+  const rect = imageContainer.value.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+
+  // Calculate distance from center
+  const dx = e.clientX - centerX;
+  const dy = e.clientY - centerY;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+
+  // Define maximal distance
+  const maxDistance = Math.sqrt(Math.pow(rect.width / 2, 2) + Math.pow(rect.height / 2, 2));
+
+  // Normalize (1 = center, 0 = edge)
+  const normalized = 1 - Math.min(distance / maxDistance, 1);
+
+  // Map to duration range
+  const minDuration = 300;
+  const maxDuration = 1000;
+  const newDuration = minDuration + (maxDuration - minDuration) * (1 - normalized);
+
+  // Apply duration
+  imageContainer.value.style.transitionDuration = `${newDuration}ms`;
+}
+
+onMounted(() => {
+  if (imageContainer.value) {
+    imageContainer.value.addEventListener('mousemove', handleMouseMove);
+  }
+});
+
+onUnmounted(() => {
+  if (imageContainer.value) {
+    imageContainer.value.removeEventListener('mousemove', handleMouseMove);
+  }
+});
 </script>
+
 
 <template>
   <section class="pt-20 pb-16 bg-gray-50 dark:bg-gray-800 w-full">
@@ -36,7 +79,7 @@ const { t } = useI18n();
         class="absolute inset-0 -mx-px bg-gray-950/5 dark:bg-gray-900/30 py-2 pr-[calc(--spacing(2)+1px)] pl-2 xl:border-l xl:border-gray-950/5 dark:xl:border-gray-700/20">
         <div
           class="overflow-hidden rounded-2xl bg-gray-50 dark:bg-gray-700 outline outline-gray-950/5 dark:outline-gray-600/20 [--right:45%] flex size-full items-center justify-center saturate-80">
-          <div class="size-430 shrink-0 group">
+          <div class="size-430 shrink-0 group" ref="imageContainer">
             <div
               class="relative top-(--top,30%) right-(--right,54%) grid size-full origin-top-left rotate-x-55 rotate-y-0 -rotate-z-45 grid-cols-4 gap-8 transform-3d">
                 <div class="flex flex-col gap-8 transform translate-y-[750px] transition-transform duration-1000 ease-linear group-hover:translate-y-0" style="will-change: transform;">
