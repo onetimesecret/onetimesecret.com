@@ -3,13 +3,14 @@
  * src/templates/content-page-template.astro
  *
  * This is a template for creating new content pages with i18n support
- * Copy this file and modify the parameters as needed
+ * Copy this file to src/pages/[lang]/your-page-name.astro and modify as needed
  *
  * Usage:
  * 1. Copy this file to src/pages/[lang]/your-page-name.astro
  * 2. Change "page-slug" to match your content file name (without extension)
- * 3. Add your content in src/content/pages/your-page-name.md or
- *    src/content/pages/{lang}/your-page-name.md for localized versions
+ * 3. Add your content in:
+ *    - src/content/pages/page-slug.md (default English version)
+ *    - src/content/pages/{lang}/page-slug.md (localized versions)
  */
 import ContentPageLayout from "@/layouts/ContentPageLayout.astro";
 import LanguageFallbackNotice from "@/components/LanguageFallbackNotice.astro";
@@ -32,5 +33,14 @@ const { Content, pageProps, isFallback } =
   <Content />
 </ContentPageLayout>
 
-{/* Show fallback notice if content isn't available in requested language */}
+{
+  /*
+  Show fallback notice only when:
+  1. The requested language is not the default language (English)
+  2. The content is not available in the requested language
+
+  Pages that only exist in the root content directory (without language-specific
+  versions) will not show fallback notices when viewed in the default language.
+*/
+}
 {isFallback && <LanguageFallbackNotice lang={lang} />}

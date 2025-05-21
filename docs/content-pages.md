@@ -103,7 +103,12 @@ When a user requests a page in a specific language:
 
 1. System checks for content file in requested language
 2. If not found, falls back to the default file (English)
-3. Shows a fallback notice to inform the user
+3. Shows a fallback notice ONLY when:
+   - The requested language is not the default language (English)
+   - The content is not available in the requested language
+
+Note: Pages that only exist in the root content directory (without language-specific versions)
+will not show fallback notices when viewed in the default language.
 
 ## Template
 

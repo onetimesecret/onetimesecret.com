@@ -57,8 +57,10 @@ export async function getContentPageData(
   // Render the content
   const renderedContent = await page.render();
 
-  // Track if we're using a fallback
-  const isFallback = !page.id.startsWith(`${lang}/`);
+  // Track if we're using a fallback - only true when:
+  // 1. We're not viewing in the default language AND
+  // 2. We had to use a non-language-specific version
+  const isFallback = lang !== DEFAULT_LANGUAGE && !page.id.startsWith(`${lang}/`);
 
   return {
     page,

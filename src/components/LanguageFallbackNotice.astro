@@ -5,6 +5,14 @@
  * A reusable component to display a notification when content
  * is not available in the user's preferred language and a fallback
  * is being used instead.
+ *
+ * This component should only be displayed when:
+ * 1. The requested language is NOT the default language (English)
+ * 2. The content is not available in the requested language
+ *
+ * Note: Pages that only exist in the root content directory (without
+ * language-specific versions) will not show this notice when viewed
+ * in the default language.
  */
 import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
 import type { SupportedLanguage } from "@/i18n";
