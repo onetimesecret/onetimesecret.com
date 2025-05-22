@@ -74,15 +74,15 @@ const currentPath = Astro.url.pathname;
     <div class="flex flex-1">
       <a
         href="/"
-        class="-m-1.5 p-1.5">
+        class="-m-1.5 p-1.5 flex items-center">
         <span class="sr-only">{t("onetime-secret-literal")}</span>
         <img
           class:list={[
-            "size-16 w-auto rounded-lg",
-            large ? "sm:size-18" : "sm:size-14",
+            "w-auto rounded-lg",
+            large ? "h-16 sm:h-18" : "h-14 sm:h-16",
           ]}
           src="/etc/img/onetime-logo-md.png"
-          alt="Onetime Secret logo"
+          alt={t("onetime-secret-literal-logo")}
         />
       </a>
     </div>
@@ -116,13 +116,14 @@ const currentPath = Astro.url.pathname;
     </div>
 
     <!-- Desktop navigation -->
-    <div class="hidden md:ml-10 md:flex md:gap-x-8 md:pr-4">
+    <div class="hidden md:ml-8 lg:ml-12 md:flex md:gap-x-6 lg:gap-x-8 md:pr-2 lg:pr-4">
       {
         navigation.map((item) => (
           <a
             href={item.href}
             class:list={[
-              "focus-visible:outline-brand-500 text-sm/6 font-semibold transition-colors focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2",
+              "focus-visible:outline-brand-500 font-brand font-semibold transition-colors focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2",
+              large ? "text-lg/6" : "text-base/6",
               currentPath === item.href
                 ? "text-brand-600 dark:text-brand-400"
                 : "hover:text-brand-600 dark:hover:text-brand-400 text-gray-900 dark:text-gray-100",
@@ -135,15 +136,21 @@ const currentPath = Astro.url.pathname;
 
     <!-- Desktop sign in/up buttons -->
     <div
-      class="hidden md:flex md:flex-1 md:items-center md:justify-end md:space-x-4">
+      class="hidden md:flex md:flex-1 md:items-center md:justify-end md:space-x-3 lg:space-x-5">
       <a
         href="/signin"
-        class="hover:text-brand-600 dark:hover:text-brand-400 focus-visible:outline-brand-500 text-sm/6 font-semibold text-gray-900 transition-colors focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-gray-100">
+        class:list={[
+          "hover:text-brand-600 dark:hover:text-brand-400 focus-visible:outline-brand-500 font-brand font-semibold text-gray-900 transition-colors focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-gray-100",
+          large ? "text-lg/6" : "text-base/6",
+        ]}>
         {t("auth.sign-in")}
       </a>
       <a
         href="/signup"
-        class="bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 rounded-md px-4 py-2 text-sm/6 font-semibold text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+        class:list={[
+          "bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 rounded-md font-brand font-semibold text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+          large ? "text-lg/6 px-5 py-2.5" : "text-base/6 px-4 py-2",
+        ]}>
         {t("auth.sign-up")}
         <span aria-hidden="true">&rarr;</span>
       </a>

@@ -9,7 +9,7 @@ const { t } = useI18n();
 <template>
   <section
     aria-labelledby="hero-heading"
-    class="relative w-full bg-gradient-to-b bg-white dark:bg-gray-900 pt-20 sm:pt-24 md:pt-32 pb-12 sm:pb-16 md:pb-20">
+    class="relative w-full bg-gradient-to-b bg-white dark:bg-gray-900 pt-16 sm:pt-16 md:pt-17 pb-12 sm:pb-16 md:pb-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center">
         <h1
