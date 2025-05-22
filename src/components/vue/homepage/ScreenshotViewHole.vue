@@ -65,9 +65,9 @@ onMounted(() => {
     );
 
     columns.value.forEach((column, index) => {
-      const columnSpeed = defaultSpeed.value + (Math.random() * 40 + 5);
+      const columnSpeed = defaultSpeed.value + (Math.random() * 25 + 5);
       column.style.animationDuration = `${columnSpeed}s`;
-      column.style.animationDelay = `-${index * 5}s`;
+      column.style.animationDelay = `-${index * 3}s`;
       if (index % 2 === 1) {
         column.style.animationDirection = "reverse";
       }
@@ -127,7 +127,7 @@ onUnmounted(() => {
             @keydown.space.prevent="toggleAnimation"
             @focus="handleFocusIn"
             @blur="handleFocusOut"
-            class="size-430 group relative rounded-2xl outline-none ring-2 ring-transparent focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus:ring-offset-gray-800 dark:focus:ring-offset-gray-950 cursor-pointer"
+            class="size-430 shrink-0 group relative rounded-2xl outline-none ring-2 ring-transparent focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus:ring-offset-gray-800 dark:focus:ring-offset-gray-950 cursor-pointer"
             :class="{ 'ring-brand-500 ring-offset-2': focusVisible }">
             <!-- Pause/play overlay - always visible but with varying opacity -->
             <div
@@ -151,7 +151,8 @@ onUnmounted(() => {
             </div>
             <div
               class="relative top-(--top,50%) right-(--right,54%) grid size-full origin-top-left rotate-x-55 rotate-y-0 -rotate-z-45 grid-cols-4 gap-4 transform-3d">
-              <div class="flex flex-col gap-8 scroll-column">
+              <!-- Gap Value: 2 -->
+              <div class="flex flex-col gap-4 scroll-column">
                 <img
                   src="/etc/examples2/recipient-bright-petimg-1586x2380.png"
                   class="aspect-[1586/2380] ring ring-gray-950/5 shadow-md"
@@ -189,7 +190,8 @@ onUnmounted(() => {
                   height="755"
                   alt="Screenshot 4 (bright)" />
               </div>
-              <div class="flex flex-col gap-8 scroll-column">
+              <!-- Gap Value: 4 -->
+              <div class="flex flex-col gap-4 scroll-column">
                 <img
                   src="/etc/examples/custom-domain-us-1.jpeg"
                   class="aspect-[2488/2298] ring ring-gray-950/5 shadow-md"
@@ -232,7 +234,8 @@ onUnmounted(() => {
                   height="2634"
                   alt="" />
               </div>
-              <div class="flex flex-col gap-8 scroll-column">
+              <!-- Gap Value: 8 -->
+              <div class="flex flex-col gap-4 scroll-column">
                 <img
                   src="/etc/examples/custom-domain-nz.jpeg"
                   class="aspect-[2488/2298] ring ring-gray-950/5"
@@ -254,11 +257,6 @@ onUnmounted(() => {
                   width="2488"
                   height="2554"
                   alt="" /><img
-                  src="/etc/examples/homepage-attempt4.png"
-                  class="aspect-[1189/1892] ring ring-gray-950/5"
-                  width="1189"
-                  height="1892"
-                  alt="" /><img
                   src="/etc/examples/custom-domain-eu-4.jpeg"
                   class="aspect-[2488/2792] ring ring-gray-950/5"
                   width="2488"
@@ -275,7 +273,8 @@ onUnmounted(() => {
                   height="2292"
                   alt="" />
               </div>
-              <div class="flex flex-col gap-8 scroll-column">
+              <!-- Gap Value: 12 -->
+              <div class="flex flex-col gap-4 scroll-column">
                 <img
                   src="/etc/examples/custom-domain-eu.jpeg"
                   class="aspect-[2488/2298] ring ring-gray-950/5"
@@ -291,11 +290,6 @@ onUnmounted(() => {
                   class="aspect-[2488/2306] ring ring-gray-950/5"
                   width="2488"
                   height="2306"
-                  alt="" /><img
-                  src="/etc/examples/homepage-attempt5.png"
-                  class="aspect-[1189/1892] ring ring-gray-950/5"
-                  width="1189"
-                  height="1892"
                   alt="" /><img
                   src="/etc/examples2/recipient-dark-pet-1586x2380.png"
                   class="aspect-[1586/2380] ring ring-gray-950/5 shadow-md"
@@ -318,7 +312,7 @@ onUnmounted(() => {
                   height="2154"
                   alt="AFB pet 3 (dark)" />
               </div>
-              <div class="flex flex-col gap-8 scroll-column">
+              <div class="flex flex-col gap-4 scroll-column">
                 <img
                   src="/etc/examples2/recipient-dark-ss1-1012x802.png"
                   class="aspect-[1012/802] ring ring-gray-950/5 shadow-md"
@@ -358,8 +352,8 @@ onUnmounted(() => {
 .scroll-column {
   animation: scrollUpInfinite 40s linear infinite;
   will-change: transform;
-  /* Double the content to ensure seamless looping */
   position: relative;
+  min-height: 2000px; /* Ensure enough height for scrolling */
 }
 
 /* Container styling to ensure proper overflow */
@@ -371,6 +365,7 @@ onUnmounted(() => {
 /* Ensure columns have enough height */
 .grid {
   overflow: hidden;
+  min-height: 100%;
 }
 
 /* The scrolling animation */
@@ -379,7 +374,6 @@ onUnmounted(() => {
     transform: translateY(0);
   }
   100% {
-    /* Move exactly by the height of the original content */
     transform: translateY(calc(-50%));
   }
 }
