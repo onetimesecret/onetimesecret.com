@@ -108,6 +108,12 @@ export function createConfig(
         env.VITE_PUBLIC_API_BASE_URL,
       ),
 
+      // Sentry configuration variables
+      "import.meta.env.VITE_SENTRY_DSN": JSON.stringify(env.VITE_SENTRY_DSN),
+      "import.meta.env.VITE_SENTRY_ENVIRONMENT": JSON.stringify(
+        env.VITE_SENTRY_ENVIRONMENT || "production"
+      ),
+
       /**
        * CRITICAL: This global variable must be defined as a boolean (not string)
        * Vue i18n expects this variable during installation and will throw:

@@ -1,39 +1,52 @@
 import * as Sentry from "@sentry/astro";
+import { browserTracingIntegration, replayIntegration } from "@sentry/browser";
 /**
+ * Client-side Sentry configuration
  *
- * "Passing runtime-specific configuration options (dsn, release, environment,
- * sampleRate, tracesSampleRate, replaysSessionSampleRate,
- * replaysOnErrorSampleRate) to the Sentry integration will be deprecated in
- * future versions. We recommend passing your configuration directly to the
- * respective Sentry.init() calls in sentry.client.config.js and
- * sentry.server.config.js instead." -- https://docs.sentry.io/platforms/javascript/guides/astro/#astro-integration-setup
+ * For client-side code in a static site, we must use import.meta.env
+ * for accessing environment variables, and those variables must be
+ * prefixed with VITE_ to be included in the client bundle.
  *
- * @see https://spotlightjs.com/setup/astro
+ * @see https://docs.sentry.io/platforms/javascript/guides/astro/#astro-integration-setup
+ * @see https://docs.astro.build/en/guides/environment-variables/#client-side-env-variables
  */
-const DEBUG = process.env.VITE_DEBUG === "true";
+
+// Important: For client-side variables, use import.meta.env
+const DSN = import.meta.env.VITE_SENTRY_DSN;
+const ENVIRONMENT = import.meta.env.VITE_SENTRY_ENVIRONMENT || "production";
+const DEBUG = import.meta.env.VITE_DEBUG === "true";
 
 Sentry.init({
-  // Runtime DSN configuration (can also be handled by Sentry.init)
-  dsn: process.env.CLIENT_SENTRY_DSN,
+  // Use import.meta.env for client-side variables
+  dsn: DSN,
+  environment: ENVIRONMENT,
 
-  // Enable Spotlight in development environment
+  // Enable Spotlight in development only
   spotlight: DEBUG,
 
-  // Adjust sample rates as needed for performance monitoring
-  tracesSampleRate: 0,
+  // Set proper sample rates to enable event capturing
+  tracesSampleRate: 0.25, // Adjust based on traffic volume
+  replaysSessionSampleRate: 0.1, // Capture 10% of sessions
+  replaysOnErrorSampleRate: 1.0, // Capture all sessions with errors
 
-  // Adjust sample rates for session replay
-  replaysSessionSampleRate: 0,
-  replaysOnErrorSampleRate: 0,
+  // Add required integrations using functional API
+  integrations: [browserTracingIntegration(), replayIntegration()],
 
   // sourceMapsUploadOptions are configured in astro.config.mjs for build time
 
-  // Adds request headers and IP for users, for more info visit:
-  // https://docs.sentry.io/platforms/javascript/guides/astro/configuration/options/#sendDefaultPii
+  // Adds request headers and IP for users
   sendDefaultPii: false,
-
-  integrations: [],
 });
-// In the frontend it's important that you init Spotlight after Sentry
 
-// Spotlight.init();
+// Test error in development mode only
+if (DEBUG) {
+  console.log("Sentry DSN configured:", DSN ? "Yes" : "No");
+  setTimeout(() => {
+    console.log("Triggering test error for Sentry...");
+    try {
+      throw new Error("Test error for Sentry configuration");
+    } catch (error) {
+      Sentry.captureException(error);
+    }
+  }, 5000);
+}
