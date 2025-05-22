@@ -151,7 +151,6 @@ onUnmounted(() => {
             </div>
             <div
               class="relative top-(--top,50%) right-(--right,54%) grid size-full origin-top-left rotate-x-55 rotate-y-0 -rotate-z-45 grid-cols-4 gap-4 transform-3d">
-              <!-- Gap Value: 2 -->
               <div class="flex flex-col gap-4 scroll-column">
                 <img
                   src="/etc/examples2/recipient-bright-petimg-1586x2380.png"
@@ -190,103 +189,100 @@ onUnmounted(() => {
                   height="755"
                   alt="Screenshot 4 (bright)" />
               </div>
-              <!-- Gap Value: 4 -->
               <div class="flex flex-col gap-4 scroll-column">
                 <img
-                  src="/etc/examples/custom-domain-us-1.jpeg"
+                  src="/etc/examples/custom-domain-us-1-dark.jpeg"
                   class="aspect-[2488/2298] ring ring-gray-950/5 shadow-md"
                   width="2488"
                   height="2298"
                   alt="" /><img
-                  src="/etc/examples/homepage-expanded.png"
+                  src="/etc/examples/homepage-expanded-light.png"
                   class="aspect-[1954/2124] ring ring-gray-950/5 shadow-md"
                   width="1954"
                   height="2124"
                   alt="" /><img
-                  src="/etc/examples/custom-domain-eu-2.jpeg"
+                  src="/etc/examples/custom-domain-eu-2-dark.jpeg"
                   class="aspect-[2488/2306] ring ring-gray-950/5 shadow-md"
                   width="2488"
                   height="2306"
                   alt="" /><img
-                  src="/etc/examples/homepage.png"
+                  src="/etc/examples/homepage-light.png"
                   class="aspect-[1970/2108] ring ring-gray-950/5 shadow-md"
                   width="1970"
                   height="2108"
                   alt="" /><img
-                  src="/etc/examples/custom-domain-eu-4.jpeg"
+                  src="/etc/examples/custom-domain-eu-4-dark.jpeg"
                   class="aspect-[2488/2554] ring ring-gray-950/5 shadow-md"
                   width="2488"
                   height="2554"
                   alt="" /><img
-                  src="/etc/examples/custom-domain-us-3.jpeg"
+                  src="/etc/examples/custom-domain-us-3-dark.jpeg"
                   class="aspect-[2488/2554] ring ring-gray-950/5 shadow-md"
                   width="2488"
                   height="2554"
                   alt="" /><img
-                  src="/etc/examples/custom-domain-us-6.jpeg"
+                  src="/etc/examples/custom-domain-us-6-light.jpeg"
                   class="aspect-[2488/2910] ring ring-gray-950/5 shadow-md"
                   width="2488"
                   height="2910"
                   alt="" /><img
-                  src="/etc/examples/custom-domain-eu-3.jpeg"
+                  src="/etc/examples/custom-domain-eu-3-dark.jpeg"
                   class="aspect-[2488/2634] ring ring-gray-950/5 shadow-md"
                   width="2488"
                   height="2634"
                   alt="" />
               </div>
-              <!-- Gap Value: 8 -->
               <div class="flex flex-col gap-4 scroll-column">
                 <img
-                  src="/etc/examples/custom-domain-nz.jpeg"
+                  src="/etc/examples/custom-domain-nz-dark.jpeg"
                   class="aspect-[2488/2298] ring ring-gray-950/5"
                   width="2488"
                   height="2298"
                   alt="" /><img
-                  src="/etc/examples/custom-domain-us-4.jpeg"
+                  src="/etc/examples/custom-domain-us-4-light.jpeg"
                   class="aspect-[2488/2554] ring ring-gray-950/5"
                   width="2488"
                   height="2554"
                   alt="" /><img
-                  src="/etc/examples/custom-domain-eu-1.jpeg"
+                  src="/etc/examples/custom-domain-eu-1-dark.jpeg"
                   class="aspect-[2488/2306] ring ring-gray-950/5"
                   width="2488"
                   height="2306"
                   alt="" /><img
-                  src="/etc/examples/custom-domain-us-5.jpeg"
+                  src="/etc/examples/custom-domain-us-5-light.jpeg"
                   class="aspect-[2488/2554] ring ring-gray-950/5"
                   width="2488"
                   height="2554"
                   alt="" /><img
-                  src="/etc/examples/custom-domain-eu-4.jpeg"
+                  src="/etc/examples/custom-domain-eu-4-dark.jpeg"
                   class="aspect-[2488/2792] ring ring-gray-950/5"
                   width="2488"
                   height="2792"
                   alt="" /><img
-                  src="/etc/examples/custom-domain-us-2.jpeg"
+                  src="/etc/examples/custom-domain-us-2-light.jpeg"
                   class="aspect-[2488/2298] ring ring-gray-950/5"
                   width="2488"
                   height="2298"
                   alt="" /><img
-                  src="/etc/examples/screenshot-custom-domain.png"
+                  src="/etc/examples/screenshot-custom-domain-dark.png"
                   class="aspect-[2470/2292] ring ring-gray-950/5"
                   width="2470"
                   height="2292"
                   alt="" />
               </div>
-              <!-- Gap Value: 12 -->
               <div class="flex flex-col gap-4 scroll-column">
                 <img
-                  src="/etc/examples/custom-domain-eu.jpeg"
+                  src="/etc/examples/custom-domain-eu-light.jpeg"
                   class="aspect-[2488/2298] ring ring-gray-950/5"
                   width="2488"
                   height="2298"
                   alt="" /><img
-                  src="/etc/examples/homepage-attemp1.png"
+                  src="/etc/examples/homepage-attemp1-dark.png"
                   class="aspect-[1058/1036] ring ring-gray-950/5"
                   width="1058"
                   height="1036"
                   alt="" /><img
-                  src="/etc/examples/custom-domain-us.jpeg"
+                  src="/etc/examples/custom-domain-us-light.jpeg"
                   class="aspect-[2488/2306] ring ring-gray-950/5"
                   width="2488"
                   height="2306"
