@@ -65,161 +65,159 @@ const navigation = [
 const currentPath = Astro.url.pathname;
 ---
 
-<div class="relative z-50">
-  <BrandBar />
-  <header
-    class="sticky top-0 z-50 bg-white/95 shadow-sm backdrop-blur-sm dark:bg-gray-900/95">
-    <nav
-      class="mx-auto flex max-w-7xl items-center justify-between p-4 sm:p-6 lg:px-8"
-      aria-label="Global">
-      <div class="flex flex-1">
-        <a
-          href="/"
-          class="-m-1.5 p-1.5">
-          <span class="sr-only">{t("onetime-secret-literal")}</span>
-          <img
-            class:list={["w-auto rounded-lg", large ? "size-18" : "size-14"]}
-            src="/etc/img/onetime-logo-md.png"
-            alt="Onetime Secret logo"
-          />
-        </a>
-      </div>
-
-      <!-- Mobile menu button -->
-      <div class="flex md:hidden">
-        <button
-          type="button"
-          id="mobile-menu-button"
-          class="focus-visible:outline-brand-500 -m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700 focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-gray-300"
-          aria-expanded="false"
-          aria-controls="mobile-navigation-menu">
-          <span class="sr-only">{t("banner.open-menu")}</span>
-          <span
-            id="open-icon"
-            class="block">
-            <Bars3Icon
-              class="size-6"
-              aria-hidden="true"
-            />
-          </span>
-          <span
-            id="close-icon"
-            class="hidden">
-            <XMarkIcon
-              class="size-6"
-              aria-hidden="true"
-            />
-          </span>
-        </button>
-      </div>
-
-      <!-- Desktop navigation -->
-      <div class="hidden md:ml-10 md:flex md:gap-x-8 md:pr-4">
-        {
-          navigation.map((item) => (
-            <a
-              href={item.href}
-              class:list={[
-                "focus-visible:outline-brand-500 text-sm/6 font-semibold transition-colors focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2",
-                currentPath === item.href
-                  ? "text-brand-600 dark:text-brand-400"
-                  : "hover:text-brand-600 dark:hover:text-brand-400 text-gray-900 dark:text-gray-100",
-              ]}>
-              {item.name}
-            </a>
-          ))
-        }
-      </div>
-
-      <!-- Desktop sign in/up buttons -->
-      <div
-        class="hidden md:flex md:flex-1 md:items-center md:justify-end md:space-x-4">
-        <a
-          href="/signin"
-          class="hover:text-brand-600 dark:hover:text-brand-400 focus-visible:outline-brand-500 text-sm/6 font-semibold text-gray-900 transition-colors focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-gray-100">
-          {t("auth.sign-in")}
-        </a>
-        <a
-          href="/signup"
-          class="bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 rounded-md px-4 py-2 text-sm/6 font-semibold text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-          {t("auth.sign-up")}
-          <span aria-hidden="true">&rarr;</span>
-        </a>
-      </div>
-    </nav>
-
-    <div class="w-full">
-      <slot />
+<BrandBar />
+<header
+  class="sticky top-0 z-50 bg-white/95 shadow-sm backdrop-blur-sm dark:bg-gray-900/95">
+  <nav
+    class="mx-auto flex max-w-7xl items-center justify-between p-4 sm:p-6 lg:px-8"
+    aria-label="Global">
+    <div class="flex flex-1">
+      <a
+        href="/"
+        class="-m-1.5 p-1.5">
+        <span class="sr-only">{t("onetime-secret-literal")}</span>
+        <img
+          class:list={["w-auto rounded-lg", large ? "size-18" : "size-14"]}
+          src="/etc/img/onetime-logo-md.png"
+          alt="Onetime Secret logo"
+        />
+      </a>
     </div>
-  </header>
 
-  <!-- Mobile menu (hidden by default) -->
+    <!-- Mobile menu button -->
+    <div class="flex md:hidden">
+      <button
+        type="button"
+        id="mobile-menu-button"
+        class="focus-visible:outline-brand-500 -m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700 focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-gray-300"
+        aria-expanded="false"
+        aria-controls="mobile-navigation-menu">
+        <span class="sr-only">{t("banner.open-menu")}</span>
+        <span
+          id="open-icon"
+          class="block">
+          <Bars3Icon
+            class="size-6"
+            aria-hidden="true"
+          />
+        </span>
+        <span
+          id="close-icon"
+          class="hidden">
+          <XMarkIcon
+            class="size-6"
+            aria-hidden="true"
+          />
+        </span>
+      </button>
+    </div>
+
+    <!-- Desktop navigation -->
+    <div class="hidden md:ml-10 md:flex md:gap-x-8 md:pr-4">
+      {
+        navigation.map((item) => (
+          <a
+            href={item.href}
+            class:list={[
+              "focus-visible:outline-brand-500 text-sm/6 font-semibold transition-colors focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2",
+              currentPath === item.href
+                ? "text-brand-600 dark:text-brand-400"
+                : "hover:text-brand-600 dark:hover:text-brand-400 text-gray-900 dark:text-gray-100",
+            ]}>
+            {item.name}
+          </a>
+        ))
+      }
+    </div>
+
+    <!-- Desktop sign in/up buttons -->
+    <div
+      class="hidden md:flex md:flex-1 md:items-center md:justify-end md:space-x-4">
+      <a
+        href="/signin"
+        class="hover:text-brand-600 dark:hover:text-brand-400 focus-visible:outline-brand-500 text-sm/6 font-semibold text-gray-900 transition-colors focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-gray-100">
+        {t("auth.sign-in")}
+      </a>
+      <a
+        href="/signup"
+        class="bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 rounded-md px-4 py-2 text-sm/6 font-semibold text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+        {t("auth.sign-up")}
+        <span aria-hidden="true">&rarr;</span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="w-full">
+    <slot />
+  </div>
+</header>
+
+<!-- Mobile menu (hidden by default) -->
+<div
+  id="mobile-navigation-menu"
+  class="fixed inset-0 z-[100] hidden md:hidden">
   <div
-    id="mobile-navigation-menu"
-    class="fixed inset-0 z-[100] hidden md:hidden">
-    <div
-      class="fixed inset-0 bg-black/25 backdrop-blur-sm"
-      id="mobile-menu-backdrop">
-    </div>
-    <div
-      id="mobile-menu-panel"
-      class="fixed inset-y-0 right-0 z-[101] w-full translate-x-full overflow-y-auto bg-white px-6 py-6 transition-transform duration-300 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 dark:bg-gray-900 dark:sm:ring-gray-700/30">
-      <div class="flex items-center justify-between">
-        <a
-          href="/"
-          class="-m-1.5 p-1.5">
-          <span class="sr-only">{t("onetime-secret-literal")}</span>
-          <img
-            class="h-12 w-auto rounded-lg"
-            src="/etc/img/onetime-logo-sm.png"
-            alt="Onetime Secret logo"
+    class="fixed inset-0 bg-black/25 backdrop-blur-sm"
+    id="mobile-menu-backdrop">
+  </div>
+  <div
+    id="mobile-menu-panel"
+    class="fixed inset-y-0 right-0 z-[101] w-full translate-x-full overflow-y-auto bg-white px-6 py-6 transition-transform duration-300 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 dark:bg-gray-900 dark:sm:ring-gray-700/30">
+    <div class="flex items-center justify-between">
+      <a
+        href="/"
+        class="-m-1.5 p-1.5">
+        <span class="sr-only">{t("onetime-secret-literal")}</span>
+        <img
+          class="h-12 w-auto rounded-lg"
+          src="/etc/img/onetime-logo-sm.png"
+          alt="Onetime Secret logo"
+        />
+      </a>
+      <button
+        type="button"
+        id="mobile-menu-close"
+        class="-m-2.5 rounded-md p-2.5 text-gray-700 dark:text-gray-300">
+        <span class="sr-only">{t("banner.close-menu")}</span>
+        <span class="block">
+          <XMarkIcon
+            class="size-6"
+            aria-hidden="true"
           />
-        </a>
-        <button
-          type="button"
-          id="mobile-menu-close"
-          class="-m-2.5 rounded-md p-2.5 text-gray-700 dark:text-gray-300">
-          <span class="sr-only">{t("banner.close-menu")}</span>
-          <span class="block">
-            <XMarkIcon
-              class="size-6"
-              aria-hidden="true"
-            />
-          </span>
-        </button>
-      </div>
-      <div class="mt-6 flow-root">
-        <div class="-my-6 divide-y divide-gray-500/10 dark:divide-gray-700/30">
-          <div class="space-y-2 py-6">
-            {
-              navigation.map((item) => (
-                <a
-                  href={item.href}
-                  class:list={[
-                    "focus-visible:outline-brand-500 -mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2",
-                    currentPath === item.href ||
-                    (currentPath === "/" && item.href === "/") // Logic for active link
-                      ? "text-brand-600 dark:text-brand-400 bg-gray-50 dark:bg-gray-800"
-                      : "text-gray-900 hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-800",
-                  ]}>
-                  {item.name}
-                </a>
-              ))
-            }
-          </div>
-          <div class="space-y-2 py-6">
-            <a
-              href="/signin"
-              class="focus-visible:outline-brand-500 -mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-gray-100 dark:hover:bg-gray-800">
-              {t("auth.sign-in")}
-            </a>
-            <a
-              href="/signup"
-              class="bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 -mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-              {t("auth.sign-up")}
-              <span aria-hidden="true">&rarr;</span>
-            </a>
-          </div>
+        </span>
+      </button>
+    </div>
+    <div class="mt-6 flow-root">
+      <div class="-my-6 divide-y divide-gray-500/10 dark:divide-gray-700/30">
+        <div class="space-y-2 py-6">
+          {
+            navigation.map((item) => (
+              <a
+                href={item.href}
+                class:list={[
+                  "focus-visible:outline-brand-500 -mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2",
+                  currentPath === item.href ||
+                  (currentPath === "/" && item.href === "/") // Logic for active link
+                    ? "text-brand-600 dark:text-brand-400 bg-gray-50 dark:bg-gray-800"
+                    : "text-gray-900 hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-800",
+                ]}>
+                {item.name}
+              </a>
+            ))
+          }
+        </div>
+        <div class="space-y-2 py-6">
+          <a
+            href="/signin"
+            class="focus-visible:outline-brand-500 -mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-gray-100 dark:hover:bg-gray-800">
+            {t("auth.sign-in")}
+          </a>
+          <a
+            href="/signup"
+            class="bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 -mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+            {t("auth.sign-up")}
+            <span aria-hidden="true">&rarr;</span>
+          </a>
         </div>
       </div>
     </div>
