@@ -61,13 +61,13 @@ const handleRegionChange = (region: Region) => {
   </template>
   <template v-else>
     <!-- Static placeholder used during build/SSR with matching DOM structure -->
-    <div class="relative inline-flex items-center text-sm text-gray-500" v-bind="$attrs">
-      <span class="self-center">{{ $t("web.secrets.securelyStored") }}</span>
-      <div class="relative ml-2 inline-flex items-center rounded-md bg-white px-2.5 py-0.5 text-sm font-medium text-gray-700 border border-gray-200">
+    <div id="region-selector" class="relative inline-flex items-center text-xs xs:text-sm text-gray-500 dark:text-gray-300" v-bind="$attrs">
+      <span class="inline self-center">{{ $t("web.secrets.securelyStored") }}</span>
+      <div class="relative ml-1 xs:ml-2 inline-flex items-center rounded-md bg-white dark:bg-gray-800 px-1.5 xs:px-2.5 py-0.5 text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600">
         <OIcon
           :collection="currentRegion.icon.collection"
           :name="currentRegion.icon.name"
-          class="size-4 mr-1.5 text-gray-500 self-center"
+          class="size-3 xs:size-4 mr-1 xs:mr-1.5 text-gray-500 dark:text-gray-300 self-center"
           :aria-label="`${currentRegion.displayName} region`"
         />
         <span class="self-center">{{ currentRegion.displayName }}</span>

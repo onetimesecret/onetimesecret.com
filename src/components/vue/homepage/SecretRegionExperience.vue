@@ -7,12 +7,12 @@
   An interactive experience enabling users to create secret messages across multiple regions, fostering confidence in data sovereignty while maintaining a frictionless workflow.
 -->
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { useI18n } from "vue-i18n";
-import ClientOnlyRegionSelector from "@/components/vue/homepage/regions/ClientOnlyRegionSelector.vue";
-import HomepageSecretForm from "@/components/vue/homepage/HomepageSecretForm.vue";
 import type { ApiResult } from "@/components/vue/forms/SecretForm.vue";
+import HomepageSecretForm from "@/components/vue/homepage/HomepageSecretForm.vue";
+import ClientOnlyRegionSelector from "@/components/vue/homepage/regions/ClientOnlyRegionSelector.vue";
 import type { Region } from "@/types/jurisdiction";
+import { ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 interface Props {
   currentRegion: Region;
@@ -86,28 +86,29 @@ defineExpose({
           <div class="flex flex-wrap justify-between items-center gap-4">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{
-                t("LABELS.create-link") ||
-                "Create a secure, self-destructing message"
+                t("LABELS.create_link")
               }}
             </h3>
 
-            <!-- Premium region selector with enhanced styling and animations -->
-            <div class="flex-shrink-0">
-              <ClientOnlyRegionSelector
-                v-if="isClient"
-                :current-region="currentRegion"
-                :available-regions="availableRegions"
-                class="rounded-lg px-2 py-1.5 bg-white/90 dark:bg-gray-700/90 border border-gray-200 dark:border-gray-600 shadow-sm transition-all duration-300"
-                :class="{
-                  'pulse-attention ring-2 ring-brand-400 dark:ring-brand-500 shadow-md':
-                    secretCreatedSuccessfully,
-                }"
-                @region-change="handleRegionChange" />
+            <!-- Region selector with enhanced styling -->
+            <div class="flex-shrink-0 ml-0 xs:ml-1 sm:ml-2 relative">
+              <div class="h-7 xs:h-8">
+                <ClientOnlyRegionSelector
+                  v-if="isClient"
+                  :current-region="currentRegion"
+                  :available-regions="availableRegions"
+                  class="rounded-lg px-1 xs:px-2 py-1 xs:py-1.5 bg-white/90 dark:bg-gray-700/90 border border-gray-200 dark:border-gray-600 shadow-sm transition-all duration-300 absolute top-0 left-0"
+                  :class="{
+                    'pulse-attention ring-2 ring-brand-400 dark:ring-brand-500 shadow-md':
+                      secretCreatedSuccessfully,
+                  }"
+                  @region-change="handleRegionChange" />
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="px-6 py-5 flex-grow">
+        <div class="px-0 xs:px-2 sm:px-6 py-2 xs:py-3 sm:py-5 flex-grow">
           <HomepageSecretForm
             ref="secretFormRef"
             :region-name="currentRegion.displayName"

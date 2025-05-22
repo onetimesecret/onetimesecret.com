@@ -205,7 +205,7 @@ const t = useTranslations(lang);
 const componentTranslations = {
   heading: t('welcomeHeading'),
   paragraph: t('welcomeParagraph'),
-  button: t('learnMore')
+  button: t('learn_more')
 };
 ---
 
