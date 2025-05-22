@@ -9,33 +9,7 @@ const imageContainer = ref<HTMLButtonElement | null>(null);
 const columns = ref<HTMLElement[]>([]);
 const defaultSpeed = ref(40); // seconds for one complete cycle
 const isAnimationPlaying = ref(true); // Track animation state
-
-function handleMouseMove(e: MouseEvent) {
-  if (!imageContainer.value) return;
-
-  const rect = imageContainer.value.getBoundingClientRect();
-  const centerX = rect.left + rect.width / 2;
-  const centerY = rect.top + rect.height / 2;
-
-  const dx = e.clientX - centerX;
-  const dy = e.clientY - centerY;
-  const distance = Math.sqrt(dx * dx + dy * dy);
-
-  const maxDistance = Math.sqrt(
-    Math.pow(rect.width / 2, 2) + Math.pow(rect.height / 2, 2),
-  );
-  const normalized = isAnimationPlaying.value
-    ? 1 - Math.min(distance / maxDistance, 1)
-    : 0;
-
-  const minSpeed = 90;
-  const maxSpeed = 120;
-  const newSpeed = minSpeed + (maxSpeed - minSpeed) * (1 - normalized);
-
-  columns.value.forEach((column) => {
-    column.style.animationDuration = `${newSpeed}s`;
-  });
-}
+const focusVisible = ref(false); // Track keyboard focus state
 
 function toggleAnimation() {
   isAnimationPlaying.value = !isAnimationPlaying.value;
@@ -49,34 +23,67 @@ function toggleAnimation() {
   });
 }
 
+// Handle keyboard focus visibility
+function handleFocusIn() {
+  focusVisible.value = true;
+}
+
+function handleFocusOut() {
+  focusVisible.value = false;
+}
+
+// Check if user prefers reduced motion
+function checkReducedMotion() {
+  const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (mediaQuery.matches) {
+    isAnimationPlaying.value = false;
+    columns.value.forEach((column) => {
+      column.style.animationPlayState = "paused";
+    });
+  }
+
+  // Listen for changes in preference
+  mediaQuery.addEventListener('change', (e) => {
+    if (e.matches) {
+      isAnimationPlaying.value = false;
+      columns.value.forEach((column) => {
+        column.style.animationPlayState = "paused";
+      });
+    } else {
+      isAnimationPlaying.value = true;
+      columns.value.forEach((column) => {
+        column.style.animationPlayState = "running";
+      });
+    }
+  });
+}
+
 onMounted(() => {
   if (imageContainer.value) {
-    imageContainer.value.addEventListener("mousemove", handleMouseMove);
-    // Click listener is now handled by @click in the template
-
     columns.value = Array.from(
       imageContainer.value.querySelectorAll(".scroll-column"),
     );
 
     columns.value.forEach((column, index) => {
-      const columnSpeed = defaultSpeed.value + (Math.random() * 10 - 5);
-      column.style.animationDuration = '120s';
+      const columnSpeed = defaultSpeed.value + (Math.random() * 40 + 5);
+      column.style.animationDuration = `${columnSpeed}s`;
       column.style.animationDelay = `-${index * 5}s`;
       if (index % 2 === 1) {
         column.style.animationDirection = "reverse";
       }
-      const originalContent = column.innerHTML;
-      column.innerHTML = originalContent + originalContent;
     });
+
+    // Check for reduced motion preference
+    checkReducedMotion();
   }
 });
 
 onUnmounted(() => {
-  if (imageContainer.value) {
-    imageContainer.value.removeEventListener("mousemove", handleMouseMove);
-    // Click listener is now handled by @click in the template
-  }
+  // Clean up any event listeners if needed
+  const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  mediaQuery.removeEventListener('change', () => {});
 });
+
 </script>
 
 <template>
@@ -107,6 +114,9 @@ onUnmounted(() => {
     <div class="relative h-64 sm:h-72 md:h-80 lg:h-84 xl:h-96 max-xl:line-t">
       <div
         class="absolute inset-0 -mx-px bg-gray-950/5 dark:bg-gray-900/30 py-2 pr-[calc(--spacing(2)+1px)] pl-2 xl:border-l xl:border-gray-950/5 dark:xl:border-gray-700/20">
+          <span class="sr-only">
+            {{t('web.homepage.visual_examples.sr_description')}}
+          </span>
         <div
           class="overflow-hidden rounded-2xl bg-gray-50 dark:bg-gray-700 outline outline-gray-950/5 dark:outline-gray-600/20 [--right:45%] flex size-full items-center justify-center saturate-80">
           <button
@@ -114,15 +124,20 @@ onUnmounted(() => {
             :aria-label="t('web.homepage.visual_examples.toggle_animation')"
             :aria-pressed="isAnimationPlaying"
             @click="toggleAnimation"
-            @mousemove="handleMouseMove"
             @keydown.enter="toggleAnimation"
-            class="size-430 group relative rounded-2xl focus:ring-5 focus:ring-brand-500 focus:ring-offset-gray-800 cursor-pointer">
-            <!-- Add pause overlay -->
+            @keydown.space.prevent="toggleAnimation"
+            @focus="handleFocusIn"
+            @blur="handleFocusOut"
+            class="size-430 group relative shrink-0 rounded-2xl outline-none ring-2 ring-transparent focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus:ring-offset-gray-800 dark:focus:ring-offset-gray-950 cursor-pointer"
+            :class="{ 'ring-brand-500 ring-offset-2': focusVisible }">
+            <!-- Pause/play overlay - always visible but with varying opacity -->
             <div
-              v-if="!isAnimationPlaying"
-              class="absolute inset-0 bg-black/40 flex items-center justify-center z-10 rounded-md">
-              <div class="text-white text-2xl font-bold">
-                {{ t("LABELS.paused") }}
+              class="absolute inset-0 flex items-center justify-center z-10 rounded-2xl transition-opacity duration-300"
+              :class="{'bg-black/40': !isAnimationPlaying, 'bg-black/0 hover:bg-black/20 group-focus:bg-black/20': isAnimationPlaying}">
+              <div
+                class="text-white text-2xl font-bold p-4 rounded-full bg-black/50 transition-opacity duration-300"
+                :class="{'opacity-100': !isAnimationPlaying, 'opacity-0 group-hover:opacity-100 group-focus:opacity-100': isAnimationPlaying}">
+                {{ isAnimationPlaying ? t("LABELS.playing") : t("LABELS.paused") }}
               </div>
             </div>
             <div
@@ -131,22 +146,22 @@ onUnmounted(() => {
                 <template v-for="i in 2">
                   <img
                     src="/etc/examples/custom-domain-us-1.jpeg"
-                    class="aspect-[2488/2298] ring ring-gray-950/5"
+                    class="aspect-[2488/2298] ring ring-gray-950/5  shadow-md"
                     width="2488"
                     height="2298"
                     alt="" /><img
                     src="/etc/examples/homepage-expanded.png"
-                    class="aspect-[1954/2124] ring ring-gray-950/5"
+                    class="aspect-[1954/2124] ring ring-gray-950/5  shadow-md"
                     width="1954"
                     height="2124"
                     alt="" /><img
                     src="/etc/examples/custom-domain-eu-2.jpeg"
-                    class="aspect-[2488/2306] ring ring-gray-950/5"
+                    class="aspect-[2488/2306] ring ring-gray-950/5  shadow-md"
                     width="2488"
                     height="2306"
                     alt="" /><img
                     src="/etc/examples/homepage.png"
-                    class="aspect-[1970/2108] ring ring-gray-950/5"
+                    class="aspect-[1970/2108] ring ring-gray-950/5  shadow-md"
                     width="1970"
                     height="2108"
                     alt="" />
@@ -156,22 +171,22 @@ onUnmounted(() => {
                 <template v-for="i in 2">
                   <img
                     src="/etc/examples/custom-domain-eu-5.jpeg"
-                    class="aspect-[2488/2554] ring ring-gray-950/5"
+                    class="aspect-[2488/2554] ring ring-gray-950/5  shadow-md"
                     width="2488"
                     height="2554"
                     alt="" /><img
                     src="/etc/examples/custom-domain-us-3.jpeg"
-                    class="aspect-[2488/2554] ring ring-gray-950/5"
+                    class="aspect-[2488/2554] ring ring-gray-950/5  shadow-md"
                     width="2488"
                     height="2554"
                     alt="" /><img
                     src="/etc/examples/custom-domain-us-6.jpeg"
-                    class="aspect-[2488/2910] ring ring-gray-950/5"
+                    class="aspect-[2488/2910] ring ring-gray-950/5  shadow-md"
                     width="2488"
                     height="2910"
                     alt="" /><img
                     src="/etc/examples/custom-domain-eu-3.jpeg"
-                    class="aspect-[2488/2634] ring ring-gray-950/5"
+                    class="aspect-[2488/2634] ring ring-gray-950/5  shadow-md"
                     width="2488"
                     height="2634"
                     alt="" />
@@ -285,9 +300,21 @@ onUnmounted(() => {
   }
 }
 
+/* Visual focus styles */
+button:focus-visible {
+  outline: 3px solid var(--color-brand-500);
+  outline-offset: 4px;
+}
+
+/* Handle focus visibility via JavaScript to work in all browsers */
+.focus-visible-ring {
+  outline: 3px solid var(--color-brand-500);
+  outline-offset: 4px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .scroll-column {
-    animation: none !important;
+    animation-play-state: paused !important;
   }
 }
 </style>

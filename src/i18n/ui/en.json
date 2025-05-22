@@ -46,6 +46,7 @@
     "terms-and-conditions": "Terms and Conditions",
     "security": "Security",
     "paused": "Paused",
+    "playing": "Playing",
     "feedback": "Feedback",
     "learn-about-our-security-measures": "Learn about our security measures",
     "terms": "Terms",
@@ -198,11 +199,11 @@
           "description": "Recipient views the secret, then it's permanently deleted"
         }
       },
-
       "visual_examples": {
         "title": "Custom Domain & Branding",
         "subtitle": "Reinforce your brand and build trust by using your own domain and logo.",
         "learn_more": "Learn More",
+        "sr_description": "An image carousel showing screenshots of examples of using onetime secret with custom branding.",
         "view_pricing": "View Pricing",
         "toggle_animation": "Toggle animation"
       },
