@@ -40,7 +40,7 @@
     "about": "À propos",
     "pricing": "Tarifs",
     "blog": "Blog",
-    "create-link": "Créer un lien secret",
+    "create_link": "Créer un lien secret",
     "docs": "Documentation",
     "privacy-policy": "Politique de confidentialité",
     "terms-and-conditions": "Conditions générales",
@@ -60,10 +60,10 @@
     "loading": "Chargement"
   },
   "web": {
-    "accessibilityLabels": {
-      "lightMode": "Mode clair",
-      "darkMode": "Mode sombre",
-      "toggleColorTheme": "Changer le thème de couleur"
+    "aria": {
+      "light_mode": "Mode clair",
+      "dark_mode": "Mode sombre",
+      "toggle_color_theme": "Changer le thème de couleur"
     },
     "theme": {
       "title": "Thème",
@@ -103,17 +103,17 @@
       "keepSensitiveInfo": "Gardez les informations sensibles hors de vos e-mails et de vos journaux de discussion.",
       "securelyStored": "Stocké en toute sécurité en",
       "europe": "Europe",
-      "createLink": "Créer un lien",
+      "create_link": "Créer un lien",
       "expirationTime": "Prolonger la durée de vie",
       "optionsHeading": "Options de confidentialité",
       "addPassphrase": "Ajouter une phrase de passe",
-      "secretPlaceholder": "Saisissez votre message secret ici...",
+      "secret_placeholder": "Saisissez votre message secret ici...",
       "secret-label": "Saisie de texte secret",
       "secret-description": "Saisissez le texte sensible que vous souhaitez partager en toute sécurité. Ce texte sera crypté et disponible une seule fois.",
-      "secretPlaceholder-premium": "Saisissez votre message secret ici (stocké en {noun})",
+      "secret_placeholder-premium": "Saisissez votre message secret ici (stocké en {noun})",
       "dataSovereignty": "Souveraineté des données",
       "regionExplanation": "Vos secrets restent dans la région que vous avez sélectionnée. Cela permet de répondre aux exigences de résidence des données et aux réglementations sur la confidentialité telles que le RGPD.",
-      "learnMoreRegions": "En savoir plus sur les domaines régionaux",
+      "learn_more_regions": "En savoir plus sur les domaines régionaux",
       "selectRegionHeading": "Sélectionner une région",
       "complianceNote": "Aide à répondre aux exigences SOC2, RGPD, CCPA et HIPAA en matière de confidentialité des données",
       "regionSelector": {
@@ -197,11 +197,11 @@
           "description": "Le destinataire consulte le secret, puis il est définitivement supprimé."
         }
       },
-      "visualExamples": {
+      "visual_examples": {
         "title": "Domaine personnalisé et image de marque",
         "subtitle": "Renforcez votre marque et établissez la confiance en utilisant votre propre domaine et logo.",
-        "learnMore": "En savoir plus",
-        "viewPricing": "Voir les tarifs"
+        "learn_more": "En savoir plus",
+        "view_pricing": "Voir les tarifs"
       },
       "featureHighlights": {
         "sectionTitle": "Fonctionnalités principales",

@@ -1,5 +1,6 @@
 {
   "onetime-secret-literal": "Onetime Secret",
+  "onetime-secret-literal-logo": "Onetime Secret logo",
   "all-rights-reserved": "All rights reserved",
   "read-our-latest-blog-posts": "Read our latest blog posts",
   "view-our-subscription-pricing": "View our subscription pricing",
@@ -39,12 +40,15 @@
   "LABELS": {
     "about": "About",
     "pricing": "Pricing",
+    "create": "Create",
     "blog": "Blog",
-    "create-link": "Create Secret Link",
+    "create_link": "Create Secret Link",
     "docs": "Documentation",
     "privacy-policy": "Privacy Policy",
     "terms-and-conditions": "Terms and Conditions",
     "security": "Security",
+    "paused": "Paused",
+    "playing": "Playing",
     "feedback": "Feedback",
     "learn-about-our-security-measures": "Learn about our security measures",
     "terms": "Terms",
@@ -60,10 +64,10 @@
     "loading": "Loading"
   },
   "web": {
-    "accessibilityLabels": {
-      "lightMode": "Light Mode",
-      "darkMode": "Dark Mode",
-      "toggleColorTheme": "Toggle color theme"
+    "aria": {
+      "light_mode": "Light Mode",
+      "dark_mode": "Dark Mode",
+      "toggle_color_theme": "Toggle color theme"
     },
     "theme": {
       "title": "Theme",
@@ -103,17 +107,18 @@
       "keepSensitiveInfo": "Keep sensitive info out of your email and chat logs.",
       "securelyStored": "Securely stored in",
       "europe": "Europe",
-      "createLink": "Create Link",
+      "create_link": "Create Link",
       "expirationTime": "Extend lifetime",
       "optionsHeading": "Privacy Options",
       "addPassphrase": "Add passphrase",
-      "secretPlaceholder": "Type your secret message here...",
+      "secret_placeholder": "Type your secret message here...",
+      "secret_placeholder_mobile": "Type secret here...",
       "secret-label": "Secret text input",
       "secret-description": "Enter the sensitive text you want to share securely. This text will be encrypted and available only once.",
-      "secretPlaceholder-premium": "Type your secret message here (stored in {noun})",
+      "secret_placeholder_stored": "Type your secret message here (stored in {noun})",
       "dataSovereignty": "Data Sovereignty",
       "regionExplanation": "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR.",
-      "learnMoreRegions": "Learn more about regional domains",
+      "learn_more_regions": "Learn more about regional domains",
       "selectRegionHeading": "Select Region",
       "complianceNote": "Helps with SOC2, GDPR, CCPA & HIPAA requirements for data privacy",
       "regionSelector": {
@@ -197,11 +202,13 @@
           "description": "Recipient views the secret, then it's permanently deleted"
         }
       },
-      "visualExamples": {
+      "visual_examples": {
         "title": "Custom Domain & Branding",
         "subtitle": "Reinforce your brand and build trust by using your own domain and logo.",
-        "learnMore": "Learn More",
-        "viewPricing": "View Pricing"
+        "learn_more": "Learn More",
+        "sr_description": "An image carousel showing screenshots of examples of using onetime secret with custom branding.",
+        "view_pricing": "View Pricing",
+        "toggle_animation": "Toggle animation"
       },
       "featureHighlights": {
         "sectionTitle": "Key Features",

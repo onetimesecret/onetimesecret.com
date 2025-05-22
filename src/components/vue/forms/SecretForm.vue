@@ -282,7 +282,7 @@ const createAnotherSecret = () => {
 </script>
 
 <template>
-  <div class="mx-auto max-w-xl">
+  <div class="mx-auto max-w-xl w-full px-0 xs:px-1 sm:px-0">
     <transition
       name="fade"
       mode="out-in"
@@ -297,14 +297,14 @@ const createAnotherSecret = () => {
           <textarea
             v-model="secretText"
             ref="secretTextArea"
-            rows="3"
+            rows="6"
             autofocus
             @focus="focusTextArea"
             :aria-label="t('web.secrets.secret-label')"
             aria-describedby="secret-description"
-            class="block w-full rounded-md border-0 py-3 pl-4 pr-32 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm disabled:opacity-50 bg-white dark:bg-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-brand-500 focus:ring-opacity-50"
+            class="block w-full rounded-md border-0 py-2 sm:py-3 pl-3 xs:pl-4 pr-28 xs:pr-32 sm:pr-36 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 placeholder:text-sm text-sm disabled:opacity-50 bg-white dark:bg-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-brand-500 focus:ring-opacity-50"
             :placeholder="
-              props.placeholder || t('web.secrets.secretPlaceholder')"
+              props.placeholder || t('web.secrets.secret_placeholder')"
             :disabled="isLoading"></textarea>
           <div id="secret-description" class="sr-only">
             {{ t('web.secrets.secret-description') }}
@@ -313,12 +313,13 @@ const createAnotherSecret = () => {
           <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5 z-10">
             <button
               type="button"
-              class="inline-flex font-brand items-center justify-center min-w-[7rem] rounded-md border border-transparent bg-brand-500 px-3 py-2 m-1 text-sm text-white font-semibold shadow-sm hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 disabled:opacity-50 disabled:bg-gray-400"
+              class="inline-flex font-brand items-center justify-center min-w-[4rem] xs:min-w-[5rem] sm:min-w-[7rem] rounded-md border border-transparent bg-brand-500 px-1 xs:px-2 sm:px-3 py-1 sm:py-2 m-1 text-base xs:text-sm text-white font-semibold shadow-sm hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 disabled:opacity-50 disabled:bg-gray-400"
               :disabled="isLoading || !secretText.trim()"
               @click="handleCreateLink">
-              <span v-if="!isLoading">{{
-                t("web.secrets.createLink") || "Create Link"
-              }}</span>
+              <span v-if="!isLoading">
+                <span class="hidden sm:inline">{{t("web.secrets.create_link")}}</span>
+                <span class="sm:hidden inline">{{t("LABELS.create")}}</span>
+              </span>
               <span v-else>{{ t("LABELS.loading") }}</span>
             </button>
           </div>
