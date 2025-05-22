@@ -61,7 +61,7 @@
     "loading": "Loading"
   },
   "web": {
-    "accessibility_labels": {
+    "aria": {
       "light_mode": "Light Mode",
       "dark_mode": "Dark Mode",
       "toggle_color_theme": "Toggle color theme",

@@ -60,7 +60,7 @@
     "loading": "Wird geladen"
   },
   "web": {
-    "accessibility_labels": {
+    "aria": {
       "light_mode": "Heller Modus",
       "dark_mode": "Dunkler Modus",
       "toggle_color_theme": "Farbthema umschalten"

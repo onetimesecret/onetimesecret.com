@@ -60,7 +60,7 @@
     "loading": "Chargement"
   },
   "web": {
-    "accessibility_labels": {
+    "aria": {
       "light_mode": "Mode clair",
       "dark_mode": "Mode sombre",
       "toggle_color_theme": "Changer le thème de couleur"
