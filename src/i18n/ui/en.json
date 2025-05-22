@@ -61,10 +61,11 @@
     "loading": "Loading"
   },
   "web": {
-    "accessibilityLabels": {
-      "lightMode": "Light Mode",
-      "darkMode": "Dark Mode",
-      "toggleColorTheme": "Toggle color theme"
+    "accessibility_labels": {
+      "light_mode": "Light Mode",
+      "dark_mode": "Dark Mode",
+      "toggle_color_theme": "Toggle color theme",
+      "pause_animation": "Pause image scrolling"
     },
     "theme": {
       "title": "Theme",

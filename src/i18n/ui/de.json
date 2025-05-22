@@ -60,10 +60,10 @@
     "loading": "Wird geladen"
   },
   "web": {
-    "accessibilityLabels": {
-      "lightMode": "Heller Modus",
-      "darkMode": "Dunkler Modus",
-      "toggleColorTheme": "Farbthema umschalten"
+    "accessibility_labels": {
+      "light_mode": "Heller Modus",
+      "dark_mode": "Dunkler Modus",
+      "toggle_color_theme": "Farbthema umschalten"
     },
     "theme": {
       "title": "Thema",

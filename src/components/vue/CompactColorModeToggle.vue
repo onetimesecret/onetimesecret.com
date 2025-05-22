@@ -73,7 +73,7 @@ onMounted(() => {
     type="button"
     class="rounded-md p-1.5 text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:text-gray-300 dark:hover:bg-gray-800"
     @click="toggleColorMode"
-    :aria-label="t('web.accessibilityLabels.toggleColorTheme')"
+    :aria-label="t('web.accessibility_labels.toggle_color_theme')"
   >
     <SunIcon v-if="colorMode === 'dark'" class="size-5" aria-hidden="true" />
     <MoonIcon v-else class="size-5" aria-hidden="true" />

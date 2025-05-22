@@ -140,7 +140,7 @@ onMounted(() => {
       :aria-pressed="colorMode === 'dark'"
     >
       <SunIcon :class="iconSizeClass" aria-hidden="true" />
-      <span class="sr-only">{{ $t('web.accessibilityLabels.lightMode') || 'Light Mode' }}</span>
+      <span class="sr-only">{{ $t('web.accessibility_labels.light_mode') || 'Light Mode' }}</span>
     </button>
 
     <button
@@ -156,7 +156,7 @@ onMounted(() => {
       :aria-pressed="colorMode === 'light'"
     >
       <MoonIcon :class="iconSizeClass" aria-hidden="true" />
-      <span class="sr-only">{{ $t('web.accessibilityLabels.darkMode') || 'Dark Mode' }}</span>
+      <span class="sr-only">{{ $t('web.accessibility_labels.dark_mode') || 'Dark Mode' }}</span>
     </button>
   </div>
 </template>

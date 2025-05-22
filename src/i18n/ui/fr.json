@@ -60,10 +60,10 @@
     "loading": "Chargement"
   },
   "web": {
-    "accessibilityLabels": {
-      "lightMode": "Mode clair",
-      "darkMode": "Mode sombre",
-      "toggleColorTheme": "Changer le thème de couleur"
+    "accessibility_labels": {
+      "light_mode": "Mode clair",
+      "dark_mode": "Mode sombre",
+      "toggle_color_theme": "Changer le thème de couleur"
     },
     "theme": {
       "title": "Thème",
