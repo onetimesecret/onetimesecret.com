@@ -77,7 +77,10 @@ const currentPath = Astro.url.pathname;
         class="-m-1.5 p-1.5">
         <span class="sr-only">{t("onetime-secret-literal")}</span>
         <img
-          class:list={["w-auto rounded-lg", large ? "size-18" : "size-14"]}
+          class:list={[
+            "size-16 w-auto rounded-lg",
+            large ? "sm:size-18" : "sm:size-14",
+          ]}
           src="/etc/img/onetime-logo-md.png"
           alt="Onetime Secret logo"
         />

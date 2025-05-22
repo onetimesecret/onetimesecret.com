@@ -86,7 +86,7 @@ defineExpose({
           <div class="flex flex-wrap justify-between items-center gap-4">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{
-                t("LABELS.create-link") ||
+                t("LABELS.create_link") ||
                 "Create a secure, self-destructing message"
               }}
             </h3>
@@ -107,7 +107,7 @@ defineExpose({
           </div>
         </div>
 
-        <div class="px-6 py-5 flex-grow">
+        <div class="px-0 xs:px-2 sm:px-6 py-2 xs:py-3 sm:py-5 flex-grow">
           <HomepageSecretForm
             ref="secretFormRef"
             :region-name="currentRegion.displayName"
