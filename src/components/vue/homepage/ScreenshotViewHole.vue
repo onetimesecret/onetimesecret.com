@@ -100,21 +100,21 @@ onUnmounted(() => {
       class="text-center pb-8 sm:pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <h2
         class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
-        {{ t("web.homepage.visualExamples.title") }}
+        {{ t("web.homepage.visual_examples.title") }}
       </h2>
       <p class="mt-4 text-lg leading-6 text-gray-600 dark:text-gray-300">
-        {{ t("web.homepage.visualExamples.subtitle") }}
+        {{ t("web.homepage.visual_examples.subtitle") }}
       </p>
       <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4 justify-center">
         <a
           href="https://docs.onetimesecret.com/en/custom-domains/"
           class="inline-flex font-brand items-center justify-center rounded-md border border-brand-600 bg-white px-6 py-3 text-base font-medium text-brand-600 shadow-sm hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:border-brand-500 dark:bg-gray-700 dark:text-brand-400 dark:hover:bg-gray-600 dark:focus:ring-offset-gray-800">
-          {{ t("web.homepage.visualExamples.learnMore") }}
+          {{ t("web.homepage.visual_examples.learn_more") }}
         </a>
         <a
           href="/pricing"
           class="inline-flex font-brand items-center justify-center rounded-md border border-transparent bg-brand-600 px-6 py-3 text-lg font-medium text-white shadow-sm hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
-          {{ t("web.homepage.visualExamples.viewPricing") }}
+          {{ t("web.homepage.visual_examples.view_pricing") }}
         </a>
       </div>
     </div>

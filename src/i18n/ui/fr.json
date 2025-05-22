@@ -113,7 +113,7 @@
       "secretPlaceholder-premium": "Saisissez votre message secret ici (stocké en {noun})",
       "dataSovereignty": "Souveraineté des données",
       "regionExplanation": "Vos secrets restent dans la région que vous avez sélectionnée. Cela permet de répondre aux exigences de résidence des données et aux réglementations sur la confidentialité telles que le RGPD.",
-      "learnMoreRegions": "En savoir plus sur les domaines régionaux",
+      "learn_more_regions": "En savoir plus sur les domaines régionaux",
       "selectRegionHeading": "Sélectionner une région",
       "complianceNote": "Aide à répondre aux exigences SOC2, RGPD, CCPA et HIPAA en matière de confidentialité des données",
       "regionSelector": {
@@ -197,11 +197,11 @@
           "description": "Le destinataire consulte le secret, puis il est définitivement supprimé."
         }
       },
-      "visualExamples": {
+      "visual_examples": {
         "title": "Domaine personnalisé et image de marque",
         "subtitle": "Renforcez votre marque et établissez la confiance en utilisant votre propre domaine et logo.",
-        "learnMore": "En savoir plus",
-        "viewPricing": "Voir les tarifs"
+        "learn_more": "En savoir plus",
+        "view_pricing": "Voir les tarifs"
       },
       "featureHighlights": {
         "sectionTitle": "Fonctionnalités principales",

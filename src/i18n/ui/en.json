@@ -64,8 +64,7 @@
     "aria": {
       "light_mode": "Light Mode",
       "dark_mode": "Dark Mode",
-      "toggle_color_theme": "Toggle color theme",
-      "pause_animation": "Pause image scrolling"
+      "toggle_color_theme": "Toggle color theme"
     },
     "theme": {
       "title": "Theme",
@@ -115,7 +114,7 @@
       "secretPlaceholder-premium": "Type your secret message here (stored in {noun})",
       "dataSovereignty": "Data Sovereignty",
       "regionExplanation": "Your secrets stay in your selected region. This helps meet data residency requirements and privacy regulations like GDPR.",
-      "learnMoreRegions": "Learn more about regional domains",
+      "learn_more_regions": "Learn more about regional domains",
       "selectRegionHeading": "Select Region",
       "complianceNote": "Helps with SOC2, GDPR, CCPA & HIPAA requirements for data privacy",
       "regionSelector": {
@@ -199,11 +198,13 @@
           "description": "Recipient views the secret, then it's permanently deleted"
         }
       },
-      "visualExamples": {
+
+      "visual_examples": {
         "title": "Custom Domain & Branding",
         "subtitle": "Reinforce your brand and build trust by using your own domain and logo.",
-        "learnMore": "Learn More",
-        "viewPricing": "View Pricing"
+        "learn_more": "Learn More",
+        "view_pricing": "View Pricing",
+        "toggle_animation": "Toggle animation"
       },
       "featureHighlights": {
         "sectionTitle": "Key Features",

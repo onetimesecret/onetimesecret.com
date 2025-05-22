@@ -217,7 +217,7 @@ onUnmounted(() => {
       <a
         href="https://docs.onetimesecret.com/en/regions/"
         class="mt-3 block text-sm font-medium text-brand-600 hover:text-brand-500">
-        {{ t("web.secrets.learnMoreRegions") }}
+        {{ t("web.secrets.learn_more_regions") }}
       </a>
     </div>
   </div>

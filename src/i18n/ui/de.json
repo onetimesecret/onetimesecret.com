@@ -113,7 +113,7 @@
       "secretPlaceholder-premium": "Geben Sie hier Ihre geheime Nachricht ein (gespeichert in {noun})",
       "dataSovereignty": "Datensouveränität",
       "regionExplanation": "Ihre Geheimnisse bleiben in der von Ihnen ausgewählten Region. Dies hilft, Anforderungen an den Datenstandort und Datenschutzbestimmungen wie die DSGVO zu erfüllen.",
-      "learnMoreRegions": "Erfahren Sie mehr über regionale Domains",
+      "learn_more_regions": "Erfahren Sie mehr über regionale Domains",
       "selectRegionHeading": "Region auswählen",
       "complianceNote": "Unterstützt die Einhaltung von SOC2, DSGVO, CCPA & HIPAA-Anforderungen zum Datenschutz",
       "regionSelector": {
@@ -197,11 +197,11 @@
           "description": "Empfänger sieht das Geheimnis, dann wird es dauerhaft gelöscht"
         }
       },
-      "visualExamples": {
+      "visual_examples": {
         "title": "Eigene Domain & Branding",
         "subtitle": "Stärken Sie Ihre Marke und schaffen Sie Vertrauen durch Verwendung Ihrer eigenen Domain und Ihres Logos.",
-        "learnMore": "Mehr erfahren",
-        "viewPricing": "Preise anzeigen"
+        "learn_more": "Mehr erfahren",
+        "view_pricing": "Preise anzeigen"
       },
       "featureHighlights": {
         "sectionTitle": "Hauptfunktionen",
