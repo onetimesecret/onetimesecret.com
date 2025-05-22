@@ -35,35 +35,15 @@ jobs:
 
       - name: Run harmonize-locale-files script
         id: harmonize
+        shell: bash
+        env:
+          COPY_ENGLISH: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.copy_english == 'true' }}
         run: |
-          # Determine whether to copy English phrases based on input or default to true
-          COPY_OPTION=""
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            if [[ "${{ github.event.inputs.copy_english }}" == "true" ]]; then
-              COPY_OPTION="-c"
-            fi
-          else
-            # Default to copying English phrases on automated runs
-            COPY_OPTION="-c"
-          fi
+          # Make wrapper script executable
+          chmod +x "${GITHUB_WORKSPACE}/src/i18n/ui/scripts/github-action-harmonize.sh"
 
-          # Make scripts executable
-          chmod +x src/i18n/ui/scripts/harmonize-locale-files
-          chmod +x src/i18n/ui/scripts/harmonize-locale-file
-
-          # Run the harmonize script with verbose output
-          src/i18n/ui/scripts/harmonize-locale-files -v $COPY_OPTION
-
-          # Store exit code to determine if changes were made
-          HARMONIZE_EXIT_CODE=$?
-          echo "exit_code=$HARMONIZE_EXIT_CODE" >> $GITHUB_OUTPUT
-
-          # Check if changes were made to any locale files
-          if git diff --name-only | grep -q "src/i18n/ui/"; then
-            echo "changes_made=true" >> $GITHUB_OUTPUT
-          else
-            echo "changes_made=false" >> $GITHUB_OUTPUT
-          fi
+          # Run the wrapper script
+          "${GITHUB_WORKSPACE}/src/i18n/ui/scripts/github-action-harmonize.sh"
 
       - name: Generate translation needs report
         if: |
