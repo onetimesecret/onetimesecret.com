@@ -1,5 +1,6 @@
 {
   "onetime-secret-literal": "Onetime Secret",
+  "onetime-secret-literal-logo": "Onetime Secret Logo",
   "all-rights-reserved": "Alle Rechte vorbehalten",
   "read-our-latest-blog-posts": "Lesen Sie unsere neuesten Blogbeiträge",
   "view-our-subscription-pricing": "Sehen Sie unsere Abonnementpreise",
@@ -39,12 +40,15 @@
   "LABELS": {
     "about": "Über uns",
     "pricing": "Preise",
+    "create": "Erstellen",
     "blog": "Blog",
     "create_link": "Geheimen Link erstellen",
     "docs": "Dokumentation",
     "privacy-policy": "Datenschutzerklärung",
     "terms-and-conditions": "Allgemeine Geschäftsbedingungen",
     "security": "Sicherheitsmaßnahmen",
+    "paused": "Pausiert",
+    "playing": "Wird abgespielt",
     "feedback": "Rückmeldung",
     "learn-about-our-security-measures": "Informieren Sie sich über unsere Sicherheitsmaßnahmen",
     "terms": "Allgemeine Geschäftsbedingungen",
@@ -108,9 +112,10 @@
       "optionsHeading": "Datenschutzoptionen",
       "addPassphrase": "Passphrase hinzufügen",
       "secret_placeholder": "Geben Sie hier Ihre geheime Nachricht ein...",
+      "secret_placeholder_mobile": "Geheimnis hier eingeben...",
       "secret-label": "Geheimtext-Eingabe",
       "secret-description": "Geben Sie den vertraulichen Text ein, den Sie sicher teilen möchten. Dieser Text wird verschlüsselt und ist nur einmal verfügbar.",
-      "secret_placeholder-premium": "Geben Sie hier Ihre geheime Nachricht ein (gespeichert in {noun})",
+      "secret_placeholder_stored": "Geben Sie hier Ihre geheime Nachricht ein (gespeichert in {noun})",
       "dataSovereignty": "Datensouveränität",
       "regionExplanation": "Ihre Geheimnisse bleiben in der von Ihnen ausgewählten Region. Dies hilft, Anforderungen an den Datenstandort und Datenschutzbestimmungen wie die DSGVO zu erfüllen.",
       "learn_more_regions": "Erfahren Sie mehr über regionale Domains",
@@ -201,7 +206,9 @@
         "title": "Eigene Domain & Branding",
         "subtitle": "Stärken Sie Ihre Marke und schaffen Sie Vertrauen durch Verwendung Ihrer eigenen Domain und Ihres Logos.",
         "learn_more": "Mehr erfahren",
-        "view_pricing": "Preise anzeigen"
+        "sr_description": "Ein Bildkarussell mit Screenshots von Beispielen für die Verwendung von Onetime Secret mit individueller Markengestaltung.",
+        "view_pricing": "Preise anzeigen",
+        "toggle_animation": "Animation umschalten"
       },
       "featureHighlights": {
         "sectionTitle": "Hauptfunktionen",

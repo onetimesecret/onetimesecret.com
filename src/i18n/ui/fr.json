@@ -1,5 +1,6 @@
 {
   "onetime-secret-literal": "Onetime Secret",
+  "onetime-secret-literal-logo": "Logo Onetime Secret",
   "all-rights-reserved": "Tous droits réservés",
   "read-our-latest-blog-posts": "Lisez nos derniers articles de blog",
   "view-our-subscription-pricing": "Consultez nos tarifs d'abonnement",
@@ -39,12 +40,15 @@
   "LABELS": {
     "about": "À propos",
     "pricing": "Tarifs",
+    "create": "Créer",
     "blog": "Blog",
     "create_link": "Créer un lien secret",
     "docs": "Documentation",
     "privacy-policy": "Politique de confidentialité",
     "terms-and-conditions": "Conditions générales",
     "security": "Mesures de sécurité",
+    "paused": "En pause",
+    "playing": "En lecture",
     "feedback": "Avis",
     "learn-about-our-security-measures": "En savoir plus sur nos mesures de sécurité",
     "terms": "Conditions",
@@ -108,9 +112,10 @@
       "optionsHeading": "Options de confidentialité",
       "addPassphrase": "Ajouter une phrase de passe",
       "secret_placeholder": "Saisissez votre message secret ici...",
+      "secret_placeholder_mobile": "Saisissez votre secret ici...",
       "secret-label": "Saisie de texte secret",
       "secret-description": "Saisissez le texte sensible que vous souhaitez partager en toute sécurité. Ce texte sera crypté et disponible une seule fois.",
-      "secret_placeholder-premium": "Saisissez votre message secret ici (stocké en {noun})",
+      "secret_placeholder_stored": "Saisissez votre message secret ici (stocké en {noun})",
       "dataSovereignty": "Souveraineté des données",
       "regionExplanation": "Vos secrets restent dans la région que vous avez sélectionnée. Cela permet de répondre aux exigences de résidence des données et aux réglementations sur la confidentialité telles que le RGPD.",
       "learn_more_regions": "En savoir plus sur les domaines régionaux",
@@ -201,7 +206,9 @@
         "title": "Domaine personnalisé et image de marque",
         "subtitle": "Renforcez votre marque et établissez la confiance en utilisant votre propre domaine et logo.",
         "learn_more": "En savoir plus",
-        "view_pricing": "Voir les tarifs"
+        "sr_description": "Un carrousel d'images montrant des captures d'écran d'exemples d'utilisation d'Onetime Secret avec une personnalisation de marque.",
+        "view_pricing": "Voir les tarifs",
+        "toggle_animation": "Activer/désactiver l'animation"
       },
       "featureHighlights": {
         "sectionTitle": "Fonctionnalités principales",
