@@ -1,4 +1,5 @@
-<!-- src/views/info/Icons.vue -->
+<!-- src/components/vue/IconsInfo.vue -->
+
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import IconSources from '@/components/vue/icons/IconSources.vue';

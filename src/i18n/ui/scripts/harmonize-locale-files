@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# Wrapper to repair all locale files
+#
+# Usage: ./harmonize-locale-files [-q quiet] [-f filename-only] [-v verbose]
+#
+# Options:
+#   -q: Suppress all output
+#   -f: Only output filenames of failed repairs
+#   -v: Show verbose repair output
+#   -c: copy values from base file
+#
+# Exit: 0 if all repairs succeed, 1 if any fail
+
+# Cross-platform solution for getting the script directory
+get_script_dir() {
+  SOURCE="${BASH_SOURCE[0]}"
+  while [ -h "$SOURCE" ]; do
+    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+  done
+  cd -P "$( dirname "$SOURCE" )" && pwd
+}
+
+SCRIPT_DIR=$(get_script_dir)
+
+# Determine locale files path
+if [[ -d "src/i18n/ui" ]]; then
+  # Running from project root
+  LOCALE_PATH="src/i18n/ui"
+elif [[ -d ".." && -f "../en.json" ]]; then
+  # Running from scripts directory
+  LOCALE_PATH=".."
+elif [[ -n "$GITHUB_WORKSPACE" && -d "$GITHUB_WORKSPACE/src/i18n/ui" ]]; then
+  # Running in GitHub Actions
+  LOCALE_PATH="$GITHUB_WORKSPACE/src/i18n/ui"
+else
+  echo "Error: Could not find locale directory" >&2
+  exit 1
+fi
+
+EXIT_CODE=0
+for locale in "$LOCALE_PATH"/*.json; do
+  [ "$locale" = "$LOCALE_PATH/en.json" ] && continue
+  "$SCRIPT_DIR/harmonize-locale-file" "$@" "$locale" || EXIT_CODE=1
+done
+exit $EXIT_CODE

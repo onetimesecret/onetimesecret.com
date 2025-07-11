@@ -60,7 +60,7 @@ const currentLocale = props.locale;
         </li>
         <li>
           <a
-            :href="localizeUrl('/blog', currentLocale)"
+            :href="`https://blog.onetimesecret.com/`"
             class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
             :aria-label="t('read-our-latest-blog-posts')"
             target="_blank"
