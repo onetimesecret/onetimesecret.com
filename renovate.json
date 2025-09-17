@@ -20,8 +20,13 @@
       "schedule": ["every weekend"]
     },
     {
-      "matchPackagePatterns": ["^typescript", "^@types/"],
-      "groupName": "TypeScript packages"
+      "matchPackageNames": ["typescript"],
+      "groupName": "TypeScript compiler"
+    },
+    {
+      "matchPackagePatterns": ["^@types/"],
+      "groupName": "TypeScript definitions",
+      "schedule": ["every weekend"]
     },
     {
       "matchPackagePatterns": ["^tailwindcss", "^@tailwindcss/"],
@@ -29,13 +34,15 @@
     },
     {
       "matchDepTypes": ["devDependencies"],
-      "groupName": "Dev dependencies",
+      "excludePackagePatterns": ["^astro", "^@astrojs/", "^vue", "^@vue/", "^typescript", "^@types/", "^tailwindcss", "^@tailwindcss/"],
+      "groupName": "Other dev dependencies",
       "schedule": ["every weekend"]
     }
   ],
   "vulnerabilityAlerts": {
-    "enabled": true
+    "enabled": true,
+    "prPriority": 10
   },
-  "prHourlyLimit": 2,
-  "prConcurrentLimit": 5
+  "prHourlyLimit": 1,
+  "prConcurrentLimit": 3
 }
