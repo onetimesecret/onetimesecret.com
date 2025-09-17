@@ -45,6 +45,7 @@ pnpm-debug.log*
 .vscode/
 .idea/
 .cache/
+.serena/
 .temp/
 
 .appendonlydir/
