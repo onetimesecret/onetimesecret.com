@@ -127,7 +127,7 @@ defineExpose({
 
         <div
           v-if="!showingResult"
-          class="mt-auto bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-850 px-6 py-4 text-sm text-center text-gray-600 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700">
+          class="mt-auto bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-850 px-6 py-4 text-sm text-center text-gray-700 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700">
           {{ t("web.secrets.complianceNote") }}
         </div>
       </div>
