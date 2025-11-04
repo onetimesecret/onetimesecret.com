@@ -1,4 +1,6 @@
-// vite-ssr-globals.js
+// vite-ssr-globals.ts
+import type { Plugin } from 'vite';
+
 /**
  * Vite plugin to ensure global variables are defined in SSR context
  *
@@ -26,30 +28,25 @@
  * }
  * ```
  */
-export default function viteSSRGlobals() {
+export default function viteSSRGlobals(): Plugin {
   return {
     name: "vite-ssr-globals",
     /**
      * Defines globals in the Vite dev server context
      * This ensures they're available when the server is rendering Vue components
-     * @param {import('vite').ViteDevServer} server - Vite dev server instance
      */
-    configureServer(server) {
+    configureServer() {
       // Define globals in SSR context
       if (typeof global !== "undefined") {
         // This defines the variable in Node.js context where SSR happens
-        global.__VUE_PROD_DEVTOOLS__ = false;
+        (global as any).__VUE_PROD_DEVTOOLS__ = false;
       }
     },
     /**
      * Transforms source files to include global variable definitions
      * This ensures variables are defined in both client and SSR contexts
-     *
-     * @param {string} code - Source code content
-     * @param {string} id - File path
-     * @returns {Object|null} - Transformed code or null if no transformation
      */
-    transform(code, id) {
+    transform(code: string, id: string) {
       // Early return if not for SSR or not a Vue/JS/TS file
       // We don't transform node_modules to avoid unexpected behavior
       if (
