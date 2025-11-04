@@ -86,33 +86,33 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="pt-20 sm:pt-24 pb-16 sm:pb-20 bg-gray-50 dark:bg-gray-800 w-full relative overflow-hidden">
+  <section class="pt-20 sm:pt-24 pb-16 sm:pb-20 bg-gray-50 dark:bg-gray-900 w-full relative overflow-hidden">
     <!-- Background decoration -->
     <div
       class="absolute inset-0 -z-10"
       aria-hidden="true">
       <div
-        class="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-brand-200 dark:via-brand-800 to-transparent"></div>
+        class="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-brand-200 dark:via-brand-500/40 to-transparent"></div>
     </div>
 
     <div
       class="text-center pb-8 sm:pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <h2
-        class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
+        class="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50 sm:text-4xl">
         {{ t("web.homepage.visual_examples.title") }}
       </h2>
-      <p class="mt-4 text-lg sm:text-xl leading-relaxed text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+      <p class="mt-4 text-lg sm:text-xl leading-relaxed text-gray-600 dark:text-gray-200 max-w-3xl mx-auto">
         {{ t("web.homepage.visual_examples.subtitle") }}
       </p>
       <div class="mt-8 flex flex-col gap-4 sm:flex-row sm:gap-6 justify-center items-center">
         <a
           href="https://docs.onetimesecret.com/en/custom-domains/"
-          class="inline-flex font-brand items-center justify-center rounded-xl border-2 border-brand-600 dark:border-brand-500 bg-white dark:bg-gray-700 px-8 py-4 text-base font-semibold text-brand-600 dark:text-brand-400 shadow-md hover:shadow-xl hover:bg-brand-50 dark:hover:bg-gray-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+          class="inline-flex font-brand items-center justify-center rounded-xl border-2 border-brand-600 dark:border-brand-400 bg-white dark:bg-gray-800 px-8 py-4 text-base font-semibold text-brand-600 dark:text-brand-300 shadow-md hover:shadow-xl hover:bg-brand-50 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
           {{ t("web.homepage.visual_examples.learn_more") }}
         </a>
         <a
           href="/pricing"
-          class="inline-flex font-brand items-center justify-center rounded-xl border border-transparent bg-gradient-to-r from-brand-600 to-brand-700 dark:from-brand-500 dark:to-brand-600 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-brand-600/30 dark:shadow-brand-500/30 hover:shadow-xl hover:shadow-brand-600/40 dark:hover:shadow-brand-500/40 hover:from-brand-700 hover:to-brand-800 dark:hover:from-brand-600 dark:hover:to-brand-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+          class="inline-flex font-brand items-center justify-center rounded-xl border border-transparent bg-gradient-to-r from-brand-600 to-brand-700 dark:from-brand-400 dark:to-brand-500 px-8 py-4 text-lg font-semibold text-white dark:text-gray-900 shadow-lg shadow-brand-600/30 dark:shadow-brand-400/40 hover:shadow-xl hover:shadow-brand-600/40 dark:hover:shadow-brand-400/50 hover:from-brand-700 hover:to-brand-800 dark:hover:from-brand-500 dark:hover:to-brand-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
           {{ t("web.homepage.visual_examples.view_pricing") }}
         </a>
       </div>

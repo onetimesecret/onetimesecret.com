@@ -77,22 +77,22 @@ defineExpose({
 
 <template>
   <section
-    class="bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-850 dark:to-gray-900 py-12 sm:py-16 relative">
+    class="bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 py-12 sm:py-16 relative">
     <!-- Background decoration -->
     <div
       class="absolute inset-0 -z-10"
       aria-hidden="true">
       <div
-        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-brand-400/5 to-transparent dark:from-brand-600/10 rounded-full blur-3xl"></div>
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-brand-400/5 to-transparent dark:from-brand-400/15 rounded-full blur-3xl"></div>
     </div>
 
     <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
       <div
-        class="flex flex-col min-h-[400px] sm:min-h-[350px] md:min-h-[400px] lg:min-h-[400px] bg-white dark:bg-gray-800 shadow-2xl shadow-gray-900/10 dark:shadow-black/30 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 backdrop-blur-sm">
+        class="flex flex-col min-h-[400px] sm:min-h-[350px] md:min-h-[400px] lg:min-h-[400px] bg-white dark:bg-gray-900 shadow-2xl shadow-gray-900/10 dark:shadow-black/40 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 backdrop-blur-sm">
         <div
-          class="bg-gradient-to-r from-brand-500/10 via-brand-400/8 to-brand-500/10 dark:from-brand-500/20 dark:via-brand-600/15 dark:to-brand-500/20 px-6 py-5 border-b border-gray-200 dark:border-gray-700">
+          class="bg-gradient-to-r from-brand-500/10 via-brand-400/8 to-brand-500/10 dark:from-brand-400/25 dark:via-brand-500/18 dark:to-brand-400/25 px-6 py-5 border-b border-gray-200 dark:border-gray-700">
           <div class="flex flex-wrap justify-between items-center gap-4">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-50">
               {{
                 t("LABELS.create_link")
               }}
@@ -105,9 +105,9 @@ defineExpose({
                   v-if="isClient"
                   :current-region="currentRegion"
                   :available-regions="availableRegions"
-                  class="rounded-lg px-2 xs:px-3 py-1.5 xs:py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 shadow-sm hover:shadow-md transition-all duration-300 absolute top-0 left-0"
+                  class="rounded-lg px-2 xs:px-3 py-1.5 xs:py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 shadow-sm hover:shadow-md transition-all duration-300 absolute top-0 left-0"
                   :class="{
-                    'pulse-attention ring-2 ring-brand-500 dark:ring-brand-400 shadow-lg':
+                    'pulse-attention ring-2 ring-brand-500 dark:ring-brand-300 shadow-lg':
                       secretCreatedSuccessfully,
                   }"
                   @region-change="handleRegionChange" />
@@ -127,7 +127,7 @@ defineExpose({
 
         <div
           v-if="!showingResult"
-          class="mt-auto bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-750 dark:to-gray-700 px-6 py-4 text-sm text-center text-gray-600 dark:text-gray-400 border-t border-gray-200 dark:border-gray-600">
+          class="mt-auto bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-850 px-6 py-4 text-sm text-center text-gray-600 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700">
           {{ t("web.secrets.complianceNote") }}
         </div>
       </div>
