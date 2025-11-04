@@ -49,6 +49,8 @@ export function createConfig(
   return {
     build: {
       sourcemap: "inline" as const,
+      minify: "esbuild", // Explicitly enable minification for production builds
+      cssMinify: true, // Enable CSS minification
     },
     plugins: [tailwindcss(), viteSSRGlobals()],
     resolve: {
