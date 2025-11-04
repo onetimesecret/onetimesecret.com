@@ -22,7 +22,8 @@ const emit = defineEmits<{
 const { locale } = useI18n();
 
 const docsUrl = computed(() => {
-  return `https://docs.onetimesecret.com/${locale.value}/regions/`;
+  const lang = locale.value.split('-')[0];
+  return `https://docs.onetimesecret.com/${lang}/regions/`;
 });
 
 const dismissBanner = () => {
