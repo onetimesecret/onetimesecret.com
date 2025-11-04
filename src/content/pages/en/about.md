@@ -32,7 +32,7 @@ Got questions or ideas? There's a [feedback form](/feedback) at the bottom of (a
 Happy sharing,
 Delano
 
-![Delano](@/assets/img/delano-g.png)
+<img src="@/assets/img/delano-g.png" alt="Delano" width="95" height="120" />
 
 ---
 

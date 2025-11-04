@@ -33,7 +33,7 @@ const { t } = useI18n();
           </span>
         </h1>
         <p
-          class="mt-6 sm:mt-8 max-w-2xl mx-auto text-lg text-gray-600 dark:text-gray-200 sm:text-xl md:text-2xl leading-relaxed animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
+          class="mt-6 sm:mt-8 max-w-2xl mx-auto text-lg text-gray-700 dark:text-gray-200 sm:text-xl md:text-2xl leading-relaxed animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
           {{ t("web.secrets.keepSensitiveInfo") }}
         </p>
         <div

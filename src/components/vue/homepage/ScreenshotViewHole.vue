@@ -101,7 +101,7 @@ onUnmounted(() => {
         class="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50 sm:text-4xl">
         {{ t("web.homepage.visual_examples.title") }}
       </h2>
-      <p class="mt-4 text-lg sm:text-xl leading-relaxed text-gray-600 dark:text-gray-200 max-w-3xl mx-auto">
+      <p class="mt-4 text-lg sm:text-xl leading-relaxed text-gray-700 dark:text-gray-200 max-w-3xl mx-auto">
         {{ t("web.homepage.visual_examples.subtitle") }}
       </p>
       <div class="mt-8 flex flex-col gap-4 sm:flex-row sm:gap-6 justify-center items-center">
