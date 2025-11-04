@@ -51,6 +51,36 @@ export function createConfig(
       sourcemap: "inline" as const,
       minify: "esbuild", // Explicitly enable minification for production builds
       cssMinify: true, // Enable CSS minification
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            // Split Vue and i18n vendor libraries into a separate chunk
+            if (id.includes("node_modules/vue") || id.includes("node_modules/vue-i18n")) {
+              return "vue-vendor";
+            }
+
+            // Split i18n JSON files into separate chunks by language
+            // This allows better caching - users only download their language
+            if (id.includes("src/i18n/ui/en.json")) {
+              return "i18n-en";
+            }
+            if (id.includes("src/i18n/ui/fr.json")) {
+              return "i18n-fr";
+            }
+            if (id.includes("src/i18n/ui/de.json")) {
+              return "i18n-de";
+            }
+            if (id.includes("src/i18n/ui/es.json")) {
+              return "i18n-es";
+            }
+
+            // Split @headlessui/vue into its own chunk
+            if (id.includes("node_modules/@headlessui/vue")) {
+              return "headlessui";
+            }
+          },
+        },
+      },
     },
     plugins: [tailwindcss(), viteSSRGlobals()],
     resolve: {
