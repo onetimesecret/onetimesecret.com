@@ -1,105 +1,113 @@
-# CLAUDE.md - Agent Guidelines for OnetimeSecret.com
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-Onetime Secret is an Astro 5+ static site generation (SSG) website that allows users to securely share sensitive information through self-destructing links. The site is built with Vue 3 and Tailwind CSS.
+Onetime Secret is an Astro 5+ static site generation (SSG) website that allows users to securely share sensitive information through self-destructing links. The site is built with Vue 3 components and Tailwind CSS styling.
 
-Proper stylization of project name: "Onetime Secret".
+**Tech Stack:**
+- Astro 5+ (SSG) with Vue 3.5+ islands
+- TypeScript 5.8+ with strict mode
+- Tailwind CSS 4.1.5
+- vue-i18n for internationalization
+- nanostores for state management (not Pinia/Vuex - required for Astro partial hydration)
+- Vite 6+ build tool
+- pnpm package manager
 
-## Icons
+## Essential Commands
 
-Use `<OIcon>` component from `src/components/vue/icons/OIcon.vue` for all icons:
+```bash
+# Development
+pnpm dev              # Start dev server with host access
+pnpm type-check       # Type check TypeScript
+pnpm lint:fix         # Lint and auto-fix issues
 
-```vue
-<OIcon collection="name" class="optional-classes" />
+# Build & Preview
+pnpm build            # Production build
+pnpm preview          # Preview production build
+
+# Code Quality (run before committing)
+pnpm type-check       # REQUIRED: Check TypeScript types
+pnpm lint:fix         # REQUIRED: Fix linting issues
+pnpm check            # REQUIRED: Verify Astro components
+
+# i18n Management
+pnpm i18n:scan        # Check for missing/unused translations
+pnpm i18n:add         # Add missing translation keys
 ```
 
-SVG sprites are available in `src/components/vue/icons/IconSources.vue`.
+## Architecture & Code Organization
 
-## i18n
+```
+/src
+  /pages/             # Astro pages (file-based routing)
+    /[lang]/          # Localized pages
+  /components/
+    /vue/             # Vue components
+      /icons/         # Icon system (OIcon.vue, IconSources.vue)
+      /forms/         # Form components
+      /layouts/       # Layout components
+  /layouts/           # Astro layouts
+  /i18n/              # Translation files (ui/*.json)
+  /stores/            # nanostores (state management)
+  /utils/             # Utility functions
+  /App.ts             # Vue app initialization with i18n
+```
 
-Translations are managed in `src/i18n/ui/en.json` and other language files. Use the keys hierarchically:
+**Key Architectural Decisions:**
+- Vue components use Astro's partial hydration (islands architecture)
+- State must use nanostores (framework-agnostic) instead of Pinia/Vuex
+- All routing handled by Astro's file-based system in `/pages`
+- i18n setup happens in `App.ts` before component hydration
 
+## Critical Development Rules
+
+### 1. Internationalization (MANDATORY)
 ```vue
+<!-- ALWAYS use i18n - NEVER hardcode text -->
 {{ $t('web.secrets.enterPassphrase') }}
 ```
+Translation files: `src/i18n/ui/*.json`
 
-**IMPORTANT**: All text must use the i18n system. Use existing keys or create new ones.
-
-## Build Commands
-
-Development:
-- Dev server: `pnpm dev` or `pnpm dev:local` (with local config)
-- Type check: `pnpm type-check` or `pnpm type-check:watch` (watch mode)
-
-Production:
-- Build: `pnpm build` (production) or `pnpm build:local` (development)
-
-Quality:
-- Lint: `pnpm lint` or `pnpm lint:fix` (auto-fix issues)
-- Vue tests: `pnpm test` (all) or `pnpm test:base run --filter=<test-name>` (single)
-- Ruby tests: `pnpm rspec` or `bundle exec rspec <file_path>`
-- E2E tests: `pnpm playwright` or `pnpm exec playwright test <test-file>`
-
-## Code Style Guidelines
-
-### General
-- Max line length: 100 characters
-- EOF newlines required
-- Commit message format: `[#123] Add feature` (imperative mood with issue number)
-- Avoid deep nesting (max 3 levels)
-- Limit function parameters (max 3)
-
-### TypeScript
-- Use strict mode and explicit types
-- Use Zod for validation and typed error handling
-
-### Vue Components
-- Use Composition API with `<script setup lang="ts">`
-- Use camelCase for props
-- Use Tailwind classes with consistent ordering
-- Long class lists should wrap lines
-
-### State Management
-- Use nanostores (@see https://docs.astro.build/en/recipes/sharing-state-islands/)
-- UI frameworks like React/Vue use "context" providers, but these won't work when partially hydrating components in Astro/Markdown. Nano Stores are framework-agnostic. Astro values flexibility with consistent developer experience regardless of framework preference.
-
-### Imports
-- Group and alphabetize: built-in → external → internal
-
-### Testing
-- Max 300 lines per test file
-- Use descriptive test names
-
-### Accessibility
-- Ensure WCAG compliance
-- Use proper ARIA attributes
-
-## Design TODOs
-
-See [DESIGN_TODOS.md](./DESIGN_TODOS.md) for the list of design issues and their recommended solutions.
-
-## Project Dependencies
-
-```json
-{
-  "astro": "^5.7.10",
-  "@astrojs/vue": "^5.0.13",
-  "vue": "^3.5.13",
-  "vue-router": "^4.4.5",
-  "pinia": "^3.0.1",
-  "vue-i18n": "^11.1.2",
-  "zod": "^3.24.1",
-  "vite": "^5.4.11",
-  "typescript": "^5.6.3",
-  "vue-tsc": "^2.1.10",
-  "vitest": "^2.1.8",
-  "tailwindcss": "4.1.5",
-  "@tailwindcss/vite": "4.1.5",
-  "@headlessui/vue": "^1.7.23",
-  "@sentry/astro": "^9.15.0",
-  "@vitejs/plugin-vue": "^5.1.4",
-  "eslint": "9.25.1",
-  "axios": "^1.7.7"
-}
+### 2. Icon System
+```vue
+<!-- ALWAYS use OIcon component -->
+<OIcon collection="name" class="optional-classes" />
 ```
+Icon sprites: `src/components/vue/icons/IconSources.vue`
+
+### 3. Vue Components
+- MUST use Composition API with `<script setup lang="ts">`
+- Props in camelCase
+- Explicit TypeScript types required
+
+### 4. State Management
+- MUST use nanostores (not Pinia/Vuex)
+- Required for Astro's partial hydration architecture
+
+### 5. Code Style
+- Max 100 characters per line
+- Imports: built-in → external → internal (alphabetized)
+- Commit format: `[#123] Add feature`
+
+## Path Aliases
+
+```typescript
+import Component from '@/components/Component.vue';      // src/
+import Config from '@config/app.ts';                     // config/
+import Root from '@root/astro.config.ts';                // project root
+```
+
+## Pre-Commit Checklist
+
+Before committing any changes, run:
+1. `pnpm type-check` - Ensure no TypeScript errors
+2. `pnpm lint:fix` - Fix all linting issues
+3. `pnpm check` - Verify Astro components
+4. `pnpm i18n:scan` - Check for missing translations
+
+## Additional Resources
+
+- Design issues and solutions: [DESIGN_TODOS.md](./DESIGN_TODOS.md)
+- Sentry implementation: [SENTRY-IMPLEMENTATION.md](./SENTRY-IMPLEMENTATION.md)
