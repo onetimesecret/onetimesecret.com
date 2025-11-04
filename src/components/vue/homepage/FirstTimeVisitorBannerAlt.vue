@@ -37,7 +37,7 @@ const switchToSuggestedRegion = () => {
           aria-hidden="true" />
         <p
           class="ml-3 font-medium text-brand-800 dark:text-brand-100 text-sm">
-          OnetimeSecret uses regional domains to keep your data in your chosen region.
+          {{ $t('banner.regional-domains-message') }}
         </p>
       </div>
       <div class="flex-shrink-0 sm:order-3 sm:ml-3">
@@ -45,7 +45,7 @@ const switchToSuggestedRegion = () => {
           type="button"
           class="mr-1 flex rounded-md bg-brand-100 dark:bg-brand-700 p-1.5 text-brand-700 dark:text-brand-100 hover:bg-brand-200 dark:hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-brand-800"
           @click="dismissBanner">
-          <span class="sr-only">Dismiss</span>
+          <span class="sr-only">{{ $t('banner.dismiss') }}</span>
           <XMarkIcon
             class="size-5"
             aria-hidden="true" />
@@ -58,8 +58,8 @@ const switchToSuggestedRegion = () => {
           target="_blank"
           rel="noopener noreferrer"
           class="flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 shadow-sm hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-brand-800"
-          aria-label="Learn more about regional domains">
-          Learn more
+          :aria-label="$t('banner.learn-more-about-regional-domains')">
+          {{ $t('banner.learn-more') }}
         </a>
         <!--<button
           type="button"

@@ -24,7 +24,11 @@
   "banner": {
     "try-it-out": "Essayez-le",
     "open-menu": "Ouvrir le menu principal",
-    "close-menu": "Fermer le menu"
+    "close-menu": "Fermer le menu",
+    "regional-domains-message": "OnetimeSecret utilise des domaines régionaux pour conserver vos données dans la région de votre choix.",
+    "learn-more": "En savoir plus",
+    "dismiss": "Ignorer",
+    "learn-more-about-regional-domains": "En savoir plus sur les domaines régionaux"
   },
   "navigation": {
     "home": "Accueil",
