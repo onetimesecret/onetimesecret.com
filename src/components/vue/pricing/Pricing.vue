@@ -43,31 +43,37 @@ const getPrice = (tier: ProductTier) => {
 // Feature comparison data for the two tiers
 const comparisonFeatures = [
   {
+    nameKey: "web.pricing.comparison.features.secret-sharing",
     name: "Secret sharing",
     basic: true,
     identity: true,
   },
   {
+    nameKey: "web.pricing.comparison.features.email-recipients",
     name: "Email recipients",
     basic: true,
     identity: true,
   },
   {
+    nameKey: "web.pricing.comparison.features.rest-api",
     name: "REST API access",
     basic: true,
     identity: true,
   },
   {
+    nameKey: "web.pricing.comparison.features.custom-domains",
     name: "Custom domains",
     basic: false,
     identity: true,
   },
   {
+    nameKey: "web.pricing.comparison.features.custom-branding",
     name: "Custom branding",
     basic: false,
     identity: true,
   },
   {
+    nameKey: "web.pricing.comparison.features.no-rate-limits",
     name: "No rate limits",
     basic: false,
     identity: true,
@@ -170,7 +176,7 @@ const comparisonFeatures = [
                       <h3
                         :id="tiers[0].id"
                         class="text-xl font-bold leading-8 text-gray-900 dark:text-white">
-                        {{ tiers[0].name }}
+                        {{ tiers[0].nameKey ? t(tiers[0].nameKey) : tiers[0].name }}
                       </h3>
                       <OIcon
                         :collection="tiers[0].icon.collection"
@@ -190,13 +196,13 @@ const comparisonFeatures = [
                     </div>
                     <p
                       class="mt-6 text-lg leading-7 text-gray-600 dark:text-gray-300">
-                      {{ tiers[0].description }}
+                      {{ tiers[0].descriptionKey ? t(tiers[0].descriptionKey) : tiers[0].description }}
                     </p>
                     <ul
                       role="list"
                       class="mt-10 space-y-4 text-base leading-7 text-gray-600 dark:text-gray-300">
                       <li
-                        v-for="feature in tiers[0].features"
+                        v-for="(feature, index) in tiers[0].features"
                         :key="feature"
                         class="flex gap-x-3">
                         <OIcon
@@ -204,7 +210,7 @@ const comparisonFeatures = [
                           name="check-circle-20-solid"
                           class="h-6 w-6 flex-none text-indigo-600 dark:text-indigo-400"
                           aria-hidden="true" />
-                        <span>{{ feature }}</span>
+                        <span>{{ tiers[0].featuresKeys && tiers[0].featuresKeys[index] ? t(tiers[0].featuresKeys[index]) : feature }}</span>
                       </li>
                     </ul>
                   </div>
@@ -217,7 +223,7 @@ const comparisonFeatures = [
                         :collection="tiers[0].icon.collection"
                         :name="tiers[0].icon.name"
                         size="5" />
-                      {{ tiers[0].cta }}
+                      {{ tiers[0].ctaKey ? t(tiers[0].ctaKey) : tiers[0].cta }}
                     </div>
                   </a>
                 </div>
@@ -236,7 +242,7 @@ const comparisonFeatures = [
                       <h3
                         :id="tiers[1].id"
                         class="text-xl font-bold leading-8 text-white">
-                        {{ tiers[1].name }}
+                        {{ tiers[1].nameKey ? t(tiers[1].nameKey) : tiers[1].name }}
                       </h3>
                       <OIcon
                         :collection="tiers[1].icon.collection"
@@ -255,13 +261,13 @@ const comparisonFeatures = [
                       >
                     </div>
                     <p class="mt-6 text-lg leading-7 text-white/90">
-                      {{ tiers[1].description }}
+                      {{ tiers[1].descriptionKey ? t(tiers[1].descriptionKey) : tiers[1].description }}
                     </p>
                     <ul
                       role="list"
                       class="mt-10 space-y-4 text-base leading-7 text-white/90">
                       <li
-                        v-for="feature in tiers[1].features"
+                        v-for="(feature, index) in tiers[1].features"
                         :key="feature"
                         class="flex gap-x-3">
                         <OIcon
@@ -269,7 +275,7 @@ const comparisonFeatures = [
                           name="check-circle-20-solid"
                           class="h-6 w-6 flex-none text-white"
                           aria-hidden="true" />
-                        <span>{{ feature }}</span>
+                        <span>{{ tiers[1].featuresKeys && tiers[1].featuresKeys[index] ? t(tiers[1].featuresKeys[index]) : feature }}</span>
                       </li>
                     </ul>
                   </div>
@@ -282,7 +288,7 @@ const comparisonFeatures = [
                         :collection="tiers[1].icon.collection"
                         :name="tiers[1].icon.name"
                         size="5" />
-                      {{ tiers[1].cta }}
+                      {{ tiers[1].ctaKey ? t(tiers[1].ctaKey) : tiers[1].cta }}
                     </div>
                   </a>
                 </div>
@@ -292,7 +298,7 @@ const comparisonFeatures = [
               <div class="mt-20 mx-auto max-w-4xl">
                 <h3
                   class="text-center text-2xl font-bold tracking-tight text-gray-900 dark:text-white mb-8">
-                  Compare Plans
+                  {{ t("web.pricing.compare-plans") }}
                 </h3>
                 <div
                   class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg ring-1 ring-gray-900/5 dark:ring-gray-700 overflow-hidden">
@@ -302,15 +308,15 @@ const comparisonFeatures = [
                         class="border-b border-gray-200 dark:border-gray-700">
                         <th
                           class="py-4 px-6 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                          Feature
+                          {{ t("web.pricing.comparison.feature") }}
                         </th>
                         <th
                           class="py-4 px-6 text-center text-sm font-semibold text-gray-900 dark:text-white">
-                          {{ tiers[0].name }}
+                          {{ tiers[0].nameKey ? t(tiers[0].nameKey) : tiers[0].name }}
                         </th>
                         <th
                           class="py-4 px-6 text-center text-sm font-semibold text-indigo-600 dark:text-indigo-400">
-                          {{ tiers[1].name }}
+                          {{ tiers[1].nameKey ? t(tiers[1].nameKey) : tiers[1].name }}
                         </th>
                       </tr>
                     </thead>
@@ -321,7 +327,7 @@ const comparisonFeatures = [
                         class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                         <td
                           class="py-4 px-6 text-sm text-gray-900 dark:text-gray-100">
-                          {{ feature.name }}
+                          {{ feature.nameKey ? t(feature.nameKey) : feature.name }}
                         </td>
                         <td class="py-4 px-6 text-center">
                           <OIcon

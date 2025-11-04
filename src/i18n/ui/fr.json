@@ -101,7 +101,45 @@
       "secure-links-stronger-connections": "Des liens sécurisés, des connexions plus fortes",
       "identity-tier-not-found-in-product-tiers": "Le niveau d'identité n'est pas trouvé dans les niveaux de produits",
       "onetime-secret-helps-us-share-sensitive-informat": "Onetime Secret nous aide à partager des informations sensibles en toute sécurité tout en conservant notre façade professionnelle.",
-      "information-shared-through-this-service-can-only": "Les informations partagées par l'intermédiaire de ce service ne peuvent être consultées qu'une seule fois. Une fois consulté, le contenu est définitivement supprimé afin de garantir la confidentialité."
+      "information-shared-through-this-service-can-only": "Les informations partagées par l'intermédiaire de ce service ne peuvent être consultées qu'une seule fois. Une fois consulté, le contenu est définitivement supprimé afin de garantir la confidentialité.",
+      "compare-plans": "Comparer les plans",
+      "tiers": {
+        "basic": {
+          "name": "Basique",
+          "description": "Fonctionnalités essentielles de partage de secrets pour une utilisation occasionnelle.",
+          "cta": "Commencer",
+          "features": {
+            "0": "Partager des secrets en toute sécurité",
+            "1": "Envoyer des liens par e-mail aux destinataires",
+            "2": "Destruction automatique",
+            "3": "Plus d'options d'expiration",
+            "4": "API REST"
+          }
+        },
+        "identity": {
+          "name": "Identity Plus",
+          "description": "Renforcez la confiance dans votre marque grâce au partage sécurisé depuis votre propre domaine. Par ex. secrets.exemple.com.",
+          "cta": "Commencer aujourd'hui",
+          "features": {
+            "0": "Domaines personnalisés illimités",
+            "1": "Image de marque personnalisée avec votre logo",
+            "2": "Page d'accueil de marque",
+            "3": "Conception axée sur la confidentialité",
+            "4": "Aucune limite de débit"
+          }
+        }
+      },
+      "comparison": {
+        "feature": "Fonctionnalité",
+        "features": {
+          "secret-sharing": "Partage de secrets",
+          "email-recipients": "Destinataires e-mail",
+          "rest-api": "Accès API REST",
+          "custom-domains": "Domaines personnalisés",
+          "custom-branding": "Image de marque personnalisée",
+          "no-rate-limits": "Aucune limite de débit"
+        }
+      }
     },
     "errors": {
       "errorTitle": "Échec",
