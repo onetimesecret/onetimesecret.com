@@ -59,7 +59,6 @@
   "devDependencies": {
     "@sentry/astro": "^10.22.0",
     "@sentry/browser": "^10.22.0",
-    "@sentry/replay": "^7.116.0",
     "@spotlightjs/astro": "^3.2.3",
     "@spotlightjs/sidecar": "^1.11.3",
     "@spotlightjs/spotlight": "^2.13.3",
