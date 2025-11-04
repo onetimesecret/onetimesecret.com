@@ -84,20 +84,20 @@
       "learn-more-about-data-sovereignty": "Más información sobre soberanía de datos"
     },
     "pricing": {
-      "title": "Pricing Plans | Onetime Secret",
-      "description": "Choose the perfect plan for your secure information sharing needs. From basic free plans to premium options with custom domains and dedicated infrastructure.",
-      "includes-all-features-and-unlimited-sharing-capa": "All plans include privacy features and unlimited sharing capacity",
-      "includes-all-data-locality-options": "All plans include choice of data locality: {0} regions",
-      "get-started": "Get started",
-      "frequency-value-annually-annual-monthly-subscrip": "{0} subscription",
-      "features": "Features",
-      "elevate-your-secure-sharing-with-custom-domains-": "Elevate your secure sharing with custom domains, unlimited capacity, and enterprise-grade features.",
-      "payment-frequency": "Payment frequency",
-      "secure-your-brand-and-build-customer-trust-with-": "Secure your brand and build customer trust with links from your domain. Perfect for businesses that value privacy and professionalism.",
-      "secure-links-stronger-connections": "Secure Links, Stronger Connections",
-      "identity-tier-not-found-in-product-tiers": "Identity tier not found in product tiers",
-      "onetime-secret-helps-us-share-sensitive-informat": "Onetime Secret helps us share sensitive information securely while maintaining our professional facade.",
-      "information-shared-through-this-service-can-only": "Information shared through this service can only be accessed once. Once viewed, the content is permanently deleted to ensure confidentiality."
+      "title": "Planes de precios | Onetime Secret",
+      "description": "Elija el plan perfecto para sus necesidades de intercambio seguro de información. Desde planes básicos gratuitos hasta opciones premium con dominios personalizados e infraestructura dedicada.",
+      "includes-all-features-and-unlimited-sharing-capa": "Todos los planes incluyen funciones de privacidad y capacidad de intercambio ilimitada",
+      "includes-all-data-locality-options": "Todos los planes incluyen opción de localidad de datos: {0} regiones",
+      "get-started": "Comenzar",
+      "frequency-value-annually-annual-monthly-subscrip": "Suscripción {0}",
+      "features": "Características",
+      "elevate-your-secure-sharing-with-custom-domains-": "Mejore su intercambio seguro con dominios personalizados, capacidad ilimitada y características de nivel empresarial.",
+      "payment-frequency": "Frecuencia de pago",
+      "secure-your-brand-and-build-customer-trust-with-": "Asegure su marca y genere confianza con los clientes mediante enlaces de su dominio. Perfecto para empresas que valoran la privacidad y el profesionalismo.",
+      "secure-links-stronger-connections": "Enlaces seguros, conexiones más fuertes",
+      "identity-tier-not-found-in-product-tiers": "Nivel de identidad no encontrado en niveles de producto",
+      "onetime-secret-helps-us-share-sensitive-informat": "Onetime Secret nos ayuda a compartir información sensible de forma segura manteniendo nuestra fachada profesional.",
+      "information-shared-through-this-service-can-only": "La información compartida a través de este servicio solo se puede acceder una vez. Una vez vista, el contenido se elimina permanentemente para garantizar la confidencialidad."
     },
     "errors": {
       "errorTitle": "No exitoso",
@@ -131,55 +131,55 @@
       "regionSwitchHint": "Pruebe crear secretos en diferentes regiones para sus diversas necesidades."
     },
     "useCases": {
-      "sectionTitle": "Security for Professionals",
-      "sectionSubtitle": "See how professionals use secure links in their daily workflows",
-      "exampleSecret": "Example Secret",
-      "keyBenefits": "Key Benefits",
-      "complianceInfo": "Compliance Information",
-      "privacyNote": "Your secrets are encrypted, never stored in logs, and automatically deleted after viewing.",
+      "sectionTitle": "Seguridad para profesionales",
+      "sectionSubtitle": "Vea cómo los profesionales usan enlaces seguros en sus flujos de trabajo diarios",
+      "exampleSecret": "Secreto de ejemplo",
+      "keyBenefits": "Beneficios clave",
+      "complianceInfo": "Información de cumplimiento",
+      "privacyNote": "Sus secretos están encriptados, nunca se almacenan en registros y se eliminan automáticamente después de verlos.",
       "it": {
-        "title": "IT Professional",
-        "description": "Securely share credentials and access information with your team",
+        "title": "Profesional de TI",
+        "description": "Comparta credenciales e información de acceso de forma segura con su equipo",
         "benefits": {
-          "1": "Prevent credential leaks in email and chat logs",
-          "2": "Audit when secrets are accessed",
-          "3": "Enforce security protocols for sensitive information"
+          "1": "Prevenir fugas de credenciales en correos electrónicos y registros de chat",
+          "2": "Auditar cuándo se accede a los secretos",
+          "3": "Hacer cumplir protocolos de seguridad para información sensible"
         },
-        "compliance": "Helps meet SOC 2 and ISO 27001 security requirements for access control",
-        "cta": "Secure Your Credentials"
+        "compliance": "Ayuda a cumplir con los requisitos de seguridad SOC 2 e ISO 27001 para control de acceso",
+        "cta": "Asegure sus credenciales"
       },
       "developer": {
-        "title": "Developer",
-        "description": "Share API keys and credentials securely during development",
+        "title": "Desarrollador",
+        "description": "Comparta claves API y credenciales de forma segura durante el desarrollo",
         "benefits": {
-          "1": "Keep API keys and tokens out of code repositories",
-          "2": "Securely onboard new team members with access credentials",
-          "3": "Share database connection strings without compromising security"
+          "1": "Mantenga las claves API y tokens fuera de los repositorios de código",
+          "2": "Incorpore nuevos miembros del equipo de forma segura con credenciales de acceso",
+          "3": "Comparta cadenas de conexión de base de datos sin comprometer la seguridad"
         },
-        "compliance": "Helps enforce security best practices for CI/CD pipelines and infrastructure access",
-        "cta": "Secure Your API Keys"
+        "compliance": "Ayuda a hacer cumplir las mejores prácticas de seguridad para pipelines CI/CD y acceso a infraestructura",
+        "cta": "Asegure sus claves API"
       },
       "hr": {
-        "title": "HR Manager",
-        "description": "Securely share sensitive employee information and credentials",
+        "title": "Gerente de Recursos Humanos",
+        "description": "Comparta información sensible de empleados y credenciales de forma segura",
         "benefits": {
-          "1": "Safely transmit onboarding credentials to new employees",
-          "2": "Share confidential information with one-time access",
-          "3": "Maintain privacy for sensitive HR communications"
+          "1": "Transmita credenciales de incorporación de forma segura a nuevos empleados",
+          "2": "Comparta información confidencial con acceso de un solo uso",
+          "3": "Mantenga la privacidad para comunicaciones sensibles de RH"
         },
-        "compliance": "Helps meet GDPR and other privacy regulations for handling personal data",
-        "cta": "Secure HR Communications"
+        "compliance": "Ayuda a cumplir con el RGPD y otras regulaciones de privacidad para el manejo de datos personales",
+        "cta": "Asegure las comunicaciones de RH"
       },
       "legal": {
-        "title": "Legal Team",
-        "description": "Share confidential legal documents and information securely",
+        "title": "Equipo legal",
+        "description": "Comparta documentos legales confidenciales e información de forma segura",
         "benefits": {
-          "1": "Maintain attorney-client privilege in digital communications",
-          "2": "Securely share case-sensitive information with clients",
-          "3": "Control access to confidential settlement terms"
+          "1": "Mantenga el privilegio abogado-cliente en comunicaciones digitales",
+          "2": "Comparta información sensible de casos con clientes de forma segura",
+          "3": "Controle el acceso a términos de acuerdo confidenciales"
         },
-        "compliance": "Helps ensure confidentiality required by legal ethics rules and client confidentiality agreements",
-        "cta": "Secure Legal Communications"
+        "compliance": "Ayuda a garantizar la confidencialidad requerida por las reglas de ética legal y acuerdos de confidencialidad con clientes",
+        "cta": "Asegure las comunicaciones legales"
       }
     },
     "homepage": {
@@ -203,12 +203,12 @@
         }
       },
       "visual_examples": {
-        "title": "Custom Domain & Branding",
-        "subtitle": "Reinforce your brand and build trust by using your own domain and logo.",
-        "learn_more": "Learn More",
-        "sr_description": "An image carousel showing screenshots of examples of using onetime secret with custom branding.",
-        "view_pricing": "View Pricing",
-        "toggle_animation": "Toggle animation"
+        "title": "Dominio personalizado y marca",
+        "subtitle": "Refuerce su marca y genere confianza utilizando su propio dominio y logotipo.",
+        "learn_more": "Más información",
+        "sr_description": "Un carrusel de imágenes que muestra capturas de pantalla de ejemplos de uso de onetime secret con marca personalizada.",
+        "view_pricing": "Ver precios",
+        "toggle_animation": "Activar/desactivar animación"
       },
       "featureHighlights": {
         "sectionTitle": "Características clave",
