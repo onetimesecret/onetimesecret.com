@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize]
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 concurrency:
@@ -53,6 +53,7 @@ jobs:
 
       - name: Capture screenshot
         run: |
+          mkdir -p .github/screenshots
           cat > screenshot.mjs << 'EOF'
           import { chromium } from 'playwright';
 
@@ -64,7 +65,7 @@ jobs:
 
           await page.goto('http://localhost:4321', { waitUntil: 'networkidle' });
           await page.screenshot({
-            path: 'homepage-screenshot.png',
+            path: '.github/screenshots/pr-${{ github.event.pull_request.number }}.png',
             fullPage: true
           });
 
@@ -72,11 +73,19 @@ jobs:
           EOF
           node screenshot.mjs
 
+      - name: Commit and push screenshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/screenshots/pr-${{ github.event.pull_request.number }}.png
+          git diff --staged --quiet || git commit -m "Update screenshot for PR #${{ github.event.pull_request.number }}"
+          git push
+
       - name: Upload screenshot artifact
         uses: actions/upload-artifact@v4
         with:
           name: homepage-screenshot
-          path: homepage-screenshot.png
+          path: .github/screenshots/pr-${{ github.event.pull_request.number }}.png
           retention-days: 14
 
       - name: Comment on PR with screenshot
@@ -85,46 +94,45 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
+            const prNumber = context.issue.number;
+            const branch = context.payload.pull_request.head.ref;
+            const screenshotPath = `.github/screenshots/pr-${prNumber}.png`;
 
-            // Check if screenshot exists
-            if (!fs.existsSync('homepage-screenshot.png')) {
+            if (!fs.existsSync(screenshotPath)) {
               console.log('Screenshot not found');
               return;
             }
 
-            // Get the run ID and construct artifact URL
-            const runId = context.runId;
-            const artifactUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId}`;
+            const screenshotUrl = `https://raw.githubusercontent.com/${context.repo.owner}/${context.repo.repo}/${branch}/${screenshotPath}`;
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
-            // Create comment with screenshot info
-            const comment = `## 📸 Homepage Screenshot
+            const comment = [
+              '<!-- screenshot-workflow-comment -->',
+              '## 📸 Homepage Screenshot',
+              '',
+              `![Homepage Screenshot](${screenshotUrl})`,
+              '',
+              '**Screenshot Details:**',
+              '- Resolution: 1920x1080',
+              '- Type: Full page screenshot',
+              '- Browser: Chromium',
+              `- [View Workflow Run](${runUrl})`,
+              '',
+              '*Screenshot updated on every push to this PR*'
+            ].join('\n');
 
-            A screenshot of the homepage has been captured for this PR.
-
-            **Screenshot Details:**
-            - Resolution: 1920x1080
-            - Type: Full page screenshot
-            - Browser: Chromium
-
-            [📦 Download Screenshot Artifact](${artifactUrl})
-
-            *Screenshot updated on every push to this PR*
-            `;
-
-            // Check if we already posted a comment
             const { data: comments } = await github.rest.issues.listComments({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
 
-            const botComment = comments.find(comment =>
-              comment.user.type === 'Bot' &&
-              comment.body.includes('📸 Homepage Screenshot')
+            const botComment = comments.find(c =>
+              c.user.login === 'github-actions[bot]' &&
+              c.body.includes('<!-- screenshot-workflow-comment -->')
             );
 
             if (botComment) {
-              // Update existing comment
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -132,7 +140,6 @@ jobs:
                 body: comment
               });
             } else {
-              // Create new comment
               await github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
