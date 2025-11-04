@@ -27,22 +27,25 @@ export function createConfig(): AstroUserConfig["integrations"] {
     }),
 
     /**
-     * In production, ensure to bind the DSN and source map configuration properly.
+     * In production, ensure to bind the source map configuration properly.
      * Each integration is configured with appropriate settings for the project.
+     *
+     * Runtime DSN configuration has been moved to:
+     * - sentry.client.config.ts (client-side)
+     * - sentry.server.config.ts (server-side)
      */
     sentry({
       /**
        * Sentry integration configuration
        *
-       * Includes both runtime DSN and build-time source map upload options.
+       * Build-time source map upload options only.
+       * Runtime configuration is in sentry.client.config.ts and sentry.server.config.ts.
        * Authentication tokens and organization details are pulled from environment
        * variables for security.
        *
        * @see https://docs.sentry.io/platforms/javascript/guides/astro/
        * @see https://github.com/getsentry/spotlight/blob/main/packages/astro/README.md
        */
-      dsn: process.env.SENTRY_DSN,
-      // Build-time source map upload configuration
       sourceMapsUploadOptions: {
         // Disable Sentry telemetry during the upload process
         telemetry: false,

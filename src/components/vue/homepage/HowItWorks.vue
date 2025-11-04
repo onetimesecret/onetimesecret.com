@@ -22,7 +22,7 @@ const { t } = useI18n();
           {{ t("web.homepage.howItWorks.title") }}
         </h2>
         <p
-          class="mt-4 max-w-2xl text-xl text-gray-600 dark:text-gray-200 mx-auto">
+          class="mt-4 max-w-2xl text-xl text-gray-700 dark:text-gray-200 mx-auto">
           {{ t("web.homepage.howItWorks.subtitle") }}
         </p>
       </div>
@@ -44,7 +44,7 @@ const { t } = useI18n();
             <h3 class="text-xl font-bold text-gray-900 dark:text-gray-50 mb-3">
               {{ t("web.homepage.howItWorks.step1.title") }}
             </h3>
-            <p class="text-base text-gray-600 dark:text-gray-200 leading-relaxed">
+            <p class="text-base text-gray-700 dark:text-gray-200 leading-relaxed">
               {{ t("web.homepage.howItWorks.step1.description") }}
             </p>
           </div>
@@ -60,7 +60,7 @@ const { t } = useI18n();
             <h3 class="text-xl font-bold text-gray-900 dark:text-gray-50 mb-3">
               {{ t("web.homepage.howItWorks.step2.title") }}
             </h3>
-            <p class="text-base text-gray-600 dark:text-gray-200 leading-relaxed">
+            <p class="text-base text-gray-700 dark:text-gray-200 leading-relaxed">
               {{ t("web.homepage.howItWorks.step2.description") }}
             </p>
           </div>
@@ -76,7 +76,7 @@ const { t } = useI18n();
             <h3 class="text-xl font-bold text-gray-900 dark:text-gray-50 mb-3">
               {{ t("web.homepage.howItWorks.step3.title") }}
             </h3>
-            <p class="text-base text-gray-600 dark:text-gray-200 leading-relaxed">
+            <p class="text-base text-gray-700 dark:text-gray-200 leading-relaxed">
               {{ t("web.homepage.howItWorks.step3.description") }}
             </p>
           </div>

@@ -24,7 +24,7 @@ const { t } = useI18n();
           {{ t("web.homepage.featureHighlights.sectionTitle") }}
         </h2>
         <p
-          class="mt-4 text-lg sm:text-xl text-gray-600 dark:text-gray-200 max-w-3xl mx-auto">
+          class="mt-4 text-lg sm:text-xl text-gray-700 dark:text-gray-200 max-w-3xl mx-auto">
           {{ t("web.homepage.featureHighlights.sectionSubtitle") }}
         </p>
       </div>
@@ -44,7 +44,7 @@ const { t } = useI18n();
           <h3 class="text-xl font-bold text-gray-900 dark:text-gray-50 mb-3">
             {{ t(feature.title) }}
           </h3>
-          <p class="text-gray-600 dark:text-gray-200 leading-relaxed">
+          <p class="text-gray-700 dark:text-gray-200 leading-relaxed">
             {{ t(feature.description) }}
           </p>
         </div>

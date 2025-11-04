@@ -65,7 +65,12 @@ export default defineConfig({
   // Astro build configuration
   build: {
     assets: "assets",
+    inlineStylesheets: "auto",
   },
+
+  // Enable HTML compression for production builds
+  // This minifies HTML output including inline scripts and styles
+  compressHTML: true,
 
   // https://docs.astro.build/en/reference/configuration-reference/#output
   output: "static",

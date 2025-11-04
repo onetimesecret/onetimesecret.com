@@ -11,7 +11,7 @@ import { AstroUserConfig } from "astro";
 */
 import tailwindcss from "@tailwindcss/vite";
 import { resolve as pathResolve } from "path";
-import viteSSRGlobals from "../../vite-ssr-globals.js";
+import viteSSRGlobals from "../../vite-ssr-globals.ts";
 // Controls debug settings throughout the configuration
 // Also used for __VUE_PROD_DEVTOOLS__ to enable Vue devtools in production
 const DEBUG = process.env.VITE_DEBUG === "true";
@@ -49,6 +49,8 @@ export function createConfig(
   return {
     build: {
       sourcemap: "inline" as const,
+      minify: "esbuild", // Explicitly enable minification for production builds
+      cssMinify: true, // Enable CSS minification
     },
     plugins: [tailwindcss(), viteSSRGlobals()],
     resolve: {

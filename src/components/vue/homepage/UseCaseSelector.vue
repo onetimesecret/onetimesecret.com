@@ -36,7 +36,7 @@ const selectedUseCase = ref(useCases[0]);
         {{ t("web.useCases.sectionTitle", "How can we help you?") }}
       </h2>
 
-      <p class="text-center text-lg sm:text-xl text-gray-600 dark:text-gray-200 mb-12">
+      <p class="text-center text-lg sm:text-xl text-gray-700 dark:text-gray-200 mb-12">
         {{
           t(
             "web.useCases.sectionSubtitle",
