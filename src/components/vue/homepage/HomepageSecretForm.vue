@@ -68,7 +68,7 @@ defineExpose({
 <template>
   <!-- Premium section structure with refined visual connection -->
   <section
-    class="bg-gradient-to-b from-brand-50 via-brand-100/30 to-white dark:from-brand-900 dark:via-gray-900 dark:to-gray-800 w-full pt-6 xs:pt-7 sm:pt-5 rounded-xl">
+    class="bg-gradient-to-b from-brand-50/40 via-white to-white dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 w-full pt-6 xs:pt-7 sm:pt-5 pb-6 xs:pb-7 sm:pb-5 rounded-xl">
     <div class="container mx-auto px-2 xs:px-3 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-3xl w-full">
         <SecretForm
