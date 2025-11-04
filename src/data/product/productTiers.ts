@@ -79,31 +79,8 @@ export const productTiers: Array<ProductTier> = [
       "Privacy-first design",
       "No rate limits",
     ],
-    featured: false,
+    featured: true,
     frequencySuffixEnabled: true,
     learn_more: "https://docs.onetimesecret.com/en/custom-domains/",
-  },
-  {
-    id: "tier-dedicated",
-    name: "Global Elite",
-    href: "mailto:dedicated@onetimesecret.com",
-    cta: "Get a Custom Quote",
-    icon: {
-      collection: "fa6",
-      name: "solid-globe",
-    },
-    price: {
-      monthly: "$125",
-      annually: "$1150",
-    },
-    description: "Exclusive infrastructure in your choice of region.",
-    features: [
-      "Private cloud environment",
-      "Fully customizable",
-      "Professionally managed",
-      "Helps meet and exceed compliance requirements",
-    ],
-    featured: true,
-    frequencySuffixEnabled: false,
   },
 ];
