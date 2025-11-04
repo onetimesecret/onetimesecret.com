@@ -36,17 +36,11 @@ if (dsn) {
     // Set `tracePropagationTargets` to control for which URLs trace propagation should be enabled
     tracePropagationTargets: ["localhost", /^https:\/\/.*\.onetimesecret\.com/],
 
-    // Capture Replay for 10% of all sessions,
-    // plus 100% of sessions with an error
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1.0,
-
-    integrations: [
-      Sentry.replayIntegration({
-        maskAllText: true,
-        blockAllMedia: true,
-      }),
-    ],
+    // Replay integration not configured (@sentry/replay package not installed)
+    // To enable session replay, install @sentry/replay and configure:
+    // replaysSessionSampleRate: 0.1,
+    // replaysOnErrorSampleRate: 1.0,
+    // integrations: [Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true })],
   });
 } else if (isDevelopment) {
   console.warn('[Sentry] Client DSN not configured. Set VITE_SENTRY_DSN to enable error tracking.');
