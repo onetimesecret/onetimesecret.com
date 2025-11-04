@@ -21,14 +21,22 @@ const selectedUseCase = ref(useCases[0]);
 </script>
 
 <template>
-  <section class="py-20 bg-gray-50 dark:bg-gray-800 w-full">
+  <section class="py-20 sm:py-24 bg-gray-50 dark:bg-gray-800 w-full relative overflow-hidden">
+    <!-- Background decoration -->
+    <div
+      class="absolute inset-0 -z-10"
+      aria-hidden="true">
+      <div
+        class="absolute top-1/3 right-0 w-96 h-96 bg-brand-400/10 dark:bg-brand-600/10 rounded-full blur-3xl"></div>
+    </div>
+
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:max-w-5xl lg:px-8">
       <h2
-        class="text-3xl font-bold text-center text-gray-900 dark:text-white mb-8">
+        class="text-3xl sm:text-4xl font-bold text-center text-gray-900 dark:text-white mb-6">
         {{ t("web.useCases.sectionTitle", "How can we help you?") }}
       </h2>
 
-      <p class="text-center text-lg text-gray-600 dark:text-gray-300 mb-8">
+      <p class="text-center text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-12">
         {{
           t(
             "web.useCases.sectionSubtitle",
@@ -97,11 +105,11 @@ const selectedUseCase = ref(useCases[0]);
       </div>
 
       <!-- Dynamic Content Based on Selection -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-8">
         <!-- Left Column: Example & Benefits -->
         <div
-          class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-100 dark:border-gray-700">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+          class="bg-white dark:bg-gray-700 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-8 border border-gray-100 dark:border-gray-600">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
             {{ selectedUseCase.description }}
           </h3>
 
@@ -141,14 +149,14 @@ const selectedUseCase = ref(useCases[0]);
 
         <!-- Right Column: Compliance & CTA -->
         <div
-          class="bg-gradient-to-br from-brand-50 to-brand-100 dark:from-brand-900/30 dark:to-brand-800/50 rounded-lg shadow-md p-6 border border-brand-200 dark:border-brand-800 flex flex-col">
+          class="bg-gradient-to-br from-brand-50 via-brand-50 to-brand-100 dark:from-brand-900/30 dark:via-brand-900/25 dark:to-brand-800/40 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-8 border border-brand-200 dark:border-brand-700 flex flex-col">
           <!-- Compliance Info -->
           <div class="mb-8">
             <h4
-              class="text-sm font-medium text-brandcompdim-600 dark:text-brandcompdim-400 uppercase tracking-wider mb-2">
+              class="text-sm font-bold text-brand-700 dark:text-brand-300 uppercase tracking-wider mb-3">
               {{ t("web.useCases.complianceInfo", "Compliance Information") }}
             </h4>
-            <p class="text-gray-700 dark:text-gray-300">
+            <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
               {{ selectedUseCase.complianceInfo }}
             </p>
           </div>
@@ -157,11 +165,11 @@ const selectedUseCase = ref(useCases[0]);
           <div class="mt-auto">
             <a
               :href="selectedUseCase.ctaLink"
-              class="block w-full bg-brandcompdim-600 hover:bg-brandcompdim-700 dark:bg-brandcompdim-700 dark:hover:bg-brandcompdim-600 text-white font-medium py-3 px-4 rounded-md text-center transition-colors duration-150 ease-in-out">
+              class="block w-full bg-gradient-to-r from-brandcompdim-600 to-brandcompdim-700 hover:from-brandcompdim-700 hover:to-brandcompdim-800 dark:from-brandcompdim-700 dark:to-brandcompdim-600 dark:hover:from-brandcompdim-600 dark:hover:to-brandcompdim-500 text-white font-semibold py-4 px-6 rounded-xl text-center transition-all duration-300 shadow-lg shadow-brandcompdim-600/20 hover:shadow-xl hover:shadow-brandcompdim-600/30">
               {{ selectedUseCase.ctaText }}
             </a>
             <p
-              class="text-xs text-center text-gray-500 dark:text-gray-400 mt-3">
+              class="text-xs text-center text-gray-600 dark:text-gray-400 mt-4 leading-relaxed">
               {{
                 t(
                   "web.useCases.privacyNote",
