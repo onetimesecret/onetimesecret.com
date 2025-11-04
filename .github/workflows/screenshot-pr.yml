@@ -8,6 +8,10 @@ permissions:
   contents: read
   pull-requests: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   screenshot:
     name: Capture Homepage Screenshot
@@ -33,9 +37,6 @@ jobs:
       - name: Build site
         run: pnpm build
 
-      - name: Install Playwright
-        run: pnpm add -D playwright @playwright/test
-
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
 
@@ -46,30 +47,30 @@ jobs:
 
       - name: Wait for server
         run: |
-          timeout 60 bash -c 'until curl -s http://localhost:4321 > /dev/null; do sleep 1; done'
+          echo "Waiting for server to be ready..."
+          timeout 20 bash -c 'until curl -s http://localhost:4321 > /dev/null; do echo "Server not ready yet..."; sleep 1; done'
+          echo "Server is ready!"
 
       - name: Capture screenshot
         run: |
-          cat > screenshot.js << 'EOF'
-          const { chromium } = require('playwright');
+          cat > screenshot.mjs << 'EOF'
+          import { chromium } from 'playwright';
 
-          (async () => {
-            const browser = await chromium.launch();
-            const context = await browser.newContext({
-              viewport: { width: 1920, height: 1080 }
-            });
-            const page = await context.newPage();
+          const browser = await chromium.launch();
+          const context = await browser.newContext({
+            viewport: { width: 1920, height: 1080 }
+          });
+          const page = await context.newPage();
 
-            await page.goto('http://localhost:4321', { waitUntil: 'networkidle' });
-            await page.screenshot({
-              path: 'homepage-screenshot.png',
-              fullPage: true
-            });
+          await page.goto('http://localhost:4321', { waitUntil: 'networkidle' });
+          await page.screenshot({
+            path: 'homepage-screenshot.png',
+            fullPage: true
+          });
 
-            await browser.close();
-          })();
+          await browser.close();
           EOF
-          node screenshot.js
+          node screenshot.mjs
 
       - name: Upload screenshot artifact
         uses: actions/upload-artifact@v4
