@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { InformationCircleIcon, XMarkIcon } from "@heroicons/vue/24/outline";
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 
 /**
  * First-Time Visitor Banner
@@ -16,6 +18,12 @@ const emit = defineEmits<{
   (e: "dismiss"): void;
   (e: "switchRegion", region: string): void;
 }>();
+
+const { locale } = useI18n();
+
+const docsUrl = computed(() => {
+  return `https://docs.onetimesecret.com/${locale.value}/regions/`;
+});
 
 const dismissBanner = () => {
   emit("dismiss");
@@ -54,7 +62,7 @@ const switchToSuggestedRegion = () => {
       <div
         class="order-4 mt-2 w-full flex-shrink-0 sm:order-2 sm:mt-0 sm:w-auto flex space-x-2">
         <a
-          href="https://docs.onetimesecret.com/en/regions/"
+          :href="docsUrl"
           target="_blank"
           rel="noopener noreferrer"
           class="flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 shadow-sm hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-brand-800"
