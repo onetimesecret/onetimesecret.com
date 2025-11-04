@@ -77,40 +77,37 @@ defineExpose({
 
 <template>
   <section
-    class="bg-white dark:bg-gray-950 py-12 sm:py-16 relative">
-    <!-- Subtle background decoration -->
+    class="bg-gradient-to-b from-white via-gray-50/40 to-white dark:from-gray-950 dark:via-gray-950 dark:to-gray-950 py-12 sm:py-16 relative">
+    <!-- Background decoration -->
     <div
-      class="absolute inset-0 -z-10 overflow-hidden"
+      class="absolute inset-0 -z-10"
       aria-hidden="true">
       <div
-        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-gradient-to-r from-brand-500/5 via-brand-400/8 to-brand-500/5 dark:from-brand-400/8 dark:via-brand-500/12 dark:to-brand-400/8 rounded-full blur-3xl"></div>
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-brand-400/5 to-transparent dark:from-brand-400/15 rounded-full blur-3xl"></div>
     </div>
 
     <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-      <!-- Main Card -->
       <div
-        class="flex flex-col min-h-[400px] sm:min-h-[350px] md:min-h-[400px] lg:min-h-[400px] bg-white dark:bg-gray-900 shadow-xl shadow-gray-900/5 dark:shadow-brand-500/10 rounded-2xl overflow-hidden border-2 border-gray-100 dark:border-gray-800 transition-shadow duration-300 hover:shadow-2xl dark:hover:shadow-brand-500/15">
-
-        <!-- Header -->
-        <div class="px-6 py-5 bg-gray-50 dark:bg-gray-850 border-b-2 border-gray-100 dark:border-gray-800">
+        class="flex flex-col min-h-[400px] sm:min-h-[350px] md:min-h-[400px] lg:min-h-[400px] bg-white dark:bg-gray-900 shadow-2xl shadow-gray-900/10 dark:shadow-black/40 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 backdrop-blur-sm">
+        <div
+          class="bg-gradient-to-r from-brand-500/8 via-brand-400/5 to-brand-500/8 dark:from-gray-850 dark:via-gray-850/95 dark:to-gray-850 px-6 py-5 border-b border-gray-200 dark:border-gray-700">
           <div class="flex flex-wrap justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-              <div class="w-2 h-8 bg-gradient-to-b from-brand-500 to-brand-600 dark:from-brand-400 dark:to-brand-500 rounded-full"></div>
-              <h3 class="text-xl font-bold text-gray-900 dark:text-gray-50">
-                {{ t("LABELS.create_link") }}
-              </h3>
-            </div>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-50">
+              {{
+                t("LABELS.create_link")
+              }}
+            </h3>
 
-            <!-- Region selector -->
+            <!-- Region selector with enhanced styling -->
             <div class="flex-shrink-0 ml-0 xs:ml-1 sm:ml-2 relative">
               <div class="h-7 xs:h-8">
                 <ClientOnlyRegionSelector
                   v-if="isClient"
                   :current-region="currentRegion"
                   :available-regions="availableRegions"
-                  class="rounded-lg px-2 xs:px-3 py-1.5 xs:py-2 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 shadow-sm hover:border-brand-400 dark:hover:border-brand-500 hover:shadow-md transition-all duration-300 absolute top-0 left-0"
+                  class="rounded-lg px-2 xs:px-3 py-1.5 xs:py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 shadow-sm hover:shadow-md transition-all duration-300 absolute top-0 left-0"
                   :class="{
-                    'pulse-attention ring-2 ring-brand-500 dark:ring-brand-400 shadow-lg border-brand-500 dark:border-brand-400':
+                    'pulse-attention ring-2 ring-brand-500 dark:ring-brand-300 shadow-lg':
                       secretCreatedSuccessfully,
                   }"
                   @region-change="handleRegionChange" />
@@ -119,8 +116,7 @@ defineExpose({
           </div>
         </div>
 
-        <!-- Form Area -->
-        <div class="px-0 xs:px-3 sm:px-8 py-3 xs:py-4 sm:py-6 flex-grow bg-white dark:bg-gray-900">
+        <div class="px-0 xs:px-3 sm:px-8 py-3 xs:py-4 sm:py-6 flex-grow">
           <HomepageSecretForm
             ref="secretFormRef"
             :region-name="currentRegion.displayName"
@@ -129,18 +125,10 @@ defineExpose({
             @create-link="handleSecretCreationResult" />
         </div>
 
-        <!-- Footer -->
         <div
           v-if="!showingResult"
-          class="mt-auto px-6 py-4 bg-gradient-to-r from-brand-50/50 via-brand-50 to-brand-50/50 dark:from-gray-850 dark:via-gray-850 dark:to-gray-850 border-t-2 border-gray-100 dark:border-gray-800">
-          <div class="flex items-center justify-center gap-2">
-            <svg class="w-4 h-4 text-brand-600 dark:text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            <p class="text-sm text-center text-gray-600 dark:text-gray-300">
-              {{ t("web.secrets.complianceNote") }}
-            </p>
-          </div>
+          class="mt-auto bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-850 px-6 py-4 text-sm text-center text-gray-600 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700">
+          {{ t("web.secrets.complianceNote") }}
         </div>
       </div>
     </div>
