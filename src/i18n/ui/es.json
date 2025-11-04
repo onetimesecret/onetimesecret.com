@@ -1,0 +1,235 @@
+{
+  "onetime-secret-literal": "Onetime Secret",
+  "onetime-secret-literal-logo": "Logo de Onetime Secret",
+  "all-rights-reserved": "Todos los derechos reservados",
+  "read-our-latest-blog-posts": "Lea nuestras últimas publicaciones del blog",
+  "view-our-subscription-pricing": "Consulte nuestros precios de suscripción",
+  "learn-about-our-company": "Conozca más sobre nuestra empresa",
+  "check-our-service-status": "Consulte el estado de nuestro servicio",
+  "explore-our-api-documentation": "Explore nuestra documentación de API",
+  "learn-about-our-security-measures": "Conozca nuestras medidas de seguridad",
+  "access-our-documentation": "Acceda a nuestra documentación",
+  "view-our-source-code-on-github": "Vea nuestro código fuente en GitHub",
+  "read-our-privacy-policy": "Lea nuestra Política de Privacidad",
+  "view-our-terms-and-conditions": "Consulte nuestros Términos y Condiciones",
+  "status": "Estado",
+  "$config": {
+    "layout-footer-style": "grid"
+  },
+  "tagline": {
+    "signed": "Firmado",
+    "sealed": "Sellado",
+    "delivered": "Entregado"
+  },
+  "banner": {
+    "try-it-out": "Pruébelo",
+    "open-menu": "Abrir menú principal",
+    "close-menu": "Cerrar menú"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "features": "Características",
+    "regions": "Regiones",
+    "about": "Acerca de",
+    "pricing": "Precios"
+  },
+  "auth": {
+    "sign-in": "Iniciar sesión",
+    "sign-up": "Registrarse"
+  },
+  "LABELS": {
+    "about": "Acerca de",
+    "pricing": "Precios",
+    "create": "Crear",
+    "blog": "Blog",
+    "create_link": "Crear enlace secreto",
+    "docs": "Documentación",
+    "privacy-policy": "Política de Privacidad",
+    "terms-and-conditions": "Términos y Condiciones",
+    "security": "Seguridad",
+    "paused": "En pausa",
+    "playing": "Reproduciendo",
+    "feedback": "Comentarios",
+    "learn-about-our-security-measures": "Conozca nuestras medidas de seguridad",
+    "terms": "Términos",
+    "view-our-terms-and-conditions": "Consulte nuestros Términos y Condiciones",
+    "privacy": "Privacidad",
+    "read-our-privacy-policy": "Lea nuestra Política de Privacidad",
+    "company": "Empresa",
+    "resources": "Recursos",
+    "legals": "Legal",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "processing": "Procesando",
+    "loading": "Cargando"
+  },
+  "web": {
+    "aria": {
+      "light_mode": "Modo claro",
+      "dark_mode": "Modo oscuro",
+      "toggle_color_theme": "Cambiar tema de color"
+    },
+    "theme": {
+      "title": "Tema",
+      "toggleTheme": "Cambiar tema",
+      "light": "Claro",
+      "dark": "Oscuro"
+    },
+    "help": {
+      "title": "Ayuda",
+      "toggleHelp": "Cambiar ayuda",
+      "needHelp": "¿Necesita ayuda?",
+      "learn_more": "Más información",
+      "open-new-tab": "Abrir en nueva pestaña",
+      "learn-more-about-data-sovereignty": "Más información sobre soberanía de datos"
+    },
+    "pricing": {
+      "title": "Pricing Plans | Onetime Secret",
+      "description": "Choose the perfect plan for your secure information sharing needs. From basic free plans to premium options with custom domains and dedicated infrastructure.",
+      "includes-all-features-and-unlimited-sharing-capa": "All plans include privacy features and unlimited sharing capacity",
+      "includes-all-data-locality-options": "All plans include choice of data locality: {0} regions",
+      "get-started": "Get started",
+      "frequency-value-annually-annual-monthly-subscrip": "{0} subscription",
+      "features": "Features",
+      "elevate-your-secure-sharing-with-custom-domains-": "Elevate your secure sharing with custom domains, unlimited capacity, and enterprise-grade features.",
+      "payment-frequency": "Payment frequency",
+      "secure-your-brand-and-build-customer-trust-with-": "Secure your brand and build customer trust with links from your domain. Perfect for businesses that value privacy and professionalism.",
+      "secure-links-stronger-connections": "Secure Links, Stronger Connections",
+      "identity-tier-not-found-in-product-tiers": "Identity tier not found in product tiers",
+      "onetime-secret-helps-us-share-sensitive-informat": "Onetime Secret helps us share sensitive information securely while maintaining our professional facade.",
+      "information-shared-through-this-service-can-only": "Information shared through this service can only be accessed once. Once viewed, the content is permanently deleted to ensure confidentiality."
+    },
+    "errors": {
+      "errorTitle": "No exitoso",
+      "passphraseRequired": "Se requiere una frase de contraseña cuando la opción está seleccionada."
+    },
+    "secrets": {
+      "keepSensitiveInfo": "Mantenga la información sensible fuera de sus correos electrónicos y registros de chat.",
+      "securelyStored": "Almacenado de forma segura en",
+      "europe": "Europa",
+      "create_link": "Crear enlace",
+      "expirationTime": "Extender duración",
+      "optionsHeading": "Opciones de privacidad",
+      "addPassphrase": "Agregar frase de contraseña",
+      "secret_placeholder": "Escriba su mensaje secreto aquí...",
+      "secret_placeholder_mobile": "Escriba el secreto aquí...",
+      "secret-label": "Entrada de texto secreto",
+      "secret-description": "Ingrese el texto sensible que desea compartir de forma segura. Este texto será encriptado y estará disponible solo una vez.",
+      "secret_placeholder_stored": "Escriba su mensaje secreto aquí (almacenado en {noun})",
+      "dataSovereignty": "Soberanía de datos",
+      "regionExplanation": "Sus secretos permanecen en su región seleccionada. Esto ayuda a cumplir con los requisitos de residencia de datos y regulaciones de privacidad como el RGPD.",
+      "learn_more_regions": "Más información sobre dominios regionales",
+      "selectRegionHeading": "Seleccionar región",
+      "complianceNote": "Ayuda con los requisitos de SOC2, RGPD, CCPA e HIPAA para la privacidad de datos",
+      "regionSelector": {
+        "currentDomain": "Dominio actual",
+        "dataResidency": "Residencia de datos"
+      },
+      "successTitle": "¡Éxito!",
+      "shareLinkDescription": "Comparta su enlace secreto con otros.",
+      "createAnother": "Crear otro secreto",
+      "regionSwitchHint": "Pruebe crear secretos en diferentes regiones para sus diversas necesidades."
+    },
+    "useCases": {
+      "sectionTitle": "Security for Professionals",
+      "sectionSubtitle": "See how professionals use secure links in their daily workflows",
+      "exampleSecret": "Example Secret",
+      "keyBenefits": "Key Benefits",
+      "complianceInfo": "Compliance Information",
+      "privacyNote": "Your secrets are encrypted, never stored in logs, and automatically deleted after viewing.",
+      "it": {
+        "title": "IT Professional",
+        "description": "Securely share credentials and access information with your team",
+        "benefits": {
+          "1": "Prevent credential leaks in email and chat logs",
+          "2": "Audit when secrets are accessed",
+          "3": "Enforce security protocols for sensitive information"
+        },
+        "compliance": "Helps meet SOC 2 and ISO 27001 security requirements for access control",
+        "cta": "Secure Your Credentials"
+      },
+      "developer": {
+        "title": "Developer",
+        "description": "Share API keys and credentials securely during development",
+        "benefits": {
+          "1": "Keep API keys and tokens out of code repositories",
+          "2": "Securely onboard new team members with access credentials",
+          "3": "Share database connection strings without compromising security"
+        },
+        "compliance": "Helps enforce security best practices for CI/CD pipelines and infrastructure access",
+        "cta": "Secure Your API Keys"
+      },
+      "hr": {
+        "title": "HR Manager",
+        "description": "Securely share sensitive employee information and credentials",
+        "benefits": {
+          "1": "Safely transmit onboarding credentials to new employees",
+          "2": "Share confidential information with one-time access",
+          "3": "Maintain privacy for sensitive HR communications"
+        },
+        "compliance": "Helps meet GDPR and other privacy regulations for handling personal data",
+        "cta": "Secure HR Communications"
+      },
+      "legal": {
+        "title": "Legal Team",
+        "description": "Share confidential legal documents and information securely",
+        "benefits": {
+          "1": "Maintain attorney-client privilege in digital communications",
+          "2": "Securely share case-sensitive information with clients",
+          "3": "Control access to confidential settlement terms"
+        },
+        "compliance": "Helps ensure confidentiality required by legal ethics rules and client confidentiality agreements",
+        "cta": "Secure Legal Communications"
+      }
+    },
+    "homepage": {
+      "title": "Comparta secretos de forma segura | Onetime Secret",
+      "description": "Comparta información sensible de forma segura con enlaces autodestructibles. Pegue su secreto, genere un enlace y compártalo. Una vez visto, desaparece para siempre",
+      "a-trusted-way-to-share-sensitive-information-etc": "Una forma confiable de compartir información sensible que se autodestruye después de ser vista.",
+      "howItWorks": {
+        "title": "Cómo funciona",
+        "subtitle": "Comparta su información una vez, luego se elimina permanentemente",
+        "step1": {
+          "title": "Crear un secreto",
+          "description": "Ingrese su información sensible y genere un enlace seguro de un solo uso"
+        },
+        "step2": {
+          "title": "Compartir el enlace",
+          "description": "Envíe el enlace seguro a través de cualquier plataforma de mensajería"
+        },
+        "step3": {
+          "title": "Desaparece para siempre",
+          "description": "El destinatario ve el secreto, luego se elimina permanentemente"
+        }
+      },
+      "visual_examples": {
+        "title": "Custom Domain & Branding",
+        "subtitle": "Reinforce your brand and build trust by using your own domain and logo.",
+        "learn_more": "Learn More",
+        "sr_description": "An image carousel showing screenshots of examples of using onetime secret with custom branding.",
+        "view_pricing": "View Pricing",
+        "toggle_animation": "Toggle animation"
+      },
+      "featureHighlights": {
+        "sectionTitle": "Características clave",
+        "sectionSubtitle": "Descubra qué hace de Onetime Secret la solución preferida para el intercambio seguro de información.",
+        "security": {
+          "title": "Opciones de privacidad mejoradas",
+          "description": "Agregue una frase de contraseña para una capa adicional de seguridad. Solo quienes tengan la frase de contraseña pueden ver el secreto."
+        },
+        "selfDestruction": {
+          "title": "Enlaces autodestructibles",
+          "description": "Una vez visto o expirado, su secreto se elimina permanentemente de nuestros servidores. Sin copias, sin rastros."
+        },
+        "dataResidency": {
+          "title": "Almacenamiento regional de datos",
+          "description": "Elija dónde se almacenan sus datos para cumplir con los requisitos de cumplimiento y las necesidades de soberanía de datos."
+        },
+        "compliance": {
+          "title": "Listo para el cumplimiento",
+          "description": "Diseñado para ayudar a cumplir con los requisitos de SOC2, RGPD, CCPA e HIPAA para el manejo seguro de información."
+        }
+      }
+    }
+  }
+}
