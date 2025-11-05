@@ -24,6 +24,7 @@ const { t } = useI18n({
 // State
 const isOpen = ref(false);
 const showInfoPopover = ref(false);
+const selectorRef = ref<HTMLElement | null>(null);
 
 // Methods
 const toggleDropdown = () => {
@@ -56,8 +57,7 @@ const selectRegion = (region: Region) => {
 // Close dropdowns when clicking outside
 const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement;
-  const selector = document.getElementById("pricing-region-selector");
-  if (selector && !selector.contains(target)) {
+  if (selectorRef.value && !selectorRef.value.contains(target)) {
     closeAll();
   }
 };
@@ -74,7 +74,7 @@ onUnmounted(() => {
 
 <template>
   <div
-    id="pricing-region-selector"
+    ref="selectorRef"
     class="relative inline-flex items-center gap-2 text-sm text-white/90">
     <!-- Current region button that opens the dropdown -->
     <button
