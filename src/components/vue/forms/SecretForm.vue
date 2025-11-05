@@ -363,7 +363,7 @@ const createAnotherSecret = () => {
                     id="add-passphrase"
                     v-model="secretOptions.addPassphrase"
                     type="checkbox"
-                    class="mt-0.5 size-4 rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500 disabled:opacity-50"
+                    class="mt-0.5 size-4 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-brand-600 focus:ring-brand-500 disabled:opacity-50"
                     :disabled="isLoading"
                     @change="!secretOptions.addPassphrase && (passphrase = '', showPassphrase = false)" />
                   <div class="flex-1">
