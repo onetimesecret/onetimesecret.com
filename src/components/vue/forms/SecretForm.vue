@@ -77,9 +77,8 @@ const passphrase = ref("");
 const isLoading = ref(false);
 const apiResult = ref<ApiResult | null>(null);
 const apiError = ref<string | null>(null);
-const copySuccess = ref(false); // State for copy feedback
+const copySuccess = ref(false);
 const copyButtonRef = ref<HTMLButtonElement | null>(null);
-const secretTextArea = ref<HTMLTextAreaElement | null>(null);
 
 // TTL options
 const ttlOptions = ref<TtlOption[]>([
@@ -94,25 +93,19 @@ const ttlOptions = ref<TtlOption[]>([
   { value: 2592000, label: t("web.secrets.ttl.30days") || "30 days" },
 ]);
 
-// Function to focus the textarea
-const focusTextArea = () => {
-  if (secretTextArea.value && showFormView.value) {
-    secretTextArea.value.focus();
-  }
-};
-
-
 // --- Computed ---
 const showPassphraseInput = computed(() => secretOptions.value.addPassphrase);
 const showSuccessView = computed(
   () => apiResult.value?.success && apiResult.value.record,
 );
 const showFormView = computed(() => !showSuccessView.value);
+const showOptions = computed(() => {
+  return props.withOptions && secretText.value.trim().length > 0;
+});
 
 // --- Methods ---
 // Method to reset the form while preserving feedback until next submission
 const resetForm = () => {
-  // Reset the form inputs and options
   secretText.value = "";
   secretOptions.value = {
     ttl: 604800, // Reset to default 7 days
@@ -128,20 +121,8 @@ const resetForm = () => {
 // Expose the resetForm method to parent components
 defineExpose({ resetForm });
 
-const isTyping = ref(false);
-const typingTimerId = ref<number | null>(null);
-
-const showOptions = computed(() => {
-  return (
-    props.withOptions && secretText.value.trim().length > 0
-  );
-});
-
+// Clear feedback when user starts typing new content
 watch(secretText, () => {
-  // Set typing state to true immediately
-  isTyping.value = true;
-
-  // If user starts typing again after a success or error, reset for a new submission
   if (secretText.value.trim() && (apiResult.value || apiError.value)) {
     // Check if this is real user input (not the asterisks from a success state)
     const isAllAsterisks = secretText.value
@@ -152,17 +133,6 @@ watch(secretText, () => {
       apiError.value = null;
     }
   }
-
-  // Clear any existing timer
-  if (typingTimerId.value !== null) {
-    clearTimeout(typingTimerId.value);
-  }
-
-  // Set a new timer to turn off the typing state after 600ms of inactivity
-  typingTimerId.value = window.setTimeout(() => {
-    isTyping.value = false;
-    typingTimerId.value = null;
-  }, 600);
 });
 
 const handleCreateLink = async () => {
@@ -298,27 +268,22 @@ const createAnotherSecret = () => {
   <div class="mx-auto max-w-xl w-full px-0 xs:px-1 sm:px-0">
     <transition
       name="fade"
-      mode="out-in"
-      @after-enter="focusTextArea">
+      mode="out-in">
       <!-- Form View -->
       <div
         v-if="showFormView"
-        key="form-view"
-        @click="focusTextArea">
+        key="form-view">
         <!-- Text Area Input -->
         <div class="relative">
           <textarea
-            ref="secretTextArea"
             v-model="secretText"
             rows="6"
             autofocus
             :aria-label="t('web.secrets.secret-label')"
             aria-describedby="secret-description"
             class="block w-full rounded-md border-0 py-2 sm:py-3 pl-3 xs:pl-4 pr-28 xs:pr-32 sm:pr-36 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 placeholder:text-sm text-sm disabled:opacity-50 bg-white dark:bg-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-brand-500 focus:ring-opacity-50"
-            :placeholder="
-              props.placeholder || t('web.secrets.secret_placeholder')"
-            :disabled="isLoading"
-            @focus="focusTextArea"></textarea>
+            :placeholder="props.placeholder || t('web.secrets.secret_placeholder')"
+            :disabled="isLoading"></textarea>
           <div
             id="secret-description"
             class="sr-only">
@@ -343,8 +308,7 @@ const createAnotherSecret = () => {
         <!-- Secret Options -->
         <div
           v-if="showOptions"
-          class="mt-3 mb-4"
-          @click.stop>
+          class="mt-3 mb-4">
           <div class="bg-gradient-to-br from-gray-50 to-gray-100/80 dark:from-gray-800 dark:to-gray-850 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
             <h3
               class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -417,9 +381,7 @@ const createAnotherSecret = () => {
                     v-model="passphrase"
                     type="password"
                     class="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm disabled:opacity-50"
-                    :placeholder="
-                      t('web.secrets.passphrasePlaceholder') || 'Enter passphrase'
-                    "
+                    :placeholder="t('web.secrets.passphrasePlaceholder') || 'Enter passphrase'"
                     :disabled="isLoading" />
                 </div>
               </div>
