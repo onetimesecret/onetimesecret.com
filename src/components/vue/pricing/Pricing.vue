@@ -4,8 +4,11 @@
 import OIcon from "@/components/vue/icons/OIcon.vue";
 import { MessageSchema, setLanguage, setLanguageWithMessages } from "@/i18n";
 import { RadioGroup, RadioGroupOption } from "@headlessui/vue";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { useJurisdiction } from "@/composables/useJurisdiction";
+import PricingRegionSelector from "@/components/vue/pricing/PricingRegionSelector.vue";
+import type { Region } from "@/types/jurisdiction";
 
 import {
   paymentFrequencies as frequencies,
@@ -32,13 +35,62 @@ if (props.initialMessages && props.locale) {
 
 const { t } = useI18n();
 
+// --- Initialize jurisdiction composable for region selection ---
+const {
+  availableRegions,
+  currentRegion,
+  setJurisdiction,
+  cleanup,
+} = useJurisdiction();
+
+const isClient = ref(false);
+
 const frequency = ref(frequencies[0]);
+
+// Handler for region change from the selector component
+const handleRegionChange = (region: Region) => {
+  if (region && region.identifier) {
+    setJurisdiction(region.identifier);
+  }
+};
+
+// Computed property to generate regional payment URLs
+const getRegionalHref = (basePath: string) => {
+  return computed(() => {
+    const protocol = typeof window !== "undefined" ? window.location.protocol : "https:";
+    return `${protocol}//${currentRegion.value.domain}${basePath}`;
+  });
+};
 
 // This computed property will determine which price to show based on
 // the selected frequency
 const getPrice = (tier: ProductTier) => {
   return tier.price[frequency.value.value] || tier.price.monthly;
 };
+
+// Computed properties for each payment button href
+const basicPlanHref = getRegionalHref("/plans/free");
+const identityMonthHref = getRegionalHref("/plans/identity/month");
+const identityYearHref = getRegionalHref("/plans/identity/year");
+
+// Get the appropriate href based on frequency
+const getIdentityHref = computed(() => {
+  return frequency.value.value === "monthly"
+    ? identityMonthHref.value
+    : identityYearHref.value;
+});
+
+// Computed property for feedback link
+const feedbackHref = getRegionalHref("/feedback");
+
+onMounted(() => {
+  isClient.value = true;
+});
+
+// Clean up store subscriptions when component is unmounted
+onUnmounted(() => {
+  cleanup();
+});
 
 // Feature comparison data for the two tiers
 const comparisonFeatures = [
@@ -108,11 +160,11 @@ const comparisonFeatures = [
                 v-model="frequency"
                 class="grid grid-cols-2 gap-x-1 rounded-full bg-white/10 backdrop-blur-sm p-1 text-center text-sm font-semibold leading-5">
                 <RadioGroupOption
-                  as="template"
                   v-for="option in frequencies"
                   :key="option.value"
-                  :value="option"
-                  v-slot="{ checked }">
+                  v-slot="{ checked }"
+                  as="template"
+                  :value="option">
                   <div
                     :class="[
                       checked
@@ -128,6 +180,19 @@ const comparisonFeatures = [
                 </RadioGroupOption>
               </RadioGroup>
             </fieldset>
+          </div>
+          <!-- Region Selector - Positioned below frequency toggle with proper spacing and z-index -->
+          <div class="relative mt-8 flex justify-center">
+            <div class="inline-flex flex-col sm:flex-row items-center gap-3 sm:gap-4 rounded-xl bg-white/10 backdrop-blur-sm px-6 py-4 border border-white/20">
+              <span class="text-sm font-medium text-white/90 whitespace-nowrap">
+                {{ t("web.pricing.region-selector-label") || "Data region:" }}
+              </span>
+              <PricingRegionSelector
+                v-if="isClient"
+                :current-region="currentRegion"
+                :available-regions="availableRegions"
+                @region-change="handleRegionChange" />
+            </div>
           </div>
           <div class="relative mt-6">
             <p
@@ -187,11 +252,11 @@ const comparisonFeatures = [
                     <div class="mt-6 flex items-baseline gap-x-2">
                       <span
                         class="font-brand text-6xl font-bold tracking-tight text-gray-900 dark:text-white"
-                        >{{ getPrice(tiers[0]) }}</span
+                      >{{ getPrice(tiers[0]) }}</span
                       >
                       <span
                         class="font-brand text-lg font-semibold leading-8 text-gray-500 dark:text-gray-400"
-                        >{{ frequency.priceSuffix }}</span
+                      >{{ frequency.priceSuffix }}</span
                       >
                     </div>
                     <p
@@ -215,7 +280,7 @@ const comparisonFeatures = [
                     </ul>
                   </div>
                   <a
-                    :href="tiers[0].href"
+                    :href="basicPlanHref"
                     :aria-describedby="tiers[0].id"
                     class="mt-10 block font-brand rounded-xl bg-indigo-50 px-4 py-3 text-center text-lg font-semibold text-indigo-600 shadow-sm hover:bg-indigo-100 dark:bg-indigo-950 dark:text-indigo-400 dark:hover:bg-indigo-900 transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
                     <div class="flex items-center justify-center gap-x-2">
@@ -253,11 +318,11 @@ const comparisonFeatures = [
                     <div class="mt-6 flex items-baseline gap-x-2">
                       <span
                         class="font-brand text-6xl font-bold tracking-tight text-white"
-                        >{{ getPrice(tiers[1]) }}</span
+                      >{{ getPrice(tiers[1]) }}</span
                       >
                       <span
                         class="font-brand text-lg font-semibold leading-8 text-white/80"
-                        >{{ frequency.priceSuffix }}</span
+                      >{{ frequency.priceSuffix }}</span
                       >
                     </div>
                     <p class="mt-6 text-lg leading-7 text-white/90">
@@ -280,7 +345,7 @@ const comparisonFeatures = [
                     </ul>
                   </div>
                   <a
-                    :href="tiers[1].frequencySuffixEnabled ? `${tiers[1].href}${frequency.priceSuffix}` : tiers[1].href"
+                    :href="getIdentityHref"
                     :aria-describedby="tiers[1].id"
                     class="mt-10 block font-brand rounded-xl bg-white px-4 py-3 text-center text-lg font-semibold text-indigo-600 shadow-lg hover:bg-gray-50 transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
                     <div class="flex items-center justify-center gap-x-2">
@@ -385,7 +450,7 @@ const comparisonFeatures = [
                   </p>
                 </div>
                 <a
-                  href="/feedback"
+                  :href="feedbackHref"
                   aria-describedby="discounted-tier"
                   class="rounded-xl bg-indigo-600 px-5 py-3 text-base font-semibold text-white shadow-md hover:bg-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-400 transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 whitespace-nowrap">
                   Contact Us <span aria-hidden="true">&rarr;</span>
