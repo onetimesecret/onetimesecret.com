@@ -60,6 +60,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Generate Astro type definitions
+      - name: Generate Astro types
+        run: pnpm exec astro sync
+
       # TypeScript type checking (strict mode)
       - name: TypeScript type check
         run: pnpm run type-check
@@ -131,6 +135,10 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      # Generate Astro type definitions
+      - name: Generate Astro types
+        run: pnpm exec astro sync
 
       # Verify production build succeeds
       - name: Build site
