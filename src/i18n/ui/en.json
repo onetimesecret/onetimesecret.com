@@ -32,7 +32,7 @@
   },
   "navigation": {
     "home": "Home",
-    "features": "Features",
+    "features": "Featured",
     "regions": "Regions",
     "about": "About",
     "pricing": "Pricing"
@@ -97,6 +97,7 @@
       "features": "Features",
       "elevate-your-secure-sharing-with-custom-domains-": "Elevate your secure sharing with custom domains, unlimited capacity, and enterprise-grade features.",
       "payment-frequency": "Payment frequency",
+      "region-selector-label": "Data region:",
       "secure-your-brand-and-build-customer-trust-with-": "Secure your brand and build customer trust with links from your domain. Perfect for businesses that value privacy and professionalism.",
       "secure-links-stronger-connections": "Secure Links, Stronger Connections",
       "identity-tier-not-found-in-product-tiers": "Identity tier not found in product tiers",
