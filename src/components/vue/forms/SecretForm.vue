@@ -343,7 +343,8 @@ const createAnotherSecret = () => {
         <!-- Secret Options -->
         <div
           v-if="showOptions"
-          class="mt-3 mb-4">
+          class="mt-3 mb-4"
+          @click.stop>
           <div class="bg-gradient-to-br from-gray-50 to-gray-100/80 dark:from-gray-800 dark:to-gray-850 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
             <h3
               class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3 flex items-center gap-2">
