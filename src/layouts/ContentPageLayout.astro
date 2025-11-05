@@ -12,8 +12,8 @@ import "remark-github-blockquote-alert/alert.css";
 
 // Interface for props
 export interface Props {
-  title: string;
-  heroTitle: string;
+  title?: string;
+  heroTitle?: string;
   description?: string;
   canonicalUrl?: string;
   ogImage?: string;
@@ -30,12 +30,16 @@ export interface Props {
   // Determine if hero should be shown
   showHero?: boolean;
   heroDescription?: string;
+  // Content page props (for [...slug].astro usage)
+  page?: any;
+  renderedContent?: any;
+  lang?: string;
 }
 
 // Destructure props with defaults
 const {
-  title,
-  description,
+  title: propTitle,
+  description: propDescription,
   canonicalUrl,
   ogImage,
   ogType,
@@ -46,9 +50,18 @@ const {
   structuredData,
   htmlLang,
   initialMessages,
-  heroTitle,
-  heroDescription,
+  heroTitle: propHeroTitle,
+  heroDescription: propHeroDescription,
+  page,
+  renderedContent,
+  lang,
 } = Astro.props;
+
+// Extract values from page if provided (for [...slug].astro usage)
+const title = propTitle || (page?.data?.title ? `${page.data.title} | Onetime Secret` : "Onetime Secret");
+const description = propDescription || page?.data?.description;
+const heroTitle = propHeroTitle || page?.data?.heroTitle || page?.data?.title;
+const heroDescription = propHeroDescription || page?.data?.heroDescription || page?.data?.description;
 
 // Initialize a page-specific i18n instance for SSR content (for English)
 const pageI18n = await createLocaleI18n(htmlLang, initialMessages);
@@ -90,7 +103,7 @@ const t = pageI18n.global.t;
   </ContentHero>
   <div class="container mx-auto px-4 py-8">
     <Prose>
-      <slot />
+      {renderedContent ? <renderedContent.Content /> : <slot />}
     </Prose>
   </div>
 </Layout>

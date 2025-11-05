@@ -6,9 +6,11 @@ import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
 
 /**
  * Type for rendered content from Astro collections
+ * The Content property is an Astro component that can be rendered in templates
  */
 export interface RenderedContent {
-  Content: unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Content: any;
   headings: Array<{
     depth: number;
     slug: string;

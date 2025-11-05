@@ -8,7 +8,7 @@
  * - Language fallback (preferred language -> default language)
  * - Consistent styling and layout
  */
-import { getCollection } from "astro:content";
+import { getCollection, type CollectionEntry } from "astro:content";
 import ContentPageLayout from "@/layouts/ContentPageLayout.astro";
 import { getLanguagePaths, type SupportedLanguage } from "@/i18n";
 import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
@@ -19,21 +19,25 @@ import type { MessageSchema } from "@/i18n";
 export async function getStaticPaths() {
   // Get all available content from collections
   const pagesEntries = await getCollection("pages");
-  const productEntries = await getCollection("product");
-  const useCasesEntries = await getCollection("useCases");
 
   // Get all supported language paths
   const langPaths = await getLanguagePaths();
 
   // Create a map for all available content
-  const paths = [];
+  const paths: Array<{
+    params: { lang: string; slug: string };
+    props: { entry: CollectionEntry<"pages">; collection: string; entryLang: string };
+  }> = [];
 
   // Process each content collection
   for (const lang of langPaths) {
     const langCode = lang.params.lang as SupportedLanguage;
 
     // Helper function to add paths for a collection
-    const addCollectionPaths = (entries, collection) => {
+    const addCollectionPaths = (
+      entries: CollectionEntry<"pages">[],
+      collection: string
+    ) => {
       for (const entry of entries) {
         // Entry ID format is expected to be "[lang]/[slug]"
         const [entryLang, ...slugParts] = entry.id.split("/");
@@ -43,7 +47,8 @@ export async function getStaticPaths() {
         if (
           entryLang === langCode ||
           !entries.some(
-            (e) => e.id.endsWith(`/${slug}`) && e.id.startsWith(langCode),
+            (e: CollectionEntry<"pages">) =>
+              e.id.endsWith(`/${slug}`) && e.id.startsWith(`${langCode}/`)
           )
         ) {
           paths.push({
@@ -63,22 +68,13 @@ export async function getStaticPaths() {
 
     // Add paths for each collection
     addCollectionPaths(pagesEntries, "pages");
-    addCollectionPaths(productEntries, "product");
-    addCollectionPaths(useCasesEntries, "useCases");
   }
 
   return paths;
 }
 
-// Props interface
-interface Props {
-  entry: any;
-  collection: "pages" | "product" | "useCases";
-  entryLang: string;
-}
-
 // Props from getStaticPaths
-const { entry, collection, entryLang } = Astro.props;
+const { entry, entryLang } = Astro.props;
 const { lang = DEFAULT_LANGUAGE } = Astro.params as { lang: SupportedLanguage };
 
 // Setup initial messages for i18n
