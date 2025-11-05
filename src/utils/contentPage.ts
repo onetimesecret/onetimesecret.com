@@ -44,11 +44,11 @@ export async function getContentPageData(
   const allPages = await getCollection("pages");
 
   // Try to find language-specific page first, then fall back to default
-  let page = allPages.find((page) => page.id === `${lang}/${slug}.md`);
+  let page = allPages.find((page: CollectionEntry<"pages">) => page.id === `${lang}/${slug}.md`);
 
   // If not found, try the root version
   if (!page) {
-    page = allPages.find((page) => page.id === `${slug}.md`);
+    page = allPages.find((page: CollectionEntry<"pages">) => page.id === `${slug}.md`);
   }
 
   if (!page) {
