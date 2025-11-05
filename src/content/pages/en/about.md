@@ -32,7 +32,7 @@ Got questions or ideas? There's a [feedback form](/feedback) at the bottom of (a
 Happy sharing,
 Delano
 
-<img src="@/assets/img/delano-g.png" alt="Delano" width="95" height="120" />
+<img src="/etc/img/delano-g.png" alt="Delano" width="95" height="120" />
 
 ---
 
