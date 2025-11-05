@@ -14,7 +14,7 @@ screenshots:
       width: 1440
       height: 900
       deviceScaleFactor: 2
-    wait_for: 'body'
+    wait_for: 'footer'
     wait_timeout: 5000
 
   # Homepage - Mobile
@@ -24,7 +24,7 @@ screenshots:
       width: 390
       height: 844
       deviceScaleFactor: 3
-    wait_for: 'body'
+    wait_for: 'footer'
     wait_timeout: 5000
 
   # Pricing Page - Desktop
@@ -34,7 +34,7 @@ screenshots:
       width: 1440
       height: 900
       deviceScaleFactor: 2
-    wait_for: 'body'
+    wait_for: 'footer'
     wait_timeout: 5000
 
   # Pricing Page - Mobile
@@ -44,7 +44,7 @@ screenshots:
       width: 390
       height: 844
       deviceScaleFactor: 3
-    wait_for: 'body'
+    wait_for: 'footer'
     wait_timeout: 5000
 
 output:

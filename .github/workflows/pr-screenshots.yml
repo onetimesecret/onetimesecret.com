@@ -75,11 +75,13 @@ jobs:
       # This balances coverage (testing i18n) with speed (not testing all languages)
       - name: Select random language
         id: lang
-        run: |
-          LANGUAGES=("en" "fr" "de" "es")
-          SELECTED_LANG=${LANGUAGES[$RANDOM % ${#LANGUAGES[@]}]}
-          echo "selected=$SELECTED_LANG" >> $GITHUB_OUTPUT
-          echo "🌐 Selected language for screenshots: $SELECTED_LANG"
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const languages = ["en", "fr", "de", "es"];
+            const selected = languages[Math.floor(Math.random() * languages.length)];
+            console.log(`🌐 Selected language for screenshots: ${selected}`);
+            core.setOutput('selected', selected);
 
       # Process the config template to inject the selected language
       - name: Generate screenshot config
