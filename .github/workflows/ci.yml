@@ -1,0 +1,208 @@
+# Continuous Integration Workflow
+#
+# This workflow maintains professional build quality by running comprehensive
+# checks on every pull request and push to main branches. It enforces the same
+# quality standards as pre-commit hooks but in the CI environment.
+#
+# Quality Gates:
+#   - TypeScript type checking (strict mode)
+#   - ESLint code quality and style enforcement
+#   - Astro component validation
+#   - i18n translation completeness
+#   - Production build verification
+#   - Dependency security audit
+#
+# All jobs run in parallel for fast feedback, with dependency caching to
+# minimize execution time.
+
+name: CI - Code Quality & Build
+
+# Prevent multiple concurrent runs for the same PR/branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  # Run on all PRs to main and develop branches
+  pull_request:
+    branches: [main, develop]
+
+  # Run on pushes to develop (pre-production validation)
+  push:
+    branches: [develop]
+
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  # ============================================================================
+  # Type Safety & Linting
+  # ============================================================================
+  code-quality:
+    name: Type Check & Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.11
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # TypeScript type checking (strict mode)
+      - name: TypeScript type check
+        run: pnpm run type-check
+
+      # ESLint validation
+      - name: Lint code
+        run: pnpm run lint
+
+      # Astro component validation
+      - name: Astro component check
+        run: pnpm run check
+
+  # ============================================================================
+  # Internationalization Validation
+  # ============================================================================
+  i18n-check:
+    name: i18n Translation Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.11
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Verify all translation keys are defined
+      - name: Scan for missing translations
+        run: |
+          echo "Checking for missing or unused translation keys..."
+          pnpm run i18n:scan || {
+            echo "❌ Translation issues detected!"
+            echo "Run 'pnpm i18n:add' locally to add missing keys"
+            exit 1
+          }
+
+  # ============================================================================
+  # Build Verification
+  # ============================================================================
+  build:
+    name: Production Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.11
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Verify production build succeeds
+      - name: Build site
+        run: pnpm run build
+
+      # Upload build artifacts for inspection if needed
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-output
+          path: dist/
+          retention-days: 7
+
+  # ============================================================================
+  # Security & Dependency Audit
+  # ============================================================================
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.11
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Audit dependencies for known vulnerabilities
+      - name: Audit dependencies
+        run: |
+          echo "Running security audit..."
+          pnpm audit --audit-level=moderate || {
+            echo "⚠️  Security vulnerabilities detected"
+            echo "Review the issues above and update dependencies as needed"
+            exit 1
+          }
+
+  # ============================================================================
+  # Status Summary
+  # ============================================================================
+  ci-success:
+    name: CI Status Check
+    runs-on: ubuntu-latest
+    needs: [code-quality, i18n-check, build, security]
+    if: always()
+
+    steps:
+      - name: Check all jobs succeeded
+        run: |
+          if [[ "${{ needs.code-quality.result }}" != "success" ]] || \
+             [[ "${{ needs.i18n-check.result }}" != "success" ]] || \
+             [[ "${{ needs.build.result }}" != "success" ]] || \
+             [[ "${{ needs.security.result }}" != "success" ]]; then
+            echo "❌ One or more CI checks failed"
+            echo ""
+            echo "Job Status:"
+            echo "  - Code Quality: ${{ needs.code-quality.result }}"
+            echo "  - i18n Check: ${{ needs.i18n-check.result }}"
+            echo "  - Build: ${{ needs.build.result }}"
+            echo "  - Security: ${{ needs.security.result }}"
+            exit 1
+          fi
+          echo "✅ All CI checks passed successfully!"
