@@ -133,7 +133,7 @@ const typingTimerId = ref<number | null>(null);
 
 const showOptions = computed(() => {
   return (
-    props.withOptions && !isTyping.value && secretText.value.trim().length > 0
+    props.withOptions && secretText.value.trim().length > 0
   );
 });
 
