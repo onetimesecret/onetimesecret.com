@@ -58,8 +58,8 @@ const {
 const effectiveLocale =
   getLocaleFromUrl(Astro.url) || htmlLang || DEFAULT_LANGUAGE;
 
-// Initialize a page-specific i18n instance for SSR content (for English)
-const pageI18n = await createLocaleI18n(effectiveLocale, initialMessages);
+// Initialize a page-specific i18n instance for SSR content (for side effects)
+await createLocaleI18n(effectiveLocale, initialMessages);
 
 // Derive langDir based on effective locale
 const langDir =

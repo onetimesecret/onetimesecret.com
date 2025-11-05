@@ -57,8 +57,8 @@ export async function getLocalizedContent<T extends keyof AnyEntryMap>(
     );
   }
 
-  // Render the content
-  const renderedContent = await entry.render();
+  // Render the content (type assertion needed for collection entries that have render method)
+  const renderedContent = await (entry as any).render();
 
   return {
     entry: entry as CollectionEntry<T>,
