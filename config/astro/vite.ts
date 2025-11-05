@@ -74,6 +74,9 @@ export function createConfig(
         },
       },
     },
+    // Type assertion needed: Multiple Vite versions in dependency tree (6.4.1 and 7.1.12) cause
+    // plugin type incompatibilities. This is safe at runtime but TypeScript cannot reconcile the types.
+    // TODO: Investigate consolidating Vite versions in pnpm-lock.yaml
     plugins: [tailwindcss(), viteSSRGlobals()] as any,
     resolve: {
       alias: {
