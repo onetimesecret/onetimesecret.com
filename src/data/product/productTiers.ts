@@ -51,7 +51,7 @@ export const productTiers: Array<ProductTier> = [
       monthly: "$0",
       annually: "$0",
     },
-    description: "Essential secret sharing features casual use.",
+    description: "Essential secret sharing features for casual use.",
     descriptionKey: "web.pricing.tiers.basic.description",
     features: [
       "Share secrets securely",
