@@ -32,7 +32,39 @@ const pageCollection = defineCollection({
   }),
 });
 
+/**
+ * Define schema for use cases collection
+ */
+const useCasesCollection = defineCollection({
+  type: "content",
+  schema: z.object({
+    title: z.string(),
+    description: z.string().optional(),
+    icon: z.string().optional(),
+    order: z.number().optional(),
+    layout: z.string().optional().default("ContentPageLayout"),
+    heroTitle: z.string().optional(),
+    heroDescription: z.string().optional(),
+    heroType: z
+      .enum(["simple", "feature", "none"])
+      .optional()
+      .default("simple"),
+    pubDate: z.date().optional(),
+    updatedDate: z.date().optional(),
+    image: z
+      .object({
+        src: z.string(),
+        alt: z.string(),
+      })
+      .optional(),
+    // SEO-related metadata
+    noindex: z.boolean().optional().default(false),
+    canonical: z.string().url().optional(),
+  }),
+});
+
 // Export collections with improved typing
 export const collections = {
   pages: pageCollection,
+  useCases: useCasesCollection,
 };

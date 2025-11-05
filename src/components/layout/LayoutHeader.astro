@@ -23,7 +23,7 @@ const {
   effectiveLocale: propsLocale,
 } = Astro.props;
 const effectiveLocale: SupportedLanguage =
-  propsLocale || getLocaleFromUrl(Astro.url) || DEFAULT_LANGUAGE;
+  (propsLocale || getLocaleFromUrl(Astro.url) || DEFAULT_LANGUAGE) as SupportedLanguage;
 
 // Import all language message files
 import enMessages from "@/i18n/ui/en.json";

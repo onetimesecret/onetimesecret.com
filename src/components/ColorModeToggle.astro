@@ -2,14 +2,8 @@
 // src/components/ColorModeToggle.astro
 // https://astro.build/themes/details/accessible-astro-starter/
 // https://accessible-astro.incluud.dev/getting-started/introduction/
-import { getLocaleFromUrl } from "@/i18n/utils";
-import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
 import enTranslations from "@/i18n/ui/en.json";
 import OIcon from "@/components/vue/icons/OIcon.vue";
-import ThemeManager, { AVAILABLE_THEMES } from "@/utils/theme";
-
-// Get the current locale from the URL or use default
-const currentLocale = getLocaleFromUrl(Astro.url) || DEFAULT_LANGUAGE;
 
 // For now, we only use English translations at build time
 const translations = enTranslations;

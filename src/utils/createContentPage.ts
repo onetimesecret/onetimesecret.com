@@ -73,7 +73,7 @@ export function createContentPageFactory(options: ContentPageFactoryOptions) {
       await getContentPageData(lang, slug);
 
     return {
-      Content: renderedContent.Content as any,
+      Content: renderedContent.Content,
       pageProps: {
         page,
         renderedContent,
