@@ -1,77 +1,82 @@
 <!-- DataCentreMap.vue -->
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
 
+// TypeScript interfaces
+interface Coordinates {
+  lat: number;
+  lng: number;
+}
+
+interface DataCenter {
+  id: number;
+  name: string;
+  location: string;
+  coordinates: Coordinates;
+  status: string;
+}
+
+interface Props {
+  dataCenters?: DataCenter[];
+  selectedCenter?: DataCenter | null;
+  mapWidth?: string;
+  mapHeight?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+}
+
 // Sample data center locations - in a real application, this would come from an API or props
-const props = defineProps({
-  dataCenters: {
-    type: Array,
-    default: () => [
-      {
-        id: 1,
-        name: "North America - East",
-        location: "Virginia, USA",
-        coordinates: { lat: 37.7749, lng: -77.6823 },
-        status: "active",
-      },
-      {
-        id: 2,
-        name: "Europe - Central",
-        location: "Frankfurt, Germany",
-        coordinates: { lat: 50.1109, lng: 8.6821 },
-        status: "active",
-      },
-      {
-        id: 3,
-        name: "Asia Pacific - South",
-        location: "Mumbai, India",
-        coordinates: { lat: 19.076, lng: 72.8777 },
-        status: "active",
-      },
-      {
-        id: 4,
-        name: "Asia Pacific - East",
-        location: "Tokyo, Japan",
-        coordinates: { lat: 35.6762, lng: 139.6503 },
-        status: "maintenance",
-      },
-      {
-        id: 5,
-        name: "South America",
-        location: "São Paulo, Brazil",
-        coordinates: { lat: -23.5505, lng: -46.6333 },
-        status: "active",
-      },
-      {
-        id: 6,
-        name: "Australia - East",
-        location: "Sydney, Australia",
-        coordinates: { lat: -33.8688, lng: 151.2093 },
-        status: "active",
-      },
-    ],
-  },
-  selectedCenter: {
-    type: Object,
-    default: null,
-  },
-  mapWidth: {
-    type: String,
-    default: "100%",
-  },
-  mapHeight: {
-    type: String,
-    default: "500px",
-  },
-  primaryColor: {
-    type: String,
-    default: "#3b82f6", // blue-500
-  },
-  secondaryColor: {
-    type: String,
-    default: "#1e3a8a", // blue-900
-  },
+const props = withDefaults(defineProps<Props>(), {
+  dataCenters: () => [
+    {
+      id: 1,
+      name: "North America - East",
+      location: "Virginia, USA",
+      coordinates: { lat: 37.7749, lng: -77.6823 },
+      status: "active",
+    },
+    {
+      id: 2,
+      name: "Europe - Central",
+      location: "Frankfurt, Germany",
+      coordinates: { lat: 50.1109, lng: 8.6821 },
+      status: "active",
+    },
+    {
+      id: 3,
+      name: "Asia Pacific - South",
+      location: "Mumbai, India",
+      coordinates: { lat: 19.076, lng: 72.8777 },
+      status: "active",
+    },
+    {
+      id: 4,
+      name: "Asia Pacific - East",
+      location: "Tokyo, Japan",
+      coordinates: { lat: 35.6762, lng: 139.6503 },
+      status: "maintenance",
+    },
+    {
+      id: 5,
+      name: "South America",
+      location: "São Paulo, Brazil",
+      coordinates: { lat: -23.5505, lng: -46.6333 },
+      status: "active",
+    },
+    {
+      id: 6,
+      name: "Australia - East",
+      location: "Sydney, Australia",
+      coordinates: { lat: -33.8688, lng: 151.2093 },
+      status: "active",
+    },
+  ],
+  selectedCenter: null,
+  mapWidth: "100%",
+  mapHeight: "500px",
+  primaryColor: "#3b82f6",
+  secondaryColor: "#1e3a8a",
 });
 
 // Reactive data
@@ -79,7 +84,7 @@ const selectedDataCenter = ref(props.selectedCenter || null);
 const mapLoaded = ref(false);
 
 // Status colors
-const getStatusColor = (status) => {
+const getStatusColor = (status: string): string => {
   switch (status) {
     case "active":
       return "bg-green-500";
@@ -93,19 +98,19 @@ const getStatusColor = (status) => {
 };
 
 // Initialize the map
-const initMap = () => {
+const initMap = (): void => {
   // We're using a simple SVG map implementation here
   // In a production app, you would use a proper mapping library like Leaflet or Google Maps
   mapLoaded.value = true;
 };
 
 // Handle marker click
-const handleMarkerClick = (dataCenter) => {
+const handleMarkerClick = (dataCenter: DataCenter): void => {
   selectedDataCenter.value = dataCenter;
 };
 
 // Get marker position based on coordinates
-const getMarkerPosition = (coordinates) => {
+const getMarkerPosition = (coordinates: Coordinates): { x: number; y: number } => {
   // Convert geographic coordinates to SVG coordinates
   // This is a simplified version that works for our basic world map
   // For a real implementation, you'd need proper map projection logic
