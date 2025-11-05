@@ -379,7 +379,7 @@ const createAnotherSecret = () => {
                 <!-- Passphrase Input (Conditional) -->
                 <div
                   v-if="showPassphraseInput"
-                  class="mt-3 pl-6">
+                  class="mt-3">
                   <label
                     for="passphrase-input"
                     class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
@@ -390,7 +390,7 @@ const createAnotherSecret = () => {
                     v-model="passphrase"
                     type="password"
                     maxlength="80"
-                    class="block w-full max-w-md rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm py-2 px-3 disabled:opacity-50"
+                    class="block w-full max-w-xs rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm py-2 px-3 disabled:opacity-50"
                     :placeholder="t('web.secrets.passphrasePlaceholder') || 'Enter passphrase'"
                     :disabled="isLoading" />
                   <p class="mt-2 text-xs leading-relaxed text-gray-600 dark:text-gray-400">
