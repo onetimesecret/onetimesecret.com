@@ -21,7 +21,7 @@ interface Props {
   isClient: boolean;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 // Define emits for region changes and API results
 const emit = defineEmits<{

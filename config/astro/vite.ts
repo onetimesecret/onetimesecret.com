@@ -82,7 +82,7 @@ export function createConfig(
         },
       },
     },
-    plugins: [tailwindcss(), viteSSRGlobals()],
+    plugins: [tailwindcss(), viteSSRGlobals()] as any,
     resolve: {
       alias: {
         "@": pathResolve(astroPath, "src"),

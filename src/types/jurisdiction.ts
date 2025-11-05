@@ -28,14 +28,22 @@ export type Region = Jurisdiction;
 /**
  * Type guard to check if an object is a valid Jurisdiction
  */
-export function isJurisdiction(obj: any): obj is Jurisdiction {
+export function isJurisdiction(obj: unknown): obj is Jurisdiction {
   return (
-    obj &&
+    obj !== null &&
+    typeof obj === 'object' &&
+    'identifier' in obj &&
     typeof obj.identifier === 'string' &&
+    'displayName' in obj &&
     typeof obj.displayName === 'string' &&
+    'domain' in obj &&
     typeof obj.domain === 'string' &&
-    obj.icon &&
+    'icon' in obj &&
+    obj.icon !== null &&
+    typeof obj.icon === 'object' &&
+    'collection' in obj.icon &&
     typeof obj.icon.collection === 'string' &&
+    'name' in obj.icon &&
     typeof obj.icon.name === 'string'
   );
 }

@@ -30,6 +30,8 @@ const dismissBanner = () => {
   emit("dismiss");
 };
 
+// Used in template @click handler
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const switchToSuggestedRegion = () => {
   emit("switchRegion", props.detectedRegion);
 };

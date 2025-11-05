@@ -6,6 +6,7 @@ import {
   isLocalizedUrlActive,
   localizeUrl,
 } from "@/i18n/utils";
+import { type SupportedLanguage } from "@config/astro/i18n";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -33,12 +34,12 @@ export default function useI18nRoutes() {
   });
 
   // Function to create localized URLs
-  const toLocalizedPath = (path: string, targetLocale?: string) => {
-    return localizeUrl(path, targetLocale || currentLocale.value);
+  const toLocalizedPath = (path: string, targetLocale?: SupportedLanguage) => {
+    return localizeUrl(path, targetLocale || (currentLocale.value as SupportedLanguage));
   };
 
   // Function to create a URL for switching language
-  const toLanguageSwitcherUrl = (targetLocale: string) => {
+  const toLanguageSwitcherUrl = (targetLocale: SupportedLanguage) => {
     return createLanguageSwitcherUrl(currentPath.value, targetLocale);
   };
 

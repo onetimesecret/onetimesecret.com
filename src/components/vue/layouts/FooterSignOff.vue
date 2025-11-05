@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import OIcon from "@/components/vue/icons/OIcon.vue";
-import { useI18n } from "vue-i18n";
 import { setLanguage, setLanguageWithMessages, type MessageSchema } from "@/i18n";
 import { onMounted } from "vue";
 
@@ -8,8 +7,6 @@ const props = defineProps<{
   locale: string;
   initialMessages?: Record<string, MessageSchema>;
 }>();
-
-const { t } = useI18n();
 
 // Initialize i18n with provided messages
 if (props.initialMessages && props.locale) {

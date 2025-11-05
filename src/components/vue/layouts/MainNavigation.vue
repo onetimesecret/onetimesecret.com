@@ -6,10 +6,10 @@ import { Bars3Icon, XMarkIcon } from "@heroicons/vue/24/outline";
 import { ref, onMounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { localizeUrl } from '@/i18n/utils';
-import { setLanguage, setLanguageWithMessages, type MessageSchema } from "@/i18n";
+import { setLanguage, setLanguageWithMessages, type MessageSchema, type SupportedLanguage } from "@/i18n";
 
 const props = defineProps<{
-  locale: string;
+  locale: SupportedLanguage;
   initialMessages?: Record<string, MessageSchema>;
   customNavItems?: Array<{name: string, href: string}>;
   showAuthButtons?: boolean;
