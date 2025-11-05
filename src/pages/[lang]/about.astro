@@ -19,9 +19,7 @@ const { Content, pageProps, isFallback } =
 pageProps.title = pageProps.title || "About | Onetime Secret";
 ---
 
-<ContentPageLayout {...pageProps}>
-  <Content />
-</ContentPageLayout>
+<ContentPageLayout {...pageProps} renderedContent={{ Content }} />
 
 {/* Show fallback notice only when necessary */}
 {isFallback && <LanguageFallbackNotice lang={lang} />}
