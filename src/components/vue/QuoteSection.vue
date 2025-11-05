@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import StarsRating from "@/components/vue/StarsRating.vue";
-import { Testimonial } from "@/sources/testimonials";
+import { Testimonial } from "@/data/product/testimonials";
 
 // Define props using defineProps
 const props = defineProps<{

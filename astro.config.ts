@@ -38,7 +38,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Controls debug settings throughout the configuration
-const DEBUG = process.env.VITE_DEBUG === "true";
+// const DEBUG = process.env.VITE_DEBUG === "true";
 
 // Load environment variables (this works in astro.config.ts)
 // The empty string means it will load all variables regardless of prefix

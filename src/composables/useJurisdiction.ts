@@ -1,23 +1,21 @@
 // src/composables/useJurisdiction.ts
-import { ref, computed, watchEffect, type Ref } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { ref, computed, watchEffect } from 'vue';
 import {
   availableJurisdictions,
   currentJurisdiction,
   apiBaseUrl as storeApiBaseUrl,
   setJurisdictionByIdentifier
 } from '@/stores/jurisdictionStore';
-import type { Jurisdiction, Region } from '@/types/jurisdiction';
+import type { Region } from '@/types/jurisdiction';
 
 /**
  * Composable for managing jurisdiction selection and related functionality
  * Handles jurisdiction detection, selection, and provides reactive state
  */
 export function useJurisdiction() {
-  const { t } = useI18n();
 
   // Local reactive references to store values
-  const jurisdictions = ref(availableJurisdictions.get());
+  const jurisdictions = ref([...availableJurisdictions.get()]);
   const current = ref(currentJurisdiction.get());
   const apiBaseUrl = ref(storeApiBaseUrl.get());
   const detectedJurisdiction = ref<string>('');
@@ -33,7 +31,7 @@ export function useJurisdiction() {
 
   // Subscribe to store changes
   const unsubscribeAvailable = availableJurisdictions.subscribe(
-    (value) => { jurisdictions.value = value; }
+    (value) => { jurisdictions.value = [...value]; }
   );
 
   const unsubscribeCurrent = currentJurisdiction.subscribe(

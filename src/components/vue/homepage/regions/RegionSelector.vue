@@ -133,7 +133,7 @@ onUnmounted(() => {
     <!-- Region selection dropdown -->
     <div
       v-if="isOpen"
-      class="absolute top-full left-0 mt-2 z-50 w-48 xs:w-56 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700"
+      class="absolute top-full left-0 mt-2 z-[200] w-48 xs:w-56 rounded-md bg-white dark:bg-gray-800 shadow-2xl ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700"
       style="transform: translateY(0);"
       role="listbox"
       tabindex="-1"
@@ -184,7 +184,7 @@ onUnmounted(() => {
     <!-- Educational info popover -->
     <div
       v-if="showInfoPopover"
-      class="absolute top-full right-0 mt-2 z-50 w-60 xs:w-72 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 p-2.5 xs:p-4 text-left"
+      class="absolute top-full right-0 mt-2 z-[200] w-60 xs:w-72 rounded-md bg-white dark:bg-gray-800 shadow-2xl ring-1 ring-black ring-opacity-5 p-2.5 xs:p-4 text-left"
       style="transform: translateY(0);"
       role="tooltip">
       <div class="flex justify-between items-start">

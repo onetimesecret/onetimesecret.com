@@ -1,7 +1,7 @@
 <!-- src/components/vue/forms/SecretForm.vue -->
 
 <script setup lang="ts">
-import { computed, ref, watch, nextTick, onMounted } from "vue";
+import { computed, ref, watch, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 
 // Define the options model

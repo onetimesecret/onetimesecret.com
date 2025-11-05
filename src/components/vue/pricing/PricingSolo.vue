@@ -2,23 +2,17 @@
 import OIcon from "@/components/vue/icons/OIcon.vue";
 import MovingGlobules from "@/components/vue/MovingGlobules.vue";
 import QuoteSection from "@/components/vue/QuoteSection.vue";
-import { jurisdictions as jurisdictionsData } from "@/data/ops/jurisdictions";
-import type { PaymentFrequency } from "@/data/product/productTiers";
 import {
   paymentFrequencies,
   productTiers,
 } from "@/data/product/productTiers";
 import { testimonials as testimonialsData } from "@/data/product/testimonials";
-import {
-  setLanguage,
-  setLanguageWithMessages,
-  type MessageSchema,
-} from "@/i18n";
 import { RadioGroup, RadioGroupOption } from "@headlessui/vue";
-import { onMounted, ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 
-  const { t } = useI18n();
+const { t } = useI18n();
+
   const frequencies = ref(paymentFrequencies);
   const frequency = ref(frequencies.value[0]);
 

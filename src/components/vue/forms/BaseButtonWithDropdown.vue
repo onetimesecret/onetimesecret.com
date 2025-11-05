@@ -4,11 +4,19 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/vue";
 import { ChevronDownIcon } from "@heroicons/vue/20/solid";
 
+// Define types for menu items
+interface MenuItemData {
+  label: string;
+  name?: string;
+  href?: string;
+  action?: () => void;
+}
+
 // Define props with defaults
 const props = withDefaults(
   defineProps<{
     buttonText?: string;
-    items?: Array;
+    items?: Array<MenuItemData>;
   }>(),
   {
     buttonText: "Actions", // Default button text
@@ -20,7 +28,7 @@ const props = withDefaults(
 const emit = defineEmits(["item-click"]);
 
 // Handle item click
-function handleItemClick(item) {
+function handleItemClick(item: MenuItemData) {
   if (item.action) {
     item.action(); // Execute action if provided
   }

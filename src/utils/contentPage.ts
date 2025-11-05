@@ -9,10 +9,11 @@ import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
 import { createLocaleI18n } from "@/i18n";
 import enMessages from "@/i18n/ui/en.json";
 import type { MessageSchema } from "@/i18n";
+import type { RenderedContent } from "@/utils/content";
 
 export interface ContentPageData {
   page: CollectionEntry<"pages">;
-  renderedContent: any;
+  renderedContent: RenderedContent;
   lang: SupportedLanguage;
   initialMessages: Record<string, MessageSchema>;
   isFallback: boolean;

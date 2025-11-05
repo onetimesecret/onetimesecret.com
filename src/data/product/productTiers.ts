@@ -21,6 +21,13 @@ export interface ProductTier {
   featured: boolean;
   frequencySuffixEnabled?: boolean;
   learn_more?: string;
+
+  // i18n translation keys
+  nameKey?: string;
+  descriptionKey?: string;
+  ctaKey?: string;
+  featuresKeys?: string[];
+  badgeKey?: string;
 }
 
 export const paymentFrequencies: Array<PaymentFrequency> = [
@@ -32,8 +39,10 @@ export const productTiers: Array<ProductTier> = [
   {
     id: "tier-free",
     name: "Basic",
+    nameKey: "web.pricing.tiers.basic.name",
     href: "/plans/free",
     cta: "Get Started",
+    ctaKey: "web.pricing.tiers.basic.cta",
     icon: {
       collection: "heroicons",
       name: "check-circle-20-solid",
@@ -42,7 +51,8 @@ export const productTiers: Array<ProductTier> = [
       monthly: "$0",
       annually: "$0",
     },
-    description: "Essential secret sharing features casual use.",
+    description: "Essential secret sharing features for casual use.",
+    descriptionKey: "web.pricing.tiers.basic.description",
     features: [
       "Share secrets securely",
       "Email links to recipients",
@@ -50,6 +60,14 @@ export const productTiers: Array<ProductTier> = [
       "More expiration options",
       "REST API",
     ],
+    featuresKeys: [
+      "web.pricing.tiers.basic.features.0",
+      "web.pricing.tiers.basic.features.1",
+      "web.pricing.tiers.basic.features.2",
+      "web.pricing.tiers.basic.features.3",
+      "web.pricing.tiers.basic.features.4",
+    ],
+    badgeKey: "web.pricing.tiers.basic.badge",
     featured: false,
     frequencySuffixEnabled: false,
     learn_more: "https://docs.onetimesecret.com/en/secret-links/",
@@ -57,8 +75,10 @@ export const productTiers: Array<ProductTier> = [
   {
     id: "tier-identity",
     name: "Identity Plus",
+    nameKey: "web.pricing.tiers.identity.name",
     href: "/plans/identity",
     cta: "Start today",
+    ctaKey: "web.pricing.tiers.identity.cta",
     icon: {
       collection: "mdi",
       name: "shield-lock",
@@ -67,11 +87,9 @@ export const productTiers: Array<ProductTier> = [
       monthly: "$35",
       annually: "$365",
     },
-    //description: "Secure sharing that elevates your brand and simplifies communication.",
-    //description: "Elevate your brand with secure sharing that simplifies communication.",
-    //description: "Elevate your brand with secure, streamlined communication.",
     description:
       "Elevate brand trust with secure sharing from your own domain. e.g. secrets.example.com.",
+    descriptionKey: "web.pricing.tiers.identity.description",
     features: [
       "Unlimited custom domains",
       "Custom branding with your logo",
@@ -79,31 +97,16 @@ export const productTiers: Array<ProductTier> = [
       "Privacy-first design",
       "No rate limits",
     ],
-    featured: false,
+    featuresKeys: [
+      "web.pricing.tiers.identity.features.0",
+      "web.pricing.tiers.identity.features.1",
+      "web.pricing.tiers.identity.features.2",
+      "web.pricing.tiers.identity.features.3",
+      "web.pricing.tiers.identity.features.4",
+    ],
+    badgeKey: "web.pricing.tiers.identity.badge",
+    featured: true,
     frequencySuffixEnabled: true,
     learn_more: "https://docs.onetimesecret.com/en/custom-domains/",
-  },
-  {
-    id: "tier-dedicated",
-    name: "Global Elite",
-    href: "mailto:dedicated@onetimesecret.com",
-    cta: "Get a Custom Quote",
-    icon: {
-      collection: "fa6",
-      name: "solid-globe",
-    },
-    price: {
-      monthly: "$125",
-      annually: "$1150",
-    },
-    description: "Exclusive infrastructure in your choice of region.",
-    features: [
-      "Private cloud environment",
-      "Fully customizable",
-      "Professionally managed",
-      "Helps meet and exceed compliance requirements",
-    ],
-    featured: true,
-    frequencySuffixEnabled: false,
   },
 ];

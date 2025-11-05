@@ -8,7 +8,7 @@ import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
  * Type for rendered content from Astro collections
  */
 export interface RenderedContent {
-  Content: any;
+  Content: unknown;
   headings: Array<{
     depth: number;
     slug: string;
@@ -59,7 +59,7 @@ export async function getLocalizedContent<T extends keyof AnyEntryMap>(
   const renderedContent = await entry.render();
 
   return {
-    entry,
+    entry: entry as CollectionEntry<T>,
     renderedContent,
     isFallback,
   };
@@ -119,8 +119,8 @@ export async function getLocalizedCollection<T extends keyof AnyEntryMap>(
  * @param entry - The collection entry
  * @returns The slug portion of the ID (without language prefix)
  */
-export function getSlugFromEntry(entry: CollectionEntry<any>): string {
+export function getSlugFromEntry<T extends keyof AnyEntryMap>(entry: CollectionEntry<T>): string {
   // Entry ID format is expected to be "[lang]/[slug]"
-  const parts = entry.id.split('/');
+  const parts = (entry.id as string).split('/');
   return parts.slice(1).join('/');
 }

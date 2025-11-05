@@ -19,7 +19,7 @@ defineOptions({
   inheritAttrs: false,
 });
 
-const props = defineProps<{
+defineProps<{
   currentRegion: Region;
   availableRegions: Region[];
 }>();

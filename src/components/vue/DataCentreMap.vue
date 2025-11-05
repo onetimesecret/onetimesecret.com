@@ -1,7 +1,7 @@
 <!-- DataCentreMap.vue -->
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted } from "vue";
 
 // Sample data center locations - in a real application, this would come from an API or props
 const props = defineProps({
@@ -77,12 +77,6 @@ const props = defineProps({
 // Reactive data
 const selectedDataCenter = ref(props.selectedCenter || null);
 const mapLoaded = ref(false);
-const mapZoom = ref(2);
-const mapCenter = ref({ lat: 20, lng: 0 });
-
-// Map object reference
-const mapRef = ref(null);
-const markersRef = ref([]);
 
 // Status colors
 const getStatusColor = (status) => {
@@ -123,12 +117,6 @@ const getMarkerPosition = (coordinates) => {
 // Lifecycle hooks
 onMounted(() => {
   initMap();
-});
-
-// Display data for the selected data center
-const selectedCenterDetails = computed(() => {
-  if (!selectedDataCenter.value) return null;
-  return `${selectedDataCenter.value.name} (${selectedDataCenter.value.location}) - Status: ${selectedDataCenter.value.status}`;
 });
 </script>
 

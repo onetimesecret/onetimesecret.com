@@ -97,11 +97,54 @@
       "features": "Features",
       "elevate-your-secure-sharing-with-custom-domains-": "Elevate your secure sharing with custom domains, unlimited capacity, and enterprise-grade features.",
       "payment-frequency": "Payment frequency",
+      "region-selector-label": "Data region:",
+      "region": "Region",
+      "change": "Change",
       "secure-your-brand-and-build-customer-trust-with-": "Secure your brand and build customer trust with links from your domain. Perfect for businesses that value privacy and professionalism.",
       "secure-links-stronger-connections": "Secure Links, Stronger Connections",
       "identity-tier-not-found-in-product-tiers": "Identity tier not found in product tiers",
       "onetime-secret-helps-us-share-sensitive-informat": "Onetime Secret helps us share sensitive information securely while maintaining our professional facade.",
-      "information-shared-through-this-service-can-only": "Information shared through this service can only be accessed once. Once viewed, the content is permanently deleted to ensure confidentiality."
+      "information-shared-through-this-service-can-only": "Information shared through this service can only be accessed once. Once viewed, the content is permanently deleted to ensure confidentiality.",
+      "compare-plans": "Compare Plans",
+      "tiers": {
+        "basic": {
+          "name": "Basic",
+          "badge": null,
+          "description": "Essential secret sharing features for casual use.",
+          "cta": "Get Started",
+          "features": {
+            "0": "Share secrets securely",
+            "1": "Email links to recipients",
+            "2": "Automatic destruction",
+            "3": "More expiration options",
+            "4": "REST API"
+          }
+        },
+        "identity": {
+          "name": "Identity Plus",
+          "badge": "Featured",
+          "description": "Elevate brand trust with secure sharing from your own domain. e.g. secrets.example.com.",
+          "cta": "Start today",
+          "features": {
+            "0": "Unlimited custom domains",
+            "1": "Custom branding with your logo",
+            "2": "Branded homepage destination",
+            "3": "Privacy-first design",
+            "4": "No rate limits"
+          }
+        }
+      },
+      "comparison": {
+        "feature": "Feature",
+        "features": {
+          "secret-sharing": "Secret sharing",
+          "email-recipients": "Email recipients",
+          "rest-api": "REST API access",
+          "custom-domains": "Custom domains",
+          "custom-branding": "Custom branding",
+          "no-rate-limits": "No rate limits"
+        }
+      }
     },
     "errors": {
       "errorTitle": "Not successful",

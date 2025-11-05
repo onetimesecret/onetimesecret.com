@@ -40,7 +40,6 @@ const {
   suggestedDomain,
   setJurisdiction,
   detectJurisdiction,
-  clearSuggestion,
   cleanup,
 } = useJurisdiction();
 
@@ -89,7 +88,7 @@ const isClient = ref(false);
 onMounted(async () => {
   isClient.value = true;
   // Detect appropriate jurisdiction for the user
-  const detected = await detectJurisdiction();
+  await detectJurisdiction();
   // Banner will show if detected jurisdiction differs from current
 });
 

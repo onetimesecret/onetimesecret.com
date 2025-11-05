@@ -97,11 +97,54 @@
       "features": "Características",
       "elevate-your-secure-sharing-with-custom-domains-": "Mejore su intercambio seguro con dominios personalizados, capacidad ilimitada y características de nivel empresarial.",
       "payment-frequency": "Frecuencia de pago",
+      "region-selector-label": "Región de pago:",
+      "region": "Región",
+      "change": "Cambiar",
       "secure-your-brand-and-build-customer-trust-with-": "Asegure su marca y genere confianza con los clientes mediante enlaces de su dominio. Perfecto para empresas que valoran la privacidad y el profesionalismo.",
       "secure-links-stronger-connections": "Enlaces seguros, conexiones más fuertes",
       "identity-tier-not-found-in-product-tiers": "Nivel de identidad no encontrado en niveles de producto",
       "onetime-secret-helps-us-share-sensitive-informat": "Onetime Secret nos ayuda a compartir información sensible de forma segura manteniendo nuestra fachada profesional.",
-      "information-shared-through-this-service-can-only": "La información compartida a través de este servicio solo se puede acceder una vez. Una vez vista, el contenido se elimina permanentemente para garantizar la confidencialidad."
+      "information-shared-through-this-service-can-only": "La información compartida a través de este servicio solo se puede acceder una vez. Una vez vista, el contenido se elimina permanentemente para garantizar la confidencialidad.",
+      "compare-plans": "Comparar planes",
+      "tiers": {
+        "basic": {
+          "name": "Básico",
+          "badge": null,
+          "description": "Características esenciales para compartir secretos de uso ocasional.",
+          "cta": "Comenzar",
+          "features": {
+            "0": "Compartir secretos de forma segura",
+            "1": "Enviar enlaces por correo electrónico a los destinatarios",
+            "2": "Destrucción automática",
+            "3": "Más opciones de caducidad",
+            "4": "API REST"
+          }
+        },
+        "identity": {
+          "name": "Identity Plus",
+          "badge": "Destacado",
+          "description": "Eleve la confianza en su marca con intercambio seguro desde su propio dominio. Por ej. secrets.ejemplo.com.",
+          "cta": "Comience hoy",
+          "features": {
+            "0": "Dominios personalizados ilimitados",
+            "1": "Marca personalizada con su logotipo",
+            "2": "Página de inicio de marca",
+            "3": "Diseño centrado en la privacidad",
+            "4": "Sin límites de velocidad"
+          }
+        }
+      },
+      "comparison": {
+        "feature": "Característica",
+        "features": {
+          "secret-sharing": "Compartir secretos",
+          "email-recipients": "Destinatarios de correo electrónico",
+          "rest-api": "Acceso a la API REST",
+          "custom-domains": "Dominios personalizados",
+          "custom-branding": "Marca personalizada",
+          "no-rate-limits": "Sin límites de velocidad"
+        }
+      }
     },
     "errors": {
       "errorTitle": "No exitoso",

@@ -9,7 +9,7 @@ import { getLegalUseCase } from "./legalUseCase";
  * @param t Translation function from vue-i18n
  * @returns Array of use case objects with translation strings
  */
-export function getUseCases(t: Function): UseCase[] {
+export function getUseCases(t: (key: string) => string): UseCase[] {
   return [
     getITUseCase(t),
     getDeveloperUseCase(t),
