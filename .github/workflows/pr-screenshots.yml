@@ -1,0 +1,198 @@
+# PR Screenshots Workflow
+#
+# Automatically captures visual screenshots of key pages for visual regression
+# testing on pull requests. This helps catch unintended UI changes.
+#
+# Optimizations:
+# - Only runs when UI code changes (src/**)
+# - Only runs on ready_for_review or with 'screenshots' label
+# - Uses shallow clones for faster checkout
+# - Caches Playwright browser binaries for speed
+# - Randomly selects one language to balance coverage vs. speed
+#
+# Security:
+# - Screenshots stored only in GitHub (gh-screenshots branch)
+# - Action pinned to specific commit hash to prevent supply chain attacks
+
+name: PR Screenshots
+
+# Prevent multiple concurrent runs for the same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, labeled]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - '.github/workflows/pr-screenshots.yml'
+      - '.github/screenshots.config.yml'
+
+jobs:
+  screenshots:
+    name: Capture UI Screenshots
+    runs-on: ubuntu-latest
+
+    # Only run if:
+    # 1. PR is ready for review (not draft), OR
+    # 2. PR has the 'screenshots' label
+    if: |
+      github.event.pull_request.draft == false ||
+      contains(github.event.pull_request.labels.*.name, 'screenshots')
+
+    steps:
+      # Use shallow clone for faster checkout
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.11
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Generate Astro type definitions
+      - name: Generate Astro types
+        run: pnpm exec astro sync
+
+      # Build the production site
+      - name: Build site
+        run: pnpm run build
+
+      # Randomly select a supported language
+      # This balances coverage (testing i18n) with speed (not testing all languages)
+      - name: Select random language
+        id: lang
+        run: |
+          LANGUAGES=("en" "fr" "de" "es")
+          SELECTED_LANG=${LANGUAGES[$RANDOM % ${#LANGUAGES[@]}]}
+          echo "selected=$SELECTED_LANG" >> $GITHUB_OUTPUT
+          echo "🌐 Selected language for screenshots: $SELECTED_LANG"
+
+      # Process the config template to inject the selected language
+      - name: Generate screenshot config
+        run: |
+          sed "s/__LANG__/${{ steps.lang.outputs.selected }}/g" \
+            .github/screenshots.config.yml > .github/screenshots.config.processed.yml
+          echo "📝 Generated config for language: ${{ steps.lang.outputs.selected }}"
+          cat .github/screenshots.config.processed.yml
+
+      # Cache Playwright browsers to speed up subsequent runs
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
+      # Install Playwright browsers (will use cache if available)
+      - name: Install Playwright browsers
+        run: |
+          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" != "true" ]; then
+            echo "📦 Installing Playwright browsers..."
+            npx playwright install chromium --with-deps
+          else
+            echo "✅ Using cached Playwright browsers"
+          fi
+
+      # Start the preview server in the background
+      - name: Start preview server
+        run: |
+          pnpm preview &
+          echo $! > preview.pid
+          # Wait for server to be ready
+          echo "⏳ Waiting for server to start..."
+          timeout 60 bash -c 'until curl -s http://localhost:4321 > /dev/null; do sleep 2; done'
+          echo "✅ Server is ready"
+
+      # Capture screenshots using the action (pinned to specific commit)
+      - name: Capture screenshots
+        uses: yoavf/auto-pr-screenshots-action@74e4d55a87b1fd6bfc3cfbeefeb2831a04f0851c  # v1.4.0-beta
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: .github/screenshots.config.processed.yml
+          browsers: chromium
+          branch: gh-screenshots
+          show-attribution: false
+          fail-on-error: false  # Don't fail the entire workflow if screenshots fail
+
+      # Stop the preview server
+      - name: Stop preview server
+        if: always()
+        run: |
+          if [ -f preview.pid ]; then
+            kill $(cat preview.pid) || true
+            rm preview.pid
+          fi
+
+      # Add a custom comment with language info
+      - name: Add language info to PR
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const lang = '${{ steps.lang.outputs.selected }}';
+            const langNames = {
+              en: 'English',
+              fr: 'Français',
+              de: 'Deutsch',
+              es: 'Español'
+            };
+
+            const comment = `## 📸 Visual Snapshot
+
+            Screenshots captured in **${langNames[lang]}** (${lang})
+
+            These screenshots show how the UI looks after your changes. Review them to catch unintended visual regressions.
+
+            ---
+            💡 **Note:** We test one randomly selected language per PR to balance coverage with speed. Screenshots are captured for:
+            - 🏠 Homepage (desktop + mobile)
+            - 💰 Pricing page (desktop + mobile)
+
+            🔍 Check the screenshot comments above for visual comparisons.`;
+
+            // Find existing bot comments
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('📸 Visual Snapshot')
+            );
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }

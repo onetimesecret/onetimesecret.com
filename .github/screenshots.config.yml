@@ -1,0 +1,54 @@
+# Screenshot Configuration Template for PR Visual Regression Testing
+#
+# This file is a template that gets processed by the workflow to inject
+# the randomly selected language. The workflow will replace __LANG__ with
+# the actual language code (en, fr, de, or es).
+
+version: 1
+
+screenshots:
+  # Homepage - Desktop
+  - name: homepage-desktop
+    url: http://localhost:4321/__LANG__/
+    viewport:
+      width: 1440
+      height: 900
+      deviceScaleFactor: 2
+    wait_for: 'body'
+    wait_timeout: 5000
+
+  # Homepage - Mobile
+  - name: homepage-mobile
+    url: http://localhost:4321/__LANG__/
+    viewport:
+      width: 390
+      height: 844
+      deviceScaleFactor: 3
+    wait_for: 'body'
+    wait_timeout: 5000
+
+  # Pricing Page - Desktop
+  - name: pricing-desktop
+    url: http://localhost:4321/__LANG__/pricing
+    viewport:
+      width: 1440
+      height: 900
+      deviceScaleFactor: 2
+    wait_for: 'body'
+    wait_timeout: 5000
+
+  # Pricing Page - Mobile
+  - name: pricing-mobile
+    url: http://localhost:4321/__LANG__/pricing
+    viewport:
+      width: 390
+      height: 844
+      deviceScaleFactor: 3
+    wait_for: 'body'
+    wait_timeout: 5000
+
+output:
+  branch: gh-screenshots
+  comment:
+    template: default
+    group_by: page
