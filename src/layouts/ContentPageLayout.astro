@@ -58,7 +58,7 @@ const {
 } = Astro.props;
 
 // Extract values from page if provided (for [...slug].astro usage)
-const title = propTitle || (page?.data?.title ? `${page.data.title} | Onetime Secret` : undefined);
+const title = propTitle || (page?.data?.title ? `${page.data.title} | Onetime Secret` : "Onetime Secret");
 const description = propDescription || page?.data?.description;
 const heroTitle = propHeroTitle || page?.data?.heroTitle || page?.data?.title;
 const heroDescription = propHeroDescription || page?.data?.heroDescription || page?.data?.description;
