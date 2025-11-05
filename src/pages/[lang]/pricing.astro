@@ -51,9 +51,7 @@ const pageDescription = t("web.pricing.description");
   description={pageDescription}
   htmlLang={currentLang}
   langDir={currentLangMeta.dir}
-  initialMessages={pageScopedInitialMessages}
-  heroTitle={pageTitle}
-  heroDescription={pageDescription}>
+  initialMessages={pageScopedInitialMessages}>
   <PricingComponent
     client:load
     locale={currentLang}

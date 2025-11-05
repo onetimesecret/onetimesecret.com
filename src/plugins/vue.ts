@@ -25,7 +25,7 @@ export const VuePlugin: Plugin = {
     app.use(i18n);
 
     // Configure global properties
-    app.config.errorHandler = (err, instance, info) => {
+    app.config.errorHandler = (err, _instance, info) => {
       console.error("Vue Error:", err);
       console.info("Error Info:", info);
     };

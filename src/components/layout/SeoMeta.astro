@@ -130,6 +130,7 @@ const absoluteOgImageUrl = ogImage ? new URL(ogImage, ogImageBaseUrl).href : "";
 {
   structuredData && (
     <script
+      is:inline
       type="application/ld+json"
       set:html={JSON.stringify(structuredData)}
     />
@@ -140,6 +141,7 @@ const absoluteOgImageUrl = ogImage ? new URL(ogImage, ogImageBaseUrl).href : "";
 {
   breadcrumbsLd && (
     <script
+      is:inline
       type="application/ld+json"
       set:html={JSON.stringify(breadcrumbsLd)}
     />
