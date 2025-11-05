@@ -1,8 +1,7 @@
 <!-- src/components/vue/navigation/LanguageSwitcher.vue -->
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { useI18n } from "vue-i18n";
+import { computed } from "vue";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/vue";
 import {
   SUPPORTED_LANGUAGES,
@@ -18,8 +17,6 @@ const props = defineProps<{
   locale?: string;
   openDirection?: 'up' | 'down'; // Added to control menu opening direction
 }>();
-
-const { t } = useI18n();
 
 // Get current route to preserve path when switching languages
 const currentPath = computed(() => {

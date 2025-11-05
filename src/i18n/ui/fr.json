@@ -97,11 +97,54 @@
       "features": "Caractéristiques",
       "elevate-your-secure-sharing-with-custom-domains-": "Améliorez votre partage sécurisé avec des domaines personnalisés, une capacité illimitée et des fonctionnalités de niveau entreprise.",
       "payment-frequency": "Fréquence des paiements",
+      "region-selector-label": "Région de paiement :",
+      "region": "Région",
+      "change": "Changer",
       "secure-your-brand-and-build-customer-trust-with-": "Protégez votre marque et renforcez la confiance de vos clients grâce à des liens provenant de votre domaine. Parfait pour les entreprises qui accordent de l'importance à la confidentialité et au professionnalisme.",
       "secure-links-stronger-connections": "Des liens sécurisés, des connexions plus fortes",
       "identity-tier-not-found-in-product-tiers": "Le niveau d'identité n'est pas trouvé dans les niveaux de produits",
       "onetime-secret-helps-us-share-sensitive-informat": "Onetime Secret nous aide à partager des informations sensibles en toute sécurité tout en conservant notre façade professionnelle.",
-      "information-shared-through-this-service-can-only": "Les informations partagées par l'intermédiaire de ce service ne peuvent être consultées qu'une seule fois. Une fois consulté, le contenu est définitivement supprimé afin de garantir la confidentialité."
+      "information-shared-through-this-service-can-only": "Les informations partagées par l'intermédiaire de ce service ne peuvent être consultées qu'une seule fois. Une fois consulté, le contenu est définitivement supprimé afin de garantir la confidentialité.",
+      "compare-plans": "Comparer les plans",
+      "tiers": {
+        "basic": {
+          "name": "Basique",
+          "badge": null,
+          "description": "Fonctionnalités essentielles de partage de secrets pour une utilisation occasionnelle.",
+          "cta": "Commencer",
+          "features": {
+            "0": "Partager des secrets en toute sécurité",
+            "1": "Envoyer des liens par e-mail aux destinataires",
+            "2": "Destruction automatique",
+            "3": "Plus d'options d'expiration",
+            "4": "API REST"
+          }
+        },
+        "identity": {
+          "name": "Identity Plus",
+          "badge": "En vedette",
+          "description": "Renforcez la confiance dans votre marque grâce au partage sécurisé depuis votre propre domaine. Par ex. secrets.exemple.com.",
+          "cta": "Commencer aujourd'hui",
+          "features": {
+            "0": "Domaines personnalisés illimités",
+            "1": "Image de marque personnalisée avec votre logo",
+            "2": "Page d'accueil de marque",
+            "3": "Conception axée sur la confidentialité",
+            "4": "Aucune limite de débit"
+          }
+        }
+      },
+      "comparison": {
+        "feature": "Fonctionnalité",
+        "features": {
+          "secret-sharing": "Partage de secrets",
+          "email-recipients": "Destinataires e-mail",
+          "rest-api": "Accès API REST",
+          "custom-domains": "Domaines personnalisés",
+          "custom-branding": "Image de marque personnalisée",
+          "no-rate-limits": "Aucune limite de débit"
+        }
+      }
     },
     "errors": {
       "errorTitle": "Échec",
@@ -114,7 +157,27 @@
       "create_link": "Créer un lien",
       "expirationTime": "Prolonger la durée de vie",
       "optionsHeading": "Options de confidentialité",
-      "addPassphrase": "Ajouter une phrase de passe",
+      "addPassphrase": "Exiger une phrase de passe",
+      "passphraseHint": "Ajouter une couche de sécurité supplémentaire",
+      "passphraseInputLabel": "Phrase de passe",
+      "passphrasePlaceholder": "Saisissez la phrase de passe",
+      "passphraseInputHint": "Le destinataire aura besoin de cette phrase de passe pour voir le secret",
+      "ttlLabel": "Durée de vie du secret",
+      "ttlHint": "Le secret sera supprimé après ce délai, même s'il n'a pas été consulté",
+      "customDomainCta": "Vous voulez utiliser votre propre domaine ?",
+      "customDomainDesc": "Partagez des secrets depuis secrets.votredomaine.fr",
+      "learnMorePricing": "En savoir plus",
+      "ttl": {
+        "5minutes": "5 minutes",
+        "30minutes": "30 minutes",
+        "1hour": "1 heure",
+        "4hours": "4 heures",
+        "1day": "1 jour",
+        "3days": "3 jours",
+        "7days": "7 jours",
+        "14days": "14 jours",
+        "30days": "30 jours"
+      },
       "secret_placeholder": "Saisissez votre message secret ici...",
       "secret_placeholder_mobile": "Saisissez votre secret ici...",
       "secret-label": "Saisie de texte secret",

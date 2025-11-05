@@ -40,7 +40,7 @@ export type MessageSchema = typeof enMessagesImport;
 
 // Create the global i18n instance
 // It's initialized with English, but can be updated dynamically
-export const i18n = createI18n<[MessageSchema], string>({
+export const i18n = createI18n({
   legacy: false, // Use Composition API
   locale: "en", // Default locale
   fallbackLocale: "en", // Fallback to English if a translation is missing
@@ -65,7 +65,7 @@ export async function setLanguage(lang: string) {
 
   try {
     // Set the locale immediately to avoid hydration mismatches
-    i18n.global.locale.value = lang;
+    i18n.global.locale.value = lang as typeof i18n.global.locale.value;
 
     // Dynamically import the locale messages
     // This assumes locale files are named `[lang].json` and are in `./ui/`
@@ -75,7 +75,7 @@ export async function setLanguage(lang: string) {
     i18n.global.setLocaleMessage(lang, messages.default || messages);
 
     // Set the current locale of the i18n instance
-    i18n.global.locale.value = lang;
+    i18n.global.locale.value = lang as typeof i18n.global.locale.value;
 
     // console.log(`Successfully loaded and set language: ${lang}`);
   } catch (error) {
@@ -165,7 +165,7 @@ export function setLanguageWithMessages(
 
   // Set the current locale
   if (i18n.global.locale.value !== targetLang) {
-    i18n.global.locale.value = targetLang;
+    i18n.global.locale.value = targetLang as typeof i18n.global.locale.value;
   }
 }
 

@@ -314,7 +314,7 @@ function ensureDirectoryExists(dir) {
  * @param {Object} translations - The loaded JSON translations object
  * @param {string} lang - Language code
  */
-async function processExistingFiles(outputDir, translations, lang) {
+async function processExistingFiles(outputDir, _translations, lang) {
   // List of files to check for conversion from templates to static content
   const templateFiles = ["about.md", "security.md"];
 

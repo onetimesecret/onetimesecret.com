@@ -97,11 +97,54 @@
       "features": "Features",
       "elevate-your-secure-sharing-with-custom-domains-": "Elevate your secure sharing with custom domains, unlimited capacity, and enterprise-grade features.",
       "payment-frequency": "Payment frequency",
+      "region-selector-label": "Data region:",
+      "region": "Region",
+      "change": "Change",
       "secure-your-brand-and-build-customer-trust-with-": "Secure your brand and build customer trust with links from your domain. Perfect for businesses that value privacy and professionalism.",
       "secure-links-stronger-connections": "Secure Links, Stronger Connections",
       "identity-tier-not-found-in-product-tiers": "Identity tier not found in product tiers",
       "onetime-secret-helps-us-share-sensitive-informat": "Onetime Secret helps us share sensitive information securely while maintaining our professional facade.",
-      "information-shared-through-this-service-can-only": "Information shared through this service can only be accessed once. Once viewed, the content is permanently deleted to ensure confidentiality."
+      "information-shared-through-this-service-can-only": "Information shared through this service can only be accessed once. Once viewed, the content is permanently deleted to ensure confidentiality.",
+      "compare-plans": "Compare Plans",
+      "tiers": {
+        "basic": {
+          "name": "Basic",
+          "badge": null,
+          "description": "Essential secret sharing features for casual use.",
+          "cta": "Get Started",
+          "features": {
+            "0": "Share secrets securely",
+            "1": "Email links to recipients",
+            "2": "Automatic destruction",
+            "3": "More expiration options",
+            "4": "REST API"
+          }
+        },
+        "identity": {
+          "name": "Identity Plus",
+          "badge": "Featured",
+          "description": "Elevate brand trust with secure sharing from your own domain. e.g. secrets.example.com.",
+          "cta": "Start today",
+          "features": {
+            "0": "Unlimited custom domains",
+            "1": "Custom branding with your logo",
+            "2": "Branded homepage destination",
+            "3": "Privacy-first design",
+            "4": "No rate limits"
+          }
+        }
+      },
+      "comparison": {
+        "feature": "Feature",
+        "features": {
+          "secret-sharing": "Secret sharing",
+          "email-recipients": "Email recipients",
+          "rest-api": "REST API access",
+          "custom-domains": "Custom domains",
+          "custom-branding": "Custom branding",
+          "no-rate-limits": "No rate limits"
+        }
+      }
     },
     "errors": {
       "errorTitle": "Not successful",
@@ -114,7 +157,27 @@
       "create_link": "Create Link",
       "expirationTime": "Extend lifetime",
       "optionsHeading": "Privacy Options",
-      "addPassphrase": "Add passphrase",
+      "addPassphrase": "Require passphrase",
+      "passphraseHint": "Add an extra layer of security",
+      "passphraseInputLabel": "Passphrase",
+      "passphrasePlaceholder": "Enter passphrase",
+      "passphraseInputHint": "Recipient will need this passphrase to view the secret",
+      "ttlLabel": "Secret lifetime",
+      "ttlHint": "Secret will be deleted after this time, even if not viewed",
+      "customDomainCta": "Want to use your own domain?",
+      "customDomainDesc": "Share secrets from secrets.yourdomain.com",
+      "learnMorePricing": "Learn more",
+      "ttl": {
+        "5minutes": "5 minutes",
+        "30minutes": "30 minutes",
+        "1hour": "1 hour",
+        "4hours": "4 hours",
+        "1day": "1 day",
+        "3days": "3 days",
+        "7days": "7 days",
+        "14days": "14 days",
+        "30days": "30 days"
+      },
       "secret_placeholder": "Type your secret message here...",
       "secret_placeholder_mobile": "Type secret here...",
       "secret-label": "Secret text input",

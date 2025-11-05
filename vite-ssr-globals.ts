@@ -39,7 +39,7 @@ export default function viteSSRGlobals(): Plugin {
       // Define globals in SSR context
       if (typeof global !== "undefined") {
         // This defines the variable in Node.js context where SSR happens
-        (global as any).__VUE_PROD_DEVTOOLS__ = false;
+        (global as typeof globalThis & { __VUE_PROD_DEVTOOLS__?: boolean }).__VUE_PROD_DEVTOOLS__ = false;
       }
     },
     /**

@@ -12,7 +12,7 @@ import { useI18n } from "vue-i18n";
 
 const props = defineProps<{
   locale: SupportedLanguage;
-  initialMessages?: Record;
+  initialMessages?: Record<string, MessageSchema>;
 }>();
 
 const { t } = useI18n();

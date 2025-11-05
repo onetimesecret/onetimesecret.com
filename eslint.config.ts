@@ -47,6 +47,14 @@ export default tseslint.config(
       // Add or override Vue-specific rules here if necessary
       "vue/multi-word-component-names": "off", // Allow single-word names for test components
       "@typescript-eslint/no-explicit-any": "off",
+      // Allow underscore-prefixed unused variables (conventional pattern for template-only functions)
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
+      ],
 
       // Ensure valid template root
       "vue/valid-template-root": "error",

@@ -13,8 +13,7 @@ const pageScopedInitialMessages: Record<string, MessageSchema> = {
 };
 
 // Initialize a page-specific i18n instance for SSR content
-const pageI18n = await createLocaleI18n(currentLang, pageScopedInitialMessages);
-const t = pageI18n.global.t;
+await createLocaleI18n(currentLang, pageScopedInitialMessages);
 
 // Page metadata
 const pageTitle = "Example Page | Onetime Secret";
@@ -58,7 +57,7 @@ const pageDescription = "An example page demonstrating the Onetime Secret layout
             <div class="grid md:grid-cols-2 gap-8">
               <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-gray-50 dark:bg-gray-800">
                 <div class="flex items-center mb-4">
-                  <OIcon collection="heroicons" name="code-bracket" class="h-6 w-6 text-brand-500" />
+                  <OIcon collection="heroicons" name="code-bracket" size="6" />
                   <h4 class="ml-3 text-lg font-medium text-gray-900 dark:text-white">
                     Modular Components
                   </h4>
@@ -70,7 +69,7 @@ const pageDescription = "An example page demonstrating the Onetime Secret layout
 
               <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-gray-50 dark:bg-gray-800">
                 <div class="flex items-center mb-4">
-                  <OIcon collection="heroicons" name="adjustments-horizontal" class="h-6 w-6 text-brand-500" />
+                  <OIcon collection="heroicons" name="adjustments-horizontal" size="6" />
                   <h4 class="ml-3 text-lg font-medium text-gray-900 dark:text-white">
                     Customizable Slots
                   </h4>
@@ -82,7 +81,7 @@ const pageDescription = "An example page demonstrating the Onetime Secret layout
 
               <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-gray-50 dark:bg-gray-800">
                 <div class="flex items-center mb-4">
-                  <OIcon collection="heroicons" name="language" class="h-6 w-6 text-brand-500" />
+                  <OIcon collection="heroicons" name="language" size="6" />
                   <h4 class="ml-3 text-lg font-medium text-gray-900 dark:text-white">
                     Internationalization Support
                   </h4>
@@ -94,7 +93,7 @@ const pageDescription = "An example page demonstrating the Onetime Secret layout
 
               <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-gray-50 dark:bg-gray-800">
                 <div class="flex items-center mb-4">
-                  <OIcon collection="heroicons" name="swatch" class="h-6 w-6 text-brand-500" />
+                  <OIcon collection="heroicons" name="swatch" size="6" />
                   <h4 class="ml-3 text-lg font-medium text-gray-900 dark:text-white">
                     Theme Management
                   </h4>

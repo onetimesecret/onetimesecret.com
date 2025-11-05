@@ -21,7 +21,7 @@ interface Props {
   isClient: boolean;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 // Define emits for region changes and API results
 const emit = defineEmits<{
@@ -121,7 +121,7 @@ defineExpose({
             ref="secretFormRef"
             :region-name="currentRegion.displayName"
             :api-base-url="apiBaseUrl"
-            :with-options="false"
+            :with-options="true"
             @create-link="handleSecretCreationResult" />
         </div>
 

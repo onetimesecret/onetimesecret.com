@@ -9,10 +9,11 @@ import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
 import { createLocaleI18n } from "@/i18n";
 import enMessages from "@/i18n/ui/en.json";
 import type { MessageSchema } from "@/i18n";
+import type { RenderedContent } from "@/utils/content";
 
 export interface ContentPageData {
   page: CollectionEntry<"pages">;
-  renderedContent: any;
+  renderedContent: RenderedContent;
   lang: SupportedLanguage;
   initialMessages: Record<string, MessageSchema>;
   isFallback: boolean;
@@ -31,10 +32,23 @@ export async function getContentPageData(
   lang: SupportedLanguage = DEFAULT_LANGUAGE,
   slug: string
 ): Promise<ContentPageData> {
-  // Setup initial messages for i18n
-  const initialMessages = {
+  // Setup initial messages for i18n - include both English and target language
+  const initialMessages: Record<string, MessageSchema> = {
     [DEFAULT_LANGUAGE]: enMessages as MessageSchema,
   };
+
+  // Load the target language messages if not English
+  if (lang !== DEFAULT_LANGUAGE) {
+    try {
+      const langMessagesModule = await import(`@/i18n/ui/${lang}.json`);
+      initialMessages[lang] = (langMessagesModule.default || langMessagesModule) as MessageSchema;
+    } catch (error) {
+      console.warn(
+        `Failed to load messages for language "${lang}" in getContentPageData. English fallback will be used.`,
+        error
+      );
+    }
+  }
 
   // Initialize i18n for page content
   await createLocaleI18n(lang, initialMessages);
@@ -43,11 +57,11 @@ export async function getContentPageData(
   const allPages = await getCollection("pages");
 
   // Try to find language-specific page first, then fall back to default
-  let page = allPages.find((page) => page.id === `${lang}/${slug}.md`);
+  let page = allPages.find((page: CollectionEntry<"pages">) => page.id === `${lang}/${slug}.md`);
 
   // If not found, try the root version
   if (!page) {
-    page = allPages.find((page) => page.id === `${slug}.md`);
+    page = allPages.find((page: CollectionEntry<"pages">) => page.id === `${slug}.md`);
   }
 
   if (!page) {

@@ -97,11 +97,54 @@
       "features": "Funktionen",
       "elevate-your-secure-sharing-with-custom-domains-": "Verbessern Sie Ihr sicheres Teilen mit benutzerdefinierten Domains, unbegrenzter Kapazität und Funktionen auf Unternehmensniveau.",
       "payment-frequency": "Zahlungsfrequenz",
+      "region-selector-label": "Zahlungsregion:",
+      "region": "Region",
+      "change": "Ändern",
       "secure-your-brand-and-build-customer-trust-with-": "Sichern Sie Ihre Marke und bauen Sie Kundenvertrauen mit Links von Ihrer Domain auf. Perfekt für Unternehmen, die Wert auf Datenschutz und Professionalität legen.",
       "secure-links-stronger-connections": "Sichere Links, stärkere Verbindungen",
       "identity-tier-not-found-in-product-tiers": "Identity-Stufe in Produktstufen nicht gefunden",
       "onetime-secret-helps-us-share-sensitive-informat": "Onetime Secret hilft uns, sensible Informationen sicher zu teilen und gleichzeitig unsere professionelle Fassade zu wahren.",
-      "information-shared-through-this-service-can-only": "Informationen, die über diesen Dienst geteilt werden, können nur einmal abgerufen werden. Nach dem Ansehen wird der Inhalt dauerhaft gelöscht, um die Vertraulichkeit zu gewährleisten."
+      "information-shared-through-this-service-can-only": "Informationen, die über diesen Dienst geteilt werden, können nur einmal abgerufen werden. Nach dem Ansehen wird der Inhalt dauerhaft gelöscht, um die Vertraulichkeit zu gewährleisten.",
+      "compare-plans": "Pläne vergleichen",
+      "tiers": {
+        "basic": {
+          "name": "Basis",
+          "badge": null,
+          "description": "Wesentliche Funktionen zum Teilen von Geheimnissen für gelegentliche Nutzung.",
+          "cta": "Loslegen",
+          "features": {
+            "0": "Geheimnisse sicher teilen",
+            "1": "Links per E-Mail an Empfänger senden",
+            "2": "Automatische Zerstörung",
+            "3": "Mehr Ablaufoptionen",
+            "4": "REST-API"
+          }
+        },
+        "identity": {
+          "name": "Identity Plus",
+          "badge": "Vorgestellt",
+          "description": "Stärken Sie das Vertrauen in Ihre Marke durch sicheres Teilen von Ihrer eigenen Domain. Z.B. secrets.beispiel.com.",
+          "cta": "Heute starten",
+          "features": {
+            "0": "Unbegrenzte benutzerdefinierte Domains",
+            "1": "Benutzerdefiniertes Branding mit Ihrem Logo",
+            "2": "Gebrandete Startseite",
+            "3": "Datenschutz-orientiertes Design",
+            "4": "Keine Ratenbegrenzungen"
+          }
+        }
+      },
+      "comparison": {
+        "feature": "Funktion",
+        "features": {
+          "secret-sharing": "Geheimnisse teilen",
+          "email-recipients": "E-Mail-Empfänger",
+          "rest-api": "REST-API-Zugriff",
+          "custom-domains": "Benutzerdefinierte Domains",
+          "custom-branding": "Benutzerdefiniertes Branding",
+          "no-rate-limits": "Keine Ratenbegrenzungen"
+        }
+      }
     },
     "errors": {
       "errorTitle": "Nicht erfolgreich",
@@ -114,7 +157,27 @@
       "create_link": "Link erstellen",
       "expirationTime": "Lebensdauer verlängern",
       "optionsHeading": "Datenschutzoptionen",
-      "addPassphrase": "Passphrase hinzufügen",
+      "addPassphrase": "Passphrase erforderlich",
+      "passphraseHint": "Eine zusätzliche Sicherheitsebene hinzufügen",
+      "passphraseInputLabel": "Passphrase",
+      "passphrasePlaceholder": "Passphrase eingeben",
+      "passphraseInputHint": "Empfänger benötigt diese Passphrase, um das Geheimnis anzuzeigen",
+      "ttlLabel": "Geheimnis-Lebensdauer",
+      "ttlHint": "Geheimnis wird nach dieser Zeit gelöscht, auch wenn es nicht angesehen wurde",
+      "customDomainCta": "Möchten Sie Ihre eigene Domain verwenden?",
+      "customDomainDesc": "Teilen Sie Geheimnisse von secrets.ihredomain.de",
+      "learnMorePricing": "Mehr erfahren",
+      "ttl": {
+        "5minutes": "5 Minuten",
+        "30minutes": "30 Minuten",
+        "1hour": "1 Stunde",
+        "4hours": "4 Stunden",
+        "1day": "1 Tag",
+        "3days": "3 Tage",
+        "7days": "7 Tage",
+        "14days": "14 Tage",
+        "30days": "30 Tage"
+      },
       "secret_placeholder": "Geben Sie hier Ihre geheime Nachricht ein...",
       "secret_placeholder_mobile": "Geheimnis hier eingeben...",
       "secret-label": "Geheimtext-Eingabe",

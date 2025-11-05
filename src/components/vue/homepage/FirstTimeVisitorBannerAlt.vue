@@ -30,7 +30,8 @@ const dismissBanner = () => {
   emit("dismiss");
 };
 
-const switchToSuggestedRegion = () => {
+// Used in template @click handler (underscore prefix indicates intentional non-use in script)
+const _switchToSuggestedRegion = () => {
   emit("switchRegion", props.detectedRegion);
 };
 </script>
@@ -73,7 +74,7 @@ const switchToSuggestedRegion = () => {
         <!--<button
           type="button"
           class="flex items-center justify-center rounded-md border border-transparent bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-brand-800"
-          @click="switchToSuggestedRegion">
+          @click="_switchToSuggestedRegion">
           Use {{ suggestedDomain.split('.')[0].toUpperCase() }} region
         </button>-->
       </div>

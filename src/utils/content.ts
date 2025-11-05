@@ -6,8 +6,10 @@ import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
 
 /**
  * Type for rendered content from Astro collections
+ * The Content property is an Astro component that can be rendered in templates
  */
 export interface RenderedContent {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Content: any;
   headings: Array<{
     depth: number;
@@ -55,11 +57,12 @@ export async function getLocalizedContent<T extends keyof AnyEntryMap>(
     );
   }
 
-  // Render the content
-  const renderedContent = await entry.render();
+  // Render the content (type assertion needed for collection entries that have render method)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const renderedContent = await (entry as any).render();
 
   return {
-    entry,
+    entry: entry as CollectionEntry<T>,
     renderedContent,
     isFallback,
   };
@@ -82,7 +85,7 @@ export async function getLocalizedCollection<T extends keyof AnyEntryMap>(
 
   // Filter for the requested language
   const langEntries = allEntries.filter(
-    entry => entry.id.startsWith(`${lang}/`)
+    (entry: CollectionEntry<T>) => entry.id.startsWith(`${lang}/`)
   );
 
   // If using the default language, just return those entries
@@ -91,7 +94,7 @@ export async function getLocalizedCollection<T extends keyof AnyEntryMap>(
   }
 
   // For other languages, get default language entries that don't have a translation
-  const defaultEntries = allEntries.filter(entry => {
+  const defaultEntries = allEntries.filter((entry: CollectionEntry<T>) => {
     // Only include default language entries
     if (!entry.id.startsWith(`${DEFAULT_LANGUAGE}/`)) {
       return false;
@@ -102,7 +105,7 @@ export async function getLocalizedCollection<T extends keyof AnyEntryMap>(
 
     // Check if we already have this entry in the requested language
     const hasTranslation = langEntries.some(
-      langEntry => langEntry.id.substring(lang.length + 1) === slug
+      (langEntry: CollectionEntry<T>) => langEntry.id.substring(lang.length + 1) === slug
     );
 
     // Include this entry if it doesn't have a translation
@@ -119,8 +122,8 @@ export async function getLocalizedCollection<T extends keyof AnyEntryMap>(
  * @param entry - The collection entry
  * @returns The slug portion of the ID (without language prefix)
  */
-export function getSlugFromEntry(entry: CollectionEntry<any>): string {
+export function getSlugFromEntry<T extends keyof AnyEntryMap>(entry: CollectionEntry<T>): string {
   // Entry ID format is expected to be "[lang]/[slug]"
-  const parts = entry.id.split('/');
+  const parts = (entry.id as string).split('/');
   return parts.slice(1).join('/');
 }
