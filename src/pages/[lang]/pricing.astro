@@ -11,6 +11,7 @@ import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
 import enMessages from "@/i18n/ui/en.json";
 import frMessages from "@/i18n/ui/fr.json";
 import deMessages from "@/i18n/ui/de.json";
+import esMessages from "@/i18n/ui/es.json";
 
 // Export getStaticPaths to generate pages for each language
 export async function getStaticPaths() {
@@ -29,6 +30,7 @@ const messagesMap: Record<string, MessageSchema> = {
   en: enMessages as MessageSchema,
   fr: frMessages as MessageSchema,
   de: deMessages as MessageSchema,
+  es: esMessages as MessageSchema,
 };
 
 const pageScopedInitialMessages: Record<string, MessageSchema> = {
