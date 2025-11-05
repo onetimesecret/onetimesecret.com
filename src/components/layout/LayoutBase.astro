@@ -60,7 +60,6 @@ const effectiveLocale =
 
 // Initialize a page-specific i18n instance for SSR content (for English)
 const pageI18n = await createLocaleI18n(effectiveLocale, initialMessages);
-const t = pageI18n.global.t;
 
 // Derive langDir based on effective locale
 const langDir =

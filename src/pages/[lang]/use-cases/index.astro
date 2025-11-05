@@ -3,7 +3,6 @@
  * src/pages/[lang]/use-cases/index.astro
  * List of use cases example - demonstrates working with multiple collection items
  */
-import { getCollection } from "astro:content";
 import Layout from "@/layouts/Layout.astro";
 import MainNavigation from "@/components/vue/layouts/MainNavigation.vue";
 import { getLanguagePaths, type SupportedLanguage } from "@/i18n";
@@ -26,8 +25,7 @@ const initialMessages = {
 };
 
 // Initialize i18n for page content
-const i18n = await createLocaleI18n(lang, initialMessages);
-const { t } = i18n.global;
+await createLocaleI18n(lang, initialMessages);
 
 // Get all use cases for this language (with fallbacks to default language)
 const useCases = await getLocalizedCollection("useCases", lang as SupportedLanguage);

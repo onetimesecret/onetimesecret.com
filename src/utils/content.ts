@@ -82,7 +82,7 @@ export async function getLocalizedCollection<T extends keyof AnyEntryMap>(
 
   // Filter for the requested language
   const langEntries = allEntries.filter(
-    entry => entry.id.startsWith(`${lang}/`)
+    (entry: CollectionEntry<T>) => entry.id.startsWith(`${lang}/`)
   );
 
   // If using the default language, just return those entries
@@ -91,7 +91,7 @@ export async function getLocalizedCollection<T extends keyof AnyEntryMap>(
   }
 
   // For other languages, get default language entries that don't have a translation
-  const defaultEntries = allEntries.filter(entry => {
+  const defaultEntries = allEntries.filter((entry: CollectionEntry<T>) => {
     // Only include default language entries
     if (!entry.id.startsWith(`${DEFAULT_LANGUAGE}/`)) {
       return false;
@@ -102,7 +102,7 @@ export async function getLocalizedCollection<T extends keyof AnyEntryMap>(
 
     // Check if we already have this entry in the requested language
     const hasTranslation = langEntries.some(
-      langEntry => langEntry.id.substring(lang.length + 1) === slug
+      (langEntry: CollectionEntry<T>) => langEntry.id.substring(lang.length + 1) === slug
     );
 
     // Include this entry if it doesn't have a translation
