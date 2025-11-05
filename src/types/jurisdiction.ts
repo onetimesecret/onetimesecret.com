@@ -26,24 +26,30 @@ export interface Jurisdiction {
 export type Region = Jurisdiction;
 
 /**
+ * Helper function to check if an object has a string property
+ */
+function hasStringProp(obj: object, prop: string): boolean {
+  return prop in obj && typeof (obj as Record<string, unknown>)[prop] === 'string';
+}
+
+/**
  * Type guard to check if an object is a valid Jurisdiction
  */
 export function isJurisdiction(obj: unknown): obj is Jurisdiction {
+  if (obj === null || typeof obj !== 'object') return false;
+
+  const hasRequiredProps =
+    hasStringProp(obj, 'identifier') &&
+    hasStringProp(obj, 'displayName') &&
+    hasStringProp(obj, 'domain');
+
+  if (!hasRequiredProps) return false;
+
+  const icon = (obj as Record<string, unknown>).icon;
   return (
-    obj !== null &&
-    typeof obj === 'object' &&
-    'identifier' in obj &&
-    typeof obj.identifier === 'string' &&
-    'displayName' in obj &&
-    typeof obj.displayName === 'string' &&
-    'domain' in obj &&
-    typeof obj.domain === 'string' &&
-    'icon' in obj &&
-    obj.icon !== null &&
-    typeof obj.icon === 'object' &&
-    'collection' in obj.icon &&
-    typeof obj.icon.collection === 'string' &&
-    'name' in obj.icon &&
-    typeof obj.icon.name === 'string'
+    icon !== null &&
+    typeof icon === 'object' &&
+    hasStringProp(icon, 'collection') &&
+    hasStringProp(icon, 'name')
   );
 }
