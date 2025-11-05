@@ -47,10 +47,20 @@ const isClient = ref(false);
 
 const frequency = ref(frequencies[0]);
 
+// Track which card's region selector is open (null = none, 'basic' or 'identity')
+const activeRegionSelector = ref<string | null>(null);
+
+// Toggle region selector for a specific card
+const toggleRegionSelector = (tierId: string) => {
+  activeRegionSelector.value = activeRegionSelector.value === tierId ? null : tierId;
+};
+
 // Handler for region change from the selector component
 const handleRegionChange = (region: Region) => {
   if (region && region.identifier) {
     setJurisdiction(region.identifier);
+    // Close the selector after changing region
+    activeRegionSelector.value = null;
   }
 };
 
@@ -181,20 +191,7 @@ const comparisonFeatures = [
               </RadioGroup>
             </fieldset>
           </div>
-          <!-- Region Selector - Positioned below frequency toggle with proper spacing and z-index -->
-          <div class="relative mt-8 flex justify-center">
-            <div class="inline-flex flex-col sm:flex-row items-center gap-3 sm:gap-4 rounded-xl bg-white/10 backdrop-blur-sm px-6 py-4 border border-white/20">
-              <span class="text-sm font-medium text-white/90 whitespace-nowrap">
-                {{ t("web.pricing.region-selector-label") || "Data region:" }}
-              </span>
-              <PricingRegionSelector
-                v-if="isClient"
-                :current-region="currentRegion"
-                :available-regions="availableRegions"
-                @region-change="handleRegionChange" />
-            </div>
-          </div>
-          <div class="relative mt-6">
+          <div class="relative mt-14">
             <p
               class="mx-auto max-w-2xl text-xl leading-8 text-white/80 dark:text-white/90">
               {{
@@ -279,10 +276,32 @@ const comparisonFeatures = [
                       </li>
                     </ul>
                   </div>
+
+                  <!-- Region selector on hover -->
+                  <div class="mt-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 relative">
+                    <div v-if="isClient" class="text-center">
+                      <p class="text-xs text-gray-600 dark:text-gray-400">
+                        {{ t("web.pricing.region") || "Region" }}: {{ currentRegion.displayName }} •
+                        <button
+                          type="button"
+                          @click="toggleRegionSelector(tiers[0].id)"
+                          class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium underline">
+                          {{ t("web.pricing.change") || "Change" }}
+                        </button>
+                      </p>
+                      <div v-if="activeRegionSelector === tiers[0].id" class="mt-2">
+                        <PricingRegionSelector
+                          :current-region="currentRegion"
+                          :available-regions="availableRegions"
+                          @region-change="handleRegionChange" />
+                      </div>
+                    </div>
+                  </div>
+
                   <a
                     :href="basicPlanHref"
                     :aria-describedby="tiers[0].id"
-                    class="mt-10 block font-brand rounded-xl bg-indigo-50 px-4 py-3 text-center text-lg font-semibold text-indigo-600 shadow-sm hover:bg-indigo-100 dark:bg-indigo-950 dark:text-indigo-400 dark:hover:bg-indigo-900 transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                    class="mt-4 block font-brand rounded-xl bg-indigo-50 px-4 py-3 text-center text-lg font-semibold text-indigo-600 shadow-sm hover:bg-indigo-100 dark:bg-indigo-950 dark:text-indigo-400 dark:hover:bg-indigo-900 transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
                     <div class="flex items-center justify-center gap-x-2">
                       <OIcon
                         :collection="tiers[0].icon.collection"
@@ -299,8 +318,9 @@ const comparisonFeatures = [
                   class="group relative flex flex-col justify-between rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 dark:from-indigo-600 dark:to-purple-700 p-10 shadow-2xl hover:shadow-3xl ring-2 ring-indigo-500 dark:ring-indigo-400 sm:p-12 transition-all duration-300 hover:scale-105 transform">
                   <!-- Featured Badge -->
                   <div
+                    v-if="tiers[1].badgeKey && t(tiers[1].badgeKey)"
                     class="absolute -top-5 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 px-4 py-1.5 text-sm font-bold text-white shadow-lg">
-                    {{ t("web.pricing.features") }}
+                    {{ t(tiers[1].badgeKey) }}
                   </div>
                   <div>
                     <div class="flex items-center justify-between">
@@ -344,10 +364,32 @@ const comparisonFeatures = [
                       </li>
                     </ul>
                   </div>
+
+                  <!-- Region selector on hover -->
+                  <div class="mt-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 relative">
+                    <div v-if="isClient" class="text-center">
+                      <p class="text-xs text-white/80">
+                        {{ t("web.pricing.region") || "Region" }}: {{ currentRegion.displayName }} •
+                        <button
+                          type="button"
+                          @click="toggleRegionSelector(tiers[1].id)"
+                          class="text-white hover:text-white/70 font-medium underline">
+                          {{ t("web.pricing.change") || "Change" }}
+                        </button>
+                      </p>
+                      <div v-if="activeRegionSelector === tiers[1].id" class="mt-2">
+                        <PricingRegionSelector
+                          :current-region="currentRegion"
+                          :available-regions="availableRegions"
+                          @region-change="handleRegionChange" />
+                      </div>
+                    </div>
+                  </div>
+
                   <a
                     :href="getIdentityHref"
                     :aria-describedby="tiers[1].id"
-                    class="mt-10 block font-brand rounded-xl bg-white px-4 py-3 text-center text-lg font-semibold text-indigo-600 shadow-lg hover:bg-gray-50 transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                    class="mt-4 block font-brand rounded-xl bg-white px-4 py-3 text-center text-lg font-semibold text-indigo-600 shadow-lg hover:bg-gray-50 transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
                     <div class="flex items-center justify-center gap-x-2">
                       <OIcon
                         :collection="tiers[1].icon.collection"

@@ -27,6 +27,7 @@ export interface ProductTier {
   descriptionKey?: string;
   ctaKey?: string;
   featuresKeys?: string[];
+  badgeKey?: string;
 }
 
 export const paymentFrequencies: Array<PaymentFrequency> = [
@@ -66,6 +67,7 @@ export const productTiers: Array<ProductTier> = [
       "web.pricing.tiers.basic.features.3",
       "web.pricing.tiers.basic.features.4",
     ],
+    badgeKey: "web.pricing.tiers.basic.badge",
     featured: false,
     frequencySuffixEnabled: false,
     learn_more: "https://docs.onetimesecret.com/en/secret-links/",
@@ -102,6 +104,7 @@ export const productTiers: Array<ProductTier> = [
       "web.pricing.tiers.identity.features.3",
       "web.pricing.tiers.identity.features.4",
     ],
+    badgeKey: "web.pricing.tiers.identity.badge",
     featured: true,
     frequencySuffixEnabled: true,
     learn_more: "https://docs.onetimesecret.com/en/custom-domains/",

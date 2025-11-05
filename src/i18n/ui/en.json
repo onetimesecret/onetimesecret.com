@@ -98,6 +98,8 @@
       "elevate-your-secure-sharing-with-custom-domains-": "Elevate your secure sharing with custom domains, unlimited capacity, and enterprise-grade features.",
       "payment-frequency": "Payment frequency",
       "region-selector-label": "Data region:",
+      "region": "Region",
+      "change": "Change",
       "secure-your-brand-and-build-customer-trust-with-": "Secure your brand and build customer trust with links from your domain. Perfect for businesses that value privacy and professionalism.",
       "secure-links-stronger-connections": "Secure Links, Stronger Connections",
       "identity-tier-not-found-in-product-tiers": "Identity tier not found in product tiers",
@@ -107,6 +109,7 @@
       "tiers": {
         "basic": {
           "name": "Basic",
+          "badge": null,
           "description": "Essential secret sharing features for casual use.",
           "cta": "Get Started",
           "features": {
@@ -119,6 +122,7 @@
         },
         "identity": {
           "name": "Identity Plus",
+          "badge": "Featured",
           "description": "Elevate brand trust with secure sharing from your own domain. e.g. secrets.example.com.",
           "cta": "Start today",
           "features": {

@@ -132,7 +132,7 @@ onUnmounted(() => {
       tabindex="-1"
       @keydown.escape="closeAll">
       <div
-        class="px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-gray-750">
+        class="px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-gray-900">
         {{ t("web.secrets.selectRegionHeading") || "Select Region" }}
       </div>
       <div class="py-1 max-h-64 overflow-y-auto">
@@ -170,7 +170,7 @@ onUnmounted(() => {
           </svg>
         </button>
       </div>
-      <div class="px-4 py-3 bg-gray-50 dark:bg-gray-750 border-t border-gray-200 dark:border-gray-700">
+      <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
         <div class="text-xs text-gray-500 dark:text-gray-400">
           {{
             t("web.secrets.regionSelector.currentDomain") || "Current domain"

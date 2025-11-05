@@ -98,6 +98,8 @@
       "elevate-your-secure-sharing-with-custom-domains-": "Mejore su intercambio seguro con dominios personalizados, capacidad ilimitada y características de nivel empresarial.",
       "payment-frequency": "Frecuencia de pago",
       "region-selector-label": "Región de pago:",
+      "region": "Región",
+      "change": "Cambiar",
       "secure-your-brand-and-build-customer-trust-with-": "Asegure su marca y genere confianza con los clientes mediante enlaces de su dominio. Perfecto para empresas que valoran la privacidad y el profesionalismo.",
       "secure-links-stronger-connections": "Enlaces seguros, conexiones más fuertes",
       "identity-tier-not-found-in-product-tiers": "Nivel de identidad no encontrado en niveles de producto",
@@ -107,6 +109,7 @@
       "tiers": {
         "basic": {
           "name": "Básico",
+          "badge": null,
           "description": "Características esenciales para compartir secretos de uso ocasional.",
           "cta": "Comenzar",
           "features": {
@@ -119,6 +122,7 @@
         },
         "identity": {
           "name": "Identity Plus",
+          "badge": "Destacado",
           "description": "Eleve la confianza en su marca con intercambio seguro desde su propio dominio. Por ej. secrets.ejemplo.com.",
           "cta": "Comience hoy",
           "features": {

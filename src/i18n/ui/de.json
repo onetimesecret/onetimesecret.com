@@ -98,6 +98,8 @@
       "elevate-your-secure-sharing-with-custom-domains-": "Verbessern Sie Ihr sicheres Teilen mit benutzerdefinierten Domains, unbegrenzter Kapazität und Funktionen auf Unternehmensniveau.",
       "payment-frequency": "Zahlungsfrequenz",
       "region-selector-label": "Zahlungsregion:",
+      "region": "Region",
+      "change": "Ändern",
       "secure-your-brand-and-build-customer-trust-with-": "Sichern Sie Ihre Marke und bauen Sie Kundenvertrauen mit Links von Ihrer Domain auf. Perfekt für Unternehmen, die Wert auf Datenschutz und Professionalität legen.",
       "secure-links-stronger-connections": "Sichere Links, stärkere Verbindungen",
       "identity-tier-not-found-in-product-tiers": "Identity-Stufe in Produktstufen nicht gefunden",
@@ -107,6 +109,7 @@
       "tiers": {
         "basic": {
           "name": "Basis",
+          "badge": null,
           "description": "Wesentliche Funktionen zum Teilen von Geheimnissen für gelegentliche Nutzung.",
           "cta": "Loslegen",
           "features": {
@@ -119,6 +122,7 @@
         },
         "identity": {
           "name": "Identity Plus",
+          "badge": "Vorgestellt",
           "description": "Stärken Sie das Vertrauen in Ihre Marke durch sicheres Teilen von Ihrer eigenen Domain. Z.B. secrets.beispiel.com.",
           "cta": "Heute starten",
           "features": {
