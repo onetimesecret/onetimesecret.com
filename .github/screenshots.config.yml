@@ -17,6 +17,11 @@ screenshots:
     fullPage: true
     wait_for: 'footer'
     wait_timeout: 5000
+    steps:
+      - click: 'textarea'
+      - fill:
+          selector: 'textarea'
+          text: 'sandman'
 
   # Homepage - Mobile
   - name: homepage-mobile
@@ -28,6 +33,11 @@ screenshots:
     fullPage: true
     wait_for: 'footer'
     wait_timeout: 5000
+    steps:
+      - click: 'textarea'
+      - fill:
+          selector: 'textarea'
+          text: 'sandman'
 
   # Pricing Page - Desktop
   - name: pricing-desktop
