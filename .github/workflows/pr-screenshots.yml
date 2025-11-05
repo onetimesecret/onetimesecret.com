@@ -35,6 +35,11 @@ jobs:
     name: Capture UI Screenshots
     runs-on: ubuntu-latest
 
+    # Explicit permissions for GITHUB_TOKEN
+    permissions:
+      contents: write        # Push screenshots to gh-screenshots branch
+      pull-requests: write   # Post comments on PR
+
     # Only run if:
     # 1. PR is ready for review (not draft), OR
     # 2. PR has the 'screenshots' label
