@@ -61,17 +61,9 @@ export function createConfig(
 
             // Split i18n JSON files into separate chunks by language
             // This allows better caching - users only download their language
-            if (id.includes("src/i18n/ui/en.json")) {
-              return "i18n-en";
-            }
-            if (id.includes("src/i18n/ui/fr.json")) {
-              return "i18n-fr";
-            }
-            if (id.includes("src/i18n/ui/de.json")) {
-              return "i18n-de";
-            }
-            if (id.includes("src/i18n/ui/es.json")) {
-              return "i18n-es";
+            const i18nMatch = id.match(/src\/i18n\/ui\/(\w+)\.json$/);
+            if (i18nMatch) {
+              return `i18n-${i18nMatch[1]}`;
             }
 
             // Split @headlessui/vue into its own chunk
