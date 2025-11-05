@@ -308,37 +308,39 @@ const createAnotherSecret = () => {
         <!-- Secret Options -->
         <div
           v-if="showOptions"
-          class="mt-3 mb-4">
-          <div class="bg-gradient-to-br from-gray-50 to-gray-100/80 dark:from-gray-800 dark:to-gray-850 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
-            <h3
-              class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+          class="mt-4 mb-4">
+          <div class="bg-gradient-to-br from-gray-50 to-gray-100/80 dark:from-gray-800 dark:to-gray-850 rounded-lg p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+            <!-- Header -->
+            <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke-width="1.5"
                 stroke="currentColor"
-                class="size-4">
+                class="size-4 text-brand-600 dark:text-brand-400">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
               </svg>
-              {{ t("web.secrets.optionsHeading") || "Privacy Options" }}
-            </h3>
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {{ t("web.secrets.optionsHeading") || "Privacy Options" }}
+              </h3>
+            </div>
 
-            <div class="space-y-4">
+            <div class="space-y-5">
               <!-- TTL Selector -->
               <div>
                 <label
                   for="ttl-select"
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
                   {{ t("web.secrets.ttlLabel") || "Secret lifetime" }}
                 </label>
                 <select
                   id="ttl-select"
                   v-model="secretOptions.ttl"
-                  class="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm disabled:opacity-50"
+                  class="block w-full max-w-xs rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm py-2 px-3 disabled:opacity-50"
                   :disabled="isLoading">
                   <option
                     v-for="option in ttlOptions"
@@ -347,79 +349,94 @@ const createAnotherSecret = () => {
                     {{ option.label }}
                   </option>
                 </select>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p class="mt-2 text-xs leading-relaxed text-gray-600 dark:text-gray-400">
                   {{ t("web.secrets.ttlHint") || "Secret will be deleted after this time, even if not viewed" }}
                 </p>
               </div>
 
-              <!-- Add Passphrase Option -->
-              <div class="border-t border-gray-200 dark:border-gray-700 pt-3">
-                <div class="flex items-center">
+              <!-- Passphrase Option -->
+              <div>
+                <div class="flex items-start gap-2 mb-2">
                   <input
                     id="add-passphrase"
                     v-model="secretOptions.addPassphrase"
                     type="checkbox"
-                    class="size-4 rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500 disabled:opacity-50"
+                    class="mt-0.5 size-4 rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500 disabled:opacity-50"
                     :disabled="isLoading"
                     @change="!secretOptions.addPassphrase && (passphrase = '')" />
-                  <label
-                    for="add-passphrase"
-                    class="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {{ t("web.secrets.addPassphrase") || "Require passphrase" }}
-                  </label>
+                  <div class="flex-1">
+                    <label
+                      for="add-passphrase"
+                      class="block text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+                      {{ t("web.secrets.addPassphrase") || "Require passphrase" }}
+                    </label>
+                    <p class="mt-0.5 text-xs leading-relaxed text-gray-600 dark:text-gray-400">
+                      {{ t("web.secrets.passphraseHint") || "Add an extra layer of security" }}
+                    </p>
+                  </div>
                 </div>
-                <p class="mt-1 ml-6 text-xs text-gray-500 dark:text-gray-400">
-                  {{ t("web.secrets.passphraseHint") || "Add an extra layer of security" }}
-                </p>
 
                 <!-- Passphrase Input (Conditional) -->
                 <div
                   v-if="showPassphraseInput"
-                  class="mt-3 ml-6">
+                  class="mt-3 pl-6">
+                  <label
+                    for="passphrase-input"
+                    class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+                    {{ t("web.secrets.passphraseInputLabel") || "Passphrase" }}
+                  </label>
                   <input
                     id="passphrase-input"
                     v-model="passphrase"
                     type="password"
-                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm disabled:opacity-50"
+                    maxlength="80"
+                    class="block w-full max-w-md rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm py-2 px-3 disabled:opacity-50"
                     :placeholder="t('web.secrets.passphrasePlaceholder') || 'Enter passphrase'"
                     :disabled="isLoading" />
+                  <p class="mt-2 text-xs leading-relaxed text-gray-600 dark:text-gray-400">
+                    {{ t("web.secrets.passphraseInputHint") || "Recipient will need this passphrase to view the secret" }}
+                  </p>
                 </div>
               </div>
 
               <!-- Custom Domain CTA -->
-              <div class="border-t border-gray-200 dark:border-gray-700 pt-3">
-                <div class="bg-brand-50/50 dark:bg-brand-900/20 rounded-md p-3 border border-brand-200/50 dark:border-brand-800/50">
-                  <div class="flex items-start gap-2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="1.5"
-                      stroke="currentColor"
-                      class="size-5 text-brand-600 dark:text-brand-400 flex-shrink-0 mt-0.5">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
-                    </svg>
-                    <div class="flex-1">
-                      <p class="text-xs font-medium text-gray-700 dark:text-gray-300">
+              <div class="pt-2">
+                <div class="bg-gradient-to-br from-brand-50/50 to-brand-100/30 dark:from-brand-900/20 dark:to-brand-800/10 rounded-lg p-4 border border-brand-200/60 dark:border-brand-800/40 shadow-sm">
+                  <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 mt-0.5">
+                      <div class="p-1.5 bg-brand-100 dark:bg-brand-900/40 rounded-md">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="size-4 text-brand-600 dark:text-brand-400">
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
                         {{ t("web.secrets.customDomainCta") || "Want to use your own domain?" }}
                       </p>
-                      <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                      <p class="text-xs text-gray-700 dark:text-gray-400 mt-1 leading-relaxed">
                         {{ t("web.secrets.customDomainDesc") || "Share secrets from secrets.yourdomain.com" }}
                       </p>
                       <a
                         href="/pricing"
-                        class="inline-flex items-center gap-1 mt-2 text-xs font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-colors">
+                        class="inline-flex items-center gap-1.5 mt-2.5 text-xs font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-colors group">
                         {{ t("web.secrets.learnMorePricing") || "Learn more" }}
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
-                          stroke-width="2"
+                          stroke-width="2.5"
                           stroke="currentColor"
-                          class="size-3">
+                          class="size-3 transition-transform group-hover:translate-x-0.5">
                           <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
