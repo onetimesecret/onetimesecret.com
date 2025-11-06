@@ -4,16 +4,28 @@ This directory contains command-line tools for development, testing, and operati
 
 ## test-cors
 
-A comprehensive CORS (Cross-Origin Resource Sharing) testing tool that validates API endpoint configurations across different origins and regions.
+A comprehensive CORS (Cross-Origin Resource Sharing) testing tool written in Python that validates API endpoint configurations across different origins and regions.
 
 ### Features
 
 - ✅ Test CORS preflight (OPTIONS) requests
 - ✅ Test actual API requests with CORS headers
+- ✅ Smart testing: skips actual requests when preflight fails
 - ✅ Batch testing multiple origins
 - ✅ Full test suite across all regions
 - ✅ Color-coded output for easy debugging
 - ✅ Detailed header inspection
+- ✅ Proper exit codes for CI/CD integration
+
+### Requirements
+
+- Python 3.7+
+- `requests` library
+
+Install dependencies:
+```bash
+pip install requests
+```
 
 ### Installation
 
@@ -48,15 +60,13 @@ test-cors https://eu.onetimesecret.com/api/v2/secret/conceal https://onetimesecr
 Test multiple origins against the same endpoint:
 
 ```bash
-test-cors --batch <api-endpoint> <origin1> <origin2> ...
+test-cors --batch <api-endpoint> --origins <origin1> <origin2> ...
 ```
 
 Example:
 ```bash
 test-cors --batch https://eu.onetimesecret.com/api/v2/secret/conceal \
-  https://onetimesecret.com \
-  https://www.onetimesecret.com \
-  http://localhost:4321
+  --origins https://onetimesecret.com https://www.onetimesecret.com http://localhost:4321
 ```
 
 #### Run Full Test Suite
@@ -71,13 +81,25 @@ This tests all combinations of:
 - **Regions**: EU, CA, US, NZ
 - **Origins**: onetimesecret.com, www.onetimesecret.com, localhost:4321
 
+### Smart Testing
+
+The tool intelligently avoids unnecessary requests:
+- **Preflight test always runs** - Tests CORS configuration via OPTIONS request
+- **Actual request runs conditionally** - Only executes if preflight passes
+- **Saves time and resources** - No point testing actual requests when CORS is misconfigured
+
+This behavior can be seen in the output:
+```
+⚠ Skipping actual request test because preflight failed
+```
+
 ### Output
 
-The tool provides color-coded output:
+The tool provides color-coded output (can be disabled with `--no-color`):
 
 - ✓ **Green** - CORS headers present and valid
 - ✗ **Red** - CORS headers missing or invalid
-- ⚠ **Yellow** - Partial CORS configuration
+- ⚠ **Yellow** - Partial CORS configuration or warnings
 - ℹ **Blue** - Informational messages
 
 ### CORS Headers Checked
@@ -116,8 +138,7 @@ test-cors https://eu.onetimesecret.com/api/v2/secret/conceal http://localhost:43
 ```bash
 # Batch test to compare configurations
 test-cors --batch https://eu.onetimesecret.com/api/v2/secret/conceal \
-  https://onetimesecret.com \
-  https://www.onetimesecret.com
+  --origins https://onetimesecret.com https://www.onetimesecret.com
 ```
 
 #### Example 4: Verify all regions after config change
@@ -157,7 +178,16 @@ test-cors --full
 - [CORS Investigation Report](../CORS-INVESTIGATION.md) - Detailed analysis of Firefox CORS issues
 - [API Documentation](../docs/api.md) - API endpoint reference
 
-### Dependencies
+### Technical Details
 
-- `curl` - Required for making HTTP requests
-- `bash` 4.0+ - Required for array support
+**Language:** Python 3.7+
+
+**Dependencies:**
+- `requests` - HTTP library for making requests
+- Standard library modules: `argparse`, `sys`, `dataclasses`, `enum`, `typing`, `urllib.parse`
+
+**Architecture:**
+- Object-oriented design with `CORSTester` class
+- Type hints for better code maintainability
+- Dataclasses for structured results
+- Enum for test status tracking
