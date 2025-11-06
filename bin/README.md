@@ -16,6 +16,7 @@ A comprehensive CORS (Cross-Origin Resource Sharing) testing tool written in Pyt
 - ✅ Color-coded output for easy debugging
 - ✅ Detailed header inspection
 - ✅ Proper exit codes for CI/CD integration
+- ✅ **JSON output mode for automation tools**
 
 ### Requirements
 
@@ -80,6 +81,81 @@ test-cors --full
 This tests all combinations of:
 - **Regions**: EU, CA, US, NZ
 - **Origins**: onetimesecret.com, www.onetimesecret.com, localhost:4321
+
+#### JSON Output Mode
+
+Output structured JSON for automation and CI/CD integration:
+
+```bash
+# Single test with JSON output
+test-cors https://eu.onetimesecret.com/api/v2/secret/conceal https://onetimesecret.com --json
+
+# Batch test with JSON output
+test-cors --batch https://eu.onetimesecret.com/api/v2/secret/conceal \
+  --origins https://onetimesecret.com https://www.onetimesecret.com --json
+
+# Full suite with JSON output
+test-cors --full --json
+```
+
+**JSON Output Structure:**
+
+Single test:
+```json
+{
+  "mode": "single",
+  "endpoint": "https://eu.onetimesecret.com/api/v2/secret/conceal",
+  "origin": "https://onetimesecret.com",
+  "method": "POST",
+  "preflight": {
+    "status": "passed",
+    "status_code": 204,
+    "cors_headers": {...},
+    "missing_headers": [],
+    "passed": true
+  },
+  "request": {
+    "status": "passed",
+    "status_code": 200,
+    "passed": true
+  },
+  "summary": {
+    "passed": true
+  }
+}
+```
+
+Batch test:
+```json
+{
+  "mode": "batch",
+  "endpoint": "https://eu.onetimesecret.com/api/v2/secret/conceal",
+  "tests": [...],
+  "summary": {
+    "total": 2,
+    "passed": 1,
+    "failed": 1,
+    "all_passed": false
+  }
+}
+```
+
+Full suite:
+```json
+{
+  "mode": "full",
+  "regions": {
+    "eu.onetimesecret.com": [...],
+    "ca.onetimesecret.com": [...]
+  },
+  "summary": {
+    "total": 12,
+    "passed": 10,
+    "failed": 2,
+    "all_passed": false
+  }
+}
+```
 
 ### Smart Testing
 
@@ -154,6 +230,37 @@ test-cors --full
 2. **Debugging user issues** - Reproduce and diagnose CORS-related errors
 3. **Cross-region testing** - Ensure consistent CORS configuration across all regions
 4. **CI/CD integration** - Add to automated tests to catch CORS regressions
+5. **Monitoring & alerting** - Parse JSON output in monitoring tools
+6. **Automated reporting** - Generate reports from JSON data
+
+### CI/CD Integration Examples
+
+**GitHub Actions:**
+```yaml
+- name: Test CORS Configuration
+  run: |
+    ./bin/test-cors --full --json > cors-results.json
+    # Parse and fail if needed
+    python -c "import sys, json; sys.exit(0 if json.load(open('cors-results.json'))['summary']['all_passed'] else 1)"
+```
+
+**Parse JSON in shell script:**
+```bash
+# Run test and capture results
+result=$(./bin/test-cors --batch $ENDPOINT --origins $ORIGIN1 $ORIGIN2 --json)
+
+# Check if all passed
+all_passed=$(echo "$result" | python3 -c "import sys, json; print(json.load(sys.stdin)['summary']['all_passed'])")
+
+if [ "$all_passed" == "True" ]; then
+  echo "✓ All CORS tests passed"
+  exit 0
+else
+  echo "✗ Some CORS tests failed"
+  echo "$result" | python3 -m json.tool
+  exit 1
+fi
+```
 
 ### Troubleshooting
 

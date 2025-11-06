@@ -29,8 +29,9 @@ Examples:
 """
 
 import argparse
+import json
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlparse
@@ -66,6 +67,20 @@ class CORSTestResult:
     def is_success(self) -> bool:
         """Check if test passed"""
         return self.status == TestResult.PASSED
+
+    def to_dict(self) -> Dict:
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'endpoint': self.endpoint,
+            'origin': self.origin,
+            'method': self.method,
+            'status': self.status.value,
+            'status_code': self.status_code,
+            'cors_headers': self.cors_headers,
+            'missing_headers': self.missing_headers,
+            'error_message': self.error_message,
+            'passed': self.is_success()
+        }
 
 
 class Colors:
@@ -119,9 +134,10 @@ class CORSTester:
     DEFAULT_ENDPOINT_PATH = '/api/v2/secret/conceal'
     DEFAULT_TIMEOUT = 10
 
-    def __init__(self, timeout: int = DEFAULT_TIMEOUT, verbose: bool = False):
+    def __init__(self, timeout: int = DEFAULT_TIMEOUT, verbose: bool = False, json_mode: bool = False):
         self.timeout = timeout
         self.verbose = verbose
+        self.json_mode = json_mode
 
     def test_cors_preflight(
         self,
@@ -334,7 +350,8 @@ class CORSTester:
         # Only run actual request if preflight passed or if not skipping
         request_result = None
         if preflight_result.is_success() or not skip_request_on_preflight_failure:
-            print()  # Add spacing
+            if not self.json_mode:
+                print()  # Add spacing
             request_result = self.test_cors_request(endpoint, origin, method)
         elif skip_request_on_preflight_failure:
             self._print_warning(
@@ -365,9 +382,11 @@ class CORSTester:
 
         results = []
         for i, origin in enumerate(origins, 1):
-            print()  # Add spacing
+            if not self.json_mode:
+                print()  # Add spacing
             self._print_subheader(f"[{i}/{len(origins)}] Testing origin: {origin}")
-            print()
+            if not self.json_mode:
+                print()
 
             result = self.test_single_origin(endpoint, origin, method)
             results.append(result)
@@ -405,7 +424,8 @@ class CORSTester:
                 region_name = urlparse(region).netloc
                 origin_name = urlparse(origin).netloc or origin
 
-                print()
+                if not self.json_mode:
+                    print()
                 self._print_subheader(
                     f"[{current}/{total_tests}] Testing: "
                     f"{region_name} with origin: {origin_name}"
@@ -427,6 +447,9 @@ class CORSTester:
         results: List[Tuple[CORSTestResult, Optional[CORSTestResult]]]
     ):
         """Print summary for batch tests"""
+        if self.json_mode:
+            return
+
         passed = sum(1 for r, _ in results if r.is_success())
         failed = len(results) - passed
 
@@ -445,6 +468,9 @@ class CORSTester:
         results: Dict[str, List[Tuple[CORSTestResult, Optional[CORSTestResult]]]]
     ):
         """Print summary for full test suite"""
+        if self.json_mode:
+            return
+
         total = sum(len(r) for r in results.values())
         passed = sum(
             1 for region_results in results.values()
@@ -465,29 +491,35 @@ class CORSTester:
 
     def _print_header(self, text: str):
         """Print a header line"""
-        print(f"\n{Colors.BOLD}{Colors.BLUE}{'━' * 60}{Colors.NC}")
-        print(f"{Colors.BOLD}{Colors.CYAN}{text}{Colors.NC}")
-        print(f"{Colors.BOLD}{Colors.BLUE}{'━' * 60}{Colors.NC}")
+        if not self.json_mode:
+            print(f"\n{Colors.BOLD}{Colors.BLUE}{'━' * 60}{Colors.NC}")
+            print(f"{Colors.BOLD}{Colors.CYAN}{text}{Colors.NC}")
+            print(f"{Colors.BOLD}{Colors.BLUE}{'━' * 60}{Colors.NC}")
 
     def _print_subheader(self, text: str):
         """Print a subheader"""
-        print(f"\n{Colors.BOLD}{text}{Colors.NC}")
+        if not self.json_mode:
+            print(f"\n{Colors.BOLD}{text}{Colors.NC}")
 
     def _print_success(self, text: str):
         """Print success message"""
-        print(f"{Colors.GREEN}✓{Colors.NC} {text}")
+        if not self.json_mode:
+            print(f"{Colors.GREEN}✓{Colors.NC} {text}")
 
     def _print_error(self, text: str):
         """Print error message"""
-        print(f"{Colors.RED}✗{Colors.NC} {text}")
+        if not self.json_mode:
+            print(f"{Colors.RED}✗{Colors.NC} {text}")
 
     def _print_warning(self, text: str):
         """Print warning message"""
-        print(f"{Colors.YELLOW}⚠{Colors.NC} {text}")
+        if not self.json_mode:
+            print(f"{Colors.YELLOW}⚠{Colors.NC} {text}")
 
     def _print_info(self, text: str):
         """Print info message"""
-        print(f"{Colors.BLUE}ℹ{Colors.NC} {text}")
+        if not self.json_mode:
+            print(f"{Colors.BLUE}ℹ{Colors.NC} {text}")
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -568,6 +600,11 @@ Output:
         action='store_true',
         help='Enable verbose output'
     )
+    parser.add_argument(
+        '--json',
+        action='store_true',
+        help='Output results in JSON format for automation'
+    )
 
     return parser
 
@@ -577,17 +614,53 @@ def main():
     parser = create_parser()
     args = parser.parse_args()
 
-    # Disable colors if requested or if not a TTY
-    if args.no_color or not sys.stdout.isatty():
+    # Disable colors if requested, JSON mode, or if not a TTY
+    if args.no_color or args.json or not sys.stdout.isatty():
         Colors.disable()
 
     # Create tester instance
-    tester = CORSTester(timeout=args.timeout, verbose=args.verbose)
+    tester = CORSTester(timeout=args.timeout, verbose=args.verbose, json_mode=args.json)
 
     # Handle different modes
     if args.full:
         # Full test suite
         results = tester.test_full_suite()
+
+        if args.json:
+            # Output JSON for full suite
+            output = {
+                'mode': 'full',
+                'regions': {},
+                'summary': {}
+            }
+
+            for region, region_results in results.items():
+                region_name = urlparse(region).netloc
+                output['regions'][region_name] = []
+                for preflight_result, request_result in region_results:
+                    test_data = {
+                        'preflight': preflight_result.to_dict(),
+                    }
+                    if request_result:
+                        test_data['request'] = request_result.to_dict()
+                    output['regions'][region_name].append(test_data)
+
+            # Calculate summary
+            total = sum(len(r) for r in results.values())
+            passed = sum(
+                1 for region_results in results.values()
+                for r, _ in region_results
+                if r.is_success()
+            )
+            output['summary'] = {
+                'total': total,
+                'passed': passed,
+                'failed': total - passed,
+                'all_passed': passed == total
+            }
+
+            print(json.dumps(output, indent=2))
+
         # Exit with error if any tests failed
         all_passed = all(
             r.is_success()
@@ -608,6 +681,36 @@ def main():
             args.origins,
             args.method
         )
+
+        if args.json:
+            # Output JSON for batch mode
+            output = {
+                'mode': 'batch',
+                'endpoint': args.endpoint,
+                'method': args.method,
+                'tests': [],
+                'summary': {}
+            }
+
+            for preflight_result, request_result in results:
+                test_data = {
+                    'preflight': preflight_result.to_dict(),
+                }
+                if request_result:
+                    test_data['request'] = request_result.to_dict()
+                output['tests'].append(test_data)
+
+            # Calculate summary
+            passed = sum(1 for r, _ in results if r.is_success())
+            output['summary'] = {
+                'total': len(results),
+                'passed': passed,
+                'failed': len(results) - passed,
+                'all_passed': passed == len(results)
+            }
+
+            print(json.dumps(output, indent=2))
+
         # Exit with error if any tests failed
         all_passed = all(r.is_success() for r, _ in results)
         sys.exit(0 if all_passed else 1)
@@ -622,6 +725,27 @@ def main():
             args.origin,
             args.method
         )
+
+        if args.json:
+            # Output JSON for single test
+            output = {
+                'mode': 'single',
+                'endpoint': args.endpoint,
+                'origin': args.origin,
+                'method': args.method,
+                'preflight': preflight_result.to_dict(),
+            }
+
+            if request_result:
+                output['request'] = request_result.to_dict()
+
+            output['summary'] = {
+                'passed': preflight_result.is_success() and (
+                    request_result.is_success() if request_result else True
+                )
+            }
+
+            print(json.dumps(output, indent=2))
 
         # Exit with error if preflight failed or request failed (if it ran)
         if not preflight_result.is_success():
