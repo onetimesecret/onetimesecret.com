@@ -109,12 +109,20 @@ const countryCode = window.__USER_COUNTRY__; // Injected by edge script
 
 ## Country to Jurisdiction Mapping
 
-The mapping is defined in `src/utils/countryToJurisdiction.ts`:
+The mapping is defined in `src/utils/countryToJurisdiction.ts` with comprehensive global coverage (200+ countries):
 
-- **EU**: European Union members + EEA + Switzerland + UK
-- **CA**: Canada
-- **NZ**: New Zealand + Australia + Pacific nations
-- **US**: United States + all others (default)
+- **EU** (~120 countries): Europe (all EU/EEA/EFTA + UK), Eastern Europe & Balkans, Russia, Turkey & Caucasus, Central Asia, Middle East, North Africa, Sub-Saharan Africa
+- **CA** (2 countries): Canada, Greenland
+- **NZ** (~50 countries): Asia-Pacific region including Australia, New Zealand, Pacific Islands, Southeast Asia, East Asia (China, Japan, Korea), South Asia (India, Pakistan)
+- **US** (~50 countries): All of the Americas - North America, Central America, South America, Caribbean (default fallback for unmapped countries)
+
+**Routing decisions based on:**
+- Geographic proximity for optimal latency
+- Data sovereignty and privacy regulations
+- Political and economic relationships
+- Network infrastructure and CDN performance
+
+See `src/utils/countryToJurisdiction.ts` for the complete mapping of all 200+ countries.
 
 ## Caching Strategy
 
