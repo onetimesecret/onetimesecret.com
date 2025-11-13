@@ -77,10 +77,12 @@ export function createConfig(): AstroUserConfig["integrations"] {
     //   fullPage: true,
     // }),
     vue({
-      devtools: {
-        enabled: process.env.NODE_ENV === "development",
-        launchEditor: "zed",
-      },
+      /**
+       * Devtools disabled to prevent localStorage errors during SSR/config setup
+       * Use Vue DevTools browser extension instead for debugging
+       * @see https://github.com/vuejs/devtools
+       */
+      devtools: false,
       /**
        * Custom Vue entry point where we ensure globals are defined
        * This entry point imports and runs setupGlobalVars() from src/env.ts
