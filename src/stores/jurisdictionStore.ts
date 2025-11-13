@@ -54,8 +54,9 @@ export function setJurisdictionByIdentifier(
 }
 
 /**
- * Detects the appropriate jurisdiction based on the user's location using BunnyCDN headers
- * Falls back to the default (first) jurisdiction if detection fails
+ * Detects the appropriate jurisdiction based on the user's location using BunnyCDN
+ * Uses layered detection: Edge script → HTTP headers → EU fallback
+ * Falls back to EU jurisdiction if detection fails
  */
 export async function detectUserJurisdiction(): Promise<Jurisdiction> {
   try {
@@ -71,12 +72,20 @@ export async function detectUserJurisdiction(): Promise<Jurisdiction> {
       }
     }
 
-    // Fallback to default jurisdiction if detection failed or no match found
-    return availableJurisdictions.get()[0];
+    // Fallback to EU jurisdiction if detection failed or no match found
+    const euJurisdiction = availableJurisdictions
+      .get()
+      .find((j) => j.identifier === 'EU');
+
+    return euJurisdiction || availableJurisdictions.get()[0];
   } catch (error) {
-    // Fallback to default jurisdiction on error
+    // Fallback to EU jurisdiction on error
     console.error('Error detecting user jurisdiction:', error);
-    return availableJurisdictions.get()[0];
+    const euJurisdiction = availableJurisdictions
+      .get()
+      .find((j) => j.identifier === 'EU');
+
+    return euJurisdiction || availableJurisdictions.get()[0];
   }
 }
 

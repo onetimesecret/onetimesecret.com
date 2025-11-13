@@ -1,6 +1,16 @@
 /**
- * Location detection utilities using BunnyCDN geolocation headers
+ * Location detection utilities using BunnyCDN geolocation
+ * Supports both BunnySDK edge script and HTTP headers
  */
+
+/**
+ * Extend Window interface to include BunnySDK edge script variable
+ */
+declare global {
+  interface Window {
+    __USER_COUNTRY__?: string;
+  }
+}
 
 /**
  * Map of jurisdictions to their corresponding country codes
@@ -50,14 +60,27 @@ export function getJurisdiction(countryCode: string): JurisdictionCode | null {
 }
 
 /**
- * Detect user location using BunnyCDN X-User-Country header
- * Makes a request to a known resource to get the header
+ * Detect user location using BunnyCDN edge script or X-User-Country header
+ * Tries edge script first (window.__USER_COUNTRY__), then falls back to HTTP header
  * @returns LocationDetectionResult with country code and jurisdiction
  */
 export async function detectLocationFromBunnyCDN(): Promise<LocationDetectionResult> {
+  // Primary method: Check for BunnySDK edge script variable
+  if (typeof window !== 'undefined' && window.__USER_COUNTRY__) {
+    const countryCode = window.__USER_COUNTRY__;
+    const jurisdiction = getJurisdiction(countryCode);
+
+    return {
+      countryCode,
+      jurisdiction,
+      detected: true,
+    };
+  }
+
+  // Fallback method: Try HTTP header from Edge Rules
   try {
     // Make a HEAD request to the current domain to get headers
-    // BunnyCDN will include X-User-Country header if configured
+    // BunnyCDN will include X-User-Country header if Edge Rules are configured
     const response = await fetch(window.location.origin, {
       method: 'HEAD',
       cache: 'no-store', // Ensure we get fresh headers
@@ -71,7 +94,7 @@ export async function detectLocationFromBunnyCDN(): Promise<LocationDetectionRes
         countryCode: null,
         jurisdiction: null,
         detected: false,
-        error: 'X-User-Country header not found. BunnyCDN may not be configured.',
+        error: 'Neither edge script nor X-User-Country header found. BunnyCDN may not be configured.',
       };
     }
 
