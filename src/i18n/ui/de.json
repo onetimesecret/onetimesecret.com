@@ -190,7 +190,14 @@
       "complianceNote": "Unterstützt die Einhaltung von SOC2, DSGVO, CCPA & HIPAA-Anforderungen zum Datenschutz",
       "regionSelector": {
         "currentDomain": "Aktuelle Domain",
-        "dataResidency": "Datenresidenz"
+        "dataResidency": "Datenresidenz",
+        "findByLocation": "Nach meinem Standort suchen",
+        "detecting": "Erkennung läuft...",
+        "detectionSuccess": "Erkannt: {country} ({jurisdiction})",
+        "detectionFailed": "Standort konnte nicht erkannt werden",
+        "vpnDetected": "VPN oder Proxy erkannt",
+        "switchToDetected": "Zu {region} wechseln",
+        "alreadyOptimal": "Sie sind bereits in der optimalen Region"
       },
       "successTitle": "Erfolg!",
       "shareLinkDescription": "Teilen Sie Ihren geheimen Link mit anderen.",

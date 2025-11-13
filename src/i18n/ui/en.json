@@ -190,7 +190,14 @@
       "complianceNote": "Helps with SOC2, GDPR, CCPA & HIPAA requirements for data privacy",
       "regionSelector": {
         "currentDomain": "Current domain",
-        "dataResidency": "Data Residency"
+        "dataResidency": "Data Residency",
+        "findByLocation": "Find by My Location",
+        "detecting": "Detecting...",
+        "detectionSuccess": "Detected: {country} ({jurisdiction})",
+        "detectionFailed": "Could not detect location",
+        "vpnDetected": "VPN or proxy detected",
+        "switchToDetected": "Switch to {region}",
+        "alreadyOptimal": "You're already on the optimal region"
       },
       "successTitle": "Success!",
       "shareLinkDescription": "Share your secret link with others.",

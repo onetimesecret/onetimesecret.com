@@ -1,9 +1,10 @@
 <!-- src/components/vue/homepage/regions/RegionSelector.vue -->
 
 <script setup lang="ts">
-import OIcon from "@/components/vue/icons/OIcon.vue";
 import { onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import FindByLocationButton from "@/components/vue/homepage/regions/FindByLocationButton.vue";
+import OIcon from "@/components/vue/icons/OIcon.vue";
 import type { Region } from "@/types/jurisdiction";
 
 
@@ -161,6 +162,9 @@ onUnmounted(() => {
             :aria-label="`${region.displayName} region`" />
           <span>{{ region.displayName }}</span>
         </button>
+      </div>
+      <div class="py-2 px-2 xs:px-4">
+        <FindByLocationButton />
       </div>
       <div class="py-1">
         <div class="px-2 xs:px-4 py-1.5 xs:py-2 text-xs text-gray-500 dark:text-gray-400">

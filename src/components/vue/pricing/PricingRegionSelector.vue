@@ -1,9 +1,10 @@
 <!-- src/components/vue/pricing/PricingRegionSelector.vue -->
 
 <script setup lang="ts">
-import OIcon from "@/components/vue/icons/OIcon.vue";
 import { onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import FindByLocationButton from "@/components/vue/homepage/regions/FindByLocationButton.vue";
+import OIcon from "@/components/vue/icons/OIcon.vue";
 import type { Region } from "@/types/jurisdiction";
 
 defineProps<{
@@ -169,6 +170,9 @@ onUnmounted(() => {
               clip-rule="evenodd" />
           </svg>
         </button>
+      </div>
+      <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900">
+        <FindByLocationButton />
       </div>
       <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
         <div class="text-xs text-gray-500 dark:text-gray-400">

@@ -1,5 +1,6 @@
 // src/stores/jurisdictionStore.ts
 import { jurisdictions as initialJurisdictions } from "@/data/ops/jurisdictions";
+import { detectLocationWithRetry } from "@/utils/locationDetection";
 import { atom, computed } from "nanostores";
 
 /**
@@ -53,13 +54,30 @@ export function setJurisdictionByIdentifier(
 }
 
 /**
- * Detects the appropriate jurisdiction based on the user's location or browser settings
- * This is a placeholder for actual detection logic
+ * Detects the appropriate jurisdiction based on the user's location using BunnyCDN headers
+ * Falls back to the default (first) jurisdiction if detection fails
  */
 export async function detectUserJurisdiction(): Promise<Jurisdiction> {
-  // In a real implementation, this would use geolocation or other methods
-  // For now, we'll just return the default (first) jurisdiction
-  return availableJurisdictions.get()[0];
+  try {
+    const result = await detectLocationWithRetry();
+
+    if (result.detected && result.jurisdiction) {
+      const jurisdiction = availableJurisdictions
+        .get()
+        .find((j) => j.identifier === result.jurisdiction);
+
+      if (jurisdiction) {
+        return jurisdiction;
+      }
+    }
+
+    // Fallback to default jurisdiction if detection failed or no match found
+    return availableJurisdictions.get()[0];
+  } catch (error) {
+    // Fallback to default jurisdiction on error
+    console.error('Error detecting user jurisdiction:', error);
+    return availableJurisdictions.get()[0];
+  }
 }
 
 /**

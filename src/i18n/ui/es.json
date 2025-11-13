@@ -190,7 +190,14 @@
       "complianceNote": "Ayuda con los requisitos de SOC2, RGPD, CCPA e HIPAA para la privacidad de datos",
       "regionSelector": {
         "currentDomain": "Dominio actual",
-        "dataResidency": "Residencia de datos"
+        "dataResidency": "Residencia de datos",
+        "findByLocation": "Buscar por mi ubicación",
+        "detecting": "Detectando...",
+        "detectionSuccess": "Detectado: {country} ({jurisdiction})",
+        "detectionFailed": "No se pudo detectar la ubicación",
+        "vpnDetected": "VPN o proxy detectado",
+        "switchToDetected": "Cambiar a {region}",
+        "alreadyOptimal": "Ya está en la región óptima"
       },
       "successTitle": "¡Éxito!",
       "shareLinkDescription": "Comparta su enlace secreto con otros.",

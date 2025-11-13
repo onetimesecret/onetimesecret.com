@@ -1,12 +1,14 @@
 // src/composables/useJurisdiction.ts
-import { ref, computed, watchEffect } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 import {
+  apiBaseUrl as storeApiBaseUrl,
   availableJurisdictions,
   currentJurisdiction,
-  apiBaseUrl as storeApiBaseUrl,
-  setJurisdictionByIdentifier
+  setJurisdictionByIdentifier,
 } from '@/stores/jurisdictionStore';
 import type { Region } from '@/types/jurisdiction';
+import { detectLocationWithRetry, isProbablyVPN } from '@/utils/locationDetection';
+import type { LocationDetectionResult } from '@/utils/locationDetection';
 
 /**
  * Composable for managing jurisdiction selection and related functionality
@@ -21,6 +23,9 @@ export function useJurisdiction() {
   const detectedJurisdiction = ref<string>('');
   const suggestedDomain = ref<string>('');
   const isDetecting = ref(false);
+  const detectionError = ref<string>('');
+  const detectedCountryCode = ref<string>('');
+  const isVPNDetected = ref(false);
 
   // Create a watcher to keep local refs in sync with the store
   watchEffect(() => {
@@ -51,26 +56,56 @@ export function useJurisdiction() {
   };
 
   /**
-   * Detect the appropriate jurisdiction based on the user's location or browser settings
+   * Detect the appropriate jurisdiction based on the user's location using BunnyCDN headers
    */
   const detectJurisdiction = async () => {
     isDetecting.value = true;
+    detectionError.value = '';
+
     try {
-      // This would normally use geolocation or IP-based services
-      // For now, we'll simulate a detection by returning a random jurisdiction
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const result: LocationDetectionResult = await detectLocationWithRetry();
 
-      const allJurisdictions = jurisdictions.value;
-      const detected = allJurisdictions[Math.floor(Math.random() * allJurisdictions.length)];
-
-      // Only suggest a different jurisdiction if it's not the current one
-      if (detected.identifier !== current.value.identifier) {
-        detectedJurisdiction.value = detected.identifier;
-        suggestedDomain.value = detected.domain;
-        return detected;
+      if (!result.detected) {
+        detectionError.value = result.error || 'Failed to detect location';
+        return null;
       }
+
+      // Store the detected country code
+      detectedCountryCode.value = result.countryCode || '';
+
+      if (result.jurisdiction) {
+        const detected = jurisdictions.value.find(
+          (j) => j.identifier === result.jurisdiction
+        );
+
+        if (detected) {
+          // Check if user might be on VPN
+          if (typeof window !== 'undefined') {
+            isVPNDetected.value = isProbablyVPN(
+              result.jurisdiction,
+              window.location.hostname
+            );
+          }
+
+          // Only suggest a different jurisdiction if it's not the current one
+          if (detected.identifier !== current.value.identifier) {
+            detectedJurisdiction.value = detected.identifier;
+            suggestedDomain.value = detected.domain;
+            return detected;
+          }
+
+          // If detected jurisdiction matches current, still set the values for display
+          detectedJurisdiction.value = detected.identifier;
+          suggestedDomain.value = detected.domain;
+          return detected;
+        }
+      }
+
+      detectionError.value = 'Could not map location to a jurisdiction';
     } catch (error) {
       console.error('Failed to detect jurisdiction:', error);
+      detectionError.value =
+        error instanceof Error ? error.message : 'Unknown error occurred';
     } finally {
       isDetecting.value = false;
     }
@@ -102,6 +137,9 @@ export function useJurisdiction() {
   const clearSuggestion = () => {
     detectedJurisdiction.value = '';
     suggestedDomain.value = '';
+    detectionError.value = '';
+    detectedCountryCode.value = '';
+    isVPNDetected.value = false;
   };
 
   /**
@@ -128,6 +166,9 @@ export function useJurisdiction() {
     suggestedDomain,
     isDetecting,
     isDomainMismatched,
+    detectionError,
+    detectedCountryCode,
+    isVPNDetected,
 
     // Legacy compatibility (Region type)
     availableRegions,
@@ -138,6 +179,6 @@ export function useJurisdiction() {
     detectJurisdiction,
     getCurrentJurisdictionUrl,
     clearSuggestion,
-    cleanup
+    cleanup,
   };
 }
