@@ -48,7 +48,8 @@ async function onOriginResponse(context: {
   response: Response;
 }): Promise<Response | void> {
   try {
-    const { response } = context;
+    const { request, response } = context;
+    const isDebug = request.url.includes(".dev"); // Enable debug on staging
 
     // Only modify HTML responses - skip other content types
     const contentType = response.headers.get("content-type") || "";
@@ -56,17 +57,32 @@ async function onOriginResponse(context: {
       return; // Return void to use original response
     }
 
+    if (isDebug) {
+      console.log("[Edge Script] Processing HTML response for:", request.url);
+      console.log("[Edge Script] Available headers:", Array.from(response.headers.entries()));
+    }
+
     // Get country code from BunnyCDN edge rule response header
-    // The O-Country-Code header is set by a BunnyCDN edge rule
-    // Falls back to 'US' if not available
-    let countryCode = response.headers.get("O-Country-Code") || "US";
+    // Try multiple possible header names
+    let countryCode =
+      response.headers.get("O-Country-Code") ||
+      response.headers.get("o-country-code") ||
+      response.headers.get("O-User-Country") ||
+      response.headers.get("o-user-country") ||
+      "US";
+
+    if (isDebug) {
+      console.log("[Edge Script] Country code from headers:", countryCode);
+    }
 
     // Validate country code format (ISO 3166-1 alpha-2)
     // Must be exactly 2 uppercase letters
     if (!/^[A-Z]{2}$/.test(countryCode)) {
-      console.warn(
-        `Invalid country code detected: ${countryCode}, falling back to US`
-      );
+      if (isDebug) {
+        console.warn(
+          `[Edge Script] Invalid country code: ${countryCode}, falling back to US`
+        );
+      }
       countryCode = "US";
     }
 
@@ -74,8 +90,15 @@ async function onOriginResponse(context: {
     // Escape any potential XSS characters (defense in depth)
     const sanitizedCode = countryCode.replace(/['"<>&]/g, "");
 
-    // Create the injection script
-    const injection = `<script data-user-country="${sanitizedCode}">window.__USER_COUNTRY__='${sanitizedCode}';</script>`;
+    if (isDebug) {
+      console.log("[Edge Script] Sanitized country code:", sanitizedCode);
+    }
+
+    // Create the injection script with debug logging
+    const debugScript = isDebug
+      ? `console.log('[Edge Script] Injected country code:', '${sanitizedCode}');`
+      : "";
+    const injection = `<script data-user-country="${sanitizedCode}">window.__USER_COUNTRY__='${sanitizedCode}';${debugScript}</script>`;
 
     // Use streaming to transform HTML for better memory efficiency
     // This avoids buffering the entire response in memory
@@ -107,6 +130,9 @@ async function onOriginResponse(context: {
                 /<body([^>]*)>/i,
                 `<body$1>${injection}`
               );
+              if (isDebug) {
+                console.log("[Edge Script] Injected at <body> (fallback)");
+              }
             }
             if (buffer) {
               await writer.write(encoder.encode(buffer));
@@ -122,6 +148,9 @@ async function onOriginResponse(context: {
           if (!injected && buffer.includes("</head>")) {
             buffer = buffer.replace(/<\/head>/i, `${injection}</head>`);
             injected = true;
+            if (isDebug) {
+              console.log("[Edge Script] Injected before </head>");
+            }
           }
 
           // Write complete buffer if we've injected or buffer is large enough
@@ -135,7 +164,7 @@ async function onOriginResponse(context: {
           }
         }
       } catch (streamError) {
-        console.error("Stream processing error:", streamError);
+        console.error("[Edge Script] Stream processing error:", streamError);
         await writer.abort(streamError);
       }
     })();
@@ -152,10 +181,16 @@ async function onOriginResponse(context: {
     // Subsequent requests from the same country will use the cached version
     newResponse.headers.set("Vary", "O-Country-Code");
 
+    if (isDebug) {
+      console.log(
+        "[Edge Script] Returning modified response with Vary header"
+      );
+    }
+
     return newResponse;
   } catch (error) {
     // Log error but don't break the site - return void to use original response
-    console.error("Edge script error:", error);
+    console.error("[Edge Script] Error:", error);
     return; // Return void to use original response
   }
 }

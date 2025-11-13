@@ -56,6 +56,12 @@ export function useJurisdiction() {
    * Falls back to browser geolocation API if country code is not available
    */
   const detectJurisdiction = async () => {
+    const isDebug = typeof window !== 'undefined' && window.location.hostname.includes('.dev');
+
+    if (isDebug) {
+      console.log('[Jurisdiction Detection] Starting detection...');
+    }
+
     isDetecting.value = true;
     try {
       // Dynamic import to avoid SSR issues
@@ -65,25 +71,46 @@ export function useJurisdiction() {
 
       const countryCode = detectUserCountry();
 
+      if (isDebug) {
+        console.log('[Jurisdiction Detection] Detected country code:', countryCode);
+      }
+
       if (countryCode) {
         const jurisdictionId = getJurisdictionForCountry(countryCode);
+
+        if (isDebug) {
+          console.log('[Jurisdiction Detection] Mapped to jurisdiction:', jurisdictionId);
+        }
+
         const detected = jurisdictions.value.find((j) => j.identifier === jurisdictionId);
 
         if (detected) {
+          if (isDebug) {
+            console.log('[Jurisdiction Detection] Found jurisdiction:', detected);
+            console.log('[Jurisdiction Detection] Current jurisdiction:', current.value);
+          }
+
           // Only suggest a different jurisdiction if it's not the current one
           if (detected.identifier !== current.value.identifier) {
             detectedJurisdiction.value = detected.identifier;
             suggestedDomain.value = detected.domain;
+
+            if (isDebug) {
+              console.log('[Jurisdiction Detection] Suggesting different jurisdiction:', detected.identifier);
+            }
+
             return detected;
+          } else if (isDebug) {
+            console.log('[Jurisdiction Detection] Already on correct jurisdiction');
           }
         }
       } else {
         // Fallback to browser geolocation if country code is not available
         // This is a future enhancement - currently returns null
-        console.info('Country code not available, geolocation fallback not implemented');
+        console.info('[Jurisdiction Detection] Country code not available, geolocation fallback not implemented');
       }
     } catch (error) {
-      console.error('Failed to detect jurisdiction:', error);
+      console.error('[Jurisdiction Detection] Failed to detect jurisdiction:', error);
     } finally {
       isDetecting.value = false;
     }

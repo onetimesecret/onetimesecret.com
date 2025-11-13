@@ -135,20 +135,36 @@ export function detectUserCountry(): string | null {
     return null;
   }
 
+  const isDebug = window.location.hostname.includes('.dev');
+
   // Get from injected global variable
   const countryCode = (window as Window & { __USER_COUNTRY__?: string }).__USER_COUNTRY__;
+
+  if (isDebug) {
+    console.log('[Country Detection] window.__USER_COUNTRY__:', countryCode);
+    console.log('[Country Detection] Type:', typeof countryCode);
+  }
 
   if (countryCode && typeof countryCode === 'string') {
     // Normalize to uppercase for consistency
     const normalized = countryCode.toUpperCase();
 
+    if (isDebug) {
+      console.log('[Country Detection] Normalized:', normalized);
+    }
+
     // Validate ISO 3166-1 alpha-2 format
     if (isValidCountryCode(normalized)) {
+      if (isDebug) {
+        console.log('[Country Detection] Valid country code:', normalized);
+      }
       return normalized;
     }
 
     // Log warning for debugging
-    console.warn(`Invalid country code format detected: ${countryCode}`);
+    console.warn(`[Country Detection] Invalid country code format: ${countryCode}`);
+  } else if (isDebug) {
+    console.warn('[Country Detection] No country code found in window.__USER_COUNTRY__');
   }
 
   return null;
