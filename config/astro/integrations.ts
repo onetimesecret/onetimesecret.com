@@ -78,6 +78,7 @@ export function createConfig(): AstroUserConfig["integrations"] {
     // }),
     vue({
       devtools: {
+        enabled: process.env.NODE_ENV === "development",
         launchEditor: "zed",
       },
       /**

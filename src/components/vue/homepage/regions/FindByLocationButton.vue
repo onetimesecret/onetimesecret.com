@@ -78,9 +78,9 @@ const handleFindLocation = async () => {
   if (messageTimeout.value) {
     clearTimeout(messageTimeout.value);
   }
-  messageTimeout.value = window.setTimeout(() => {
+  messageTimeout.value = setTimeout(() => {
     showMessage.value = false;
-  }, 5000);
+  }, 5000) as unknown as number;
 
   // If detected and different from current, optionally auto-switch
   // For now, we just show the message and let user decide

@@ -343,8 +343,18 @@ export function getJurisdiction(countryCode: string): JurisdictionCode {
  * @returns LocationDetectionResult with country code and jurisdiction
  */
 export async function detectLocationFromBunnyCDN(): Promise<LocationDetectionResult> {
+  // Guard: Only run in browser environment
+  if (typeof window === 'undefined') {
+    return {
+      countryCode: null,
+      jurisdiction: null,
+      detected: false,
+      error: 'Not in browser environment',
+    };
+  }
+
   // Primary method: Check for BunnySDK edge script variable
-  if (typeof window !== 'undefined' && window.__USER_COUNTRY__) {
+  if (window.__USER_COUNTRY__) {
     const countryCode = window.__USER_COUNTRY__;
     const jurisdiction = getJurisdiction(countryCode);
 
