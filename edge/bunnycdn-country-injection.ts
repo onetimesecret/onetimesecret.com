@@ -57,47 +57,74 @@ export default {
    * @returns Modified response with injected country code
    */
   async fetch(request: BunnyCDNRequest, env: EdgeScriptEnv, ctx: EdgeScriptContext): Promise<Response> {
-    // Get the original response from origin
-    const response = await fetch(request);
+    try {
+      // Get the original response from origin
+      const response = await fetch(request);
 
-    // Only modify HTML responses - skip other content types
-    const contentType = response.headers.get('content-type') || '';
-    if (!contentType.includes('text/html')) {
-      return response;
+      // Only modify HTML responses - skip other content types
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('text/html')) {
+        return response;
+      }
+
+      // Get country code from BunnyCDN request context
+      // Falls back to 'US' if not available
+      let countryCode = request.cf?.country || 'US';
+
+      // Validate country code format (ISO 3166-1 alpha-2)
+      // Must be exactly 2 uppercase letters
+      if (!/^[A-Z]{2}$/.test(countryCode)) {
+        console.warn(`Invalid country code detected: ${countryCode}, falling back to US`);
+        countryCode = 'US';
+      }
+
+      // Read the HTML content
+      const html = await response.text();
+
+      // Sanitize country code for safe HTML injection
+      // Escape any potential XSS characters (defense in depth)
+      const sanitizedCode = countryCode.replace(/['"<>&]/g, '');
+
+      // Create the injection script
+      // Using a data attribute approach for better debuggability
+      const injection = `<script data-user-country="${sanitizedCode}">window.__USER_COUNTRY__='${sanitizedCode}';</script>`;
+
+      // Inject the script before closing </head> tag
+      // This ensures it's available before any body scripts run
+      let modified = html.replace(/<\/head>/i, `${injection}</head>`);
+
+      // Fallback: if no </head> found, inject at start of <body>
+      if (modified === html) {
+        modified = html.replace(/<body([^>]*)>/i, `<body$1>${injection}`);
+      }
+
+      // Create new response with modified HTML
+      const newResponse = new Response(modified, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: new Headers(response.headers),
+      });
+
+      // IMPORTANT: Vary header tells BunnyCDN to cache separate versions per country
+      // This means the edge script only runs once per country per page
+      // Subsequent requests from the same country will use the cached version
+      newResponse.headers.set('Vary', 'CF-IPCountry');
+
+      return newResponse;
+    } catch (error) {
+      // Log error but don't break the site - return original response
+      console.error('Edge script error:', error);
+
+      // Attempt to return original response if available
+      try {
+        return await fetch(request);
+      } catch (fallbackError) {
+        // Last resort: return a basic error response
+        return new Response('Service temporarily unavailable', {
+          status: 503,
+          headers: { 'Content-Type': 'text/plain' },
+        });
+      }
     }
-
-    // Get country code from BunnyCDN request context
-    // Falls back to 'US' if not available
-    const countryCode = request.cf?.country || 'US';
-
-    // Read the HTML content
-    const html = await response.text();
-
-    // Create the injection script
-    // Using a data attribute approach for better debuggability
-    const injection = `<script data-user-country="${countryCode}">window.__USER_COUNTRY__='${countryCode}';</script>`;
-
-    // Inject the script before closing </head> tag
-    // This ensures it's available before any body scripts run
-    let modified = html.replace(/<\/head>/i, `${injection}</head>`);
-
-    // Fallback: if no </head> found, inject at start of <body>
-    if (modified === html) {
-      modified = html.replace(/<body([^>]*)>/i, `<body$1>${injection}`);
-    }
-
-    // Create new response with modified HTML
-    const newResponse = new Response(modified, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: new Headers(response.headers),
-    });
-
-    // IMPORTANT: Vary header tells BunnyCDN to cache separate versions per country
-    // This means the edge script only runs once per country per page
-    // Subsequent requests from the same country will use the cached version
-    newResponse.headers.set('Vary', 'CF-IPCountry');
-
-    return newResponse;
   },
 };

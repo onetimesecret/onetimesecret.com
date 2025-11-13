@@ -149,14 +149,39 @@ This means:
 
 ## Development
 
-To test locally without BunnyCDN:
+### Local Testing
+
+Use the provided test utilities for local development:
 
 ```typescript
-// In your browser console or dev tools
+// Import test utilities
+import { mockCountryCode, testCountryCoverage } from './test-utils';
+
+// Mock a specific country
+mockCountryCode('GB'); // Test with UK
+mockCountryCode('JP'); // Test with Japan
+mockCountryCode('BR'); // Test with Brazil
+
+// Run comprehensive tests
+testCountryCoverage(); // Tests multiple countries
+```
+
+Or use browser console:
+
+```javascript
+// In browser console
 window.__USER_COUNTRY__ = 'GB'; // Test with UK
-window.__USER_COUNTRY__ = 'CA'; // Test with Canada
 // Then reload the page
 ```
+
+### Testing
+
+For comprehensive testing documentation, see [TESTING.md](./TESTING.md):
+- Local development testing
+- Unit testing examples
+- Integration testing
+- Production testing checklist
+- Edge cases and error scenarios
 
 ## References
 

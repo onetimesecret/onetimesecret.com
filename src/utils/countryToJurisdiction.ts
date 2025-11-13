@@ -117,8 +117,18 @@ export function getJurisdictionForCountry(countryCode: string): string {
 }
 
 /**
+ * Validates that a country code matches ISO 3166-1 alpha-2 format
+ * @param code - Country code to validate
+ * @returns true if valid, false otherwise
+ */
+function isValidCountryCode(code: string): boolean {
+  // Must be exactly 2 uppercase letters
+  return /^[A-Z]{2}$/.test(code);
+}
+
+/**
  * Detect user's country code from BunnyCDN edge injection
- * @returns Country code or null if not available
+ * @returns Country code or null if not available or invalid
  */
 export function detectUserCountry(): string | null {
   if (typeof window === 'undefined') {
@@ -129,7 +139,16 @@ export function detectUserCountry(): string | null {
   const countryCode = (window as Window & { __USER_COUNTRY__?: string }).__USER_COUNTRY__;
 
   if (countryCode && typeof countryCode === 'string') {
-    return countryCode;
+    // Normalize to uppercase for consistency
+    const normalized = countryCode.toUpperCase();
+
+    // Validate ISO 3166-1 alpha-2 format
+    if (isValidCountryCode(normalized)) {
+      return normalized;
+    }
+
+    // Log warning for debugging
+    console.warn(`Invalid country code format detected: ${countryCode}`);
   }
 
   // Try to get from data attribute (alternative injection method)
@@ -137,7 +156,13 @@ export function detectUserCountry(): string | null {
   if (scriptElement) {
     const dataCountry = scriptElement.getAttribute('data-user-country');
     if (dataCountry) {
-      return dataCountry;
+      const normalized = dataCountry.toUpperCase();
+
+      if (isValidCountryCode(normalized)) {
+        return normalized;
+      }
+
+      console.warn(`Invalid country code in data attribute: ${dataCountry}`);
     }
   }
 
