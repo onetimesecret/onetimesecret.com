@@ -194,7 +194,7 @@ For comprehensive testing documentation, see [TESTING.md](./TESTING.md):
 ## References
 
 - [BunnyCDN Edge Script Documentation](https://docs.bunny.net/docs/edge-script-documentation)
-- [Cloudflare Request Context](https://developers.cloudflare.com/workers/runtime-apis/request/#incomingrequestcfproperties)
+- [BunnyCDN Edge Script Request Object](https://docs.bunny.net/docs/edge-script-request-object) - Access to country code via `request.cf.country`
 - [HTTP Vary Header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary)
 
 ## Support

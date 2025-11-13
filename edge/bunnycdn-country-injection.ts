@@ -41,7 +41,9 @@ interface EdgeScriptContext {
 }
 
 /**
- * Extended Request interface with Cloudflare properties
+ * Extended Request interface with BunnyCDN edge script properties
+ * BunnyCDN provides request.cf.country for accessing the user's country code
+ * @see https://docs.bunny.net/docs/edge-script-request-object
  */
 interface BunnyCDNRequest extends Request {
   cf?: {
