@@ -59,19 +59,12 @@ This edge rule must be enabled and have higher priority than the edge script so 
 
 ## Deployment Instructions
 
-### 1. Prepare the Script
+### 1. Configure Edge Rule (Required First)
 
-The TypeScript file needs to be transpiled to JavaScript before deployment:
+**MUST be done before deploying edge script:**
+See [Prerequisites](#prerequisites) section above for edge rule configuration.
 
-```bash
-# Install dependencies if not already installed
-pnpm install
-
-# Build the edge script (you may need to set up a build script)
-# For now, you can manually convert or use an online TypeScript compiler
-```
-
-### 2. Deploy to BunnyCDN
+### 2. Deploy Edge Script to BunnyCDN
 
 1. **Log in to BunnyCDN Dashboard**
    - Navigate to: https://panel.bunny.net/
@@ -80,14 +73,17 @@ pnpm install
    - Go to "Pull Zones" → Select your pull zone
    - Navigate to "Edge Script" tab
 
-3. **Upload the Script**
-   - Copy the contents of `bunnycdn-country-injection.ts` (converted to JS)
-   - Paste into the Edge Script editor
+3. **Copy and Deploy the Script**
+   - Copy the entire contents of `edge/bunnycdn-country-injection.ts`
+   - Paste directly into the BunnyCDN Edge Script editor
+   - The script uses ESM imports - BunnyCDN will handle the TypeScript automatically
    - Click "Save & Deploy"
 
 4. **Enable the Edge Script**
    - Toggle "Enable Edge Script" switch
    - Save changes
+
+**Note:** No transpilation needed - BunnyCDN's edge script runtime supports TypeScript and ESM imports via the @bunny.net/edgescript-sdk.
 
 ### 3. Verify Deployment
 
@@ -153,17 +149,18 @@ See `src/utils/countryToJurisdiction.ts` for the complete mapping of all 200+ co
 
 ## Caching Strategy
 
-The edge script uses the `Vary: CF-IPCountry` header to cache separate versions per country:
+The edge script uses the `Vary: O-Country-Code` header to cache separate versions per country:
 
-- **First request from US**: Edge script runs, HTML modified, cached
+- **First request from US**: Edge script runs, HTML modified, cached with O-Country-Code: US
 - **Subsequent US requests**: Served from cache (no script execution)
-- **First request from UK**: Edge script runs, HTML modified, cached separately
+- **First request from UK**: Edge script runs, HTML modified, cached with O-Country-Code: GB
 - **Subsequent UK requests**: Served from cache
 
 This means:
 - ⚡ Low latency (cache hit rate ~99%+)
-- 💰 Low compute costs (script runs once per country per page)
+- 💰 Low compute costs (script runs once per country per page via `onOriginResponse`)
 - 🔒 No CORS issues (same-origin)
+- 📦 Efficient: Only runs when response comes from origin, not on cached responses
 
 ## Troubleshooting
 
@@ -221,6 +218,7 @@ For comprehensive testing documentation, see [TESTING.md](./TESTING.md):
 ## References
 
 - [BunnyCDN Edge Script Documentation](https://docs.bunny.net/docs/edge-script-documentation)
+- [BunnyCDN Edge Script SDK](https://www.npmjs.com/package/@bunny.net/edgescript-sdk) - Official SDK used by this script
 - [BunnyCDN Edge Rules](https://docs.bunny.net/docs/edge-rules) - Configure O-Country-Code header
 - [BunnyCDN Geo Variables](https://support.bunny.net/hc/en-us/articles/360017702840-Edge-Rules-Variable-Reference) - Using %geo_country_code%
 - [HTTP Vary Header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary)
