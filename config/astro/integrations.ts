@@ -77,16 +77,14 @@ export function createConfig(): AstroUserConfig["integrations"] {
     //   fullPage: true,
     // }),
     vue({
-      devtools: {
-        launchEditor: "zed",
-      },
+      devtools: false,
       /**
        * Custom Vue entry point where we ensure globals are defined
        * This entry point imports and runs setupGlobalVars() from src/env.ts
        * before initializing vue-i18n to prevent the reference error.
        */
       appEntrypoint: "/src/App",
-      // jsx: true,
+      jsx: true,
     }),
     markdoc(),
   ];
