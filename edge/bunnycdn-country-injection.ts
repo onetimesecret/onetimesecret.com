@@ -61,32 +61,38 @@ export default {
    * @param ctx - Execution context
    * @returns Modified response with injected country code
    */
-  async fetch(request: Request, env: EdgeScriptEnv, ctx: EdgeScriptContext): Promise<Response> {
+  async fetch(
+    request: Request,
+    env: EdgeScriptEnv,
+    ctx: EdgeScriptContext,
+  ): Promise<Response> {
     try {
       // Get the original response from origin
       const response = await fetch(request);
 
       // Only modify HTML responses - skip other content types
-      const contentType = response.headers.get('content-type') || '';
-      if (!contentType.includes('text/html')) {
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("text/html")) {
         return response;
       }
 
       // Get country code from BunnyCDN edge rule response header
       // The O-Country-Code header is set by a BunnyCDN edge rule
-      // Falls back to 'US' if not available
-      let countryCode = response.headers.get('O-Country-Code') || 'US';
+      // Falls back to 'EU' if not available
+      let countryCode = response.headers.get("O-Country-Code") || "EU";
 
       // Validate country code format (ISO 3166-1 alpha-2)
       // Must be exactly 2 uppercase letters
       if (!/^[A-Z]{2}$/.test(countryCode)) {
-        console.warn(`Invalid country code detected: ${countryCode}, falling back to US`);
-        countryCode = 'US';
+        console.warn(
+          `Invalid country code detected: ${countryCode}, falling back to US`,
+        );
+        countryCode = "US";
       }
 
       // Sanitize country code for safe HTML injection
       // Escape any potential XSS characters (defense in depth)
-      const sanitizedCode = countryCode.replace(/['"<>&]/g, '');
+      const sanitizedCode = countryCode.replace(/['"<>&]/g, "");
 
       // Create the injection script
       const injection = `<script data-user-country="${sanitizedCode}">window.__USER_COUNTRY__='${sanitizedCode}';</script>`;
@@ -98,13 +104,13 @@ export default {
       const encoder = new TextEncoder();
       const decoder = new TextDecoder();
 
-      let buffer = '';
+      let buffer = "";
       let injected = false;
 
       // Process the response stream
       const reader = response.body?.getReader();
       if (!reader) {
-        throw new Error('Response body is null');
+        throw new Error("Response body is null");
       }
 
       // Stream processing in background
@@ -116,7 +122,10 @@ export default {
               // Flush remaining buffer
               if (buffer && !injected) {
                 // Fallback: inject at start of <body> if no </head> found
-                buffer = buffer.replace(/<body([^>]*)>/i, `<body$1>${injection}`);
+                buffer = buffer.replace(
+                  /<body([^>]*)>/i,
+                  `<body$1>${injection}`,
+                );
               }
               if (buffer) {
                 await writer.write(encoder.encode(buffer));
@@ -129,7 +138,7 @@ export default {
             buffer += decoder.decode(value, { stream: true });
 
             // Try to inject before </head>
-            if (!injected && buffer.includes('</head>')) {
+            if (!injected && buffer.includes("</head>")) {
               buffer = buffer.replace(/<\/head>/i, `${injection}</head>`);
               injected = true;
             }
@@ -140,12 +149,12 @@ export default {
               const writeContent = injected ? buffer : buffer.slice(0, -10);
               if (writeContent) {
                 await writer.write(encoder.encode(writeContent));
-                buffer = injected ? '' : buffer.slice(-10);
+                buffer = injected ? "" : buffer.slice(-10);
               }
             }
           }
         } catch (streamError) {
-          console.error('Stream processing error:', streamError);
+          console.error("Stream processing error:", streamError);
           await writer.abort(streamError);
         }
       })();
@@ -160,21 +169,21 @@ export default {
       // IMPORTANT: Vary header tells BunnyCDN to cache separate versions per country
       // This means the edge script only runs once per country per page
       // Subsequent requests from the same country will use the cached version
-      newResponse.headers.set('Vary', 'CF-IPCountry');
+      newResponse.headers.set("Vary", "CF-IPCountry");
 
       return newResponse;
     } catch (error) {
       // Log error but don't break the site - return original response
-      console.error('Edge script error:', error);
+      console.error("Edge script error:", error);
 
       // Attempt to return original response if available
       try {
         return await fetch(request);
       } catch (fallbackError) {
         // Last resort: return a basic error response
-        return new Response('Service temporarily unavailable', {
+        return new Response("Service temporarily unavailable", {
           status: 503,
-          headers: { 'Content-Type': 'text/plain' },
+          headers: { "Content-Type": "text/plain" },
         });
       }
     }
