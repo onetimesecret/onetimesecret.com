@@ -5,12 +5,21 @@
  * before it reaches the client. This enables immediate geolocation-based
  * jurisdiction selection without additional network requests or CORS issues.
  *
+ * How it works:
+ * 1. BunnyCDN edge rule sets the O-Country-Code response header based on user's IP
+ * 2. This script reads the O-Country-Code header from the response
+ * 3. Injects the country code into HTML as window.__USER_COUNTRY__
+ * 4. Client-side code can immediately access the country code
+ *
  * Features:
- * - Injects country code from BunnyCDN request context into HTML
+ * - Reads country code from O-Country-Code response header (set by edge rule)
  * - Uses streaming for memory-efficient HTML transformation
  * - Caches responses per country using Vary header
  * - Only processes HTML responses (skips CSS, JS, images, etc.)
  * - Falls back to 'US' if country code is unavailable
+ *
+ * Prerequisites:
+ * - BunnyCDN edge rule must be configured to set O-Country-Code header
  *
  * Usage:
  * Deploy this script to your BunnyCDN pull zone's edge script settings.
@@ -40,26 +49,19 @@ interface EdgeScriptContext {
   [key: string]: unknown;
 }
 
-/**
- * Extended Request interface with BunnyCDN edge script properties
- * BunnyCDN provides request.cf.country for accessing the user's country code
- * @see https://docs.bunny.net/docs/edge-script-request-object
- */
-interface BunnyCDNRequest extends Request {
-  cf?: {
-    country?: string;
-  };
-}
-
 export default {
   /**
    * Fetch handler for BunnyCDN edge script
+   *
+   * Reads country code from the O-Country-Code response header which is set
+   * by a BunnyCDN edge rule, then injects it into the HTML for client-side access.
+   *
    * @param request - The incoming HTTP request
    * @param env - Environment variables (if configured)
    * @param ctx - Execution context
    * @returns Modified response with injected country code
    */
-  async fetch(request: BunnyCDNRequest, env: EdgeScriptEnv, ctx: EdgeScriptContext): Promise<Response> {
+  async fetch(request: Request, env: EdgeScriptEnv, ctx: EdgeScriptContext): Promise<Response> {
     try {
       // Get the original response from origin
       const response = await fetch(request);
@@ -70,9 +72,10 @@ export default {
         return response;
       }
 
-      // Get country code from BunnyCDN request context
+      // Get country code from BunnyCDN edge rule response header
+      // The O-Country-Code header is set by a BunnyCDN edge rule
       // Falls back to 'US' if not available
-      let countryCode = request.cf?.country || 'US';
+      let countryCode = response.headers.get('O-Country-Code') || 'US';
 
       // Validate country code format (ISO 3166-1 alpha-2)
       // Must be exactly 2 uppercase letters

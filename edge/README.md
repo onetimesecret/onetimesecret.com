@@ -17,18 +17,45 @@ Edge middleware runs at the CDN edge (close to users) before responses reach the
 Automatically injects the user's country code into HTML responses for geolocation-based jurisdiction selection.
 
 **Features:**
-- ✅ Detects country from BunnyCDN request context (`request.cf.country`)
+- ✅ Reads country code from `O-Country-Code` response header (set by edge rule)
 - ✅ Injects `window.__USER_COUNTRY__` into HTML before `</head>`
-- ✅ Caches responses per country using `Vary: CF-IPCountry` header
+- ✅ Uses streaming for memory-efficient HTML transformation
+- ✅ Caches responses per country using `Vary` header
 - ✅ Only processes HTML responses (skips static assets)
 - ✅ Falls back to 'US' if country code unavailable
 
 **How it works:**
-1. BunnyCDN receives a request and determines the user's country from their IP
-2. Edge script fetches the HTML from origin (if not cached)
-3. Script injects country code into the HTML as a global variable
-4. Modified HTML is served to the user
+1. BunnyCDN edge rule sets `O-Country-Code` response header based on user's IP
+2. Edge script reads the `O-Country-Code` header from the response
+3. Script injects country code into the HTML as `window.__USER_COUNTRY__`
+4. Client-side code can immediately access the country code
 5. Subsequent requests from the same country use the cached version
+
+## Prerequisites
+
+### BunnyCDN Edge Rule Configuration
+
+**IMPORTANT:** Before deploying the edge script, you must configure a BunnyCDN edge rule to set the `O-Country-Code` response header.
+
+**Edge Rule Configuration:**
+1. Log in to BunnyCDN Dashboard → https://panel.bunny.net/
+2. Go to your Pull Zone → Edge Rules
+3. Create a new edge rule:
+   - **Trigger:** All Requests (or specific path pattern)
+   - **Action:** Set Response Header
+   - **Header Name:** `O-Country-Code`
+   - **Header Value:** `%geo_country_code%` (BunnyCDN variable for country code)
+   - **Priority:** High (run before edge script)
+
+**Alternative using BunnyCDN Edge Rule syntax:**
+```javascript
+// Edge Rule: Set country code header
+if (true) {
+  setResponseHeader('O-Country-Code', %geo_country_code%);
+}
+```
+
+This edge rule must be enabled and have higher priority than the edge script so the header is available when the script runs.
 
 ## Deployment Instructions
 
@@ -194,7 +221,8 @@ For comprehensive testing documentation, see [TESTING.md](./TESTING.md):
 ## References
 
 - [BunnyCDN Edge Script Documentation](https://docs.bunny.net/docs/edge-script-documentation)
-- [BunnyCDN Edge Script Request Object](https://docs.bunny.net/docs/edge-script-request-object) - Access to country code via `request.cf.country`
+- [BunnyCDN Edge Rules](https://docs.bunny.net/docs/edge-rules) - Configure O-Country-Code header
+- [BunnyCDN Geo Variables](https://support.bunny.net/hc/en-us/articles/360017702840-Edge-Rules-Variable-Reference) - Using %geo_country_code%
 - [HTTP Vary Header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary)
 
 ## Support
