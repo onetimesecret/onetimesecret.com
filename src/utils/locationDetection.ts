@@ -13,17 +13,287 @@ declare global {
 }
 
 /**
- * Map of jurisdictions to their corresponding country codes
+ * Comprehensive country-to-jurisdiction routing table
+ * Organized by geographic/political region for maintainability
+ *
+ * Routing rationale:
+ * - EU: Europe, MENA, Africa, Central Asia (GDPR alignment, cable proximity)
+ * - CA: Canada + Greenland only
+ * - NZ: Asia-Pacific region (geographic, low latency)
+ * - US: All Americas except Canada (geographic, cultural ties)
  */
 export const JURISDICTIONS = {
   EU: [
-    'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR',
-    'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK',
-    'SI', 'ES', 'SE',
+    // EU Member States (27)
+    'AT',
+    'BE',
+    'BG',
+    'HR',
+    'CY',
+    'CZ',
+    'DK',
+    'EE',
+    'FI',
+    'FR',
+    'DE',
+    'GR',
+    'HU',
+    'IE',
+    'IT',
+    'LV',
+    'LT',
+    'LU',
+    'MT',
+    'NL',
+    'PL',
+    'PT',
+    'RO',
+    'SK',
+    'SI',
+    'ES',
+    'SE',
+
+    // EFTA & Other Western Europe
+    'NO',
+    'CH',
+    'IS',
+    'LI',
+    'GB',
+    'MC',
+    'SM',
+    'VA',
+    'AD',
+    'GI',
+    'GG',
+    'IM',
+    'JE',
+
+    // Eastern Europe & Balkans
+    'AL',
+    'BA',
+    'BY',
+    'XK',
+    'MD',
+    'ME',
+    'MK',
+    'RS',
+    'UA',
+    'RU',
+
+    // Turkey & Caucasus
+    'TR',
+    'AZ',
+    'AM',
+    'GE',
+
+    // Central Asia
+    'KZ',
+    'UZ',
+    'TM',
+    'TJ',
+    'KG',
+
+    // Middle East
+    'AE',
+    'SA',
+    'IL',
+    'BH',
+    'IQ',
+    'IR',
+    'JO',
+    'KW',
+    'LB',
+    'OM',
+    'PS',
+    'QA',
+    'SY',
+    'YE',
+
+    // North Africa
+    'EG',
+    'DZ',
+    'MA',
+    'TN',
+    'LY',
+    'SD',
+    'MR',
+
+    // Sub-Saharan Africa
+    'ZA',
+    'NG',
+    'KE',
+    'GH',
+    'ET',
+    'TZ',
+    'UG',
+    'AO',
+    'CM',
+    'CI',
+    'MG',
+    'ML',
+    'MW',
+    'MZ',
+    'NE',
+    'RW',
+    'SN',
+    'ZM',
+    'ZW',
+    'BW',
+    'GA',
+    'MU',
+    'NA',
+    'RE',
+    'SC',
+    'BF',
+    'BI',
+    'BJ',
+    'CD',
+    'CF',
+    'CG',
+    'DJ',
+    'GN',
+    'GM',
+    'GW',
+    'GQ',
+    'LS',
+    'LR',
+    'SL',
+    'SO',
+    'SS',
+    'ST',
+    'SZ',
+    'TD',
+    'TG',
   ],
-  CA: ['CA'],
-  NZ: ['NZ'],
-  US: ['US'],
+
+  CA: [
+    'CA',
+    'GL', // Greenland - Arctic proximity
+  ],
+
+  NZ: [
+    'NZ',
+
+    // Australia & Pacific Islands
+    'AU',
+    'FJ',
+    'PG',
+    'NC',
+    'PF',
+    'WS',
+    'TO',
+    'VU',
+    'SB',
+    'KI',
+    'MH',
+    'FM',
+    'NR',
+    'PW',
+    'TV',
+    'AS',
+    'CK',
+    'NU',
+    'TK',
+    'WF',
+
+    // Southeast Asia
+    'SG',
+    'MY',
+    'TH',
+    'ID',
+    'PH',
+    'VN',
+    'MM',
+    'KH',
+    'LA',
+    'BN',
+    'TL',
+
+    // East Asia
+    'JP',
+    'KR',
+    'CN',
+    'HK',
+    'MO',
+    'TW',
+    'MN',
+    'KP',
+
+    // South Asia
+    'IN',
+    'PK',
+    'BD',
+    'LK',
+    'NP',
+    'BT',
+    'MV',
+    'AF',
+  ],
+
+  US: [
+    'US',
+
+    // Mexico & Central America
+    'MX',
+    'GT',
+    'HN',
+    'SV',
+    'NI',
+    'CR',
+    'PA',
+    'BZ',
+
+    // Caribbean
+    'CU',
+    'HT',
+    'DO',
+    'JM',
+    'TT',
+    'BS',
+    'BB',
+    'PR',
+    'VI',
+    'AW',
+    'CW',
+    'SX',
+    'BQ',
+    'AG',
+    'DM',
+    'GD',
+    'KN',
+    'LC',
+    'VC',
+    'BM',
+    'KY',
+    'TC',
+    'VG',
+    'AI',
+    'MS',
+    'BL',
+    'MF',
+
+    // South America
+    'BR',
+    'AR',
+    'CO',
+    'CL',
+    'PE',
+    'VE',
+    'EC',
+    'BO',
+    'PY',
+    'UY',
+    'GY',
+    'SR',
+    'GF',
+
+    // South Atlantic
+    'FK',
+    'GS',
+    'PM',
+    'GP',
+    'MQ',
+  ],
 } as const;
 
 export type JurisdictionCode = keyof typeof JURISDICTIONS;
@@ -39,24 +309,32 @@ export interface LocationDetectionResult {
 }
 
 /**
- * Get jurisdiction code from country code
- * @param countryCode ISO 3166-1 alpha-2 country code (e.g., 'US', 'DE')
- * @returns Jurisdiction code (e.g., 'US', 'EU') or null if not found
+ * Pre-computed reverse lookup map for O(1) country-to-jurisdiction lookups
+ * Built from JURISDICTIONS table at module load time
  */
-export function getJurisdiction(countryCode: string): JurisdictionCode | null {
-  if (!countryCode) return null;
+const COUNTRY_TO_JURISDICTION = (Object.entries(JURISDICTIONS) as Array<
+  [JurisdictionCode, readonly string[]]
+>).reduce(
+  (map, [jurisdiction, countries]) => {
+    countries.forEach((country) => {
+      map[country] = jurisdiction;
+    });
+    return map;
+  },
+  {} as Record<string, JurisdictionCode>
+);
+
+/**
+ * Get jurisdiction code from country code using O(1) lookup
+ * Falls back to EU for unknown countries (GDPR-compliant default)
+ * @param countryCode ISO 3166-1 alpha-2 country code (e.g., 'US', 'DE')
+ * @returns Jurisdiction code (e.g., 'US', 'EU')
+ */
+export function getJurisdiction(countryCode: string): JurisdictionCode {
+  if (!countryCode) return 'EU';
 
   const upperCode = countryCode.toUpperCase();
-
-  for (const [jurisdiction, countries] of Object.entries(JURISDICTIONS) as Array<
-    [JurisdictionCode, readonly string[]]
-  >) {
-    if (countries.includes(upperCode)) {
-      return jurisdiction;
-    }
-  }
-
-  return null;
+  return COUNTRY_TO_JURISDICTION[upperCode] || 'EU';
 }
 
 /**

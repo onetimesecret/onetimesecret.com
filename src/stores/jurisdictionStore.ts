@@ -1,7 +1,6 @@
 // src/stores/jurisdictionStore.ts
-import { jurisdictions as initialJurisdictions } from "@/data/ops/jurisdictions";
-import { detectLocationWithRetry } from "@/utils/locationDetection";
 import { atom, computed } from "nanostores";
+import { jurisdictions as initialJurisdictions } from "@/data/ops/jurisdictions";
 
 /**
  * Jurisdiction interface representing a regional deployment option with data sovereignty
@@ -51,50 +50,4 @@ export function setJurisdictionByIdentifier(
   }
 
   return undefined;
-}
-
-/**
- * Detects the appropriate jurisdiction based on the user's location using BunnyCDN
- * Uses layered detection: Edge script → HTTP headers → EU fallback
- * Falls back to EU jurisdiction if detection fails
- */
-export async function detectUserJurisdiction(): Promise<Jurisdiction> {
-  try {
-    const result = await detectLocationWithRetry();
-
-    if (result.detected && result.jurisdiction) {
-      const jurisdiction = availableJurisdictions
-        .get()
-        .find((j) => j.identifier === result.jurisdiction);
-
-      if (jurisdiction) {
-        return jurisdiction;
-      }
-    }
-
-    // Fallback to EU jurisdiction if detection failed or no match found
-    const euJurisdiction = availableJurisdictions
-      .get()
-      .find((j) => j.identifier === 'EU');
-
-    return euJurisdiction || availableJurisdictions.get()[0];
-  } catch (error) {
-    // Fallback to EU jurisdiction on error
-    console.error('Error detecting user jurisdiction:', error);
-    const euJurisdiction = availableJurisdictions
-      .get()
-      .find((j) => j.identifier === 'EU');
-
-    return euJurisdiction || availableJurisdictions.get()[0];
-  }
-}
-
-/**
- * Updates the available jurisdictions with translated display names
- * Call this function when the locale changes
- */
-export function updateJurisdictionTranslations(): void {
-  // This would normally use the i18n functionality to update display names
-  // but since it needs the Vue context, it should be called from a Vue component
-  // This is a placeholder for the actual implementation
 }
