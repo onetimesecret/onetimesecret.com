@@ -4,74 +4,107 @@
  * Maps ISO 3166-1 alpha-2 country codes to jurisdiction identifiers.
  * This enables automatic jurisdiction selection based on user's country.
  *
- * Jurisdiction assignments follow data sovereignty and privacy regulations:
- * - EU: European Union member states + GDPR-compliant countries
- * - CA: Canada
- * - NZ: New Zealand and Pacific nations
- * - US: United States and other countries (default)
+ * Routing decisions are based on:
+ * - Geographic proximity for optimal latency
+ * - Data sovereignty and privacy regulations
+ * - Political and economic relationships
+ * - Network infrastructure and CDN performance
+ *
+ * Jurisdictions:
+ * - EU: Europe, Middle East, Africa, Russia, Central Asia
+ * - CA: Canada, Greenland
+ * - NZ: Asia-Pacific (Australia, New Zealand, Southeast Asia, East Asia, South Asia)
+ * - US: Americas (North, Central, South America, Caribbean) - Default fallback
  */
 
 /**
+ * Country routing configuration organized by geographic/political regions
+ * This structure makes it easier to maintain and understand the routing logic
+ */
+const COUNTRY_ROUTING: Record<string, string[]> = {
+  EU: [
+    // EU Member States (27)
+    'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR',
+    'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK',
+    'SI', 'ES', 'SE',
+
+    // EFTA & Other Western Europe
+    'NO', 'CH', 'IS', 'LI', 'GB', 'MC', 'SM', 'VA', 'AD', 'GI', 'GG', 'IM', 'JE',
+
+    // Eastern Europe & Balkans
+    'AL', 'BA', 'BY', 'XK', 'MD', 'ME', 'MK', 'RS', 'UA', 'RU',
+
+    // Turkey & Caucasus
+    'TR', 'AZ', 'AM', 'GE',
+
+    // Central Asia
+    'KZ', 'UZ', 'TM', 'TJ', 'KG',
+
+    // Middle East
+    'AE', 'SA', 'IL', 'BH', 'IQ', 'IR', 'JO', 'KW', 'LB', 'OM', 'PS', 'QA', 'SY', 'YE',
+
+    // North Africa
+    'EG', 'DZ', 'MA', 'TN', 'LY', 'SD', 'MR',
+
+    // Sub-Saharan Africa
+    'ZA', 'NG', 'KE', 'GH', 'ET', 'TZ', 'UG', 'AO', 'CM', 'CI', 'MG', 'ML', 'MW',
+    'MZ', 'NE', 'RW', 'SN', 'ZM', 'ZW', 'BW', 'GA', 'MU', 'NA', 'RE', 'SC', 'BF',
+    'BI', 'BJ', 'CD', 'CF', 'CG', 'DJ', 'GN', 'GM', 'GW', 'GQ', 'LS', 'LR', 'SL',
+    'SO', 'SS', 'ST', 'SZ', 'TD', 'TG',
+  ],
+
+  CA: [
+    'CA', // Canada
+    'GL', // Greenland - Arctic proximity
+  ],
+
+  NZ: [
+    'NZ', // New Zealand
+
+    // Australia & Pacific Islands
+    'AU', 'FJ', 'PG', 'NC', 'PF', 'WS', 'TO', 'VU', 'SB', 'KI', 'MH', 'FM', 'NR',
+    'PW', 'TV', 'AS', 'CK', 'NU', 'TK', 'WF',
+
+    // Southeast Asia
+    'SG', 'MY', 'TH', 'ID', 'PH', 'VN', 'MM', 'KH', 'LA', 'BN', 'TL',
+
+    // East Asia
+    'JP', 'KR', 'CN', 'HK', 'MO', 'TW', 'MN', 'KP',
+
+    // South Asia
+    'IN', 'PK', 'BD', 'LK', 'NP', 'BT', 'MV', 'AF',
+  ],
+
+  US: [
+    'US', // United States
+
+    // Mexico & Central America
+    'MX', 'GT', 'HN', 'SV', 'NI', 'CR', 'PA', 'BZ',
+
+    // Caribbean
+    'CU', 'HT', 'DO', 'JM', 'TT', 'BS', 'BB', 'PR', 'VI', 'AW', 'CW', 'SX', 'BQ',
+    'AG', 'DM', 'GD', 'KN', 'LC', 'VC', 'BM', 'KY', 'TC', 'VG', 'AI', 'MS', 'BL', 'MF',
+
+    // South America
+    'BR', 'AR', 'CO', 'CL', 'PE', 'VE', 'EC', 'BO', 'PY', 'UY', 'GY', 'SR', 'GF',
+
+    // South Atlantic
+    'FK', 'GS', 'PM', 'GP', 'MQ',
+  ],
+};
+
+/**
+ * Reverse lookup map built from COUNTRY_ROUTING for O(1) performance
  * Maps country codes to jurisdiction identifiers
  */
-export const COUNTRY_TO_JURISDICTION: Record<string, string> = {
-  // European Union member states
-  AT: 'EU', // Austria
-  BE: 'EU', // Belgium
-  BG: 'EU', // Bulgaria
-  HR: 'EU', // Croatia
-  CY: 'EU', // Cyprus
-  CZ: 'EU', // Czech Republic
-  DK: 'EU', // Denmark
-  EE: 'EU', // Estonia
-  FI: 'EU', // Finland
-  FR: 'EU', // France
-  DE: 'EU', // Germany
-  GR: 'EU', // Greece
-  HU: 'EU', // Hungary
-  IE: 'EU', // Ireland
-  IT: 'EU', // Italy
-  LV: 'EU', // Latvia
-  LT: 'EU', // Lithuania
-  LU: 'EU', // Luxembourg
-  MT: 'EU', // Malta
-  NL: 'EU', // Netherlands
-  PL: 'EU', // Poland
-  PT: 'EU', // Portugal
-  RO: 'EU', // Romania
-  SK: 'EU', // Slovakia
-  SI: 'EU', // Slovenia
-  ES: 'EU', // Spain
-  SE: 'EU', // Sweden
-
-  // EEA countries (non-EU but follow GDPR)
-  IS: 'EU', // Iceland
-  LI: 'EU', // Liechtenstein
-  NO: 'EU', // Norway
-
-  // Other European countries with strong privacy laws
-  CH: 'EU', // Switzerland
-  GB: 'EU', // United Kingdom (post-Brexit GDPR equivalent)
-
-  // Canada
-  CA: 'CA',
-
-  // New Zealand and Pacific
-  NZ: 'NZ',
-  AU: 'NZ', // Australia (closest jurisdiction)
-  FJ: 'NZ', // Fiji
-  PG: 'NZ', // Papua New Guinea
-  NC: 'NZ', // New Caledonia
-  PF: 'NZ', // French Polynesia
-  WS: 'NZ', // Samoa
-  TO: 'NZ', // Tonga
-  VU: 'NZ', // Vanuatu
-
-  // United States
-  US: 'US',
-
-  // Default fallback for all other countries is handled by the function below
-};
+export const COUNTRY_TO_JURISDICTION: Record<string, string> = Object.entries(
+  COUNTRY_ROUTING
+).reduce((map, [jurisdiction, countries]) => {
+  countries.forEach((country) => {
+    map[country] = jurisdiction;
+  });
+  return map;
+}, {} as Record<string, string>);
 
 /**
  * Get the appropriate jurisdiction identifier for a given country code
