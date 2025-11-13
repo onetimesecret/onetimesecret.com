@@ -135,7 +135,7 @@ export function detectUserCountry(): string | null {
     return null;
   }
 
-  // Try to get from injected global variable
+  // Get from injected global variable
   const countryCode = (window as Window & { __USER_COUNTRY__?: string }).__USER_COUNTRY__;
 
   if (countryCode && typeof countryCode === 'string') {
@@ -149,21 +149,6 @@ export function detectUserCountry(): string | null {
 
     // Log warning for debugging
     console.warn(`Invalid country code format detected: ${countryCode}`);
-  }
-
-  // Try to get from data attribute (alternative injection method)
-  const scriptElement = document.querySelector('script[data-user-country]');
-  if (scriptElement) {
-    const dataCountry = scriptElement.getAttribute('data-user-country');
-    if (dataCountry) {
-      const normalized = dataCountry.toUpperCase();
-
-      if (isValidCountryCode(normalized)) {
-        return normalized;
-      }
-
-      console.warn(`Invalid country code in data attribute: ${dataCountry}`);
-    }
   }
 
   return null;

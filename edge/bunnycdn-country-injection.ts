@@ -7,6 +7,7 @@
  *
  * Features:
  * - Injects country code from BunnyCDN request context into HTML
+ * - Uses streaming for memory-efficient HTML transformation
  * - Caches responses per country using Vary header
  * - Only processes HTML responses (skips CSS, JS, images, etc.)
  * - Falls back to 'US' if country code is unavailable
@@ -16,7 +17,7 @@
  * The script will automatically inject window.__USER_COUNTRY__ into all HTML pages.
  *
  * Client-side usage:
- * const countryCode = (window as any).__USER_COUNTRY__;
+ * const countryCode = window.__USER_COUNTRY__;
  *
  * @see https://docs.bunny.net/docs/edge-script-documentation
  */
@@ -78,28 +79,74 @@ export default {
         countryCode = 'US';
       }
 
-      // Read the HTML content
-      const html = await response.text();
-
       // Sanitize country code for safe HTML injection
       // Escape any potential XSS characters (defense in depth)
       const sanitizedCode = countryCode.replace(/['"<>&]/g, '');
 
       // Create the injection script
-      // Using a data attribute approach for better debuggability
       const injection = `<script data-user-country="${sanitizedCode}">window.__USER_COUNTRY__='${sanitizedCode}';</script>`;
 
-      // Inject the script before closing </head> tag
-      // This ensures it's available before any body scripts run
-      let modified = html.replace(/<\/head>/i, `${injection}</head>`);
+      // Use streaming to transform HTML for better memory efficiency
+      // This avoids buffering the entire response in memory
+      const { readable, writable } = new TransformStream();
+      const writer = writable.getWriter();
+      const encoder = new TextEncoder();
+      const decoder = new TextDecoder();
 
-      // Fallback: if no </head> found, inject at start of <body>
-      if (modified === html) {
-        modified = html.replace(/<body([^>]*)>/i, `<body$1>${injection}`);
+      let buffer = '';
+      let injected = false;
+
+      // Process the response stream
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('Response body is null');
       }
 
-      // Create new response with modified HTML
-      const newResponse = new Response(modified, {
+      // Stream processing in background
+      (async () => {
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+              // Flush remaining buffer
+              if (buffer && !injected) {
+                // Fallback: inject at start of <body> if no </head> found
+                buffer = buffer.replace(/<body([^>]*)>/i, `<body$1>${injection}`);
+              }
+              if (buffer) {
+                await writer.write(encoder.encode(buffer));
+              }
+              await writer.close();
+              break;
+            }
+
+            // Decode chunk and add to buffer
+            buffer += decoder.decode(value, { stream: true });
+
+            // Try to inject before </head>
+            if (!injected && buffer.includes('</head>')) {
+              buffer = buffer.replace(/<\/head>/i, `${injection}</head>`);
+              injected = true;
+            }
+
+            // Write complete buffer if we've injected or buffer is large enough
+            // Keep last 10 chars to handle tags split across chunks
+            if (injected || buffer.length > 1024) {
+              const writeContent = injected ? buffer : buffer.slice(0, -10);
+              if (writeContent) {
+                await writer.write(encoder.encode(writeContent));
+                buffer = injected ? '' : buffer.slice(-10);
+              }
+            }
+          }
+        } catch (streamError) {
+          console.error('Stream processing error:', streamError);
+          await writer.abort(streamError);
+        }
+      })();
+
+      // Create new response with streaming body
+      const newResponse = new Response(readable, {
         status: response.status,
         statusText: response.statusText,
         headers: new Headers(response.headers),
