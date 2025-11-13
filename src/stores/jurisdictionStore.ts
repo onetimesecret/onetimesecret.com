@@ -53,12 +53,30 @@ export function setJurisdictionByIdentifier(
 }
 
 /**
- * Detects the appropriate jurisdiction based on the user's location or browser settings
- * This is a placeholder for actual detection logic
+ * Detects the appropriate jurisdiction based on the user's country code
+ * Uses the country code injected by BunnyCDN edge middleware
+ * @returns The detected jurisdiction or the default (first) jurisdiction
  */
 export async function detectUserJurisdiction(): Promise<Jurisdiction> {
-  // In a real implementation, this would use geolocation or other methods
-  // For now, we'll just return the default (first) jurisdiction
+  // Dynamic import to avoid SSR issues
+  const { detectUserCountry, getJurisdictionForCountry } = await import(
+    "@/utils/countryToJurisdiction"
+  );
+
+  const countryCode = detectUserCountry();
+
+  if (countryCode) {
+    const jurisdictionId = getJurisdictionForCountry(countryCode);
+    const jurisdiction = availableJurisdictions
+      .get()
+      .find((j) => j.identifier === jurisdictionId);
+
+    if (jurisdiction) {
+      return jurisdiction;
+    }
+  }
+
+  // Fallback to default (first) jurisdiction
   return availableJurisdictions.get()[0];
 }
 

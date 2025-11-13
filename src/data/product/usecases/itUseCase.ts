@@ -2,9 +2,7 @@ import { type UseCase } from "@/types/useCase";
 
 export function getITUseCase(t: (key: string) => string): UseCase {
   // IT professional example secret
-  const exampleSecret = `DB_USER=scott
-DB_PASS=tiger
-`;
+  const exampleSecret = `prod_api_token_51H7xYz9A2bC3dE4fG`;
 
   return {
     id: "it",
