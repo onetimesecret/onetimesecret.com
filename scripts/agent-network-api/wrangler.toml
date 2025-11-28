@@ -1,0 +1,63 @@
+# Cloudflare Workers configuration for Agent Network API
+# Deploy with: wrangler deploy
+
+name = "agent-network-api"
+main = "src/main.py"
+compatibility_date = "2025-11-28"
+compatibility_flags = ["python_workers"]
+
+# Routes for custom domain
+routes = [
+  { pattern = "plum.onetime.dev/*", zone_name = "onetime.dev" }
+]
+workers_dev = false
+
+# Python Workers (beta)
+# See: https://developers.cloudflare.com/workers/languages/python/
+[build]
+command = ""
+
+# KV Namespace bindings
+# Create these first:
+#   wrangler kv namespace create AGENT_AUTH
+#   wrangler kv namespace create AGENT_AUTH --preview
+#   wrangler kv namespace create AGENT_MESSAGES
+#   wrangler kv namespace create AGENT_MESSAGES --preview
+#   wrangler kv namespace create AGENT_EVENTS
+#   wrangler kv namespace create AGENT_EVENTS --preview
+
+[[kv_namespaces]]
+binding = "AGENT_AUTH"
+id = "346b5ed5ac3c41c199578076079ab398"
+preview_id = "776aba54356c45c0b2dc26715e46d258"
+
+[[kv_namespaces]]
+binding = "AGENT_MESSAGES"
+id = "ec5c5a90f53e4ea6abc9175628770876"
+preview_id = "1680d3132f12453c868a19c23b644c24"
+
+[[kv_namespaces]]
+binding = "AGENT_EVENTS"
+id = "9370de2e2e534772985c7a38bf56160c"
+preview_id = "00bd6d94f9f74d1bad3df4ba2f3b1e51"
+
+# Environment variables
+[vars]
+ENVIRONMENT = "development"
+
+# Observability - logs and traces
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
+
+[observability.traces]
+enabled = true
+head_sampling_rate = 1
+
+# Production environment overrides
+[env.production]
+vars = { ENVIRONMENT = "production" }
