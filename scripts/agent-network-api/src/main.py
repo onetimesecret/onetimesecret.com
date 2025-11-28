@@ -319,17 +319,91 @@ async def handle_discover_peers(request, env):
 
     await log_analytics(env, "peers_discovered", {})
 
-    # Mock peer list
+    # Mock peer list - realistic agent network participants
+    peers = [
+        {
+            "agent_id": "claude-code-primary",
+            "name": "Claude Code (Primary)",
+            "provider": "anthropic",
+            "capabilities": ["message", "secret", "handoff", "code_review"],
+            "status": "online",
+            "last_seen": get_timestamp(),
+            "metadata": {
+                "model": "claude-sonnet-4-20250514",
+                "context": "software_development"
+            }
+        },
+        {
+            "agent_id": "github-copilot-workspace",
+            "name": "GitHub Copilot Workspace",
+            "provider": "github",
+            "capabilities": ["message", "handoff", "code_generation"],
+            "status": "online",
+            "last_seen": get_timestamp(),
+            "metadata": {
+                "context": "ide_integration"
+            }
+        },
+        {
+            "agent_id": "devin-dev-agent",
+            "name": "Devin",
+            "provider": "cognition",
+            "capabilities": ["message", "secret", "handoff", "autonomous_coding"],
+            "status": "busy",
+            "last_seen": get_timestamp(),
+            "metadata": {
+                "current_task": "debugging_session",
+                "context": "autonomous_development"
+            }
+        },
+        {
+            "agent_id": "cursor-composer",
+            "name": "Cursor Composer",
+            "provider": "cursor",
+            "capabilities": ["message", "handoff", "multi_file_edit"],
+            "status": "online",
+            "last_seen": get_timestamp(),
+            "metadata": {
+                "context": "editor_integration"
+            }
+        },
+        {
+            "agent_id": "codex-cli-agent",
+            "name": "OpenAI Codex CLI",
+            "provider": "openai",
+            "capabilities": ["message", "secret", "shell_execution"],
+            "status": "offline",
+            "last_seen": "2025-11-28T08:30:00Z",
+            "metadata": {
+                "context": "terminal_automation"
+            }
+        },
+        {
+            "agent_id": "windsurf-cascade",
+            "name": "Windsurf Cascade",
+            "provider": "codeium",
+            "capabilities": ["message", "handoff", "code_flow"],
+            "status": "online",
+            "last_seen": get_timestamp(),
+            "metadata": {
+                "context": "ide_integration"
+            }
+        }
+    ]
+
+    # Filter by status if requested
+    url = request.url
+    if "status=" in url:
+        status_filter = url.split("status=")[1].split("&")[0]
+        peers = [p for p in peers if p["status"] == status_filter]
+
     return json_response(
         {
-            "peers": [
-                {
-                    "agent_id": "mock-agent-001",
-                    "capabilities": ["message", "secret"],
-                    "status": "online",
-                }
-            ],
-            "total": 1,
+            "peers": peers,
+            "total": len(peers),
+            "online_count": len([p for p in peers if p["status"] == "online"]),
+            "network_version": "0.1",
+            "discovery_timestamp": get_timestamp()
         }
     )
 
@@ -509,7 +583,28 @@ class Default(WorkerEntrypoint):
         # Route matching
         try:
             # Auth endpoints
-            if path == "/api/v2/agent/auth" and method == "POST":
+            if path == "/api/v2/agent/auth" and method == "GET":
+                # Discovery endpoint - describe the CIBA auth flow
+                response = json_response({
+                    "auth_method": "ciba",
+                    "description": "Client Initiated Backchannel Authentication",
+                    "flow": "POST public_key and purpose to initiate auth request, then poll the returned endpoint",
+                    "required_fields": {
+                        "public_key": "Your agent's public key (PEM or JWK format)",
+                        "purpose": "Human-readable description of why access is needed"
+                    },
+                    "optional_fields": {
+                        "callback_url": "URL to receive approval notification",
+                        "agent_id": "Optional identifier for your agent"
+                    },
+                    "example_request": {
+                        "public_key": "-----BEGIN PUBLIC KEY-----...",
+                        "purpose": "Coordinate task handoff between coding agents",
+                        "callback_url": "https://myagent.example/callback"
+                    },
+                    "next_step": "POST to this endpoint with required fields"
+                })
+            elif path == "/api/v2/agent/auth" and method == "POST":
                 response = await handle_auth_request(request, env)
             elif path.startswith("/api/v2/agent/auth/") and method == "GET":
                 auth_request_id = path.split("/")[-1]
