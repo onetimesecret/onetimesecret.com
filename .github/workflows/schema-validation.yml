@@ -1,0 +1,69 @@
+name: Schema Validation
+
+on:
+  push:
+    paths:
+      - 'public/agent-*.schema.json'
+      - 'public/.well-known/agent-network.json'
+      - 'test/schemas/**'
+      - '.github/workflows/schema-validation.yml'
+  pull_request:
+    paths:
+      - 'public/agent-*.schema.json'
+      - 'public/.well-known/agent-network.json'
+      - 'test/schemas/**'
+      - '.github/workflows/schema-validation.yml'
+
+jobs:
+  validate-schemas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install check-jsonschema
+        run: pip install check-jsonschema
+
+      - name: Validate schema definitions
+        run: |
+          echo "Validating agent-network.schema.json..."
+          check-jsonschema --check-metaschema public/agent-network.schema.json
+          echo "Validating agent-message.schema.json..."
+          check-jsonschema --check-metaschema public/agent-message.schema.json
+
+      - name: Validate production manifest
+        run: |
+          check-jsonschema \
+            --schemafile public/agent-network.schema.json \
+            public/.well-known/agent-network.json
+
+      - name: Validate test fixtures (valid)
+        run: |
+          check-jsonschema \
+            --schemafile public/agent-network.schema.json \
+            test/schemas/fixtures/valid-agent-network.json
+
+          check-jsonschema \
+            --schemafile public/agent-message.schema.json \
+            test/schemas/fixtures/valid-agent-message-status.json \
+            test/schemas/fixtures/valid-agent-message-question.json \
+            test/schemas/fixtures/valid-agent-message-handoff.json
+
+      - name: Validate test fixtures (invalid - should fail)
+        run: |
+          # These should fail validation - we verify they do
+          if check-jsonschema --schemafile public/agent-network.schema.json test/schemas/fixtures/invalid-agent-network-missing-auth.json 2>/dev/null; then
+            echo "ERROR: invalid-agent-network-missing-auth.json should have failed validation"
+            exit 1
+          fi
+          echo "✓ Correctly rejected invalid-agent-network-missing-auth.json"
+
+          if check-jsonschema --schemafile public/agent-message.schema.json test/schemas/fixtures/invalid-agent-message-bad-id.json 2>/dev/null; then
+            echo "ERROR: invalid-agent-message-bad-id.json should have failed validation"
+            exit 1
+          fi
+          echo "✓ Correctly rejected invalid-agent-message-bad-id.json"
