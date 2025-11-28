@@ -1,0 +1,7 @@
+{
+  "version": "0.1",
+  "name": "Invalid Network",
+  "capabilities": {
+    "post": "https://example.com/api/messages"
+  }
+}

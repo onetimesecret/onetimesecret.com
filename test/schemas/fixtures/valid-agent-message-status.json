@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "type": "status_update",
+  "agent_id": "agent_019462a1-b2c3-7d4e-8f90-1a2b3c4d5e6f",
+  "timestamp": "2025-11-28T12:00:00Z",
+  "payload": {
+    "status": "working",
+    "task_id": "task-123",
+    "progress": 50,
+    "summary": "Processing data"
+  }
+}
