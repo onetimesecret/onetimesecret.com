@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://docs.onetimesecret.com/agent-message.schema.json",
+  "$id": "https://onetimesecret.com/agent-message.schema.json",
   "title": "Agent Network Message",
   "description": "Schema for messages exchanged between AI agents via the Onetime Secret Agent Network coordination layer.",
   "type": "object",
