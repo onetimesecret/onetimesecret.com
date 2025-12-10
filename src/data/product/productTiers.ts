@@ -2,6 +2,9 @@ export interface PaymentFrequency {
   value: string;
   label: string;
   priceSuffix: string;
+  // i18n translation keys
+  labelKey?: string;
+  priceSuffixKey?: string;
 }
 
 export interface ProductTier {
@@ -16,6 +19,7 @@ export interface ProductTier {
   };
 
   price: { [key: string]: string };
+  priceKeys?: { [key: string]: string };
   description: string;
   features: string[];
   featured: boolean;
@@ -31,8 +35,20 @@ export interface ProductTier {
 }
 
 export const paymentFrequencies: Array<PaymentFrequency> = [
-  { value: "monthly", label: "Monthly", priceSuffix: "/month" },
-  { value: "annually", label: "Yearly", priceSuffix: "/year" },
+  {
+    value: 'monthly',
+    label: 'Monthly',
+    labelKey: 'web.pricing.frequency.monthly.label',
+    priceSuffix: '/month',
+    priceSuffixKey: 'web.pricing.frequency.monthly.suffix',
+  },
+  {
+    value: 'annually',
+    label: 'Yearly',
+    labelKey: 'web.pricing.frequency.annually.label',
+    priceSuffix: '/year',
+    priceSuffixKey: 'web.pricing.frequency.annually.suffix',
+  },
 ];
 
 export const productTiers: Array<ProductTier> = [
@@ -53,6 +69,10 @@ export const productTiers: Array<ProductTier> = [
     },
     description: "Essential secret sharing features for casual use.",
     descriptionKey: "web.pricing.tiers.basic.description",
+    priceKeys: {
+      monthly: 'web.pricing.tiers.basic.price.monthly',
+      annually: 'web.pricing.tiers.basic.price.annually',
+    },
     features: [
       "Share secrets securely",
       "Email links to recipients",
@@ -86,6 +106,10 @@ export const productTiers: Array<ProductTier> = [
     price: {
       monthly: "$35",
       annually: "$365",
+    },
+    priceKeys: {
+      monthly: 'web.pricing.tiers.identity.price.monthly',
+      annually: 'web.pricing.tiers.identity.price.annually',
     },
     description:
       "Elevate brand trust with secure sharing from your own domain. e.g. secrets.example.com.",
