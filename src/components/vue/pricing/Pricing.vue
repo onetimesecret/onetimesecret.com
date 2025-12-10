@@ -73,9 +73,14 @@ const getRegionalHref = (basePath: string) => {
 };
 
 // This computed property will determine which price to show based on
-// the selected frequency
+// the selected frequency, using i18n translations when available
 const getPrice = (tier: ProductTier) => {
-  return tier.price[frequency.value.value] || tier.price.monthly;
+  const freq = frequency.value.value;
+  // Try translation key first, fall back to hardcoded value
+  if (tier.priceKeys?.[freq]) {
+    return t(tier.priceKeys[freq]);
+  }
+  return tier.price[freq] || tier.price.monthly;
 };
 
 // Computed properties for each payment button href

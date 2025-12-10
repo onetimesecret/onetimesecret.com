@@ -106,12 +106,26 @@
       "onetime-secret-helps-us-share-sensitive-informat": "Onetime Secret nos ayuda a compartir información sensible de forma segura manteniendo nuestra fachada profesional.",
       "information-shared-through-this-service-can-only": "La información compartida a través de este servicio solo se puede acceder una vez. Una vez vista, el contenido se elimina permanentemente para garantizar la confidencialidad.",
       "compare-plans": "Comparar planes",
+      "frequency": {
+        "monthly": {
+          "label": "Mensual",
+          "suffix": "/mes"
+        },
+        "annually": {
+          "label": "Anual",
+          "suffix": "/año"
+        }
+      },
       "tiers": {
         "basic": {
           "name": "Básico",
           "badge": null,
           "description": "Características esenciales para compartir secretos de uso ocasional.",
           "cta": "Comenzar",
+          "price": {
+            "monthly": "$0",
+            "annually": "$0"
+          },
           "features": {
             "0": "Compartir secretos de forma segura",
             "1": "Enviar enlaces por correo electrónico a los destinatarios",
@@ -125,6 +139,10 @@
           "badge": "Destacado",
           "description": "Eleve la confianza en su marca con intercambio seguro desde su propio dominio. Por ej. secrets.ejemplo.com.",
           "cta": "Comience hoy",
+          "price": {
+            "monthly": "$35",
+            "annually": "$356"
+          },
           "features": {
             "0": "Dominios personalizados ilimitados",
             "1": "Marca personalizada con su logotipo",
