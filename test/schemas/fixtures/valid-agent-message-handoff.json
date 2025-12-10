@@ -1,0 +1,16 @@
+{
+  "version": "1.0",
+  "type": "task_handoff",
+  "agent_id": "agent_019462a1-b2c3-7d4e-8f90-1a2b3c4d5e6f",
+  "timestamp": "2025-11-28T12:00:00Z",
+  "ttl": 3600,
+  "burn_after_reading": true,
+  "payload": {
+    "task_description": "Complete the data analysis report",
+    "context_secret_key": "abcdefghijklmnopqrstuvwxyz01234567890123",
+    "recipient_criteria": {
+      "capabilities": ["data-analysis", "reporting"]
+    },
+    "priority": "high"
+  }
+}

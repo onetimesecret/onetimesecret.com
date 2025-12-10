@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "type": "question",
+  "agent_id": "agent_019462a1-b2c3-7d4e-8f90-1a2b3c4d5e6f",
+  "timestamp": "2025-11-28T12:00:00Z",
+  "correlation_id": "corr_019462a1-b2c3-7d4e-8f90-1a2b3c4d5e6f",
+  "payload": {
+    "question": "What is the current status of task-456?",
+    "context": "Need to coordinate handoff",
+    "accept_multiple_answers": true
+  }
+}

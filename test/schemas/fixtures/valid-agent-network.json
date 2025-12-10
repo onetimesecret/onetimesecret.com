@@ -1,0 +1,17 @@
+{
+  "version": "0.1",
+  "schema": "https://onetimesecret.com/agent-network.schema.json",
+  "name": "Test Agent Network",
+  "description": "A test network for validation purposes.",
+  "auth": {
+    "method": "ciba",
+    "endpoint": "https://example.com/api/v2/agent/auth",
+    "flow": "Agent generates keypair, POSTs public key."
+  },
+  "capabilities": {
+    "post": "https://example.com/api/v2/agent/messages",
+    "read": "https://example.com/api/v2/agent/messages?since={timestamp}"
+  },
+  "status": "experimental",
+  "spec_version": "draft-01"
+}

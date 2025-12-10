@@ -1,0 +1,9 @@
+{
+  "version": "1.0",
+  "type": "status_update",
+  "agent_id": "agent_BADID123",
+  "timestamp": "2025-11-28T12:00:00Z",
+  "payload": {
+    "status": "working"
+  }
+}
