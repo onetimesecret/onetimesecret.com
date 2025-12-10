@@ -37,7 +37,7 @@
     "@typescript-eslint/eslint-plugin": "8.29.1",
     "@typescript-eslint/parser": "8.29.1",
     "@vueuse/core": "^14.0.0",
-    "astro": "^5.15.5",
+    "astro": "^5.15.9",
     "eslint": "9.25.1",
     "eslint-import-resolver-typescript": "3.10.1",
     "eslint-plugin-import": "2.32.0",
