@@ -162,6 +162,11 @@
           "custom-branding": "Benutzerdefiniertes Branding",
           "no-rate-limits": "Keine Ratenbegrenzungen"
         }
+      },
+      "discounts": {
+        "title": "Sonderrabatte",
+        "description": "Sind Sie Student oder gehören Sie einer gemeinnützigen Organisation an? Oder mögen Sie einfach Rabatte? Wir bieten Ihnen ein vergünstigtes Abonnement.",
+        "cta": "Kontaktieren Sie uns"
       }
     },
     "errors": {

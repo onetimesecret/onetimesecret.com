@@ -162,6 +162,11 @@
           "custom-branding": "Image de marque personnalisée",
           "no-rate-limits": "Aucune limite de débit"
         }
+      },
+      "discounts": {
+        "title": "Remises Spéciales",
+        "description": "Vous êtes étudiant ou membre d'une organisation à but non lucratif ? Ou peut-être aimez-vous simplement les réductions ? Nous proposons un abonnement à prix réduit pour vous.",
+        "cta": "Contactez-nous"
       }
     },
     "errors": {

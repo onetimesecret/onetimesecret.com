@@ -162,6 +162,11 @@
           "custom-branding": "Custom branding",
           "no-rate-limits": "No rate limits"
         }
+      },
+      "discounts": {
+        "title": "Special Discounts",
+        "description": "Are you a student or a non-profit organization? Or maybe you really like discounts? We offer a discounted subscription for you.",
+        "cta": "Contact Us"
       }
     },
     "errors": {

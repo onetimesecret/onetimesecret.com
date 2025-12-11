@@ -72,15 +72,10 @@ const getRegionalHref = (basePath: string) => {
   });
 };
 
-// This computed property will determine which price to show based on
-// the selected frequency, using i18n translations when available
+// Get price from i18n (single source of truth)
 const getPrice = (tier: ProductTier) => {
   const freq = frequency.value.value;
-  // Try translation key first, fall back to hardcoded value
-  if (tier.priceKeys?.[freq]) {
-    return t(tier.priceKeys[freq]);
-  }
-  return tier.price[freq] || tier.price.monthly;
+  return t(tier.priceKeys[freq]);
 };
 
 // Computed properties for each payment button href
@@ -190,7 +185,7 @@ const comparisonFeatures = [
                     role="radio"
                     :aria-checked="checked"
                     :tabindex="checked ? 0 : -1">
-                    {{ option.label }}
+                    {{ t(option.labelKey) }}
                   </div>
                 </RadioGroupOption>
               </RadioGroup>
@@ -243,7 +238,7 @@ const comparisonFeatures = [
                       <h3
                         :id="tiers[0].id"
                         class="text-xl font-bold leading-8 text-gray-900 dark:text-white">
-                        {{ tiers[0].nameKey ? t(tiers[0].nameKey) : tiers[0].name }}
+                        {{ t(tiers[0].nameKey) }}
                       </h3>
                       <OIcon
                         :collection="tiers[0].icon.collection"
@@ -258,26 +253,26 @@ const comparisonFeatures = [
                       >
                       <span
                         class="font-brand text-lg font-semibold leading-8 text-gray-500 dark:text-gray-400"
-                      >{{ frequency.priceSuffix }}</span
+                      >{{ t(frequency.priceSuffixKey) }}</span
                       >
                     </div>
                     <p
                       class="mt-6 text-lg leading-7 text-gray-600 dark:text-gray-300">
-                      {{ tiers[0].descriptionKey ? t(tiers[0].descriptionKey) : tiers[0].description }}
+                      {{ t(tiers[0].descriptionKey) }}
                     </p>
                     <ul
                       role="list"
                       class="mt-10 space-y-4 text-base leading-7 text-gray-600 dark:text-gray-300">
                       <li
-                        v-for="(feature, index) in tiers[0].features"
-                        :key="feature"
+                        v-for="featureKey in tiers[0].featuresKeys"
+                        :key="featureKey"
                         class="flex gap-x-3">
                         <OIcon
                           collection="heroicons"
                           name="check-circle-20-solid"
                           class="h-6 w-6 flex-none text-indigo-600 dark:text-indigo-400"
                           aria-hidden="true" />
-                        <span>{{ tiers[0].featuresKeys && tiers[0].featuresKeys[index] ? t(tiers[0].featuresKeys[index]) : feature }}</span>
+                        {{ t(featureKey) }}
                       </li>
                     </ul>
                   </div>
@@ -312,7 +307,7 @@ const comparisonFeatures = [
                         :collection="tiers[0].icon.collection"
                         :name="tiers[0].icon.name"
                         size="5" />
-                      {{ tiers[0].ctaKey ? t(tiers[0].ctaKey) : tiers[0].cta }}
+                      {{ t(tiers[0].ctaKey) }}
                     </div>
                   </a>
                 </div>
@@ -332,7 +327,7 @@ const comparisonFeatures = [
                       <h3
                         :id="tiers[1].id"
                         class="text-xl font-bold leading-8 text-white">
-                        {{ tiers[1].nameKey ? t(tiers[1].nameKey) : tiers[1].name }}
+                        {{ t(tiers[1].nameKey) }}
                       </h3>
                       <OIcon
                         :collection="tiers[1].icon.collection"
@@ -347,25 +342,25 @@ const comparisonFeatures = [
                       >
                       <span
                         class="font-brand text-lg font-semibold leading-8 text-white/80"
-                      >{{ frequency.priceSuffix }}</span
+                      >{{ t(frequency.priceSuffixKey) }}</span
                       >
                     </div>
                     <p class="mt-6 text-lg leading-7 text-white/90">
-                      {{ tiers[1].descriptionKey ? t(tiers[1].descriptionKey) : tiers[1].description }}
+                      {{ t(tiers[1].descriptionKey) }}
                     </p>
                     <ul
                       role="list"
                       class="mt-10 space-y-4 text-base leading-7 text-white/90">
                       <li
-                        v-for="(feature, index) in tiers[1].features"
-                        :key="feature"
+                        v-for="featureKey in tiers[1].featuresKeys"
+                        :key="featureKey"
                         class="flex gap-x-3">
                         <OIcon
                           collection="heroicons"
                           name="check-circle-20-solid"
                           class="h-6 w-6 flex-none text-white"
                           aria-hidden="true" />
-                        <span>{{ tiers[1].featuresKeys && tiers[1].featuresKeys[index] ? t(tiers[1].featuresKeys[index]) : feature }}</span>
+                        {{ t(featureKey) }}
                       </li>
                     </ul>
                   </div>
@@ -400,7 +395,7 @@ const comparisonFeatures = [
                         :collection="tiers[1].icon.collection"
                         :name="tiers[1].icon.name"
                         size="5" />
-                      {{ tiers[1].ctaKey ? t(tiers[1].ctaKey) : tiers[1].cta }}
+                      {{ t(tiers[1].ctaKey) }}
                     </div>
                   </a>
                 </div>
@@ -424,11 +419,11 @@ const comparisonFeatures = [
                         </th>
                         <th
                           class="py-4 px-6 text-center text-sm font-semibold text-gray-900 dark:text-white">
-                          {{ tiers[0].nameKey ? t(tiers[0].nameKey) : tiers[0].name }}
+                          {{ t(tiers[0].nameKey) }}
                         </th>
                         <th
                           class="py-4 px-6 text-center text-sm font-semibold text-indigo-600 dark:text-indigo-400">
-                          {{ tiers[1].nameKey ? t(tiers[1].nameKey) : tiers[1].name }}
+                          {{ t(tiers[1].nameKey) }}
                         </th>
                       </tr>
                     </thead>
@@ -487,20 +482,18 @@ const comparisonFeatures = [
                       name="sparkles-solid"
                       class="h-6 w-6"
                       aria-hidden="true" />
-                    Special Discounts
+                    {{ t("web.pricing.discounts.title") }}
                   </h3>
                   <p
                     class="mt-3 text-lg leading-7 text-gray-700 dark:text-gray-200">
-                    Are you a student or a non-profit organization? Or maybe
-                    you really like discounts? We offer a discounted
-                    subscription for you.
+                    {{ t("web.pricing.discounts.description") }}
                   </p>
                 </div>
                 <a
                   :href="feedbackHref"
                   aria-describedby="discounted-tier"
                   class="rounded-xl bg-indigo-600 px-5 py-3 text-base font-semibold text-white shadow-md hover:bg-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-400 transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 whitespace-nowrap">
-                  Contact Us <span aria-hidden="true">&rarr;</span>
+                  {{ t("web.pricing.discounts.cta") }} <span aria-hidden="true">&rarr;</span>
                 </a>
               </div>
             </div>
