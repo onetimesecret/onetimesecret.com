@@ -16,9 +16,10 @@
 #
 # - STORAGE_NAME: Your BunnyCDN storage zone name
 # - STORAGE_DESTINATION: The directory within the storage zone (leave empty for root)
-# - STORAGE_PASSWORD_RW: Your BunnyCDN storage zone password
-# - STORAGE_KEY: Your BunnyCDN API key
+# - STORAGE_PASSWORD_RW: Your BunnyCDN storage zone password (for uploads)
+# - STORAGE_KEY: Your BunnyCDN storage API key (for uploads)
 # - PULL_ZONE_ID: Your BunnyCDN pull zone ID
+# - BUNNY_API_KEY: Your BunnyCDN Account API key (for cache purging)
 #
 # If the project uses Sentry for error tracking, you'll also need to
 # configure these additional secrets:
@@ -133,7 +134,7 @@ jobs:
           echo "Purging BunnyCDN pull zone cache..."
           response=$(curl -s -w "\n%{http_code}" -X POST \
             "https://api.bunny.net/pullzone/${{ secrets.PULL_ZONE_ID }}/purgeCache" \
-            -H "AccessKey: ${{ secrets.STORAGE_KEY }}" \
+            -H "AccessKey: ${{ secrets.BUNNY_API_KEY }}" \
             -H "Content-Type: application/json")
 
           http_code=$(echo "$response" | tail -n1)
