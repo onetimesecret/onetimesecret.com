@@ -114,5 +114,5 @@ jobs:
           storagePassword: "${{ secrets.STORAGE_PASSWORD_RW }}" # Password for storage zone access (use secrets context)
           pullZoneId: "${{ secrets.PULL_ZONE_ID }}" # Your BunnyCDN pull zone ID (use secrets context)
           upload: "true" # Upload new files
-          remove: "true" # Remove files that don't exist locally
+          remove: "false" # Remove files that don't exist locally
           purgePullZone: "true" # Purge the CDN cache after deployment
