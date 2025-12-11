@@ -7,25 +7,34 @@ import type { Plugin } from 'vite';
  * PROBLEM:
  * During server-side rendering (SSR), Vite's `define` configuration doesn't
  * inject global variables like it does for client-side code. This causes errors
- * when libraries try to access these globals, especially `__VUE_PROD_DEVTOOLS__`
- * which vue-i18n expects to be defined.
+ * when libraries try to access these globals.
+ *
+ * ISSUES SOLVED:
+ *
+ * 1. __VUE_PROD_DEVTOOLS__ is not defined
+ *    - vue-i18n expects this variable during installation
+ *    - Error: ReferenceError: __VUE_PROD_DEVTOOLS__ is not defined
+ *
+ * 2. localStorage is not defined
+ *    - @vue/devtools-kit tries to access localStorage during SSR
+ *    - Error: localStorage.getItem is not a function
  *
  * SOLUTION:
  * This plugin ensures that required global variables are defined in both:
  * 1. Server context - via the configureServer hook
+ *    - Defines __VUE_PROD_DEVTOOLS__ as false
+ *    - Mocks localStorage with a no-op implementation
  * 2. Each module - by injecting the variable definition at the start of files
  *
- * The specific error this solves:
- * ```
- * ReferenceError: __VUE_PROD_DEVTOOLS__ is not defined
- *   at Object.install (vue-i18n.mjs:2061:61)
- * ```
- *
- * This happens because vue-i18n contains code like:
- * ```
+ * Example code that requires this:
+ * ```javascript
+ * // vue-i18n
  * if (((import.meta.env.NODE_ENV !== 'production') || __VUE_PROD_DEVTOOLS__) && !false) {
  *   app.__VUE_I18N__ = i18n;
  * }
+ *
+ * // @vue/devtools-kit
+ * const state = localStorage.getItem('devtools-timeline-state');
  * ```
  */
 export default function viteSSRGlobals(): Plugin {
@@ -40,6 +49,25 @@ export default function viteSSRGlobals(): Plugin {
       if (typeof global !== "undefined") {
         // This defines the variable in Node.js context where SSR happens
         (global as typeof globalThis & { __VUE_PROD_DEVTOOLS__?: boolean }).__VUE_PROD_DEVTOOLS__ = false;
+
+        // Mock localStorage for Vue devtools during SSR
+        // This prevents errors when @vue/devtools-kit tries to access localStorage
+        if (typeof global.localStorage === 'undefined') {
+          const mockStorage: Storage = {
+            length: 0,
+            clear: () => {},
+            getItem: () => null,
+            key: () => null,
+            removeItem: () => {},
+            setItem: () => {},
+          };
+
+          Object.defineProperty(global, 'localStorage', {
+            value: mockStorage,
+            writable: true,
+            configurable: true,
+          });
+        }
       }
     },
     /**

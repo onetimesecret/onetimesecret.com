@@ -294,7 +294,8 @@ async def handle_ask_question(request, env):
         return json_response({"error": "Unauthorized", "reason": result}, 401)
 
     try:
-        body = await request.json()
+        # Body is validated but not used in this mock - would store question in production
+        await request.json()
     except Exception:
         return json_response({"error": "Invalid JSON body"}, 400)
 
@@ -494,9 +495,11 @@ async def handle_handoff(request, env):
 
 async def handle_analytics(request, env):
     """GET /api/v2/admin/analytics - Get analytics summary (admin endpoint)."""
-    # Simple admin auth check (would use proper auth in production)
+    # WARNING: This is a mock/demo admin key - NOT for production use.
+    # In production, use environment variables or proper secret management.
+    expected_admin_key = getattr(env, "ADMIN_KEY", "mock-admin-key")
     admin_key = request.headers.get("X-Admin-Key")
-    if admin_key != "mock-admin-key":
+    if admin_key != expected_admin_key:
         return json_response({"error": "Unauthorized"}, 401)
 
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -540,8 +543,10 @@ async def handle_analytics(request, env):
 
 async def handle_auth_attempts(request, env):
     """GET /api/v2/admin/auth-attempts - Get auth attempt logs (admin endpoint)."""
+    # WARNING: This is a mock/demo admin key - NOT for production use.
+    expected_admin_key = getattr(env, "ADMIN_KEY", "mock-admin-key")
     admin_key = request.headers.get("X-Admin-Key")
-    if admin_key != "mock-admin-key":
+    if admin_key != expected_admin_key:
         return json_response({"error": "Unauthorized"}, 401)
 
     # List auth attempts from KV (limited query in mock)

@@ -51,26 +51,73 @@ export function useJurisdiction() {
   };
 
   /**
-   * Detect the appropriate jurisdiction based on the user's location or browser settings
+   * Detect the appropriate jurisdiction based on the user's country code
+   * Uses the country code injected by BunnyCDN edge middleware
+   * Falls back to browser geolocation API if country code is not available
    */
   const detectJurisdiction = async () => {
     isDetecting.value = true;
     try {
-      // This would normally use geolocation or IP-based services
-      // For now, we'll simulate a detection by returning a random jurisdiction
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Dynamic import to avoid SSR issues
+      const { detectUserCountry, getJurisdictionForCountry } = await import(
+        '@/utils/countryToJurisdiction'
+      );
 
-      const allJurisdictions = jurisdictions.value;
-      const detected = allJurisdictions[Math.floor(Math.random() * allJurisdictions.length)];
+      const countryCode = detectUserCountry();
 
-      // Only suggest a different jurisdiction if it's not the current one
-      if (detected.identifier !== current.value.identifier) {
-        detectedJurisdiction.value = detected.identifier;
-        suggestedDomain.value = detected.domain;
-        return detected;
+      if (countryCode) {
+        const jurisdictionId = getJurisdictionForCountry(countryCode);
+        const detected = jurisdictions.value.find((j) => j.identifier === jurisdictionId);
+
+        if (detected) {
+          // Only suggest a different jurisdiction if it's not the current one
+          if (detected.identifier !== current.value.identifier) {
+            detectedJurisdiction.value = detected.identifier;
+            suggestedDomain.value = detected.domain;
+            return detected;
+          }
+        }
+      } else {
+        // Fallback to browser geolocation if country code is not available
+        // This is a future enhancement - currently returns null
+        console.info('Country code not available, geolocation fallback not implemented');
       }
     } catch (error) {
       console.error('Failed to detect jurisdiction:', error);
+    } finally {
+      isDetecting.value = false;
+    }
+
+    return null;
+  };
+
+  /**
+   * Auto-select jurisdiction based on user's country code without prompting
+   * This is useful for automatic jurisdiction selection on page load
+   * @returns The selected jurisdiction or null if detection failed
+   */
+  const autoSelectJurisdiction = async () => {
+    isDetecting.value = true;
+    try {
+      // Dynamic import to avoid SSR issues
+      const { detectUserCountry, getJurisdictionForCountry } = await import(
+        '@/utils/countryToJurisdiction'
+      );
+
+      const countryCode = detectUserCountry();
+
+      if (countryCode) {
+        const jurisdictionId = getJurisdictionForCountry(countryCode);
+        const detected = jurisdictions.value.find((j) => j.identifier === jurisdictionId);
+
+        if (detected && detected.identifier !== current.value.identifier) {
+          // Automatically set the detected jurisdiction
+          setJurisdiction(detected.identifier);
+          return detected;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to auto-select jurisdiction:', error);
     } finally {
       isDetecting.value = false;
     }
@@ -136,6 +183,7 @@ export function useJurisdiction() {
     // Methods
     setJurisdiction,
     detectJurisdiction,
+    autoSelectJurisdiction,
     getCurrentJurisdictionUrl,
     clearSuggestion,
     cleanup
