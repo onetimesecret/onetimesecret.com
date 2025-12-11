@@ -16,9 +16,10 @@
 #
 # - STORAGE_NAME: Your BunnyCDN storage zone name
 # - STORAGE_DESTINATION: The directory within the storage zone (leave empty for root)
-# - STORAGE_PASSWORD_RW: Your BunnyCDN storage zone password
-# - STORAGE_KEY: Your BunnyCDN API key
+# - STORAGE_PASSWORD_RW: Your BunnyCDN storage zone password (for uploads)
+# - STORAGE_KEY: Your BunnyCDN storage API key (for uploads)
 # - PULL_ZONE_ID: Your BunnyCDN pull zone ID
+# - BUNNY_API_KEY: Your BunnyCDN Account API key (for cache purging)
 #
 # If the project uses Sentry for error tracking, you'll also need to
 # configure these additional secrets:
@@ -103,8 +104,10 @@ jobs:
       - name: Build site
         run: pnpm build
 
-      # Step 8: Deploy to BunnyCDN
-      - name: Deploy to BunnyCDN
+      # Step 8: Deploy to BunnyCDN Storage
+      # Note: We separate upload and cache purge to allow BunnyCDN storage
+      # replication to complete before purging. See: https://github.com/ayeressian/bunnycdn-storage-deploy/issues/47
+      - name: Upload to BunnyCDN Storage
         uses: ayeressian/bunnycdn-storage-deploy@v2.2.5
         with:
           source: "dist" # The local folder containing build output (Astro's default is 'dist')
@@ -115,4 +118,32 @@ jobs:
           pullZoneId: "${{ secrets.PULL_ZONE_ID }}" # Your BunnyCDN pull zone ID
           upload: "true" # Upload new files
           remove: "false" # Remove files that don't exist locally
-          purgePullZone: "true" # Purge the CDN cache after deployment
+          purgePullZone: "false" # Disabled - we purge separately after replication delay
+
+      # Step 9: Wait for BunnyCDN storage replication
+      # BunnyCDN recommends waiting 5+ seconds for storage zone replicas to sync
+      # before purging the cache, otherwise edge servers may re-cache stale content
+      - name: Wait for storage replication
+        run: |
+          echo "Waiting 10 seconds for BunnyCDN storage replication..."
+          sleep 10
+
+      # Step 10: Purge BunnyCDN Pull Zone cache
+      - name: Purge CDN cache
+        run: |
+          echo "Purging BunnyCDN pull zone cache..."
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://api.bunny.net/pullzone/${{ secrets.PULL_ZONE_ID }}/purgeCache" \
+            -H "AccessKey: ${{ secrets.BUNNY_API_KEY }}" \
+            -H "Content-Type: application/json")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          if [[ "$http_code" -ge 200 && "$http_code" -lt 300 ]]; then
+            echo "Cache purge completed successfully (HTTP $http_code)"
+          else
+            echo "Cache purge failed with HTTP $http_code"
+            echo "Response: $body"
+            exit 1
+          fi
