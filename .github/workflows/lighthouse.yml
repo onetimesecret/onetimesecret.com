@@ -168,10 +168,7 @@ jobs:
               // Add artifact download link
               const runId = context.runId;
               const repoUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}`;
-              comment += `
-📦 [Download Detailed Reports](${repoUrl}/actions/runs/${runId})
-
-`;
+              comment += `📦 [Download Detailed Reports](${repoUrl}/actions/runs/${runId})\n\n`;
 
               // Detect which form factors were tested
               const formFactors = new Set();
@@ -182,8 +179,7 @@ jobs:
 
               comment += `> Lighthouse CI ran ${representativeRuns.length} test${representativeRuns.length > 1 ? 's' : ''} `;
               comment += `(mobile ${formFactors.has('mobile') ? '✓' : '✗'}, `;
-              comment += `desktop ${formFactors.has('desktop') ? '✓' : '✗'})
-`;
+              comment += `desktop ${formFactors.has('desktop') ? '✓' : '✗'})\n`;
 
               // Post the comment
               await github.rest.issues.createComment({
