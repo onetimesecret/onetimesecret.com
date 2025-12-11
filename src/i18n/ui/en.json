@@ -106,12 +106,26 @@
       "onetime-secret-helps-us-share-sensitive-informat": "Onetime Secret helps us share sensitive information securely while maintaining our professional facade.",
       "information-shared-through-this-service-can-only": "Information shared through this service can only be accessed once. Once viewed, the content is permanently deleted to ensure confidentiality.",
       "compare-plans": "Compare Plans",
+      "frequency": {
+        "monthly": {
+          "label": "Monthly",
+          "suffix": "/month"
+        },
+        "annually": {
+          "label": "Yearly",
+          "suffix": "/year"
+        }
+      },
       "tiers": {
         "basic": {
           "name": "Basic",
           "badge": null,
           "description": "Essential secret sharing features for casual use.",
           "cta": "Get Started",
+          "price": {
+            "monthly": "$0",
+            "annually": "$0"
+          },
           "features": {
             "0": "Share secrets securely",
             "1": "Email links to recipients",
@@ -125,6 +139,10 @@
           "badge": "Featured",
           "description": "Elevate brand trust with secure sharing from your own domain. e.g. secrets.example.com.",
           "cta": "Start today",
+          "price": {
+            "monthly": "$35",
+            "annually": "$356"
+          },
           "features": {
             "0": "Unlimited custom domains",
             "1": "Custom branding with your logo",
@@ -144,6 +162,11 @@
           "custom-branding": "Custom branding",
           "no-rate-limits": "No rate limits"
         }
+      },
+      "discounts": {
+        "title": "Special Discounts",
+        "description": "Are you a student or a non-profit organization? Or maybe you really like discounts? We offer a discounted subscription for you.",
+        "cta": "Contact Us"
       }
     },
     "errors": {

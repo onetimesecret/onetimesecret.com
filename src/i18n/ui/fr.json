@@ -106,12 +106,26 @@
       "onetime-secret-helps-us-share-sensitive-informat": "Onetime Secret nous aide à partager des informations sensibles en toute sécurité tout en conservant notre façade professionnelle.",
       "information-shared-through-this-service-can-only": "Les informations partagées par l'intermédiaire de ce service ne peuvent être consultées qu'une seule fois. Une fois consulté, le contenu est définitivement supprimé afin de garantir la confidentialité.",
       "compare-plans": "Comparer les plans",
+      "frequency": {
+        "monthly": {
+          "label": "Mensuel",
+          "suffix": "/mois"
+        },
+        "annually": {
+          "label": "Annuel",
+          "suffix": "/an"
+        }
+      },
       "tiers": {
         "basic": {
           "name": "Basique",
           "badge": null,
           "description": "Fonctionnalités essentielles de partage de secrets pour une utilisation occasionnelle.",
           "cta": "Commencer",
+          "price": {
+            "monthly": "0 €",
+            "annually": "0 €"
+          },
           "features": {
             "0": "Partager des secrets en toute sécurité",
             "1": "Envoyer des liens par e-mail aux destinataires",
@@ -125,6 +139,10 @@
           "badge": "En vedette",
           "description": "Renforcez la confiance dans votre marque grâce au partage sécurisé depuis votre propre domaine. Par ex. secrets.exemple.com.",
           "cta": "Commencer aujourd'hui",
+          "price": {
+            "monthly": "35 €",
+            "annually": "356 €"
+          },
           "features": {
             "0": "Domaines personnalisés illimités",
             "1": "Image de marque personnalisée avec votre logo",
@@ -144,6 +162,11 @@
           "custom-branding": "Image de marque personnalisée",
           "no-rate-limits": "Aucune limite de débit"
         }
+      },
+      "discounts": {
+        "title": "Réductions spéciales",
+        "description": "Vous êtes étudiant ou membre d'une organisation à but non lucratif ? Ou peut-être aimez-vous simplement les réductions ? Nous proposons un abonnement à prix réduit pour vous.",
+        "cta": "Contactez-nous"
       }
     },
     "errors": {
