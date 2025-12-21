@@ -70,7 +70,7 @@
     "@sentry/browser": "^10.22.0",
     "@spotlightjs/astro": "^3.2.6",
     "@spotlightjs/sidecar": "^1.11.3",
-    "@spotlightjs/spotlight": "^2.13.3",
+    "@spotlightjs/spotlight": "^4.8.0",
     "@vue/devtools-kit": "^7.7.8",
     "eslint-config-prettier": "10.1.2",
     "glob": "^13.0.0",
