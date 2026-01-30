@@ -28,7 +28,10 @@
     "regional-domains-message": "OnetimeSecret verwendet regionale Domains, um Ihre Daten in Ihrer gewählten Region zu speichern.",
     "learn-more": "Mehr erfahren",
     "dismiss": "Schließen",
-    "learn-more-about-regional-domains": "Mehr über regionale Domains erfahren"
+    "learn-more-about-regional-domains": "Mehr über regionale Domains erfahren",
+    "staging-warning": "Sie befinden sich in der Testumgebung",
+    "staging-description": "Dies ist onetimesecret.dev - Änderungen hier bleiben möglicherweise nicht erhalten. Für die Produktion:",
+    "go-to-production": "Zu onetimesecret.com wechseln"
   },
   "navigation": {
     "home": "Startseite",

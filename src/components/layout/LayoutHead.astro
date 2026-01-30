@@ -42,7 +42,8 @@ const {
 } = Astro.props;
 
 const currentPath = Astro.url.pathname;
-const siteOrigin = Astro.url.origin.toString();
+const CANONICAL_DOMAIN = 'https://onetimesecret.com';
+const siteOrigin = CANONICAL_DOMAIN;
 
 // SEO Configuration
 const routeSpecificSeo = getRouteSeoConfig(currentPath, siteOrigin);
@@ -58,7 +59,8 @@ const pageOgImage =
 const pageOgType =
   propsOgType || routeSpecificSeo.ogType || defaultSeoValues.ogType;
 const pageKeywords = propsKeywords || defaultSeoValues.keywords;
-const pageCanonicalUrl = propsCanonicalUrl || Astro.url.href;
+const pageCanonicalUrl = propsCanonicalUrl ||
+  new URL(currentPath + Astro.url.search, CANONICAL_DOMAIN).href;
 const pageTwitterCard = propsTwitterCard || defaultSeoValues.twitterCard;
 
 const pageNoindex =

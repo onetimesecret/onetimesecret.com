@@ -4,6 +4,7 @@ import LayoutHead from "./LayoutHead.astro";
 import LayoutHeader from "./LayoutHeader.astro";
 import LayoutFooter from "./LayoutFooter.astro";
 import SvgSprites from "./SvgSprites.astro";
+import StagingBanner from "@/components/vue/banners/StagingBanner.vue";
 
 // Import styles
 import "@/styles/global.css";
@@ -99,6 +100,7 @@ if (import.meta.env.DEV) {
         <slot name="header" />
       )
     }
+    <StagingBanner client:only="vue" />
     <main class="flex-grow bg-white dark:bg-gray-900">
       <slot />
     </main>

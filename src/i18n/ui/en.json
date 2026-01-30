@@ -28,7 +28,10 @@
     "regional-domains-message": "OnetimeSecret uses regional domains to keep your data in your chosen region.",
     "learn-more": "Learn more",
     "dismiss": "Dismiss",
-    "learn-more-about-regional-domains": "Learn more about regional domains"
+    "learn-more-about-regional-domains": "Learn more about regional domains",
+    "staging-warning": "You are viewing the staging environment",
+    "staging-description": "This is onetimesecret.dev - changes here may not persist. For production use:",
+    "go-to-production": "Go to onetimesecret.com"
   },
   "navigation": {
     "home": "Home",
