@@ -3,17 +3,16 @@ import { ExclamationTriangleIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 import { computed, ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDismissableBanner } from "@/composables/useDismissableBanner";
+import { CANONICAL_ORIGIN, isStagingHostname } from "@config/domains";
 
 /**
  * Staging Environment Banner
- * Displays a warning when users are on the staging domain (onetimesecret.dev)
+ * Displays a warning when users are on a staging/dev domain
  * to prevent confusion with production environment
  */
 
 const { t } = useI18n();
 
-const PRODUCTION_URL = "https://onetimesecret.com";
-const STAGING_HOSTNAME = "onetimesecret.dev";
 const BANNER_EXPIRATION_DAYS = 7;
 
 const { isVisible: isDismissVisible, dismiss } = useDismissableBanner(
@@ -25,7 +24,7 @@ const { isVisible: isDismissVisible, dismiss } = useDismissableBanner(
 const isOnStagingDomain = ref(false);
 
 onMounted(() => {
-  isOnStagingDomain.value = window.location.hostname.includes(STAGING_HOSTNAME);
+  isOnStagingDomain.value = isStagingHostname(window.location.hostname);
 });
 
 const shouldShowBanner = computed(() => {
@@ -75,7 +74,7 @@ const dismissBanner = () => {
         <div
           class="order-4 mt-2 w-full flex-shrink-0 sm:order-2 sm:mt-0 sm:w-auto">
           <a
-            :href="PRODUCTION_URL"
+            :href="CANONICAL_ORIGIN"
             class="flex items-center justify-center rounded-md border
                    border-amber-300 bg-white px-4 py-2 text-sm font-medium
                    text-amber-800 shadow-sm hover:bg-amber-50
