@@ -68,7 +68,9 @@ const mobileMenuOpen = ref(false);
             <img
               class="h-12 w-auto rounded-lg"
               src="/etc/img/onetime-logo-sm.png"
-              alt="Onetime Secret logo" />
+              alt="Onetime Secret logo"
+              width="160"
+              height="160" />
           </a>
           <slot name="logo" v-else></slot>
         </div>
@@ -137,7 +139,9 @@ const mobileMenuOpen = ref(false);
               <img
                 class="h-12 w-auto rounded-lg"
                 src="/etc/img/onetime-logo-sm.png"
-                alt="Onetime Secret logo" />
+                alt="Onetime Secret logo"
+                width="160"
+                height="160" />
             </a>
             <slot name="logo-mobile" v-else></slot>
             <button

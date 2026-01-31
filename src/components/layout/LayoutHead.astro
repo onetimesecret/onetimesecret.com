@@ -41,8 +41,10 @@ const {
   structuredData: propsStructuredData,
 } = Astro.props;
 
+import { CANONICAL_ORIGIN } from '@config/domains';
+
 const currentPath = Astro.url.pathname;
-const siteOrigin = Astro.url.origin.toString();
+const siteOrigin = CANONICAL_ORIGIN;
 
 // SEO Configuration
 const routeSpecificSeo = getRouteSeoConfig(currentPath, siteOrigin);
@@ -58,7 +60,8 @@ const pageOgImage =
 const pageOgType =
   propsOgType || routeSpecificSeo.ogType || defaultSeoValues.ogType;
 const pageKeywords = propsKeywords || defaultSeoValues.keywords;
-const pageCanonicalUrl = propsCanonicalUrl || Astro.url.href;
+const pageCanonicalUrl = propsCanonicalUrl ||
+  new URL(currentPath + Astro.url.search, CANONICAL_ORIGIN).href;
 const pageTwitterCard = propsTwitterCard || defaultSeoValues.twitterCard;
 
 const pageNoindex =
