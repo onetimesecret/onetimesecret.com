@@ -26,7 +26,7 @@ const borderColorClass = {
 const bgColorClass = {
   note: 'bg-blue-50 dark:bg-blue-950/30',
   info: 'bg-brandcomp-50 dark:bg-brandcomp-950/30',
-  warning: 'bg-amber-50 dark:bg-amber-950/30',
+  warning: 'bg-amber-50 dark:bg-amber-950',
   danger: 'bg-red-50 dark:bg-red-950/30',
   tip: 'bg-green-50 dark:bg-green-950/30',
 }[props.type];
@@ -34,7 +34,7 @@ const bgColorClass = {
 const titleColorClass = {
   note: 'text-blue-700 dark:text-blue-300',
   info: 'text-brandcomp-700 dark:text-brandcomp-300',
-  warning: 'text-amber-700 dark:text-amber-300',
+  warning: 'text-amber-800 dark:text-amber-100',
   danger: 'text-red-700 dark:text-red-300',
   tip: 'text-green-700 dark:text-green-300',
 }[props.type];

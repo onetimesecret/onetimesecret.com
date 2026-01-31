@@ -48,7 +48,10 @@ export function createConfig(
 
   return {
     build: {
-      sourcemap: "inline" as const,
+      // Use "hidden" for production - generates separate .map files that aren't referenced in bundles
+      // This avoids Lighthouse "unminified-javascript" failures caused by inline sourcemaps
+      // which embed large base64-encoded source content directly into the JavaScript bundles
+      sourcemap: "hidden" as const,
       minify: "esbuild", // Explicitly enable minification for production builds
       cssMinify: true, // Enable CSS minification
       rollupOptions: {
