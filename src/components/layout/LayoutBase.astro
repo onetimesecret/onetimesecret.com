@@ -87,6 +87,13 @@ if (import.meta.env.DEV) {
   />
   <body
     class="flex h-full flex-col overflow-x-hidden bg-white dark:bg-gray-900">
+    <!--
+      CLS Prevention: The staging banner wrapper uses min-h-0 and collapses
+      when not needed. The client:only hydration will expand it smoothly
+      if on a staging domain. No pre-reserved space needed since the banner
+      wrapper handles its own height transition.
+    -->
+    <StagingBanner client:only="vue" />
     {
       /* If header prop is true, use LayoutHeader, otherwise render the header slot directly */
       header ? (
@@ -100,7 +107,6 @@ if (import.meta.env.DEV) {
         <slot name="header" />
       )
     }
-    <StagingBanner client:only="vue" />
     <main class="flex-grow bg-white dark:bg-gray-900">
       <slot />
     </main>

@@ -29,8 +29,8 @@
     "learn-more": "Learn more",
     "dismiss": "Dismiss",
     "learn-more-about-regional-domains": "Learn more about regional domains",
-    "staging-warning": "You are viewing the staging environment",
-    "staging-description": "This is onetimesecret.dev - changes here may not persist. For production use:",
+    "staging-warning": "You are viewing our official staging environment",
+    "staging-description": "Content here is for testing and may differ from production.",
     "go-to-production": "Go to onetimesecret.com"
   },
   "navigation": {

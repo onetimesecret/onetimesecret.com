@@ -29,8 +29,8 @@
     "learn-more": "En savoir plus",
     "dismiss": "Ignorer",
     "learn-more-about-regional-domains": "En savoir plus sur les domaines régionaux",
-    "staging-warning": "Vous consultez l'environnement de test",
-    "staging-description": "Ceci est onetimesecret.dev - les modifications ici peuvent ne pas persister. Pour la production :",
+    "staging-warning": "Vous consultez notre environnement de test officiel",
+    "staging-description": "Le contenu ici est destiné aux tests et peut différer de la production.",
     "go-to-production": "Aller sur onetimesecret.com"
   },
   "navigation": {

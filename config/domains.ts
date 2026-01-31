@@ -17,8 +17,12 @@ export const STAGING_HOSTNAMES = [
 ] as const;
 
 /**
- * Check if a hostname is a staging/development environment
+ * Check if a hostname is a staging/development environment.
+ * Uses strict matching (exact match or subdomain) to prevent spoofing
+ * attacks where an attacker could create domains like onetimesecret.dev.attacker.com
  */
 export function isStagingHostname(hostname: string): boolean {
-  return STAGING_HOSTNAMES.some(staging => hostname.includes(staging));
+  return STAGING_HOSTNAMES.some(staging =>
+    hostname === staging || hostname.endsWith(`.${staging}`)
+  );
 }
