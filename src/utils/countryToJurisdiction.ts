@@ -118,7 +118,7 @@ export const COUNTRY_TO_JURISDICTION: Record<string, string> = Object.entries(
 /**
  * Get the appropriate jurisdiction identifier for a given country code
  * @param countryCode - ISO 3166-1 alpha-2 country code
- * @returns Jurisdiction identifier (EU, CA, NZ, or US)
+ * @returns Jurisdiction identifier (EU, CA, NZ, UK, or US)
  */
 export function getJurisdictionForCountry(countryCode: string): string {
   const normalized = countryCode.toUpperCase();

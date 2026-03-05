@@ -22,9 +22,6 @@ const { t } = useI18n({
   useScope: "global",
 });
 
-// Current locale for generating links
-//const currentLocale = locale.value || "en";
-
 // State
 const isOpen = ref(false);
 const showInfoPopover = ref(false);

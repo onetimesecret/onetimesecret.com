@@ -2,11 +2,11 @@
 
 <script setup lang="ts">
 import OIcon from "@/components/vue/icons/OIcon.vue";
-import { onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import type { Region } from "@/types/jurisdiction";
 
-defineProps<{
+const props = defineProps<{
   currentRegion: Region;
   availableRegions: Region[];
 }>();
@@ -14,6 +14,13 @@ defineProps<{
 const emit = defineEmits<{
   regionChange: [region: Region];
 }>();
+
+// Computed icon class for a region option
+const regionIconClass = computed(() => (region: Region) => {
+  if (region.comingSoon) return 'text-gray-300 dark:text-gray-600';
+  if (props.currentRegion.identifier === region.identifier) return 'text-indigo-600 dark:text-indigo-400';
+  return 'text-gray-500 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400';
+});
 
 // Initialize i18n
 const { t } = useI18n({
@@ -159,11 +166,7 @@ onUnmounted(() => {
             :collection="region.icon.collection"
             :name="region.icon.name"
             class="size-5 mr-3"
-            :class="region.comingSoon
-              ? 'text-gray-300 dark:text-gray-600'
-              : currentRegion.identifier === region.identifier
-                ? 'text-indigo-600 dark:text-indigo-400'
-                : 'text-gray-500 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'"
+            :class="regionIconClass(region)"
             :aria-label="`${region.displayName} region`" />
           <span class="flex-1 text-left font-medium">{{ region.displayName }}</span>
           <span
