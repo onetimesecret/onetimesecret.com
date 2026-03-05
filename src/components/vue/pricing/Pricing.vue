@@ -80,8 +80,8 @@ const getPrice = (tier: ProductTier) => {
 
 // Computed properties for each payment button href
 const basicPlanHref = getRegionalHref("/plans/free");
-const identityMonthHref = getRegionalHref("/plans/identity/month");
-const identityYearHref = getRegionalHref("/plans/identity/year");
+const identityMonthHref = getRegionalHref("/billing/plans/identity_plus_v1/monthly");
+const identityYearHref = getRegionalHref("/billing/plans/identity_plus_v1/yearly");
 
 // Get the appropriate href based on frequency
 const getIdentityHref = computed(() => {

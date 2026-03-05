@@ -216,7 +216,8 @@
       "complianceNote": "Aide à répondre aux exigences SOC2, RGPD, CCPA et HIPAA en matière de confidentialité des données",
       "regionSelector": {
         "currentDomain": "Domaine actuel",
-        "dataResidency": "Résidence des données"
+        "dataResidency": "Résidence des données",
+        "comingSoon": "Bientôt disponible"
       },
       "successTitle": "Succès !",
       "shareLinkDescription": "Partagez votre lien secret avec d'autres personnes.",

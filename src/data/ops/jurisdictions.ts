@@ -43,4 +43,43 @@ export const jurisdictions: Jurisdiction[] = [
       name: "earth-americas",
     },
   },
+  {
+    identifier: "UK",
+    displayName: "United Kingdom",
+    domain: "uk.onetimesecret.com",
+    icon: {
+      collection: "fa6-solid",
+      name: "earth-europe",
+    },
+  },
+  {
+    identifier: "BR",
+    displayName: "Brazil",
+    domain: "br.onetimesecret.com",
+    icon: {
+      collection: "fa6-solid",
+      name: "earth-americas",
+    },
+    comingSoon: true,
+  },
+  {
+    identifier: "AU",
+    displayName: "Australia",
+    domain: "au.onetimesecret.com",
+    icon: {
+      collection: "fa6-solid",
+      name: "earth-oceania",
+    },
+    comingSoon: true,
+  },
+  {
+    identifier: "MX",
+    displayName: "Mexico",
+    domain: "mx.onetimesecret.com",
+    icon: {
+      collection: "fa6-solid",
+      name: "earth-americas",
+    },
+    comingSoon: true,
+  },
 ];

@@ -2,11 +2,11 @@
 
 <script setup lang="ts">
 import OIcon from "@/components/vue/icons/OIcon.vue";
-import { onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import type { Region } from "@/types/jurisdiction";
 
-defineProps<{
+const props = defineProps<{
   currentRegion: Region;
   availableRegions: Region[];
 }>();
@@ -14,6 +14,13 @@ defineProps<{
 const emit = defineEmits<{
   regionChange: [region: Region];
 }>();
+
+// Computed icon class for a region option
+const regionIconClass = computed(() => (region: Region) => {
+  if (region.comingSoon) return 'text-gray-300 dark:text-gray-600';
+  if (props.currentRegion.identifier === region.identifier) return 'text-indigo-600 dark:text-indigo-400';
+  return 'text-gray-500 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400';
+});
 
 // Initialize i18n
 const { t } = useI18n({
@@ -50,6 +57,7 @@ const closeAll = () => {
 };
 
 const selectRegion = (region: Region) => {
+  if (region.comingSoon) return;
   emit("regionChange", region);
   closeAll();
 };
@@ -141,24 +149,33 @@ onUnmounted(() => {
           :key="region.identifier"
           type="button"
           @click="selectRegion(region)"
-          class="group flex w-full items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:bg-indigo-50 dark:focus:bg-gray-700"
-          :class="{
-            'bg-indigo-50 dark:bg-gray-700': currentRegion.identifier === region.identifier,
-          }"
+          class="group flex w-full items-center px-4 py-3 text-sm transition-colors focus:outline-none"
+          :class="[
+            region.comingSoon
+              ? 'cursor-not-allowed text-gray-400 dark:text-gray-500'
+              : 'text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-gray-700 focus:bg-indigo-50 dark:focus:bg-gray-700',
+            !region.comingSoon && currentRegion.identifier === region.identifier
+              ? 'bg-indigo-50 dark:bg-gray-700'
+              : '',
+          ]"
           role="option"
           :aria-selected="currentRegion.identifier === region.identifier"
-          tabindex="0">
+          :aria-disabled="region.comingSoon ? 'true' : undefined"
+          :tabindex="region.comingSoon ? -1 : 0">
           <OIcon
             :collection="region.icon.collection"
             :name="region.icon.name"
-            class="size-5 mr-3 text-gray-500 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"
-            :class="{
-              'text-indigo-600 dark:text-indigo-400': currentRegion.identifier === region.identifier,
-            }"
+            class="size-5 mr-3"
+            :class="regionIconClass(region)"
             :aria-label="`${region.displayName} region`" />
           <span class="flex-1 text-left font-medium">{{ region.displayName }}</span>
+          <span
+            v-if="region.comingSoon"
+            class="ml-auto text-xs text-gray-400 dark:text-gray-500 italic">
+            {{ t("web.secrets.regionSelector.comingSoon") }}
+          </span>
           <svg
-            v-if="currentRegion.identifier === region.identifier"
+            v-else-if="currentRegion.identifier === region.identifier"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
             fill="currentColor"

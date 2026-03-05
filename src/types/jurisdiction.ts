@@ -16,6 +16,8 @@ export interface Jurisdiction {
     collection: string;
     name: string;
   };
+  /** When true, the jurisdiction is not yet available for selection */
+  comingSoon?: boolean;
 }
 
 /**

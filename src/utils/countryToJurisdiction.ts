@@ -14,6 +14,7 @@
  * - EU: Europe, Middle East, Africa, Russia, Central Asia
  * - CA: Canada, Greenland
  * - NZ: Asia-Pacific (Australia, New Zealand, Southeast Asia, East Asia, South Asia)
+ * - UK: United Kingdom and Crown Dependencies
  * - US: Americas (North, Central, South America, Caribbean) - Default fallback
  */
 
@@ -29,7 +30,7 @@ const COUNTRY_ROUTING: Record<string, string[]> = {
     'SI', 'ES', 'SE',
 
     // EFTA & Other Western Europe
-    'NO', 'CH', 'IS', 'LI', 'GB', 'MC', 'SM', 'VA', 'AD', 'GI', 'GG', 'IM', 'JE',
+    'NO', 'CH', 'IS', 'LI', 'MC', 'SM', 'VA', 'AD',
 
     // Eastern Europe & Balkans
     'AL', 'BA', 'BY', 'XK', 'MD', 'ME', 'MK', 'RS', 'UA', 'RU',
@@ -75,6 +76,14 @@ const COUNTRY_ROUTING: Record<string, string[]> = {
     'IN', 'PK', 'BD', 'LK', 'NP', 'BT', 'MV', 'AF',
   ],
 
+  UK: [
+    'GB', // United Kingdom
+    'GI', // Gibraltar
+    'GG', // Guernsey
+    'IM', // Isle of Man
+    'JE', // Jersey
+  ],
+
   US: [
     'US', // United States
 
@@ -109,7 +118,7 @@ export const COUNTRY_TO_JURISDICTION: Record<string, string> = Object.entries(
 /**
  * Get the appropriate jurisdiction identifier for a given country code
  * @param countryCode - ISO 3166-1 alpha-2 country code
- * @returns Jurisdiction identifier (EU, CA, NZ, or US)
+ * @returns Jurisdiction identifier (EU, CA, NZ, UK, or US)
  */
 export function getJurisdictionForCountry(countryCode: string): string {
   const normalized = countryCode.toUpperCase();
