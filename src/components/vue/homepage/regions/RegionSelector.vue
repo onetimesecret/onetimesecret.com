@@ -53,6 +53,7 @@ const closeAll = () => {
 };
 
 const selectRegion = (region: Region) => {
+  if (region.comingSoon) return;
   emit("regionChange", region);
   closeAll();
 };
@@ -147,19 +148,31 @@ onUnmounted(() => {
           v-for="region in availableRegions"
           :key="region.identifier"
           @click="selectRegion(region)"
-          class="group flex w-full items-center px-2 xs:px-4 py-1.5 xs:py-2 text-xs xs:text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700 focus:text-gray-900 dark:focus:text-gray-100"
-          :class="{
-            'bg-gray-50 dark:bg-gray-700': currentRegion.identifier === region.identifier,
-          }"
+          class="group flex w-full items-center px-2 xs:px-4 py-1.5 xs:py-2 text-xs xs:text-sm transition-colors focus:outline-none"
+          :class="[
+            region.comingSoon
+              ? 'cursor-not-allowed text-gray-400 dark:text-gray-500'
+              : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 focus:text-gray-900 dark:focus:text-gray-100',
+            !region.comingSoon && currentRegion.identifier === region.identifier
+              ? 'bg-gray-50 dark:bg-gray-700'
+              : '',
+          ]"
           role="option"
           :aria-selected="currentRegion.identifier === region.identifier"
-          tabindex="0">
+          :aria-disabled="region.comingSoon ? 'true' : undefined"
+          :tabindex="region.comingSoon ? -1 : 0">
           <OIcon
             :collection="region.icon.collection"
             :name="region.icon.name"
-            class="size-3 xs:size-4 mr-2 xs:mr-3 text-gray-500 dark:text-gray-300"
+            class="size-3 xs:size-4 mr-2 xs:mr-3"
+            :class="region.comingSoon ? 'text-gray-300 dark:text-gray-600' : 'text-gray-500 dark:text-gray-300'"
             :aria-label="`${region.displayName} region`" />
           <span>{{ region.displayName }}</span>
+          <span
+            v-if="region.comingSoon"
+            class="ml-auto text-xs text-gray-400 dark:text-gray-500 italic">
+            {{ t("web.secrets.regionSelector.comingSoon") }}
+          </span>
         </button>
       </div>
       <div class="py-1">

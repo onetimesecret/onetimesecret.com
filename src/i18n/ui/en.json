@@ -216,7 +216,8 @@
       "complianceNote": "Helps with SOC2, GDPR, CCPA & HIPAA requirements for data privacy",
       "regionSelector": {
         "currentDomain": "Current domain",
-        "dataResidency": "Data Residency"
+        "dataResidency": "Data Residency",
+        "comingSoon": "Coming soon"
       },
       "successTitle": "Success!",
       "shareLinkDescription": "Share your secret link with others.",

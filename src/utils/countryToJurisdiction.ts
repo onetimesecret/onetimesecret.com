@@ -14,6 +14,7 @@
  * - EU: Europe, Middle East, Africa, Russia, Central Asia
  * - CA: Canada, Greenland
  * - NZ: Asia-Pacific (Australia, New Zealand, Southeast Asia, East Asia, South Asia)
+ * - UK: United Kingdom and Crown Dependencies
  * - US: Americas (North, Central, South America, Caribbean) - Default fallback
  */
 
@@ -29,7 +30,7 @@ const COUNTRY_ROUTING: Record<string, string[]> = {
     'SI', 'ES', 'SE',
 
     // EFTA & Other Western Europe
-    'NO', 'CH', 'IS', 'LI', 'GB', 'MC', 'SM', 'VA', 'AD', 'GI', 'GG', 'IM', 'JE',
+    'NO', 'CH', 'IS', 'LI', 'MC', 'SM', 'VA', 'AD',
 
     // Eastern Europe & Balkans
     'AL', 'BA', 'BY', 'XK', 'MD', 'ME', 'MK', 'RS', 'UA', 'RU',
@@ -73,6 +74,14 @@ const COUNTRY_ROUTING: Record<string, string[]> = {
 
     // South Asia
     'IN', 'PK', 'BD', 'LK', 'NP', 'BT', 'MV', 'AF',
+  ],
+
+  UK: [
+    'GB', // United Kingdom
+    'GI', // Gibraltar
+    'GG', // Guernsey
+    'IM', // Isle of Man
+    'JE', // Jersey
   ],
 
   US: [
