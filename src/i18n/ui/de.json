@@ -216,7 +216,8 @@
       "complianceNote": "Unterstützt die Einhaltung von SOC2, DSGVO, CCPA & HIPAA-Anforderungen zum Datenschutz",
       "regionSelector": {
         "currentDomain": "Aktuelle Domain",
-        "dataResidency": "Datenresidenz"
+        "dataResidency": "Datenresidenz",
+        "comingSoon": "Demnächst verfügbar"
       },
       "successTitle": "Erfolg!",
       "shareLinkDescription": "Teilen Sie Ihren geheimen Link mit anderen.",
