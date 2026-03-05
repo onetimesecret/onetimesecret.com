@@ -18,6 +18,7 @@ export function generateCspConnectSrc(
     "https://ca.onetimesecret.com", // Regional endpoint
     "https://nz.onetimesecret.com", // Regional endpoint
     "https://us.onetimesecret.com", // Regional endpoint
+    "https://uk.onetimesecret.com", // Regional endpoint
   ];
 
   // In debug mode, allow connection to the Sentry debugging sidecar.
