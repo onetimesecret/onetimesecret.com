@@ -154,7 +154,6 @@ const handleCreateLink = async () => {
   const payload: any = {
     secret: secretText.value,
     ttl: secretOptions.value.ttl,
-    passphrase: null,
   };
 
   if (secretOptions.value.addPassphrase) {
