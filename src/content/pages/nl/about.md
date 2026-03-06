@@ -21,9 +21,9 @@ Zoals digitale privacy en de uitdagingen van het internet zich ontwikkelen, doen
 
 > Wist je dat? In 2011 suggereerde Drew Carey dat "One Time Secret" een [goede bandnaam](https://x.com/DrewFromTV/status/142730130689761280) zou zijn. Het verlies van de muziekindustrie was de winst van het internet.
 
-## De ideeenbus
+## De ideeënbus
 
-Heb je vragen of ideeen? Er staat een [feedbackformulier](/feedback) onderaan (bijna) elke pagina.
+Heb je vragen of ideeën? Er staat een [feedbackformulier](/feedback) onderaan (bijna) elke pagina.
 
 Fijn delen,
 Delano
@@ -38,7 +38,7 @@ Delano
 
 ### Waarom zou ik dit gebruiken?
 
-Wanneer je wachtwoorden en privelinks via e-mail of chat naar mensen stuurt, worden er kopieen van die informatie op veel plaatsen opgeslagen. Als je in plaats daarvan een Onetime-link gebruikt, blijft de informatie slechts beschikbaar voor een enkele weergave, wat betekent dat het later niet door iemand anders kan worden gelezen. Hierdoor kun je gevoelige informatie op een veilige manier versturen, wetende dat het door slechts een persoon wordt gezien. Zie het als een zelfvernietigend bericht.
+Wanneer je wachtwoorden en privélinks via e-mail of chat naar mensen stuurt, worden er kopieën van die informatie op veel plaatsen opgeslagen. Als je in plaats daarvan een Onetime-link gebruikt, blijft de informatie slechts beschikbaar voor een enkele weergave, wat betekent dat het later niet door iemand anders kan worden gelezen. Hierdoor kun je gevoelige informatie op een veilige manier versturen, wetende dat het door slechts een persoon wordt gezien. Zie het als een zelfvernietigend bericht.
 
 ### Waarom kan ik geen afbeeldingen of andere soorten bestanden versturen?
 
@@ -46,7 +46,7 @@ Onze dienst is specifiek ontworpen voor tekstgebaseerde geheimen om maximale vei
 
 ### Maar ik kan de geheime tekst kopieren. Wat is het verschil?
 
-Dat klopt, maar alles wat je hebt is tekst. Afbeeldingen en andere bestandstypen kunnen metadata en andere potentieel onthullende informatie over de afzender of ontvanger bevatten. Dit is simpelweg om ervoor te zorgen dat er geen prive-informatie wordt gedeeld buiten de beoogde ontvanger.
+Dat klopt, maar alles wat je hebt is tekst. Afbeeldingen en andere bestandstypen kunnen metadata en andere potentieel onthullende informatie over de afzender of ontvanger bevatten. Dit is simpelweg om ervoor te zorgen dat er geen privé-informatie wordt gedeeld buiten de beoogde ontvanger.
 
 ### Kan ik een geheim terughalen dat al is gedeeld?
 
