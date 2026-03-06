@@ -59,7 +59,8 @@ function projectRegions(coords: readonly RegionCoord[]): RegionDot[] {
     };
   });
 
-  // Push overlapping dots apart to maintain readable spacing
+  // Push overlapping dots apart tangentially (around the circle)
+  // so radial distance from center (latitude encoding) is preserved
   for (let iter = 0; iter < 10; iter++) {
     let moved = false;
     for (let i = 0; i < points.length; i++) {
@@ -69,12 +70,24 @@ function projectRegions(coords: readonly RegionCoord[]): RegionDot[] {
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist > 0 && dist < MIN_SPACING + 0.5) {
           const push = (MIN_SPACING + 0.5 - dist) / 2;
-          const nx = dx / dist;
-          const ny = dy / dist;
-          points[i].x -= nx * push;
-          points[i].y -= ny * push;
-          points[j].x += nx * push;
-          points[j].y += ny * push;
+          const mx = (points[i].x + points[j].x) / 2 - 50;
+          const my = (points[i].y + points[j].y) / 2 - 50;
+          const mr = Math.sqrt(mx * mx + my * my);
+          // Tangent perpendicular to the radial from center
+          let tx: number, ty: number;
+          if (mr > 0.5) {
+            tx = -my / mr;
+            ty = mx / mr;
+          } else {
+            tx = 1;
+            ty = 0;
+          }
+          const dot = dx * tx + dy * ty;
+          const sign = dot >= 0 ? 1 : -1;
+          points[i].x -= sign * tx * push;
+          points[i].y -= sign * ty * push;
+          points[j].x += sign * tx * push;
+          points[j].y += sign * ty * push;
           moved = true;
         }
       }
