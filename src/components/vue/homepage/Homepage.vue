@@ -88,6 +88,14 @@ const isClient = ref(false);
 
 onMounted(async () => {
   isClient.value = true;
+
+  // Select a random active region on page load
+  const activeRegions = availableRegions.value.filter(r => !r.comingSoon);
+  if (activeRegions.length > 0) {
+    const random = activeRegions[Math.floor(Math.random() * activeRegions.length)];
+    setJurisdiction(random.identifier);
+  }
+
   // Detect appropriate jurisdiction for the user
   await detectJurisdiction();
   // Banner will show if detected jurisdiction differs from current
