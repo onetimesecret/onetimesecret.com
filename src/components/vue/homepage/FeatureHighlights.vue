@@ -38,9 +38,9 @@ function iconContainerClass(feature: Feature): string {
 
 function iconClass(feature: Feature): string {
   if (feature.iconStyle === "comp") {
-    return "size-6 text-brandcomp-400";
+    return "size-6 text-brandcomp-500";
   }
-  return "size-6 text-brand-500";
+  return "size-6 text-brand-600";
 }
 </script>
 

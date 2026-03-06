@@ -50,6 +50,9 @@
 }
 
 @theme {
+  /* Sub-sm breakpoint for 400–639px range (activates xs: responsive classes) */
+  --breakpoint-xs: 25rem;
+
   /* Card border radius: 20px — override rounded-lg from Tailwind default (8px) */
   --radius-lg: 1.25rem;
 
