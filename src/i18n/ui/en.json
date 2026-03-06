@@ -38,7 +38,8 @@
     "features": "Features",
     "regions": "Regions",
     "about": "About",
-    "pricing": "Pricing"
+    "pricing": "Pricing",
+    "docs": "Docs"
   },
   "auth": {
     "sign-in": "Sign In",
@@ -74,7 +75,8 @@
     "aria": {
       "light_mode": "Light Mode",
       "dark_mode": "Dark Mode",
-      "toggle_color_theme": "Toggle color theme"
+      "toggle_color_theme": "Toggle color theme",
+      "skip_to_content": "Skip to main content"
     },
     "theme": {
       "title": "Theme",
@@ -174,7 +176,9 @@
     },
     "errors": {
       "errorTitle": "Not successful",
-      "passphraseRequired": "Passphrase is required when option is selected."
+      "passphraseRequired": "Passphrase is required when option is selected.",
+      "apiGenericErrorHomepage": "Something went wrong. Please try again.",
+      "apiGenericError": "Something went wrong. Please try again."
     },
     "secrets": {
       "keepSensitiveInfo": "Keep sensitive info out of your email and chat logs.",
@@ -231,6 +235,14 @@
       "keyBenefits": "Key Benefits",
       "complianceInfo": "Compliance Information",
       "privacyNote": "Your secrets are encrypted, never stored in logs, and automatically deleted after viewing.",
+      "itdevops": {
+        "title": "IT & DevOps",
+        "description": "Securely rotate production credentials, share API keys during onboarding, and keep sensitive config out of Slack and email threads."
+      },
+      "consultants": {
+        "title": "Consultants & Agencies",
+        "description": "Share client credentials, project access, and sensitive deliverables without leaving traces in email threads or shared drives."
+      },
       "it": {
         "title": "IT Professional",
         "description": "Securely share credentials and access information with your team",
@@ -254,8 +266,8 @@
         "cta": "Secure Your API Keys"
       },
       "hr": {
-        "title": "HR Manager",
-        "description": "Securely share sensitive employee information and credentials",
+        "title": "HR & People Ops",
+        "description": "Share onboarding credentials, temporary system access, and confidential HR communications without leaving a trail in email or ticketing systems.",
         "benefits": {
           "1": "Safely transmit onboarding credentials to new employees",
           "2": "Share confidential information with one-time access",
@@ -265,8 +277,8 @@
         "cta": "Secure HR Communications"
       },
       "legal": {
-        "title": "Legal Team",
-        "description": "Share confidential legal documents and information securely",
+        "title": "Legal & Finance",
+        "description": "Transmit settlement terms, account credentials, and confidential case information with one-time access controls that protect privilege and confidentiality.",
         "benefits": {
           "1": "Maintain attorney-client privilege in digital communications",
           "2": "Securely share case-sensitive information with clients",
@@ -276,24 +288,91 @@
         "cta": "Secure Legal Communications"
       }
     },
+    "footer": {
+      "columns": {
+        "product": "Product"
+      },
+      "links": {
+        "api": "API",
+        "changelog": "Changelog",
+        "github": "GitHub",
+        "contact": "Contact",
+        "dpa": "DPA"
+      }
+    },
     "homepage": {
       "title": "Share Secrets Securely | Onetime Secret",
       "description": "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever",
       "a-trusted-way-to-share-sensitive-information-etc": "A trusted way to share sensitive information that self-destructs after being viewed.",
+      "hero": {
+        "badge": "Privacy-first architecture",
+        "title": {
+          "line1": "Onetime Secret",
+          "line2_w1": "Signed.",
+          "line2_w2": "Sealed.",
+          "line2_w3": "Delivered."
+        },
+        "subtitle": "Send passwords, credentials, and sensitive data through links that self-destruct after being viewed.",
+        "compliance": {
+          "label": "Security features",
+          "encrypted": "Encrypted",
+          "selfDestructing": "Self-destructing",
+          "openSource": "Open source",
+          "dataResidency": "Data sovereignty"
+        }
+      },
+      "features": {
+        "label": "Security architecture",
+        "heading": "Built to forget.",
+        "description": "Every design decision serves one purpose: make sure secrets are readable exactly once, then gone."
+      },
+      "useCases": {
+        "label": "Use cases",
+        "heading": "How teams use Onetime Secret",
+        "description": "From onboarding a new hire to rotating production credentials, sensitive data moves through organizations every day."
+      },
+      "infrastructure": {
+        "label": "Global infrastructure",
+        "heading": "Your data, your jurisdiction.",
+        "description": "Choose where your secrets are stored and processed. Regional instances ensure your data never leaves the geography you choose.",
+        "regions": {
+          "ca": "Toronto, Canada",
+          "eu": "Nuremberg, Germany",
+          "nz": "Porirua, New Zealand",
+          "uk": "London, United Kingdom",
+          "us": "Hillsboro, United States"
+        },
+        "capabilitiesLabel": "Available regions",
+        "features": {
+          "customDomain": "Custom Domain",
+          "sso": "SSO / SAML",
+          "auditLogs": "Audit Logs"
+        }
+      },
+      "cta": {
+        "heading": {
+          "line1": "Start sharing secrets",
+          "line2": "the right way."
+        },
+        "description": "Free for individuals and teams. Plans for custom branding, advanced controls, and more.",
+        "primaryButton": "Try it free",
+        "secondaryButton": "View pricing"
+      },
       "howItWorks": {
-        "title": "How It Works",
-        "subtitle": "Share your information once, then it's permanently deleted",
+        "label": "How it works",
+        "title": "Three steps. Zero residue.",
+        "subtitle": "Share sensitive information without leaving a trail in your email, chat logs, or ticketing systems.",
         "step1": {
-          "title": "Create a Secret",
-          "description": "Enter your sensitive information and generate a secure one-time link"
+          "title": "Paste your secret",
+          "description": "Enter any sensitive text: passwords, API keys, credentials, private notes. Set an expiration and optional passphrase."
         },
         "step2": {
-          "title": "Share the Link",
-          "description": "Send the secure link through any messaging platform"
+          "title": "Share the link",
+          "description": "Get a unique, one-time URL. Send it over any channel: email, Slack, text. The link itself reveals nothing about the content."
         },
         "step3": {
-          "title": "Gone Forever",
-          "description": "Recipient views the secret, then it's permanently deleted"
+          "title": "It self-destructs",
+          "description": "Once the recipient views the secret, the data is permanently destroyed. The link is dead. No one, including us, can retrieve it."
         }
       },
       "visual_examples": {
@@ -311,18 +390,27 @@
           "title": "Enhanced Privacy Options",
           "description": "Add a passphrase for an extra layer of security. Only those with the passphrase can view the secret."
         },
+        "encryption": {
+          "title": "End-to-end encryption",
+          "description": "Secrets are encrypted at rest and in transit. The decryption key is embedded in the URL fragment, never sent to our servers, never logged. We can't read your data even if compelled."
+        },
         "selfDestruction": {
-          "title": "Self-Destructing Links",
-          "description": "Once viewed or expired, your secret is permanently deleted from our servers. No copies, no traces."
+          "title": "Read once, gone forever",
+          "description": "After a single view, the secret is permanently purged from all storage. No copies, no recovery, no trace."
         },
         "dataResidency": {
-          "title": "Regional Data Storage",
-          "description": "Choose where your data is stored to meet compliance requirements and data sovereignty needs."
+          "title": "Regional data storage",
+          "description": "Choose where your secrets live: EU, US, or other regions. Meet data sovereignty requirements at the point of creation."
         },
         "compliance": {
-          "title": "Compliance Ready",
-          "description": "Designed to help meet SOC2, GDPR, CCPA & HIPAA requirements for secure information handling."
-        }
+          "title": "Helps teams meet compliance goals",
+          "description": "Built to support SOC 2, GDPR, CCPA, and HIPAA workflows. Audit logs, access controls, and SSO help teams meet their own compliance requirements."
+        },
+        "api": {
+          "title": "Developer API",
+          "description": "Integrate secret sharing into your workflows, CI/CD pipelines, and internal tools. Full REST API with language-specific SDKs."
+        },
+        "also": "Also available:"
       }
     }
   }

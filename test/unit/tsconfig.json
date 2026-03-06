@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "verbatimModuleSyntax": false,
+    "isolatedModules": false,
+    "noEmit": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "baseUrl": "../..",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@config/*": ["./config/*"],
+      "@root/*": ["./*"]
+    },
+    "typeRoots": [
+      "./types",
+      "../../node_modules/@types"
+    ]
+  },
+  "include": [
+    "./**/*.test.ts",
+    "./**/*.spec.ts",
+    "./types/**/*.d.ts"
+  ],
+  "exclude": [
+    "./vitest.config.ts",
+    "../../node_modules",
+    "../../dist"
+  ]
+}

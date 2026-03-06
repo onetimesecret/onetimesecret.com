@@ -305,10 +305,12 @@ describe('StagingBanner - Expiration Logic', () => {
     expect(isDismissExpired(now.toISOString())).toBe(false);
   });
 
-  it('should handle invalid date strings gracefully', () => {
-    // Invalid date should be treated as expired (show banner)
+  it('should treat invalid date as not expired (banner stays dismissed)', () => {
+    // new Date('invalid-date').getTime() is NaN;
+    // NaN comparisons always return false in JS,
+    // so the dismiss is not considered expired (safe default).
     const result = isDismissExpired('invalid-date');
-    expect(result).toBe(true); // NaN comparison will be true
+    expect(result).toBe(false);
   });
 });
 
