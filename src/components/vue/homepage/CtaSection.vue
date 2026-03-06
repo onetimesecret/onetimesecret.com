@@ -13,7 +13,7 @@ const { t } = useI18n();
 </script>
 
 <template>
-  <section class="relative py-20 sm:py-28 bg-surface-0 overflow-hidden text-center">
+  <section class="relative py-20 sm:py-28 bg-surface-0 overflow-hidden text-center" aria-labelledby="cta-heading">
     <!-- Ambient glow -->
     <div
       class="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center"
@@ -23,7 +23,7 @@ const { t } = useI18n();
     </div>
 
     <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-      <h2 class="text-4xl sm:text-5xl font-extrabold text-text-primary">
+      <h2 id="cta-heading" class="text-4xl sm:text-5xl font-extrabold text-text-primary">
         <span class="block">{{ t("web.homepage.cta.heading.line1") }}</span>
         <span class="gradient-text block">{{ t("web.homepage.cta.heading.line2") }}</span>
       </h2>
