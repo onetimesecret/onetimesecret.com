@@ -65,11 +65,12 @@
       "js-yaml": "^4.1.1",
       "lodash": "^4.17.23",
       "mdast-util-to-hast": "^13.2.1",
-      "@eslint/plugin-kit": "^0.3.4"
+      "@eslint/plugin-kit": "^0.3.4",
+      "@modelcontextprotocol/sdk": "^1.27.1"
     }
   },
   "devDependencies": {
-    "@modelcontextprotocol/sdk": "~1.25.3",
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "@playwright/test": "^1.58.2",
     "@sentry/astro": "^10.42.0",
     "@sentry/browser": "^10.42.0",
