@@ -107,12 +107,12 @@ onUnmounted(() => {
       <div class="mt-8 flex flex-col gap-4 sm:flex-row sm:gap-6 justify-center items-center">
         <a
           href="https://docs.onetimesecret.com/en/custom-domains/"
-          class="inline-flex font-brand items-center justify-center rounded-xl border-2 border-brand-600 dark:border-brand-400 bg-white dark:bg-gray-800 px-8 py-4 text-base font-semibold text-brand-600 dark:text-brand-300 shadow-md hover:shadow-xl hover:bg-brand-50 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+          class="inline-flex font-brand items-center justify-center rounded-xl border-2 border-brand-600 dark:border-brand-400 bg-white dark:bg-gray-800 px-8 py-4 text-base font-semibold text-brand-600 dark:text-brand-300 shadow-md hover:shadow-xl hover:bg-brand-50 dark:hover:bg-gray-700 transition-all duration-300 focus-visible:outline-2 focus-visible:outline-brand-500 dark:focus-visible:outline-brand-400 focus-visible:outline-offset-2">
           {{ t("web.homepage.visual_examples.learn_more") }}
         </a>
         <a
           href="/pricing"
-          class="inline-flex font-brand items-center justify-center rounded-xl border border-transparent bg-gradient-to-r from-brand-600 to-brand-700 dark:from-brand-400 dark:to-brand-500 px-8 py-4 text-lg font-semibold text-white dark:text-gray-900 shadow-lg shadow-brand-600/30 dark:shadow-brand-400/40 hover:shadow-xl hover:shadow-brand-600/40 dark:hover:shadow-brand-400/50 hover:from-brand-700 hover:to-brand-800 dark:hover:from-brand-500 dark:hover:to-brand-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+          class="inline-flex font-brand items-center justify-center rounded-xl border border-transparent bg-gradient-to-r from-brand-600 to-brand-700 dark:from-brand-400 dark:to-brand-500 px-8 py-4 text-lg font-semibold text-white dark:text-gray-900 shadow-lg shadow-brand-600/30 dark:shadow-brand-400/40 hover:shadow-xl hover:shadow-brand-600/40 dark:hover:shadow-brand-400/50 hover:from-brand-700 hover:to-brand-800 dark:hover:from-brand-500 dark:hover:to-brand-600 transition-all duration-300 focus-visible:outline-2 focus-visible:outline-brand-500 dark:focus-visible:outline-brand-400 focus-visible:outline-offset-2">
           {{ t("web.homepage.visual_examples.view_pricing") }}
         </a>
       </div>
@@ -135,7 +135,7 @@ onUnmounted(() => {
             @keydown.space.prevent="toggleAnimation"
             @focus="handleFocusIn"
             @blur="handleFocusOut"
-            class="size-430 shrink-0 group relative rounded-2xl outline-none ring-2 ring-transparent focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus:ring-offset-gray-800 dark:focus:ring-offset-gray-950 cursor-pointer"
+            class="size-430 shrink-0 group relative rounded-2xl outline-none ring-2 ring-transparent focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-800 dark:focus-visible:ring-offset-gray-950 cursor-pointer"
             :class="{ 'ring-brand-500 ring-offset-2': focusVisible }">
             <!-- Pause/play overlay - always visible but with varying opacity -->
             <div

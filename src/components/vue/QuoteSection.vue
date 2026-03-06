@@ -20,7 +20,7 @@ const props = defineProps<{
     <div class="overflow-hidden rounded-lg bg-white shadow-lg dark:bg-gray-800">
       <div class="p-6 sm:p-8">
         <svg
-          class="mb-4 size-5 text-brand-500"
+          class="mb-4 size-5 text-brand-600"
           fill="currentColor"
           viewBox="0 0 24 24"
           width="20"

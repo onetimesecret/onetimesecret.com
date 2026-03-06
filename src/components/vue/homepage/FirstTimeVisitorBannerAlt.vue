@@ -53,7 +53,7 @@ const _switchToSuggestedRegion = () => {
       <div class="flex-shrink-0 sm:order-3 sm:ml-3">
         <button
           type="button"
-          class="mr-1 flex rounded-md bg-brand-100 dark:bg-brand-700 p-1.5 text-brand-700 dark:text-brand-100 hover:bg-brand-200 dark:hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-brand-800"
+          class="mr-1 flex rounded-md bg-brand-100 dark:bg-brand-700 p-1.5 text-brand-700 dark:text-brand-100 hover:bg-brand-200 dark:hover:bg-brand-600 focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2"
           @click="dismissBanner">
           <span class="sr-only">{{ $t('banner.dismiss') }}</span>
           <XMarkIcon
@@ -67,13 +67,14 @@ const _switchToSuggestedRegion = () => {
           :href="docsUrl"
           target="_blank"
           rel="noopener noreferrer"
-          class="flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 shadow-sm hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-brand-800"
+          class="flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 shadow-sm hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600 focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2"
           :aria-label="$t('banner.learn-more-about-regional-domains')">
           {{ $t('banner.learn-more') }}
         </a>
+        <!-- TODO: Re-enable region-switch CTA when domain routing is implemented -->
         <!--<button
           type="button"
-          class="flex items-center justify-center rounded-md border border-transparent bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-brand-800"
+          class="flex items-center justify-center rounded-md border border-transparent bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2 dark:focus-visible:outline-offset-brand-800"
           @click="_switchToSuggestedRegion">
           Use {{ suggestedDomain.split('.')[0].toUpperCase() }} region
         </button>-->
