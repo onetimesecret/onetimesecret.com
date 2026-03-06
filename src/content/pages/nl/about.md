@@ -73,7 +73,7 @@ We hebben ons systeem ontworpen met privacy en veiligheid als topprioriteiten. D
 
 ### Hoe werkt de wachtwoordzin-optie?
 
-Wanneer je een wachtwoordzin gebruikt, versleutelen we je geheim op onze servers met de wachtwoordzin die je opgeeft. We slaan de wachtwoordzin zelf niet op, alleen een bcrypt-hash ervan. Deze hash wordt gebruikt om de wachtwoordzin te verifieren wanneer de ontvanger deze invoert. Dit is waarom dit veilig is:
+Wanneer je een wachtwoordzin gebruikt, versleutelen we je geheim op onze servers met de wachtwoordzin die je opgeeft. We slaan de wachtwoordzin zelf niet op, alleen een bcrypt-hash ervan. Deze hash wordt gebruikt om de wachtwoordzin te verifiëren wanneer de ontvanger deze invoert. Dit is waarom dit veilig is:
 
 - We slaan nooit het onversleutelde geheim of de wachtwoordzin op.
 - De bcrypt-hash kan niet worden gebruikt om het geheim te ontsleutelen.
