@@ -1,9 +1,8 @@
 import { type UseCase } from "@/types/useCase";
 
 export function getConsultantUseCase(t: (key: string) => string): UseCase {
-  const exampleSecret = `Client Portal: https://app.example.com
-Login: contractor-2026
-Pass: TmpAcc3ss!xQ9`;
+  const exampleSecret = `Here's the temporary password for the client portal:
+TmpAcc3ss!xQ9`;
 
   return {
     id: "consultants",

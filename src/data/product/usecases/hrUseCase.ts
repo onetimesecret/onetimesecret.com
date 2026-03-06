@@ -2,10 +2,8 @@ import { type UseCase } from "@/types/useCase";
 
 export function getHRUseCase(t: (key: string) => string): UseCase {
   // HR manager example secret
-  const exampleSecret = `Temporary Password: Welc0me!2025
-
-Access Link:
-You can find the address in the handbook.`;
+  const exampleSecret = `Temporary password for your first login:
+kX9#mPq2vR!7`;
 
   return {
     id: "hr",

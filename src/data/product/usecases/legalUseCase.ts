@@ -2,9 +2,8 @@ import { type UseCase } from "@/types/useCase";
 
 export function getLegalUseCase(t: (key: string) => string): UseCase {
   // Legal team example secret
-  const exampleSecret = `
-Case File: Project Alpha vs. Spaghetti Corp
-Access Code: Ragu22`;
+  const exampleSecret = `Access code for case file #2024-0847:
+Rg22mK9x`;
 
   return {
     id: "legal",
