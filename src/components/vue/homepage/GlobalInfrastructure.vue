@@ -56,16 +56,23 @@ const { t } = useI18n();
             <div
               class="absolute inset-[32%] rounded-full border border-surface-3 opacity-80"></div>
 
-            <!-- Region dots -->
+            <!-- Region dots with labels positioned to avoid overlap -->
             <div
               v-for="dot in regionDots"
               :key="dot.label"
-              class="absolute flex items-center gap-1.5"
+              class="absolute"
               :style="{ top: dot.top, left: dot.left }">
               <span
-                class="block size-3 rounded-full bg-brand-500"
+                class="block size-3 rounded-full bg-brand-500/80"
                 style="box-shadow: 0 0 8px var(--color-brand-500)"></span>
-              <span class="text-xs font-medium text-text-secondary">{{ dot.label }}</span>
+              <span
+                class="absolute top-1/2 -translate-y-1/2 whitespace-nowrap text-xs font-medium text-text-secondary"
+                :class="
+                  dot.labelSide === 'left'
+                    ? 'right-full mr-1.5'
+                    : 'left-full ml-1.5'
+                "
+                >{{ dot.label }}</span>
             </div>
           </div>
         </div>

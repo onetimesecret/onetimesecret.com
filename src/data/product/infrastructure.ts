@@ -21,6 +21,7 @@ export interface RegionDot {
   readonly label: string;
   readonly top: string;
   readonly left: string;
+  readonly labelSide: "left" | "right";
 }
 
 export const trustBadges: readonly TrustBadge[] = [
@@ -41,8 +42,12 @@ const REGION_COORDS: readonly RegionCoord[] = [
 
 /** Max radial reach from center, as % of container size */
 const MAX_RADIUS = 40;
-/** Minimum distance between any two dots, as % of container size */
-const MIN_SPACING = 8;
+/** Rotation offset (degrees) applied to longitude before projection.
+ *  0 = Prime Meridian at top of diagram. */
+const ROTATION_OFFSET = 0;
+
+/** Label + gap width as % of container — used for overlap detection */
+const LABEL_REACH = 11;
 
 function projectRegions(coords: readonly RegionCoord[]): RegionDot[] {
   const DEG2RAD = Math.PI / 180;
@@ -51,54 +56,39 @@ function projectRegions(coords: readonly RegionCoord[]): RegionDot[] {
 
   const points = coords.map((r) => {
     const radius = (90 - r.lat) * scale;
-    const angle = r.lon * DEG2RAD;
+    const angle = (r.lon + ROTATION_OFFSET) * DEG2RAD;
     return {
       label: r.label,
       x: 50 + radius * Math.sin(angle),
       y: 50 - radius * Math.cos(angle),
+      radius,
     };
   });
 
-  // Push overlapping dots apart tangentially (around the circle)
-  // so radial distance from center (latitude encoding) is preserved
-  for (let iter = 0; iter < 10; iter++) {
-    let moved = false;
-    for (let i = 0; i < points.length; i++) {
-      for (let j = i + 1; j < points.length; j++) {
-        const dx = points[j].x - points[i].x;
-        const dy = points[j].y - points[i].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist > 0 && dist < MIN_SPACING + 0.5) {
-          const push = (MIN_SPACING + 0.5 - dist) / 2;
-          const mx = (points[i].x + points[j].x) / 2 - 50;
-          const my = (points[i].y + points[j].y) / 2 - 50;
-          const mr = Math.sqrt(mx * mx + my * my);
-          // Tangent perpendicular to the radial from center
-          let tx: number, ty: number;
-          if (mr > 0.5) {
-            tx = -my / mr;
-            ty = mx / mr;
-          } else {
-            tx = 1;
-            ty = 0;
-          }
-          const dot = dx * tx + dy * ty;
-          const sign = dot >= 0 ? 1 : -1;
-          points[i].x -= sign * tx * push;
-          points[i].y -= sign * ty * push;
-          points[j].x += sign * tx * push;
-          points[j].y += sign * ty * push;
-          moved = true;
-        }
+  // Default: left-half dots label left, right-half dots label right
+  const sides: ("left" | "right")[] = points.map((p) =>
+    p.x < 50 ? "left" : "right",
+  );
+
+  // When two same-side dots are close enough that labels overlap,
+  // flip the inner dot's label toward center so they face apart
+  for (let i = 0; i < points.length; i++) {
+    for (let j = i + 1; j < points.length; j++) {
+      if (sides[i] !== sides[j]) continue;
+      const dx = Math.abs(points[j].x - points[i].x);
+      const dy = Math.abs(points[j].y - points[i].y);
+      if (dx < LABEL_REACH && dy < 5) {
+        const inner = points[i].radius < points[j].radius ? i : j;
+        sides[inner] = sides[inner] === "left" ? "right" : "left";
       }
     }
-    if (!moved) break;
   }
 
-  return points.map((p) => ({
+  return points.map((p, i) => ({
     label: p.label,
     top: `${Math.round(p.y)}%`,
     left: `${Math.round(p.x)}%`,
+    labelSide: sides[i],
   }));
 }
 
