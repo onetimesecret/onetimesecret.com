@@ -19,7 +19,7 @@ const { t } = useI18n();
       class="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center"
       aria-hidden="true">
       <div
-        class="h-[500px] w-[500px] rounded-full bg-brand-500 opacity-[0.06] blur-[100px]"></div>
+        class="h-[500px] w-[500px] rounded-full bg-brand-500 opacity-[0.06] blur-[120px]"></div>
     </div>
 
     <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
