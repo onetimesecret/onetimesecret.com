@@ -133,6 +133,13 @@ const togglePassphrasePopover = async () => {
   }
 };
 
+// Reset addPassphrase flag when popover closes with an empty passphrase
+watch(showPassphrasePopover, (isOpen) => {
+  if (!isOpen && !passphrase.value.trim()) {
+    secretOptions.value.addPassphrase = false;
+  }
+});
+
 const toggleTtlDropdown = () => {
   showTtlDropdown.value = !showTtlDropdown.value;
   if (showTtlDropdown.value) {
@@ -430,6 +437,7 @@ const createAnotherSecret = () => {
                       ref="passphraseInputRef"
                       v-model="passphrase"
                       :type="showPassphrase ? 'text' : 'password'"
+                      :aria-label="t('web.secrets.passphraseInputLabel')"
                       maxlength="80"
                       autocomplete="off"
                       data-1p-ignore
@@ -442,7 +450,7 @@ const createAnotherSecret = () => {
                     <button
                       type="button"
                       class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
-                      :aria-label="showPassphrase ? 'Hide passphrase' : 'Show passphrase'"
+                      :aria-label="showPassphrase ? t('web.secrets.hidePassphrase') : t('web.secrets.showPassphrase')"
                       @click="showPassphrase = !showPassphrase">
                       <svg
                         v-if="!showPassphrase"
@@ -603,7 +611,9 @@ const createAnotherSecret = () => {
             @click="createAnotherSecret">
             {{ t("web.secrets.createAnother") || "Create Another Secret" }}
           </button>
-          <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+          <p
+            v-if="apiResult?.record?.metadata?.key"
+            class="mt-3 text-xs text-gray-500 dark:text-gray-400">
             {{ t("web.secrets.receiptHint") || "Your" }}
             <a
               :href="buildReceiptUrl(apiResult as ApiResult)"

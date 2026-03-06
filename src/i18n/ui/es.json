@@ -197,6 +197,8 @@
       "passphraseInputLabel": "Frase de contraseña",
       "passphrasePlaceholder": "Ingrese la frase de contraseña",
       "passphraseInputHint": "El destinatario necesitará esta frase de contraseña para ver el secreto",
+      "hidePassphrase": "Ocultar frase de contraseña",
+      "showPassphrase": "Mostrar frase de contraseña",
       "removePassphrase": "Eliminar frase de contraseña",
       "ttlLabel": "Duración del secreto",
       "ttlHint": "El secreto se eliminará después de este tiempo, incluso si no se visualiza",

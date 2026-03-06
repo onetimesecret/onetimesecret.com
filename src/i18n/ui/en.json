@@ -197,6 +197,8 @@
       "passphraseInputLabel": "Passphrase",
       "passphrasePlaceholder": "Enter passphrase",
       "passphraseInputHint": "Recipient will need this passphrase to view the secret",
+      "hidePassphrase": "Hide passphrase",
+      "showPassphrase": "Show passphrase",
       "removePassphrase": "Remove passphrase",
       "ttlLabel": "Secret lifetime",
       "ttlHint": "Secret will be deleted after this time, even if not viewed",

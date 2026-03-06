@@ -197,6 +197,8 @@
       "passphraseInputLabel": "Passphrase",
       "passphrasePlaceholder": "Passphrase eingeben",
       "passphraseInputHint": "Empfänger benötigt diese Passphrase, um das Geheimnis anzuzeigen",
+      "hidePassphrase": "Passphrase verbergen",
+      "showPassphrase": "Passphrase anzeigen",
       "removePassphrase": "Passphrase entfernen",
       "ttlLabel": "Geheimnis-Lebensdauer",
       "ttlHint": "Geheimnis wird nach dieser Zeit gelöscht, auch wenn es nicht angesehen wurde",
