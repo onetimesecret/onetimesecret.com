@@ -82,9 +82,9 @@ defineExpose({
     aria-labelledby="secret-form-heading">
     <div class="mx-auto max-w-5xl">
       <div
-        class="flex flex-col bg-surface-1 shadow-2xl shadow-black/40 rounded-2xl overflow-hidden border border-surface-3 backdrop-blur-sm">
+        class="flex flex-col bg-surface-1 shadow-2xl shadow-black/40 rounded-2xl border border-surface-3 backdrop-blur-sm">
         <div
-          class="px-6 py-5 border-b border-surface-3 bg-surface-2/50">
+          class="px-6 py-5 border-b border-surface-3 bg-surface-2/50 rounded-t-2xl">
           <div class="flex flex-wrap justify-between items-center gap-4">
             <h2 id="secret-form-heading" class="text-xl font-bold text-text-primary">
               {{

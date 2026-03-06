@@ -1,7 +1,7 @@
 <!-- src/components/vue/forms/SecretForm.vue -->
 
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from "vue";
+import { computed, ref, watch, nextTick, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 
 // Define the options model
@@ -95,6 +95,34 @@ const ttlOptions = ref<TtlOption[]>([
 ]);
 
 const showTtlDropdown = ref(false);
+const ttlDropdownRef = ref<HTMLElement | null>(null);
+
+// Close TTL dropdown on click outside
+const handleTtlClickOutside = (event: MouseEvent) => {
+  if (
+    showTtlDropdown.value &&
+    ttlDropdownRef.value &&
+    !ttlDropdownRef.value.contains(event.target as HTMLElement)
+  ) {
+    showTtlDropdown.value = false;
+  }
+};
+
+const handleTtlEscape = (event: KeyboardEvent) => {
+  if (event.key === "Escape" && showTtlDropdown.value) {
+    showTtlDropdown.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("click", handleTtlClickOutside);
+  document.addEventListener("keydown", handleTtlEscape);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleTtlClickOutside);
+  document.removeEventListener("keydown", handleTtlEscape);
+});
 
 // --- Computed ---
 const showPassphraseInput = computed(() => secretOptions.value.addPassphrase);
@@ -235,6 +263,15 @@ const buildSecretUrl = (result: ApiResult): string => {
   return `${baseUrl}/secret/${secretKey}`; // Direct secret link
 };
 
+const buildReceiptUrl = (result: ApiResult): string => {
+  const metadataKey = result.record?.metadata?.key ?? "";
+  const baseUrl = (createdWithBaseUrl.value || props.apiBaseUrl).replace(
+    /\/api$/,
+    "",
+  );
+  return `${baseUrl}/receipt/${metadataKey}`;
+};
+
 const copyUrlToClipboard = async () => {
   if (!apiResult.value || !apiResult.value.record) return;
 
@@ -356,7 +393,7 @@ const createAnotherSecret = () => {
           class="mt-4 flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-4">
             <!-- TTL indicator -->
-            <div class="relative">
+            <div ref="ttlDropdownRef" class="relative">
               <button
                 type="button"
                 class="inline-flex items-center gap-1.5 text-sm text-text-tertiary hover:text-text-secondary transition-colors"
@@ -520,12 +557,16 @@ const createAnotherSecret = () => {
             @click="createAnotherSecret">
             {{ t("web.secrets.createAnother") || "Create Another Secret" }}
           </button>
-          <!-- Region hint message -->
           <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
-            {{
-              t("web.secrets.regionSwitchHint") ||
-                "Try creating secrets in different regions for your various needs."
-            }}
+            {{ t("web.secrets.receiptHint") || "Your" }}
+            <a
+              :href="buildReceiptUrl(apiResult as ApiResult)"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-colors">
+              {{ t("web.secrets.receiptLink") || "receipt" }}
+            </a>
+            {{ t("web.secrets.receiptHintSuffix") || "tracks when the secret is viewed or expires." }}
           </p>
         </div>
       </div>
