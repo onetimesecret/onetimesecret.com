@@ -386,8 +386,9 @@ onUnmounted(() => {
               </div>
             </div>
 
+            <!-- TODO: Redo compare plans content before re-enabling -->
             <!-- Feature Comparison: Bento-style grouped cards -->
-            <div class="mt-20 mx-auto max-w-6xl">
+            <div v-if="false" class="mt-20 mx-auto max-w-6xl">
               <h3
                 class="text-center text-3xl font-bold
                   tracking-tight text-text-primary mb-8
