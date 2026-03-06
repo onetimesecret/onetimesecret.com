@@ -12,12 +12,12 @@ const useCases = computed(() => getUseCases(t));
 </script>
 
 <template>
-  <section class="py-16 sm:py-20 bg-surface-0">
+  <section class="py-16 sm:py-20 bg-surface-0" aria-labelledby="use-cases-heading">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Section header -->
       <div class="mb-10 sm:mb-14">
         <p class="section-label mb-3">{{ t("web.homepage.useCases.label") }}</p>
-        <h2 class="text-3xl sm:text-4xl font-bold text-text-primary">
+        <h2 id="use-cases-heading" class="text-3xl sm:text-4xl font-bold text-text-primary">
           {{ t("web.homepage.useCases.heading") }}
         </h2>
         <p class="mt-4 text-lg text-text-secondary max-w-2xl">
@@ -33,7 +33,7 @@ const useCases = computed(() => getUseCases(t));
           class="flex items-start gap-4 rounded-2xl border border-surface-3 bg-surface-1 p-6 hover:border-surface-4 transition-colors duration-200">
           <!-- Icon container -->
           <div
-            class="flex-shrink-0 flex size-[52px] items-center justify-center rounded-xl bg-surface-2 border border-surface-3 text-2xl"
+            class="flex-shrink-0 flex size-12 items-center justify-center rounded-xl bg-surface-2 border border-surface-3 text-2xl"
             aria-hidden="true">
             {{ useCase.icon }}
           </div>

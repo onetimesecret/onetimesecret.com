@@ -63,8 +63,7 @@ const { t } = useI18n();
               class="absolute"
               :style="{ top: dot.top, left: dot.left }">
               <span
-                class="block size-3 rounded-full bg-brand-500/80"
-                style="box-shadow: 0 0 8px var(--color-brand-500)"></span>
+                class="block size-3 rounded-full bg-brand-500/80 dot-glow"></span>
               <span
                 class="absolute top-1/2 -translate-y-1/2 whitespace-nowrap text-xs font-medium text-text-secondary"
                 :class="

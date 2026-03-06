@@ -7,15 +7,15 @@ const { t } = useI18n();
 
 <template>
   <!-- How It Works Section -->
-  <section class="py-20 sm:py-24 bg-surface-0 w-full">
+  <section class="py-16 sm:py-20 bg-surface-1 w-full" aria-labelledby="how-it-works-heading">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Section header -->
-      <div class="text-center mb-12">
+      <div class="mb-10 sm:mb-14">
         <p class="section-label mb-3">{{ t("web.homepage.howItWorks.label") }}</p>
-        <h2 class="text-3xl font-extrabold text-text-primary sm:text-4xl">
+        <h2 id="how-it-works-heading" class="text-3xl font-bold text-text-primary sm:text-4xl">
           {{ t("web.homepage.howItWorks.title") }}
         </h2>
-        <p class="mt-4 max-w-2xl text-lg text-text-secondary mx-auto">
+        <p class="mt-4 max-w-2xl text-lg text-text-secondary">
           {{ t("web.homepage.howItWorks.subtitle") }}
         </p>
       </div>
