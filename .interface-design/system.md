@@ -41,6 +41,7 @@ Defined in `src/styles/tailwind.css` (`@layer components`):
 | Class | Definition |
 |---|---|
 | `.section-label` | `text-xs font-semibold uppercase tracking-widest text-brand-600` |
+| `.dot-glow` | `box-shadow: 0 0 8px var(--color-brand-500)` — status indicator dots |
 | `.gradient-text` | Brand gradient with `-webkit-background-clip: text`, solid `brand-500` fallback |
 
 ## Cards
@@ -75,7 +76,7 @@ Defined in `src/styles/tailwind.css` (`@layer components`):
 
 | Property | Value |
 |---|---|
-| Dot glow | `box-shadow: 0 0 8px var(--color-brand-500)` |
+| Dot glow | `.dot-glow` utility (`box-shadow: 0 0 8px var(--color-brand-500)`) |
 | Ambient glow | `bg-brand-500 opacity-[0.06] blur-[120px]` (large decorative circles) |
 | Pulse animation | `color-mix(in srgb, var(--color-brand-500) N%, transparent)` — never hardcoded colors |
 

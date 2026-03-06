@@ -14,9 +14,8 @@ const { t } = useI18n();
       <span
         class="inline-flex items-center gap-2 rounded-full border border-brand-500/30 bg-brand-500/10 px-4 py-1.5 text-sm font-medium text-brand-400">
         <span
-          class="badge-dot size-2 rounded-full bg-brand-400"
-          aria-hidden="true"
-          style="box-shadow: 0 0 8px var(--color-brand-500)"></span>
+          class="badge-dot dot-glow size-2 rounded-full bg-brand-400"
+          aria-hidden="true"></span>
         {{ t("web.homepage.hero.badge") }}
       </span>
     </div>
