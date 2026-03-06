@@ -75,7 +75,8 @@
     "aria": {
       "light_mode": "Heller Modus",
       "dark_mode": "Dunkler Modus",
-      "toggle_color_theme": "Farbthema umschalten"
+      "toggle_color_theme": "Farbthema umschalten",
+      "skip_to_content": "Zum Hauptinhalt springen"
     },
     "theme": {
       "title": "Thema",

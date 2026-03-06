@@ -75,7 +75,8 @@
     "aria": {
       "light_mode": "Light Mode",
       "dark_mode": "Dark Mode",
-      "toggle_color_theme": "Toggle color theme"
+      "toggle_color_theme": "Toggle color theme",
+      "skip_to_content": "Skip to main content"
     },
     "theme": {
       "title": "Theme",

@@ -13,8 +13,13 @@ import "@/styles/tailwind.css";
 // Utilities
 import { getLocaleFromUrl } from "@/i18n/utils";
 import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
-import { createLocaleI18n, type MessageSchema } from "@/i18n"; // For type
-import enMessages from "@/i18n/ui/en.json"; // For default initialMessages
+import { createLocaleI18n, type MessageSchema } from "@/i18n";
+
+// Import all language message files for SSR translations
+import enMessages from "@/i18n/ui/en.json";
+import frMessages from "@/i18n/ui/fr.json";
+import deMessages from "@/i18n/ui/de.json";
+import esMessages from "@/i18n/ui/es.json";
 
 // --------------------------
 // Props Interface
@@ -59,8 +64,21 @@ const {
 const effectiveLocale =
   getLocaleFromUrl(Astro.url) || htmlLang || DEFAULT_LANGUAGE;
 
-// Initialize a page-specific i18n instance for SSR content (for side effects)
-await createLocaleI18n(effectiveLocale, initialMessages);
+// Build locale-aware messages for SSR translations
+const messagesMap: Record<string, MessageSchema> = {
+  en: enMessages as MessageSchema,
+  fr: frMessages as MessageSchema,
+  de: deMessages as MessageSchema,
+  es: esMessages as MessageSchema,
+};
+const effectiveMessages =
+  initialMessages && Object.keys(initialMessages).length > 0
+    ? initialMessages
+    : { [effectiveLocale]: messagesMap[effectiveLocale] || enMessages as MessageSchema };
+
+// Initialize a page-specific i18n instance for SSR content
+const pageI18n = await createLocaleI18n(effectiveLocale, effectiveMessages);
+const t = pageI18n.global.t;
 
 // Derive langDir based on effective locale
 const langDir =
@@ -87,6 +105,12 @@ if (import.meta.env.DEV) {
   />
   <body
     class="flex h-full flex-col overflow-x-hidden bg-surface-0">
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-surface-0 focus:text-brand-600 focus:underline focus:outline-2 focus:outline-brand-500"
+    >
+      {t("web.aria.skip_to_content")}
+    </a>
     <!--
       CLS Prevention: The staging banner wrapper uses min-h-0 and collapses
       when not needed. The client:only hydration will expand it smoothly
@@ -107,7 +131,7 @@ if (import.meta.env.DEV) {
         <slot name="header" />
       )
     }
-    <main class="flex-grow bg-surface-0">
+    <main id="main-content" class="flex-grow bg-surface-0">
       <slot />
     </main>
     {
