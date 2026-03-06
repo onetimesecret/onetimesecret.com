@@ -45,12 +45,12 @@ function iconClass(feature: Feature): string {
 </script>
 
 <template>
-  <section class="py-16 sm:py-20 bg-surface-0 relative overflow-hidden">
+  <section class="py-16 sm:py-20 bg-surface-0 relative overflow-hidden" aria-labelledby="features-heading">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Section header -->
       <div class="mb-10 sm:mb-14">
         <p class="section-label mb-3">{{ t("web.homepage.features.label") }}</p>
-        <h2 class="text-3xl sm:text-4xl font-bold text-text-primary">
+        <h2 id="features-heading" class="text-3xl sm:text-4xl font-bold text-text-primary">
           {{ t("web.homepage.features.heading") }}
         </h2>
         <p class="mt-4 text-lg text-text-secondary max-w-2xl">
@@ -59,7 +59,7 @@ function iconClass(feature: Feature): string {
       </div>
 
       <!-- Bento grid: 3 columns, spans as specified -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div
           v-for="feature in features"
           :key="feature.id"
