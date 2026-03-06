@@ -141,6 +141,7 @@ title: ${applyReplacements(about.title || "About Us")}
       href="https://delanotes.com/"
       title="${translations["delano-mandelbaum"] || "Delano Mandelbaum"}"><img
         src="/etc/img/delano-g.png"
+        alt="Delano Mandelbaum"
         width="95"
         height="120"
         border="0"

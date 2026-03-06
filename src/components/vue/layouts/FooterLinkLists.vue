@@ -32,7 +32,56 @@ const currentLocale = props.locale;
 </script>
 
 <template>
-  <div class="grid grid-cols-2 gap-8 md:grid-cols-2">
+  <div class="grid grid-cols-2 gap-8 md:grid-cols-3">
+    <!-- Product links -->
+    <div class="space-y-4">
+      <h3
+        class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+        {{ t("web.footer.columns.product") }}
+      </h3>
+      <ul
+        role="list"
+        class="space-y-3">
+        <li>
+          <a
+            :href="localizeUrl('/pricing', currentLocale)"
+            class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+            :aria-label="t('view-our-subscription-pricing')">
+            {{ t("LABELS.pricing") }}
+          </a>
+        </li>
+        <li>
+          <a
+            :href="`https://docs.onetimesecret.com/${currentLocale}/rest-api`"
+            class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+            :aria-label="t('explore-our-api-documentation')"
+            target="_blank"
+            rel="noopener noreferrer">
+            {{ t("web.footer.links.api") }}
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://status.onetimesecret.com/"
+            class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+            :aria-label="t('check-our-service-status')"
+            target="_blank"
+            rel="noopener noreferrer">
+            {{ t("status") }}
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://blog.onetimesecret.com/changelog"
+            class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+            target="_blank"
+            rel="noopener noreferrer">
+            {{ t("web.footer.links.changelog") }}
+          </a>
+        </li>
+      </ul>
+    </div>
+
     <!-- Company links -->
     <div class="space-y-4">
       <h3
@@ -52,14 +101,6 @@ const currentLocale = props.locale;
         </li>
         <li>
           <a
-            :href="localizeUrl('/pricing', currentLocale)"
-            class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-            :aria-label="t('view-our-subscription-pricing')">
-            {{ t("LABELS.pricing") }}
-          </a>
-        </li>
-        <li>
-          <a
             :href="`https://blog.onetimesecret.com/`"
             class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
             :aria-label="t('read-our-latest-blog-posts')"
@@ -68,18 +109,6 @@ const currentLocale = props.locale;
             {{ t("LABELS.blog") }}
           </a>
         </li>
-      </ul>
-    </div>
-
-    <!-- Resources links -->
-    <div class="space-y-4">
-      <h3
-        class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-        {{ t("LABELS.resources") }}
-      </h3>
-      <ul
-        role="list"
-        class="space-y-3">
         <li>
           <a
             href="https://github.com/onetimesecret/onetimesecret"
@@ -87,38 +116,56 @@ const currentLocale = props.locale;
             :aria-label="t('view-our-source-code-on-github')"
             target="_blank"
             rel="noopener noreferrer">
-            GitHub
+            {{ t("web.footer.links.github") }}
           </a>
         </li>
         <li>
           <a
-            :href="`https://docs.onetimesecret.com/${currentLocale}`"
-            :aria-label="t('access-our-documentation')"
+            :href="localizeUrl('/feedback', currentLocale)"
+            class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
+            {{ t("web.footer.links.contact") }}
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Legal links -->
+    <div class="space-y-4">
+      <h3
+        class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+        {{ t("LABELS.legals") }}
+      </h3>
+      <ul
+        role="list"
+        class="space-y-3">
+        <li>
+          <a
+            href="/privacy"
             class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-            target="_blank"
-            rel="noopener noreferrer">
-            {{ t("LABELS.docs") }}
+            :aria-label="t('read-our-privacy-policy')">
+            {{ t("LABELS.privacy") }}
           </a>
         </li>
         <li>
           <a
-            :href="`https://docs.onetimesecret.com/${currentLocale}/rest-api`"
-            :aria-label="t('explore-our-api-documentation')"
+            href="/terms"
             class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-            target="_blank"
-            rel="noopener noreferrer">
-            API
+            :aria-label="t('view-our-terms-and-conditions')">
+            {{ t("LABELS.terms") }}
           </a>
         </li>
         <li>
           <a
-            href="https://status.onetimesecret.com/"
+            :href="localizeUrl('/security', currentLocale)"
             class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-            :aria-label="t('check-our-service-status')"
-            target="_blank"
-            rel="noopener noreferrer">
-            {{ t("status") }}
+            :aria-label="t('learn-about-our-security-measures')">
+            {{ t("LABELS.security") }}
           </a>
+        </li>
+        <li>
+          <span class="text-sm leading-6 text-gray-600 dark:text-gray-400 cursor-default">
+            {{ t("web.footer.links.dpa") }}
+          </span>
         </li>
       </ul>
     </div>

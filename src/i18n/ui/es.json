@@ -38,7 +38,8 @@
     "features": "Características",
     "regions": "Regiones",
     "about": "Acerca de",
-    "pricing": "Precios"
+    "pricing": "Precios",
+    "docs": "Docs"
   },
   "auth": {
     "sign-in": "Iniciar sesión",
@@ -74,7 +75,8 @@
     "aria": {
       "light_mode": "Modo claro",
       "dark_mode": "Modo oscuro",
-      "toggle_color_theme": "Cambiar tema de color"
+      "toggle_color_theme": "Cambiar tema de color",
+      "skip_to_content": "Ir al contenido principal"
     },
     "theme": {
       "title": "Tema",
@@ -155,6 +157,11 @@
           }
         }
       },
+      "groups": {
+        "core-sharing": "Funciones principales",
+        "brand-identity": "Identidad de marca",
+        "infrastructure": "Infraestructura"
+      },
       "comparison": {
         "feature": "Característica",
         "features": {
@@ -174,7 +181,9 @@
     },
     "errors": {
       "errorTitle": "No exitoso",
-      "passphraseRequired": "Se requiere una frase de contraseña cuando la opción está seleccionada."
+      "passphraseRequired": "Se requiere una frase de contraseña cuando la opción está seleccionada.",
+      "apiGenericErrorHomepage": "Something went wrong. Please try again.",
+      "apiGenericError": "Something went wrong. Please try again."
     },
     "secrets": {
       "keepSensitiveInfo": "Mantenga la información sensible fuera de sus correos electrónicos y registros de chat.",
@@ -231,6 +240,14 @@
       "keyBenefits": "Beneficios clave",
       "complianceInfo": "Información de cumplimiento",
       "privacyNote": "Sus secretos están encriptados, nunca se almacenan en registros y se eliminan automáticamente después de verlos.",
+      "itdevops": {
+        "title": "IT & DevOps",
+        "description": "Securely rotate production credentials, share API keys during onboarding, and keep sensitive config out of Slack and email threads."
+      },
+      "consultants": {
+        "title": "Consultants & Agencies",
+        "description": "Share client credentials, project access, and sensitive deliverables without leaving traces in email threads or shared drives."
+      },
       "it": {
         "title": "Profesional de TI",
         "description": "Comparta credenciales e información de acceso de forma segura con su equipo",
@@ -276,24 +293,91 @@
         "cta": "Asegure las comunicaciones legales"
       }
     },
+    "footer": {
+      "columns": {
+        "product": "Product"
+      },
+      "links": {
+        "api": "API",
+        "changelog": "Changelog",
+        "github": "GitHub",
+        "contact": "Contact",
+        "dpa": "DPA"
+      }
+    },
     "homepage": {
       "title": "Comparta secretos de forma segura | Onetime Secret",
       "description": "Comparta información sensible de forma segura con enlaces autodestructibles. Pegue su secreto, genere un enlace y compártalo. Una vez visto, desaparece para siempre",
       "a-trusted-way-to-share-sensitive-information-etc": "Una forma confiable de compartir información sensible que se autodestruye después de ser vista.",
+      "hero": {
+        "badge": "Arquitectura orientada a la privacidad",
+        "title": {
+          "line1": "Onetime Secret",
+          "line2_w1": "Signed.",
+          "line2_w2": "Sealed.",
+          "line2_w3": "Delivered."
+        },
+        "subtitle": "Send passwords, credentials, and sensitive data through links that self-destruct after being viewed.",
+        "compliance": {
+          "label": "Funciones de seguridad",
+          "encrypted": "Cifrado",
+          "selfDestructing": "Autodestructivo",
+          "openSource": "Código abierto",
+          "dataResidency": "Soberanía de datos"
+        }
+      },
+      "features": {
+        "label": "Security architecture",
+        "heading": "Built to forget.",
+        "description": "Every design decision serves one purpose: make sure secrets are readable exactly once, then gone."
+      },
+      "useCases": {
+        "label": "Use cases",
+        "heading": "How teams use Onetime Secret",
+        "description": "From onboarding a new hire to rotating production credentials, sensitive data moves through organizations every day."
+      },
+      "infrastructure": {
+        "label": "Global infrastructure",
+        "heading": "Your data, your jurisdiction.",
+        "description": "Choose where your secrets are stored and processed. Regional instances ensure your data never leaves the geography you choose.",
+        "regions": {
+          "ca": "Toronto, Canadá",
+          "eu": "Núremberg, Alemania",
+          "nz": "Porirua, Nueva Zelanda",
+          "uk": "Londres, Reino Unido",
+          "us": "Hillsboro, Estados Unidos"
+        },
+        "capabilitiesLabel": "Available regions",
+        "features": {
+          "customDomain": "Custom Domain",
+          "sso": "SSO / SAML",
+          "auditLogs": "Audit Logs"
+        }
+      },
+      "cta": {
+        "heading": {
+          "line1": "Start sharing secrets",
+          "line2": "the right way."
+        },
+        "description": "Gratis para particulares y equipos. Planes para marca personalizada, controles avanzados y más.",
+        "primaryButton": "Try it free",
+        "secondaryButton": "View pricing"
+      },
       "howItWorks": {
-        "title": "Cómo funciona",
-        "subtitle": "Comparta su información una vez, luego se elimina permanentemente",
+        "label": "How it works",
+        "title": "Three steps. Zero residue.",
+        "subtitle": "Share sensitive information without leaving a trail in your email, chat logs, or ticketing systems.",
         "step1": {
-          "title": "Crear un secreto",
-          "description": "Ingrese su información sensible y genere un enlace seguro de un solo uso"
+          "title": "Paste your secret",
+          "description": "Enter any sensitive text: passwords, API keys, credentials, private notes. Set an expiration and optional passphrase."
         },
         "step2": {
-          "title": "Compartir el enlace",
-          "description": "Envíe el enlace seguro a través de cualquier plataforma de mensajería"
+          "title": "Share the link",
+          "description": "Get a unique, one-time URL. Send it over any channel: email, Slack, text. The link itself reveals nothing about the content."
         },
         "step3": {
-          "title": "Desaparece para siempre",
-          "description": "El destinatario ve el secreto, luego se elimina permanentemente"
+          "title": "It self-destructs",
+          "description": "Once the recipient views the secret, the data is permanently destroyed. The link is dead. No one, including us, can retrieve it."
         }
       },
       "visual_examples": {
@@ -311,18 +395,27 @@
           "title": "Opciones de privacidad mejoradas",
           "description": "Agregue una frase de contraseña para una capa adicional de seguridad. Solo quienes tengan la frase de contraseña pueden ver el secreto."
         },
+        "encryption": {
+          "title": "End-to-end encryption",
+          "description": "Secrets are encrypted at rest and in transit. The decryption key is embedded in the URL fragment, never sent to our servers, never logged. We can't read your data even if compelled."
+        },
         "selfDestruction": {
-          "title": "Enlaces autodestructibles",
-          "description": "Una vez visto o expirado, su secreto se elimina permanentemente de nuestros servidores. Sin copias, sin rastros."
+          "title": "Read once, gone forever",
+          "description": "After a single view, the secret is permanently purged from all storage. No copies, no recovery, no trace."
         },
         "dataResidency": {
-          "title": "Almacenamiento regional de datos",
-          "description": "Elija dónde se almacenan sus datos para cumplir con los requisitos de cumplimiento y las necesidades de soberanía de datos."
+          "title": "Regional data storage",
+          "description": "Choose where your secrets live: EU, US, or other regions. Meet data sovereignty requirements at the point of creation."
         },
         "compliance": {
-          "title": "Listo para el cumplimiento",
-          "description": "Diseñado para ayudar a cumplir con los requisitos de SOC2, RGPD, CCPA e HIPAA para el manejo seguro de información."
-        }
+          "title": "Ayuda a los equipos a cumplir sus objetivos de conformidad",
+          "description": "Diseñado para acompañar los flujos de trabajo SOC 2, RGPD, CCPA e HIPAA. Los registros de auditoría, los controles de acceso y el SSO ayudan a los equipos a cumplir sus propios requisitos de conformidad."
+        },
+        "api": {
+          "title": "Developer API",
+          "description": "Integrate secret sharing into your workflows, CI/CD pipelines, and internal tools. Full REST API with language-specific SDKs."
+        },
+        "also": "Also available:"
       }
     }
   }

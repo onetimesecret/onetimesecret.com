@@ -3,17 +3,18 @@
 <script setup lang="ts">
 import ClientOnlyBanner from "@/components/vue/homepage/ClientOnlyBanner.vue";
 import FeatureHighlights from "@/components/vue/homepage/FeatureHighlights.vue";
-import HeroTitle from "@/components/vue/homepage/HeroTitle.vue";
+import HeroSection from "@/components/vue/homepage/HeroSection.vue";
 import HowItWorks from "@/components/vue/homepage/HowItWorks.vue";
-import ScreenshotViewHole from "@/components/vue/homepage/ScreenshotViewHole.vue";
 import { useJurisdiction } from "@/composables/useJurisdiction";
 import { setLanguageWithMessages, type MessageSchema } from "@/i18n";
 import { onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import type { ApiResult } from "@/components/vue/forms/SecretForm.vue";
-import SecretRegionExperience from "@/components/vue/homepage/SecretRegionExperience.vue";
-import UseCaseSelector from "@/components/vue/homepage/UseCaseSelector.vue";
+import CtaSection from "@/components/vue/homepage/CtaSection.vue";
+import GlobalInfrastructure from "@/components/vue/homepage/GlobalInfrastructure.vue";
+import UseCases from "@/components/vue/homepage/UseCases.vue";
+import type { Region } from "@/types/jurisdiction";
 
 const props = defineProps<{
   locale: string;
@@ -62,7 +63,7 @@ const switchRegion = (newRegion?: string | { identifier: string }) => {
 };
 
 // Handle region change from the SecretRegionExperience component
-const handleRegionChange = (region: any) => {
+const handleRegionChange = (region: Region) => {
   if (region && region.identifier) {
     setJurisdiction(region.identifier);
   }
@@ -109,11 +110,8 @@ onUnmounted(() => {
       @switch-jurisdiction="switchRegion" />
 
     <div class="flex-grow">
-      <!-- Section 1: Branding and Benefits -->
-      <HeroTitle />
-
-      <!-- Section 2: Secret Form with Region Selector -->
-      <SecretRegionExperience
+      <!-- Section 1+2: Hero (title + form unified) -->
+      <HeroSection
         ref="secretFormRef"
         :current-region="currentRegion"
         :available-regions="availableRegions"
@@ -129,10 +127,13 @@ onUnmounted(() => {
       <HowItWorks />
 
       <!-- Section 5: Use Cases -->
-      <UseCaseSelector />
+      <UseCases />
 
-      <!-- Section 5: Screenshot ViewHole -->
-      <ScreenshotViewHole />
+      <!-- Section 6: Global Infrastructure -->
+      <GlobalInfrastructure />
+
+      <!-- Section 7: CTA -->
+      <CtaSection :locale="locale" />
     </div>
   </div>
 </template>

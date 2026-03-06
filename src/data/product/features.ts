@@ -1,28 +1,46 @@
 // src/data/product/features.ts
 
-export const features = [
+export interface Feature {
+  id: string;
+  icon: string;         // Lucide icon name
+  title: string;        // i18n key
+  description: string;  // i18n key
+  span?: 1 | 2;        // grid column span (default 1)
+  iconStyle?: 'brand' | 'comp'; // icon container color variant (default 'brand')
+}
+
+export const features: Feature[] = [
   {
-    id: "secure-encryption",
-    icon: "mdi-lock",
-    title: "web.homepage.featureHighlights.security.title",
-    description: "web.homepage.featureHighlights.security.description",
+    id: "encryption",
+    icon: "lock",
+    title: "web.homepage.featureHighlights.encryption.title",
+    description: "web.homepage.featureHighlights.encryption.description",
+    span: 2,
   },
   {
     id: "self-destruction",
-    icon: "fa6-solid-bomb",
+    icon: "clock",
     title: "web.homepage.featureHighlights.selfDestruction.title",
     description: "web.homepage.featureHighlights.selfDestruction.description",
   },
   {
     id: "data-residency",
-    icon: "fa6-solid-globe",
+    icon: "globe",
     title: "web.homepage.featureHighlights.dataResidency.title",
     description: "web.homepage.featureHighlights.dataResidency.description",
   },
   {
     id: "compliance",
-    icon: "heroicons-shield-check-solid",
+    icon: "shield-check",
     title: "web.homepage.featureHighlights.compliance.title",
     description: "web.homepage.featureHighlights.compliance.description",
+    span: 2,
+  },
+  {
+    id: "api",
+    icon: "code",
+    title: "web.homepage.featureHighlights.api.title",
+    description: "web.homepage.featureHighlights.api.description",
+    iconStyle: "comp",
   },
 ];

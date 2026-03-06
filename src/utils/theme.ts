@@ -20,7 +20,7 @@ export const ThemeManager = {
    */
   getPreferredTheme(): ThemeOption {
     if (typeof window === "undefined") {
-      return "light"; // Default for SSR
+      return "dark"; // Default for SSR
     }
 
     try {
@@ -42,7 +42,7 @@ export const ThemeManager = {
     } catch (error) {
       // Handle errors (localStorage might be unavailable)
       console.error("Failed to access theme preferences:", error);
-      return "light";
+      return "dark";
     }
   },
 

@@ -1,5 +1,5 @@
 {
-  "version": "3.1.1",
+  "version": "3.2.0-alpha",
   "type": "module",
   "scripts": {
     "astro": "astro",
@@ -21,7 +21,10 @@
     "i18n:scan": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/i18n/ui/*.json\"",
     "i18n:add": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/i18n/ui/*.json\" --add",
     "i18n:remove": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/i18n/ui/*.json\" --remove",
-    "i18n:markdown": "node src/scripts/generate-markdown-content.mjs"
+    "i18n:markdown": "node src/scripts/generate-markdown-content.mjs",
+    "test": "vitest run --config test/unit/vitest.config.ts",
+    "test:watch": "vitest --config test/unit/vitest.config.ts",
+    "test:e2e": "playwright test --config test/e2e/playwright.config.ts"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.6",
@@ -62,26 +65,31 @@
       "js-yaml": "^4.1.1",
       "lodash": "^4.17.23",
       "mdast-util-to-hast": "^13.2.1",
-      "@eslint/plugin-kit": "^0.3.4"
+      "@eslint/plugin-kit": "^0.3.4",
+      "@modelcontextprotocol/sdk": "^1.27.1"
     }
   },
   "devDependencies": {
-    "@modelcontextprotocol/sdk": "~1.25.3",
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "@playwright/test": "^1.58.2",
     "@sentry/astro": "^10.42.0",
     "@sentry/browser": "^10.42.0",
     "@spotlightjs/astro": "^3.2.6",
     "@spotlightjs/sidecar": "^2.5.0",
     "@spotlightjs/spotlight": "^4.10.0",
+    "@vitejs/plugin-vue": "^6.0.4",
     "@vue/devtools-kit": "^7.7.9",
     "eslint": "9.39.2",
     "eslint-config-prettier": "10.1.2",
     "glob": "^13.0.6",
     "globals": "^16.5.0",
+    "jsdom": "^28.1.0",
     "prettier": "3.5.3",
     "prettier-plugin-astro": "0.14.1",
     "prettier-plugin-tailwindcss": "^0.6.14",
     "prettier-plugin-vue": "1.1.6",
     "vite": "^7.3.1",
+    "vitest": "^4.0.18",
     "vue-eslint-parser": "^10.4.0",
     "vue-i18n-extract": "^2.0.7",
     "vue-tsc": "^2.2.12"

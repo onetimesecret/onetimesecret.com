@@ -77,37 +77,31 @@ defineExpose({
 
 <template>
   <section
-    class="bg-gradient-to-b from-white via-gray-50/40 to-white dark:from-gray-950 dark:via-gray-950 dark:to-gray-950 py-12 sm:py-16 relative">
-    <!-- Background decoration -->
-    <div
-      class="absolute inset-0 -z-10"
-      aria-hidden="true">
+    id="secret-form"
+    class="relative"
+    aria-labelledby="secret-form-heading">
+    <div class="mx-auto max-w-5xl">
       <div
-        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-brand-400/5 to-transparent dark:from-brand-400/15 rounded-full blur-3xl"></div>
-    </div>
-
-    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-      <div
-        class="flex flex-col min-h-[400px] sm:min-h-[350px] md:min-h-[400px] lg:min-h-[400px] bg-white dark:bg-gray-900 shadow-2xl shadow-gray-900/10 dark:shadow-black/40 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 backdrop-blur-sm">
+        class="flex flex-col min-h-[400px] sm:min-h-[350px] md:min-h-[400px] lg:min-h-[400px] bg-surface-1 shadow-2xl shadow-black/40 rounded-2xl overflow-hidden border border-surface-3 backdrop-blur-sm">
         <div
-          class="bg-gradient-to-r from-brand-500/8 via-brand-400/5 to-brand-500/8 dark:from-gray-850 dark:via-gray-850/95 dark:to-gray-850 px-6 py-5 border-b border-gray-200 dark:border-gray-700">
+          class="px-6 py-5 border-b border-surface-3 bg-surface-2/50">
           <div class="flex flex-wrap justify-between items-center gap-4">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-50">
+            <h2 id="secret-form-heading" class="text-xl font-bold text-text-primary">
               {{
                 t("LABELS.create_link")
               }}
-            </h3>
+            </h2>
 
-            <!-- Region selector with enhanced styling -->
+            <!-- Region selector pill -->
             <div class="flex-shrink-0 ml-0 xs:ml-1 sm:ml-2 relative">
               <div class="h-7 xs:h-8">
                 <ClientOnlyRegionSelector
                   v-if="isClient"
                   :current-region="currentRegion"
                   :available-regions="availableRegions"
-                  class="rounded-lg px-2 xs:px-3 py-1.5 xs:py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 shadow-sm hover:shadow-md transition-all duration-300 absolute top-0 left-0"
+                  class="rounded-full px-3 py-1.5 bg-surface-2 border border-surface-3 transition-colors duration-300 absolute top-0 left-0"
                   :class="{
-                    'pulse-attention ring-2 ring-brand-500 dark:ring-brand-300 shadow-lg':
+                    'pulse-attention ring-2 ring-brand-500 shadow-lg':
                       secretCreatedSuccessfully,
                   }"
                   @region-change="handleRegionChange" />
@@ -127,7 +121,7 @@ defineExpose({
 
         <div
           v-if="!showingResult"
-          class="mt-auto bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-850 px-6 py-4 text-sm text-center text-gray-700 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700">
+          class="mt-auto px-6 py-4 text-sm text-center text-text-tertiary border-t border-surface-3 bg-surface-2/30">
           {{ t("web.secrets.complianceNote") }}
         </div>
       </div>
@@ -138,17 +132,19 @@ defineExpose({
 <style scoped>
 @keyframes pulse-ring {
   0% {
-    box-shadow: 0 0 0 0 rgba(34, 139, 230, 0.5);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-brand-500) 50%, transparent);
   }
   70% {
-    box-shadow: 0 0 0 6px rgba(34, 139, 230, 0);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-brand-500) 0%, transparent);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(34, 139, 230, 0);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-brand-500) 0%, transparent);
   }
 }
 
-.pulse-attention {
-  animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+@media (prefers-reduced-motion: no-preference) {
+  .pulse-attention {
+    animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+  }
 }
 </style>

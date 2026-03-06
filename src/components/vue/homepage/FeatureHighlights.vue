@@ -1,53 +1,107 @@
 <script setup lang="ts">
-import OIcon from "@/components/vue/icons/OIcon.vue";
-import { features } from "@/data/product/features";
+import { type Feature, features } from "@/data/product/features";
+import { Clock, Code, Globe, Lock, ShieldCheck } from "lucide-vue-next";
+import { type Component } from "vue";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
+
+const capabilities = [
+  "web.homepage.infrastructure.features.customDomain",
+  "web.homepage.infrastructure.features.sso",
+  "web.homepage.infrastructure.features.auditLogs",
+];
+
+const iconMap: Record<string, Component> = {
+  lock: Lock,
+  clock: Clock,
+  globe: Globe,
+  "shield-check": ShieldCheck,
+  code: Code,
+};
+
+function iconFor(name: string): Component {
+  return iconMap[name] ?? Lock;
+}
+
+function cardClass(feature: Feature): string {
+  const span = feature.span === 2 ? "md:col-span-2" : "md:col-span-1";
+  return `${span} relative group bg-surface-1 rounded-2xl border border-surface-3 p-6 sm:p-8 flex flex-col hover:border-surface-4 transition-colors duration-200`;
+}
+
+function iconContainerClass(feature: Feature): string {
+  if (feature.iconStyle === "comp") {
+    return "mb-5 flex size-12 items-center justify-center rounded-xl border border-brandcomp-500/15 bg-brandcomp-500/8";
+  }
+  return "mb-5 flex size-12 items-center justify-center rounded-xl border border-brand-500/15 bg-brand-500/8";
+}
+
+function iconClass(feature: Feature): string {
+  if (feature.iconStyle === "comp") {
+    return "size-6 text-brandcomp-400";
+  }
+  return "size-6 text-brand-500";
+}
 </script>
 
 <template>
-  <section class="py-16 sm:py-20 bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
-    <!-- Subtle background pattern -->
-    <div
-      class="absolute inset-0 -z-10 opacity-30"
-      aria-hidden="true">
-      <div
-        class="absolute top-1/4 left-0 w-72 h-72 bg-brand-400/10 dark:bg-brand-400/15 rounded-full blur-3xl"></div>
-      <div
-        class="absolute bottom-1/4 right-0 w-96 h-96 bg-brand-300/10 dark:bg-brand-500/15 rounded-full blur-3xl"></div>
-    </div>
-
+  <section class="py-16 sm:py-20 bg-surface-0 relative overflow-hidden" aria-labelledby="features-heading">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-12 sm:mb-16">
-        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-50">
-          {{ t("web.homepage.featureHighlights.sectionTitle") }}
+      <!-- Section header -->
+      <div class="mb-10 sm:mb-14">
+        <p class="section-label mb-3">{{ t("web.homepage.features.label") }}</p>
+        <h2 id="features-heading" class="text-3xl sm:text-4xl font-bold text-text-primary">
+          {{ t("web.homepage.features.heading") }}
         </h2>
-        <p
-          class="mt-4 text-lg sm:text-xl text-gray-700 dark:text-gray-200 max-w-3xl mx-auto">
-          {{ t("web.homepage.featureHighlights.sectionSubtitle") }}
+        <p class="mt-4 text-lg text-text-secondary max-w-2xl">
+          {{ t("web.homepage.features.description") }}
         </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+      <!-- Bento grid: 3 columns, spans as specified -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div
           v-for="feature in features"
           :key="feature.id"
-          class="group bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-2xl hover:shadow-brand-500/10 dark:hover:shadow-brand-400/30 transition-all duration-300 p-6 sm:p-8 flex flex-col items-center text-center border border-gray-100 dark:border-gray-700 hover:border-brand-300 dark:hover:border-brand-400 hover:-translate-y-1">
-          <div
-            class="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-500/20 via-brand-400/10 to-brand-300/5 dark:from-brand-400/35 dark:via-brand-500/25 dark:to-brand-600/15 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-brand-500/20 dark:shadow-brand-400/25">
-            <OIcon
-              :collection="feature.icon"
-              name=""
-              class="h-10 w-10 text-brand-600 dark:text-brand-300" />
+          :class="cardClass(feature)">
+          <!-- Decorative lines on encryption card -->
+          <template v-if="feature.id === 'encryption'">
+            <div
+              class="pointer-events-none absolute bottom-4 right-4 flex flex-col gap-1 opacity-[0.12]"
+              aria-hidden="true">
+              <div class="h-px w-20 bg-brand-500"></div>
+              <div class="h-px w-16 bg-brand-500"></div>
+              <div class="h-px w-12 bg-brand-500"></div>
+              <div class="h-px w-8 bg-brand-500"></div>
+              <div class="h-px w-5 bg-brand-500"></div>
+            </div>
+          </template>
+
+          <div :class="iconContainerClass(feature)">
+            <component
+              :is="iconFor(feature.icon)"
+              :class="iconClass(feature)"
+              aria-hidden="true" />
           </div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-50 mb-3">
+
+          <h3 class="text-lg font-bold text-text-primary mb-2">
             {{ t(feature.title) }}
           </h3>
-          <p class="text-gray-700 dark:text-gray-200 leading-relaxed">
+          <p class="text-text-secondary leading-relaxed text-sm">
             {{ t(feature.description) }}
           </p>
         </div>
+      </div>
+
+      <!-- Enterprise capabilities -->
+      <div class="mt-6 flex flex-wrap items-center gap-2">
+        <span class="text-sm text-text-tertiary mr-1">{{ t("web.homepage.featureHighlights.also") }}</span>
+        <span
+          v-for="cap in capabilities"
+          :key="cap"
+          class="rounded-full border border-surface-3 bg-surface-1 px-3 py-1 text-xs font-medium text-text-secondary">
+          {{ t(cap) }}
+        </span>
       </div>
     </div>
   </section>
