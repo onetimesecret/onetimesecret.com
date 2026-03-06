@@ -16,7 +16,7 @@ const { t } = useI18n();
         <span
           class="badge-dot size-2 rounded-full bg-brand-400"
           aria-hidden="true"
-          style="box-shadow: 0 0 6px var(--color-brand-400)"></span>
+          style="box-shadow: 0 0 8px var(--color-brand-500)"></span>
         {{ t("web.homepage.hero.badge") }}
       </span>
     </div>
