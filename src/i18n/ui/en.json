@@ -306,8 +306,10 @@
       "hero": {
         "badge": "SOC 2 & ISO 27001 compliant",
         "title": {
-          "line1": "Share secrets,",
-          "line2": "not risk."
+          "line1": "Onetime Secret",
+          "line2_w1": "Signed.",
+          "line2_w2": "Sealed.",
+          "line2_w3": "Delivered."
         },
         "subtitle": "Send passwords, credentials, and sensitive data through links that self-destruct after being viewed.",
         "compliance": {

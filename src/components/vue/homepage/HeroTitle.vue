@@ -25,7 +25,11 @@ const { t } = useI18n();
       id="hero-heading"
       class="text-4xl font-extrabold text-text-primary sm:text-5xl md:text-6xl lg:text-7xl">
       <span class="block">{{ t("web.homepage.hero.title.line1") }}</span>
-      <span class="gradient-text block">{{ t("web.homepage.hero.title.line2") }}</span>
+      <span class="gradient-text block">
+        {{ t("web.homepage.hero.title.line2_w1") }}
+        <em>{{ t("web.homepage.hero.title.line2_w2") }}</em>
+        {{ t("web.homepage.hero.title.line2_w3") }}
+      </span>
     </h1>
 
     <!-- Subtitle -->

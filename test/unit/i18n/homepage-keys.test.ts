@@ -76,7 +76,9 @@ const REQUIRED_HOMEPAGE_KEYS = [
   // Hero section
   'web.homepage.hero.badge',
   'web.homepage.hero.title.line1',
-  'web.homepage.hero.title.line2',
+  'web.homepage.hero.title.line2_w1',
+  'web.homepage.hero.title.line2_w2',
+  'web.homepage.hero.title.line2_w3',
   'web.homepage.hero.subtitle',
   'web.homepage.hero.compliance.label',
   'web.homepage.hero.compliance.soc2',

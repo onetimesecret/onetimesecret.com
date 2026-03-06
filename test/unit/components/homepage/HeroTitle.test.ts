@@ -58,14 +58,18 @@ describe('HeroTitle — h1 element contract', () => {
     expect(expectedId).toBe('hero-heading');
   });
 
-  it('heading uses two separate span blocks (line1, line2)', () => {
-    const lines = ['web.homepage.hero.title.line1', 'web.homepage.hero.title.line2'];
-    expect(lines).toHaveLength(2);
+  it('heading uses line1 and three line2 word keys', () => {
+    const keys = [
+      'web.homepage.hero.title.line1',
+      'web.homepage.hero.title.line2_w1',
+      'web.homepage.hero.title.line2_w2',
+      'web.homepage.hero.title.line2_w3',
+    ];
+    expect(keys).toHaveLength(4);
   });
 
-  it('second line span has gradient-text class', () => {
+  it('second line uses gradient-text with em on middle word', () => {
     const gradientClass = 'gradient-text';
-    // gradient-text is defined in global.css / tailwind.css
     expect(gradientClass).toBe('gradient-text');
   });
 });
