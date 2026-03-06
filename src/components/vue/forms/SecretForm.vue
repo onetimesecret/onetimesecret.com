@@ -282,7 +282,7 @@ const createAnotherSecret = () => {
             autofocus
             :aria-label="t('web.secrets.secret-label')"
             aria-describedby="secret-description"
-            class="block w-full rounded-md border-0 py-2 sm:py-3 pl-3 xs:pl-4 pr-28 xs:pr-32 sm:pr-36 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 placeholder:text-sm text-sm disabled:opacity-50 bg-white dark:bg-gray-800 dark:text-gray-100 focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-opacity-50"
+            class="block w-full rounded-md border-0 py-2 sm:py-3 pl-3 xs:pl-4 pr-28 xs:pr-32 sm:pr-36 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 placeholder:text-sm text-sm disabled:opacity-50 bg-white dark:bg-gray-800 dark:text-gray-100 focus-visible:outline-2 focus-visible:outline-brand-500/50"
             :placeholder="props.placeholder || t('web.secrets.secret_placeholder')"
             :disabled="isLoading"></textarea>
           <div
