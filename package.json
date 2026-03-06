@@ -21,7 +21,10 @@
     "i18n:scan": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/i18n/ui/*.json\"",
     "i18n:add": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/i18n/ui/*.json\" --add",
     "i18n:remove": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/i18n/ui/*.json\" --remove",
-    "i18n:markdown": "node src/scripts/generate-markdown-content.mjs"
+    "i18n:markdown": "node src/scripts/generate-markdown-content.mjs",
+    "test": "vitest run --config test/unit/vitest.config.ts",
+    "test:watch": "vitest --config test/unit/vitest.config.ts",
+    "test:e2e": "playwright test --config test/e2e/playwright.config.ts"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.6",

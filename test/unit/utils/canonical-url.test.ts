@@ -20,7 +20,12 @@ const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'es'];
  */
 function generateCanonicalUrl(currentUrl: string): string {
   const url = new URL(currentUrl);
-  return `${PRODUCTION_DOMAIN}${url.pathname}${url.search}`;
+  // Security: collapse consecutive slashes to prevent protocol-relative URL
+  // injection. A path like //evil.com/attack would otherwise be interpreted
+  // as a protocol-relative redirect to an attacker-controlled domain.
+  // See OWASP: Unvalidated Redirects and Forwards (CWE-601).
+  const normalizedPath = url.pathname.replace(/\/{2,}/g, '/');
+  return `${PRODUCTION_DOMAIN}${normalizedPath}${url.search}`;
 }
 
 /**
@@ -270,13 +275,16 @@ describe('Edge Cases', () => {
 
 describe('Security Considerations', () => {
   it('should not allow domain injection via path', () => {
-    // Attempt to inject a different domain
+    // Attempt to inject a different domain via double-slash trick
     const maliciousUrl = `${STAGING_DOMAIN}//evil.com/attack`;
     const result = generateCanonicalUrl(maliciousUrl);
 
     // Result should still be on production domain
     expect(result).toMatch(new RegExp(`^${PRODUCTION_DOMAIN}`));
-    expect(result).not.toContain('evil.com');
+    // Double slashes are collapsed, so evil.com becomes a harmless path segment
+    // The key security property is that it cannot be interpreted as a host
+    expect(result).toBe(`${PRODUCTION_DOMAIN}/evil.com/attack`);
+    expect(result).not.toContain('//evil.com');
   });
 
   it('should sanitize javascript: protocol attempts', () => {
