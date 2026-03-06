@@ -231,7 +231,10 @@
       "successTitle": "Success!",
       "shareLinkDescription": "Share your secret link with others.",
       "createAnother": "Create Another Secret",
-      "regionSwitchHint": "Try creating secrets in different regions for your various needs."
+      "regionSwitchHint": "Try creating secrets in different regions for your various needs.",
+      "receiptHint": "Your",
+      "receiptLink": "receipt",
+      "receiptHintSuffix": "tracks when the secret is viewed or expires."
     },
     "useCases": {
       "sectionTitle": "Security for Professionals",
@@ -317,13 +320,13 @@
           "line2_w2": "Sealed.",
           "line2_w3": "Delivered."
         },
-        "subtitle": "Send passwords, credentials, and sensitive data through links that self-destruct after being viewed.",
+        "subtitle": "Send passwords, credentials, and sensitive data with links that work only once.",
         "compliance": {
           "label": "Security features",
           "encrypted": "Encrypted",
           "selfDestructing": "Self-destructing",
           "openSource": "Open source",
-          "dataResidency": "Data sovereignty"
+          "dataResidency": "Sovereign data"
         }
       },
       "features": {

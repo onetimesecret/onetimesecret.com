@@ -231,7 +231,10 @@
       "successTitle": "¡Éxito!",
       "shareLinkDescription": "Comparta su enlace secreto con otros.",
       "createAnother": "Crear otro secreto",
-      "regionSwitchHint": "Pruebe crear secretos en diferentes regiones para sus diversas necesidades."
+      "regionSwitchHint": "Pruebe crear secretos en diferentes regiones para sus diversas necesidades.",
+      "receiptHint": "Su",
+      "receiptLink": "recibo",
+      "receiptHintSuffix": "registra cuándo se ve o expira el secreto."
     },
     "useCases": {
       "sectionTitle": "Seguridad para profesionales",
@@ -317,7 +320,7 @@
           "line2_w2": "Sealed.",
           "line2_w3": "Delivered."
         },
-        "subtitle": "Send passwords, credentials, and sensitive data through links that self-destruct after being viewed.",
+        "subtitle": "Envíe contraseñas, credenciales y datos sensibles con enlaces que funcionan una sola vez.",
         "compliance": {
           "label": "Funciones de seguridad",
           "encrypted": "Cifrado",
