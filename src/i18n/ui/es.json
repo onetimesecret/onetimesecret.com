@@ -335,11 +335,11 @@
         "heading": "Your data, your jurisdiction.",
         "description": "Choose where your secrets are stored and processed. Regional instances ensure your data never leaves the geography you choose.",
         "regions": {
-          "ca": "CA (Toronto)",
-          "eu": "UE (Núremberg)",
-          "nz": "NZ (Porirua)",
-          "uk": "RU (Londres)",
-          "us": "US (Hillsboro)"
+          "ca": "Toronto, Canadá",
+          "eu": "Núremberg, Alemania",
+          "nz": "Porirua, Nueva Zelanda",
+          "uk": "Londres, Reino Unido",
+          "us": "Hillsboro, Estados Unidos"
         },
         "capabilitiesLabel": "Available regions",
         "features": {
