@@ -2,6 +2,7 @@
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
+import { SECURITY_FEATURE_KEYS } from "@/data/product/heroTitle";
 
 const { t } = useI18n();
 </script>
@@ -43,7 +44,7 @@ const { t } = useI18n();
       :aria-label="t('web.homepage.hero.compliance.label')"
       class="mt-8 flex flex-wrap justify-center gap-3">
       <li
-        v-for="key in ['encrypted', 'selfDestructing', 'openSource', 'dataResidency']"
+        v-for="key in SECURITY_FEATURE_KEYS"
         :key="key"
         class="rounded-full border border-surface-3 bg-surface-1 px-3 py-1 text-xs font-medium text-text-secondary">
         {{ t(`web.homepage.hero.compliance.${key}`) }}

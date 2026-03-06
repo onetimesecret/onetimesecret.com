@@ -39,7 +39,13 @@ defineExpose({
   <section
     aria-labelledby="hero-heading"
     class="relative min-h-screen w-full overflow-hidden bg-surface-0 flex flex-col items-center justify-center pt-20 sm:pt-24 pb-16 sm:pb-20">
-    <!-- Ambient glow decorations -->
+    <!--
+      Ambient glow decorations: two separate blurred circles create a subtle
+      dual-tone radiance behind the hero content. They use distinct brand
+      colors (brand-500 top-left, brandcomp-500 bottom-right) and different
+      sizes to avoid symmetry. blur-[120px] produces a soft enough halo that
+      the circles blend into the background without visible edges.
+    -->
     <div
       class="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
       aria-hidden="true">

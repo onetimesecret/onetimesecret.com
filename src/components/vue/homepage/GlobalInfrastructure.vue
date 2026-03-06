@@ -4,22 +4,9 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 
+import { regionDots, trustBadges } from "@/data/product/infrastructure";
+
 const { t } = useI18n();
-
-const trustBadges = [
-  { key: "web.homepage.infrastructure.regions.eu" },
-  { key: "web.homepage.infrastructure.regions.us" },
-  { key: "web.homepage.infrastructure.regions.au" },
-  { key: "web.homepage.infrastructure.features.customDomain" },
-  { key: "web.homepage.infrastructure.features.sso" },
-  { key: "web.homepage.infrastructure.features.auditLogs" },
-] as const;
-
-const regionDots = [
-  { label: "US", top: "38%", left: "22%" },
-  { label: "EU", top: "30%", left: "52%" },
-  { label: "AU", top: "68%", left: "74%" },
-] as const;
 </script>
 
 <template>
@@ -55,9 +42,10 @@ const regionDots = [
           </div>
         </div>
 
-        <!-- Right: CSS globe (hidden on small screens) -->
+        <!-- Right: CSS globe (decorative, hidden on small screens) -->
         <div
           class="hidden lg:flex items-center justify-center"
+          role="presentation"
           aria-hidden="true">
           <div class="relative size-80">
             <!-- Concentric circles -->

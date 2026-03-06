@@ -1,10 +1,11 @@
 /**
  * Ambient type declarations for @playwright/test.
  *
- * @playwright/test is not yet installed (see test/README.md for install
- * instructions). These declarations let TypeScript type-check E2E spec files
- * without the package being present. When @playwright/test is installed these
- * declarations are superseded by the real package types.
+ * @playwright/test is installed as a devDependency. These ambient declarations
+ * provide a lightweight type surface for E2E spec files so that TypeScript can
+ * type-check them even when node_modules is absent (e.g. in CI lint-only
+ * steps). When @playwright/test is installed, the real package types take
+ * precedence.
  */
 
 declare module '@playwright/test' {

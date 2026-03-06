@@ -238,9 +238,9 @@
         "title": "IT & DevOps",
         "description": "Securely rotate production credentials, share API keys during onboarding, and keep sensitive config out of Slack and email threads."
       },
-      "healthcare": {
-        "title": "Healthcare",
-        "description": "Share patient access credentials, system passwords, and PHI-adjacent data with the confidence that nothing lingers in inboxes or chat logs."
+      "consultants": {
+        "title": "Consultants & Agencies",
+        "description": "Share client credentials, project access, and sensitive deliverables without leaving traces in email threads or shared drives."
       },
       "it": {
         "title": "IT-Fachkraft",
@@ -304,7 +304,7 @@
       "description": "Teilen Sie sensible Informationen sicher mit selbstzerstörenden Links. Fügen Sie Ihr Geheimnis ein, generieren Sie einen Link und teilen Sie ihn. Nach dem Anzeigen ist es für immer verschwunden.",
       "a-trusted-way-to-share-sensitive-information-etc": "Eine vertrauenswürdige Methode zum Teilen vertraulicher Informationen, die nach dem Anzeigen automatisch gelöscht werden.",
       "hero": {
-        "badge": "Sicherheitsorientierte Architektur",
+        "badge": "Datenschutzorientierte Architektur",
         "title": {
           "line1": "Onetime Secret",
           "line2_w1": "Signed.",
@@ -317,7 +317,7 @@
           "encrypted": "Verschlüsselt",
           "selfDestructing": "Selbstzerstörend",
           "openSource": "Open Source",
-          "dataResidency": "Datenresidenz"
+          "dataResidency": "Datensouveränität"
         }
       },
       "features": {
@@ -335,11 +335,13 @@
         "heading": "Your data, your jurisdiction.",
         "description": "Choose where your secrets are stored and processed. Regional instances ensure your data never leaves the geography you choose.",
         "regions": {
-          "eu": "EU (Frankfurt)",
-          "us": "US (Virginia)",
-          "au": "AU (Sydney)"
+          "ca": "CA (Toronto)",
+          "eu": "EU (Nürnberg)",
+          "nz": "NZ (Porirua)",
+          "uk": "UK (London)",
+          "us": "US (Hillsboro)"
         },
-        "capabilitiesLabel": "Regions and capabilities",
+        "capabilitiesLabel": "Available regions",
         "features": {
           "customDomain": "Custom Domain",
           "sso": "SSO / SAML",
@@ -351,7 +353,7 @@
           "line1": "Start sharing secrets",
           "line2": "the right way."
         },
-        "description": "Free for individuals. Plans for teams that need compliance, custom domains, and API access.",
+        "description": "Kostenlos für Einzelpersonen und Teams. Pläne für individuelles Branding, erweiterte Steuerung und mehr.",
         "primaryButton": "Try it free",
         "secondaryButton": "View pricing"
       },
@@ -406,7 +408,8 @@
         "api": {
           "title": "Developer API",
           "description": "Integrate secret sharing into your workflows, CI/CD pipelines, and internal tools. Full REST API with language-specific SDKs."
-        }
+        },
+        "also": "Also available:"
       }
     }
   }

@@ -1,100 +1,100 @@
 /**
  * @file CtaSection.test.ts
- * @description Unit tests for CtaSection component logic (redesign/first-pass)
+ * @description Unit tests for CtaSection component contracts (redesign/first-pass)
  *
- * Tests the link href contracts and i18n key usage.
+ * Tests the link href logic via localizeUrl (the only runtime logic in CtaSection.vue)
+ * and documents the i18n key contracts.
  * Full render tests require @vue/test-utils.
  */
 
 import { describe, it, expect } from 'vitest';
+import { localizeUrl } from '@/i18n/utils';
+import { SUPPORTED_LANGUAGES } from '@config/astro/i18n';
 
 // ---------------------------------------------------------------------------
-// Link href contracts extracted from CtaSection.vue template
+// Contract constants — kept in sync with CtaSection.vue template
 // ---------------------------------------------------------------------------
 
+/** Primary CTA scrolls to the on-page secret form */
 const PRIMARY_BUTTON_HREF = '#secret-form';
-const SECONDARY_BUTTON_PATH = '/pricing';
+
+/** Secondary CTA navigates to the pricing page (localized at runtime) */
+const SECONDARY_BUTTON_BASE_PATH = '/pricing';
 
 // ---------------------------------------------------------------------------
 // Suite: primary button
 // ---------------------------------------------------------------------------
 
 describe('CtaSection — primary button', () => {
-  it('primary button href is "#secret-form"', () => {
-    // The CTA "Try it free" must scroll to the secret form on the page.
-    // Any change to the anchor target would break this link.
+  it('primary button href is an in-page anchor to "#secret-form"', () => {
     expect(PRIMARY_BUTTON_HREF).toBe('#secret-form');
-  });
-
-  it('primary button href starts with "#"', () => {
-    // Must be an in-page anchor, not an external URL
     expect(PRIMARY_BUTTON_HREF.startsWith('#')).toBe(true);
   });
+});
 
-  it('primary button i18n key is web.homepage.cta.primaryButton', () => {
-    const key = 'web.homepage.cta.primaryButton';
-    expect(key).toBe('web.homepage.cta.primaryButton');
+// ---------------------------------------------------------------------------
+// Suite: secondary button — localizeUrl integration
+// ---------------------------------------------------------------------------
+
+describe('CtaSection — secondary button localization', () => {
+  it('localizeUrl produces /{locale}/pricing for each supported language', () => {
+    for (const lang of SUPPORTED_LANGUAGES) {
+      const url = localizeUrl(SECONDARY_BUTTON_BASE_PATH, lang);
+      expect(url).toBe(`/${lang}/pricing`);
+    }
+  });
+
+  it('localizeUrl defaults to the default language when no locale is provided', () => {
+    const url = localizeUrl(SECONDARY_BUTTON_BASE_PATH);
+    // Should start with a slash and contain "pricing"
+    expect(url).toContain('pricing');
+    expect(url.startsWith('/')).toBe(true);
+  });
+
+  it('supported languages list is non-empty', () => {
+    expect(SUPPORTED_LANGUAGES.length).toBeGreaterThan(0);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Suite: secondary button
+// Suite: i18n key contracts
 // ---------------------------------------------------------------------------
 
-describe('CtaSection — secondary button', () => {
-  it('secondary button href is derived from the /pricing path', () => {
-    // The href is localizeUrl('/pricing', locale), so the base path is /pricing
-    expect(SECONDARY_BUTTON_PATH).toBe('/pricing');
+describe('CtaSection — i18n key contracts', () => {
+  /** Keys used in CtaSection.vue template — kept here to detect accidental changes */
+  const EXPECTED_KEYS = [
+    'web.homepage.cta.heading.line1',
+    'web.homepage.cta.heading.line2',
+    'web.homepage.cta.description',
+    'web.homepage.cta.primaryButton',
+    'web.homepage.cta.secondaryButton',
+  ] as const;
+
+  it('all CTA i18n keys follow the web.homepage.cta.* namespace', () => {
+    for (const key of EXPECTED_KEYS) {
+      expect(key).toMatch(/^web\.homepage\.cta\./);
+    }
   });
 
-  it('secondary button path contains "pricing"', () => {
-    expect(SECONDARY_BUTTON_PATH).toContain('pricing');
-  });
-
-  it('secondary button i18n key is web.homepage.cta.secondaryButton', () => {
-    const key = 'web.homepage.cta.secondaryButton';
-    expect(key).toBe('web.homepage.cta.secondaryButton');
+  it('heading uses a two-line structure (line1, line2)', () => {
+    const headingKeys = EXPECTED_KEYS.filter(k => k.includes('heading.'));
+    expect(headingKeys).toHaveLength(2);
+    expect(headingKeys).toContain('web.homepage.cta.heading.line1');
+    expect(headingKeys).toContain('web.homepage.cta.heading.line2');
   });
 });
 
 // ---------------------------------------------------------------------------
-// Suite: heading i18n keys
-// ---------------------------------------------------------------------------
-
-describe('CtaSection — heading i18n keys', () => {
-  it('heading uses two-line structure matching web.homepage.cta.heading.*', () => {
-    const line1Key = 'web.homepage.cta.heading.line1';
-    const line2Key = 'web.homepage.cta.heading.line2';
-    expect(line1Key).toMatch(/^web\.homepage\.cta\.heading\./);
-    expect(line2Key).toMatch(/^web\.homepage\.cta\.heading\./);
-  });
-
-  it('second heading line has gradient-text class', () => {
-    const gradientClass = 'gradient-text';
-    expect(gradientClass).toBe('gradient-text');
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Suite: locale prop requirement
+// Suite: locale prop contract
 // ---------------------------------------------------------------------------
 
 describe('CtaSection — locale prop', () => {
-  it('component accepts a locale prop of type string', () => {
-    // CtaSection.vue: defineProps<{ locale: string }>()
-    // This is a contract test: locale is required for localizeUrl()
-    const exampleLocale = 'en';
-    expect(typeof exampleLocale).toBe('string');
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Suite: ambient glow aria-hidden
-// ---------------------------------------------------------------------------
-
-describe('CtaSection — decorative elements', () => {
-  it('ambient glow div has aria-hidden="true"', () => {
-    const ariaHidden = 'true';
-    expect(ariaHidden).toBe('true');
+  it('all SupportedLanguage values are valid locale strings', () => {
+    for (const lang of SUPPORTED_LANGUAGES) {
+      expect(typeof lang).toBe('string');
+      expect(lang.length).toBeGreaterThan(0);
+      // Locale codes are short lowercase strings
+      expect(lang).toMatch(/^[a-z]{2,3}$/);
+    }
   });
 });

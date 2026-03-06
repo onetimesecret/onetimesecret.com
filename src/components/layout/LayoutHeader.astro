@@ -11,6 +11,18 @@ import { Bars3Icon, XMarkIcon } from "@heroicons/vue/24/outline";
 import { localizeUrl } from "@/i18n/utils";
 import BrandBar from "./BrandBar.astro";
 
+/**
+ * Locales supported by the docs site (docs.onetimesecret.com).
+ * Falls back to 'en' when the main site locale is not available there.
+ */
+const DOCS_SUPPORTED_LOCALES = ["en"] as const;
+
+function getDocsLocale(locale: string): string {
+  return (DOCS_SUPPORTED_LOCALES as readonly string[]).includes(locale)
+    ? locale
+    : "en";
+}
+
 export interface Props {
   effectiveLocale?: string;
   initialMessages?: Record<string, MessageSchema>;
@@ -64,7 +76,7 @@ const navigation = [
   },
   {
     name: t("navigation.docs"),
-    href: `https://docs.onetimesecret.com/${effectiveLocale}`,
+    href: `https://docs.onetimesecret.com/${getDocsLocale(effectiveLocale)}`,
     external: true,
   },
 ];

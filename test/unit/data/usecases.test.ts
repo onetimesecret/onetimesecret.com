@@ -32,10 +32,10 @@ describe('getUseCases — count and persona presence', () => {
     expect(ids).toContain('itdevops');
   });
 
-  it('includes the healthcare use case', () => {
+  it('includes the consultants use case', () => {
     const result = getUseCases(t);
     const ids = result.map(uc => uc.id);
-    expect(ids).toContain('healthcare');
+    expect(ids).toContain('consultants');
   });
 
   it('includes the hr use case', () => {

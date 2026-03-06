@@ -5,9 +5,13 @@
  * These tests verify that canonical URLs, Open Graph URLs, and alternate
  * language links correctly use the production domain regardless of the
  * serving domain.
+ *
+ * The generateCanonicalUrl function is imported from the shared utility
+ * so these tests exercise the same code path used in LayoutHead.astro.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
+import { generateCanonicalUrl } from '@/utils/canonical-url';
 
 // Constants matching production configuration
 const PRODUCTION_DOMAIN = 'https://onetimesecret.com';
@@ -15,17 +19,13 @@ const STAGING_DOMAIN = 'https://onetimesecret.dev';
 const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'es'];
 
 /**
- * Generates a canonical URL by replacing the domain with production.
- * This mirrors the logic that should be implemented in LayoutHead.astro
+ * Helper: build a canonical URL from a full URL string, mirroring the
+ * call pattern in LayoutHead.astro (which passes pathname, search, and
+ * the canonical origin separately).
  */
-function generateCanonicalUrl(currentUrl: string): string {
-  const url = new URL(currentUrl);
-  // Security: collapse consecutive slashes to prevent protocol-relative URL
-  // injection. A path like //evil.com/attack would otherwise be interpreted
-  // as a protocol-relative redirect to an attacker-controlled domain.
-  // See OWASP: Unvalidated Redirects and Forwards (CWE-601).
-  const normalizedPath = url.pathname.replace(/\/{2,}/g, '/');
-  return `${PRODUCTION_DOMAIN}${normalizedPath}${url.search}`;
+function canonicalFromFullUrl(fullUrl: string): string {
+  const url = new URL(fullUrl);
+  return generateCanonicalUrl(url.pathname, url.search, PRODUCTION_DOMAIN);
 }
 
 /**
@@ -73,17 +73,17 @@ function generateXDefaultUrl(currentPath: string): string {
 describe('Canonical URL Generation', () => {
   describe('generateCanonicalUrl', () => {
     it('should replace staging domain with production domain', () => {
-      const result = generateCanonicalUrl(`${STAGING_DOMAIN}/`);
+      const result = canonicalFromFullUrl(`${STAGING_DOMAIN}/`);
       expect(result).toBe(`${PRODUCTION_DOMAIN}/`);
     });
 
     it('should preserve path when converting to production domain', () => {
-      const result = generateCanonicalUrl(`${STAGING_DOMAIN}/en/about`);
+      const result = canonicalFromFullUrl(`${STAGING_DOMAIN}/en/about`);
       expect(result).toBe(`${PRODUCTION_DOMAIN}/en/about`);
     });
 
     it('should handle root path correctly', () => {
-      const result = generateCanonicalUrl(`${STAGING_DOMAIN}/`);
+      const result = canonicalFromFullUrl(`${STAGING_DOMAIN}/`);
       expect(result).toBe(`${PRODUCTION_DOMAIN}/`);
     });
 
@@ -96,20 +96,20 @@ describe('Canonical URL Generation', () => {
       ];
 
       for (const { input, expected } of testCases) {
-        const result = generateCanonicalUrl(`${STAGING_DOMAIN}${input}`);
+        const result = canonicalFromFullUrl(`${STAGING_DOMAIN}${input}`);
         expect(result).toBe(expected);
       }
     });
 
     it('should preserve query parameters', () => {
-      const result = generateCanonicalUrl(
+      const result = canonicalFromFullUrl(
         `${STAGING_DOMAIN}/pricing?plan=premium&ref=docs`
       );
       expect(result).toBe(`${PRODUCTION_DOMAIN}/pricing?plan=premium&ref=docs`);
     });
 
     it('should handle complex query strings', () => {
-      const result = generateCanonicalUrl(
+      const result = canonicalFromFullUrl(
         `${STAGING_DOMAIN}/search?q=test+query&page=2&sort=date`
       );
       expect(result).toBe(
@@ -118,7 +118,7 @@ describe('Canonical URL Generation', () => {
     });
 
     it('should handle URL-encoded characters in path', () => {
-      const result = generateCanonicalUrl(
+      const result = canonicalFromFullUrl(
         `${STAGING_DOMAIN}/docs/getting%20started`
       );
       expect(result).toBe(`${PRODUCTION_DOMAIN}/docs/getting%20started`);
@@ -126,21 +126,21 @@ describe('Canonical URL Generation', () => {
 
     it('should strip hash fragments from canonical URL', () => {
       // Hash fragments are typically not included in canonical URLs
-      const result = generateCanonicalUrl(`${STAGING_DOMAIN}/about#team`);
+      const result = canonicalFromFullUrl(`${STAGING_DOMAIN}/about#team`);
       // Note: URL.search doesn't include hash, so this naturally strips it
       expect(result).toBe(`${PRODUCTION_DOMAIN}/about`);
     });
 
     it('should handle deep nested paths', () => {
-      const result = generateCanonicalUrl(
+      const result = canonicalFromFullUrl(
         `${STAGING_DOMAIN}/docs/api/v2/authentication`
       );
       expect(result).toBe(`${PRODUCTION_DOMAIN}/docs/api/v2/authentication`);
     });
 
     it('should handle paths with trailing slash consistently', () => {
-      const withSlash = generateCanonicalUrl(`${STAGING_DOMAIN}/about/`);
-      const withoutSlash = generateCanonicalUrl(`${STAGING_DOMAIN}/about`);
+      const withSlash = canonicalFromFullUrl(`${STAGING_DOMAIN}/about/`);
+      const withoutSlash = canonicalFromFullUrl(`${STAGING_DOMAIN}/about`);
 
       // Both should produce consistent results
       expect(withSlash).toBe(`${PRODUCTION_DOMAIN}/about/`);
@@ -148,8 +148,17 @@ describe('Canonical URL Generation', () => {
     });
 
     it('should work when already on production domain', () => {
-      const result = generateCanonicalUrl(`${PRODUCTION_DOMAIN}/en/about`);
+      const result = canonicalFromFullUrl(`${PRODUCTION_DOMAIN}/en/about`);
       expect(result).toBe(`${PRODUCTION_DOMAIN}/en/about`);
+    });
+
+    it('can be called with decomposed path/search/origin directly', () => {
+      const result = generateCanonicalUrl(
+        '/en/pricing',
+        '?plan=premium',
+        PRODUCTION_DOMAIN
+      );
+      expect(result).toBe(`${PRODUCTION_DOMAIN}/en/pricing?plan=premium`);
     });
   });
 });
@@ -243,8 +252,8 @@ describe('Alternate Language URL Generation', () => {
 
 describe('Open Graph URL', () => {
   it('og:url should match canonical URL', () => {
-    const canonical = generateCanonicalUrl(`${STAGING_DOMAIN}/en/about`);
-    const ogUrl = generateCanonicalUrl(`${STAGING_DOMAIN}/en/about`);
+    const canonical = canonicalFromFullUrl(`${STAGING_DOMAIN}/en/about`);
+    const ogUrl = canonicalFromFullUrl(`${STAGING_DOMAIN}/en/about`);
 
     expect(ogUrl).toBe(canonical);
     expect(ogUrl).toBe(`${PRODUCTION_DOMAIN}/en/about`);
@@ -253,22 +262,22 @@ describe('Open Graph URL', () => {
 
 describe('Edge Cases', () => {
   it('should handle empty path', () => {
-    const result = generateCanonicalUrl(`${STAGING_DOMAIN}`);
+    const result = canonicalFromFullUrl(`${STAGING_DOMAIN}`);
     expect(result).toContain(PRODUCTION_DOMAIN);
   });
 
   it('should handle paths with special characters', () => {
-    const result = generateCanonicalUrl(`${STAGING_DOMAIN}/tag/c++`);
+    const result = canonicalFromFullUrl(`${STAGING_DOMAIN}/tag/c++`);
     expect(result).toContain(PRODUCTION_DOMAIN);
   });
 
-  it('should not produce double slashes', () => {
-    const result = generateCanonicalUrl(`${STAGING_DOMAIN}//about`);
+  it('should not produce double slashes in path', () => {
+    const result = canonicalFromFullUrl(`${STAGING_DOMAIN}//about`);
     expect(result).not.toContain('//about');
   });
 
   it('should handle international characters in path', () => {
-    const result = generateCanonicalUrl(`${STAGING_DOMAIN}/%E4%B8%AD%E6%96%87`);
+    const result = canonicalFromFullUrl(`${STAGING_DOMAIN}/%E4%B8%AD%E6%96%87`);
     expect(result).toBe(`${PRODUCTION_DOMAIN}/%E4%B8%AD%E6%96%87`);
   });
 });
@@ -277,7 +286,7 @@ describe('Security Considerations', () => {
   it('should not allow domain injection via path', () => {
     // Attempt to inject a different domain via double-slash trick
     const maliciousUrl = `${STAGING_DOMAIN}//evil.com/attack`;
-    const result = generateCanonicalUrl(maliciousUrl);
+    const result = canonicalFromFullUrl(maliciousUrl);
 
     // Result should still be on production domain
     expect(result).toMatch(new RegExp(`^${PRODUCTION_DOMAIN}`));
@@ -290,7 +299,7 @@ describe('Security Considerations', () => {
   it('should sanitize javascript: protocol attempts', () => {
     // This would fail URL parsing, but test for safety
     try {
-      const result = generateCanonicalUrl('javascript:alert(1)');
+      const result = canonicalFromFullUrl('javascript:alert(1)');
       expect(result).not.toContain('javascript:');
     } catch {
       // Expected to throw, which is safe

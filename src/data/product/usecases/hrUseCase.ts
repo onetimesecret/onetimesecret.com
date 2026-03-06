@@ -10,7 +10,7 @@ You can find the address in the handbook.`;
   return {
     id: "hr",
     title: t("web.useCases.hr.title"),
-    icon: "users",
+    icon: "👥",
     description: t("web.useCases.hr.description"),
     exampleSecret: exampleSecret,
     benefits: [

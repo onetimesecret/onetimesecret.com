@@ -9,7 +9,7 @@ Access Code: Ragu22`;
   return {
     id: "legal",
     title: t("web.useCases.legal.title"),
-    icon: "scale",
+    icon: "⚖️",
     description: t("web.useCases.legal.description"),
     exampleSecret: exampleSecret,
     benefits: [

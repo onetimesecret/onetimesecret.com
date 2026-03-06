@@ -6,6 +6,12 @@ import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
 
+const capabilities = [
+  "web.homepage.infrastructure.features.customDomain",
+  "web.homepage.infrastructure.features.sso",
+  "web.homepage.infrastructure.features.auditLogs",
+];
+
 const iconMap: Record<string, Component> = {
   lock: Lock,
   clock: Clock,
@@ -85,6 +91,17 @@ function iconClass(feature: Feature): string {
             {{ t(feature.description) }}
           </p>
         </div>
+      </div>
+
+      <!-- Enterprise capabilities -->
+      <div class="mt-6 flex flex-wrap items-center gap-2">
+        <span class="text-sm text-text-tertiary mr-1">{{ t("web.homepage.featureHighlights.also") }}</span>
+        <span
+          v-for="cap in capabilities"
+          :key="cap"
+          class="rounded-full border border-surface-3 bg-surface-1 px-3 py-1 text-xs font-medium text-text-secondary">
+          {{ t(cap) }}
+        </span>
       </div>
     </div>
   </section>

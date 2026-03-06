@@ -238,9 +238,9 @@
         "title": "IT & DevOps",
         "description": "Securely rotate production credentials, share API keys during onboarding, and keep sensitive config out of Slack and email threads."
       },
-      "healthcare": {
-        "title": "Healthcare",
-        "description": "Share patient access credentials, system passwords, and PHI-adjacent data with the confidence that nothing lingers in inboxes or chat logs."
+      "consultants": {
+        "title": "Consultants & Agencies",
+        "description": "Share client credentials, project access, and sensitive deliverables without leaving traces in email threads or shared drives."
       },
       "it": {
         "title": "IT Professional",
@@ -304,7 +304,7 @@
       "description": "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever",
       "a-trusted-way-to-share-sensitive-information-etc": "A trusted way to share sensitive information that self-destructs after being viewed.",
       "hero": {
-        "badge": "Security-first architecture",
+        "badge": "Privacy-first architecture",
         "title": {
           "line1": "Onetime Secret",
           "line2_w1": "Signed.",
@@ -317,7 +317,7 @@
           "encrypted": "Encrypted",
           "selfDestructing": "Self-destructing",
           "openSource": "Open source",
-          "dataResidency": "Data residency"
+          "dataResidency": "Data sovereignty"
         }
       },
       "features": {
@@ -335,11 +335,13 @@
         "heading": "Your data, your jurisdiction.",
         "description": "Choose where your secrets are stored and processed. Regional instances ensure your data never leaves the geography you choose.",
         "regions": {
-          "eu": "EU (Frankfurt)",
-          "us": "US (Virginia)",
-          "au": "AU (Sydney)"
+          "ca": "CA (Toronto)",
+          "eu": "EU (Nuremberg)",
+          "nz": "NZ (Porirua)",
+          "uk": "UK (London)",
+          "us": "US (Hillsboro)"
         },
-        "capabilitiesLabel": "Regions and capabilities",
+        "capabilitiesLabel": "Available regions",
         "features": {
           "customDomain": "Custom Domain",
           "sso": "SSO / SAML",
@@ -351,7 +353,7 @@
           "line1": "Start sharing secrets",
           "line2": "the right way."
         },
-        "description": "Free for individuals. Plans for teams that need compliance, custom domains, and API access.",
+        "description": "Free for individuals and teams. Plans for custom branding, advanced controls, and more.",
         "primaryButton": "Try it free",
         "secondaryButton": "View pricing"
       },
@@ -406,7 +408,8 @@
         "api": {
           "title": "Developer API",
           "description": "Integrate secret sharing into your workflows, CI/CD pipelines, and internal tools. Full REST API with language-specific SDKs."
-        }
+        },
+        "also": "Also available:"
       }
     }
   }

@@ -3,66 +3,48 @@
  * @description Unit tests for GlobalInfrastructure component logic (redesign/first-pass)
  *
  * Tests the trust badge data contract and accessibility attributes expected
- * in the template. Full render tests require @vue/test-utils.
+ * in the template. Data is imported from the shared module used by the
+ * component itself, so changes to the source data are automatically reflected
+ * here. Full render tests require @vue/test-utils.
  */
 
 import { describe, it, expect } from 'vitest';
-
-// ---------------------------------------------------------------------------
-// Data contracts extracted from GlobalInfrastructure.vue
-// ---------------------------------------------------------------------------
-
-const TRUST_BADGE_KEYS = [
-  'web.homepage.infrastructure.regions.eu',
-  'web.homepage.infrastructure.regions.us',
-  'web.homepage.infrastructure.regions.au',
-  'web.homepage.infrastructure.features.customDomain',
-  'web.homepage.infrastructure.features.sso',
-  'web.homepage.infrastructure.features.auditLogs',
-] as const;
-
-const REGION_DOTS = [
-  { label: 'US', top: '38%', left: '22%' },
-  { label: 'EU', top: '30%', left: '52%' },
-  { label: 'AU', top: '68%', left: '74%' },
-] as const;
+import { trustBadges, regionDots } from '@/data/product/infrastructure';
 
 // ---------------------------------------------------------------------------
 // Suite: trust badges
 // ---------------------------------------------------------------------------
 
 describe('GlobalInfrastructure — trust badge data', () => {
-  it('has exactly 6 trust badges', () => {
-    expect(TRUST_BADGE_KEYS).toHaveLength(6);
+  const badgeKeys = trustBadges.map(b => b.key);
+
+  it('has exactly 5 region badges', () => {
+    expect(trustBadges).toHaveLength(5);
+  });
+
+  it('includes CA region badge', () => {
+    expect(badgeKeys).toContain('web.homepage.infrastructure.regions.ca');
   });
 
   it('includes EU region badge', () => {
-    expect(TRUST_BADGE_KEYS).toContain('web.homepage.infrastructure.regions.eu');
+    expect(badgeKeys).toContain('web.homepage.infrastructure.regions.eu');
+  });
+
+  it('includes NZ region badge', () => {
+    expect(badgeKeys).toContain('web.homepage.infrastructure.regions.nz');
+  });
+
+  it('includes UK region badge', () => {
+    expect(badgeKeys).toContain('web.homepage.infrastructure.regions.uk');
   });
 
   it('includes US region badge', () => {
-    expect(TRUST_BADGE_KEYS).toContain('web.homepage.infrastructure.regions.us');
+    expect(badgeKeys).toContain('web.homepage.infrastructure.regions.us');
   });
 
-  it('includes AU region badge', () => {
-    expect(TRUST_BADGE_KEYS).toContain('web.homepage.infrastructure.regions.au');
-  });
-
-  it('includes Custom Domain capability badge', () => {
-    expect(TRUST_BADGE_KEYS).toContain('web.homepage.infrastructure.features.customDomain');
-  });
-
-  it('includes SSO capability badge', () => {
-    expect(TRUST_BADGE_KEYS).toContain('web.homepage.infrastructure.features.sso');
-  });
-
-  it('includes Audit Logs capability badge', () => {
-    expect(TRUST_BADGE_KEYS).toContain('web.homepage.infrastructure.features.auditLogs');
-  });
-
-  it('all badge keys are i18n paths under web.homepage.infrastructure', () => {
-    for (const key of TRUST_BADGE_KEYS) {
-      expect(key).toMatch(/^web\.homepage\.infrastructure\./);
+  it('all badge keys are i18n paths under web.homepage.infrastructure.regions', () => {
+    for (const key of badgeKeys) {
+      expect(key).toMatch(/^web\.homepage\.infrastructure\.regions\./);
     }
   });
 });
@@ -95,19 +77,21 @@ describe('GlobalInfrastructure — globe accessibility contract', () => {
 // ---------------------------------------------------------------------------
 
 describe('GlobalInfrastructure — region dots', () => {
-  it('has exactly 3 region dots (US, EU, AU)', () => {
-    expect(REGION_DOTS).toHaveLength(3);
+  it('has exactly 5 region dots (CA, US, EU, UK, NZ)', () => {
+    expect(regionDots).toHaveLength(5);
   });
 
-  it('region dot labels are US, EU, AU', () => {
-    const labels = REGION_DOTS.map(d => d.label);
+  it('region dot labels are CA, US, EU, UK, NZ', () => {
+    const labels = regionDots.map(d => d.label);
+    expect(labels).toContain('CA');
     expect(labels).toContain('US');
     expect(labels).toContain('EU');
-    expect(labels).toContain('AU');
+    expect(labels).toContain('UK');
+    expect(labels).toContain('NZ');
   });
 
   it('all region dots have percentage-based top/left positioning', () => {
-    for (const dot of REGION_DOTS) {
+    for (const dot of regionDots) {
       expect(dot.top).toMatch(/^\d+(\.\d+)?%$/);
       expect(dot.left).toMatch(/^\d+(\.\d+)?%$/);
     }

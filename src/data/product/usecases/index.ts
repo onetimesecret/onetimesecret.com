@@ -1,5 +1,5 @@
 import { type UseCase } from "@/types/useCase";
-import { getHealthcareUseCase } from "./healthcareUseCase";
+import { getConsultantUseCase } from "./consultantUseCase";
 import { getHRUseCase } from "./hrUseCase";
 import { getITDevOpsUseCase } from "./itdevopsUseCase";
 import { getLegalUseCase } from "./legalUseCase";
@@ -14,6 +14,6 @@ export function getUseCases(t: (key: string) => string): UseCase[] {
     getITDevOpsUseCase(t),
     getHRUseCase(t),
     getLegalUseCase(t),
-    getHealthcareUseCase(t),
+    getConsultantUseCase(t),
   ];
 }

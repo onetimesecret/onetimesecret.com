@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
+import { STEPS as steps, STEP_NUMBERS as stepNumbers } from "@/data/product/howItWorks";
 
 const { t } = useI18n();
-
-const steps = ["step1", "step2", "step3"] as const;
-const stepNumbers = ["01", "02", "03"] as const;
 </script>
 
 <template>

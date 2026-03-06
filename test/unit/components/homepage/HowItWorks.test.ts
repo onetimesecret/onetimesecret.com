@@ -1,20 +1,14 @@
 /**
  * @file HowItWorks.test.ts
- * @description Unit tests for HowItWorks component logic (redesign/first-pass)
+ * @description Unit tests for HowItWorks component data contracts (redesign/first-pass)
  *
- * Tests the step data contract: exactly 3 steps, step number strings
- * are 01/02/03, step keys follow the expected pattern.
- * Full render tests require @vue/test-utils.
+ * Tests import shared constants from @/data/product/howItWorks so that
+ * changes to the source data are reflected here automatically.
+ * Full render tests require @vue/test-utils which is not yet installed.
  */
 
 import { describe, it, expect } from 'vitest';
-
-// ---------------------------------------------------------------------------
-// Data contracts extracted from HowItWorks.vue
-// ---------------------------------------------------------------------------
-
-const STEPS = ['step1', 'step2', 'step3'] as const;
-const STEP_NUMBERS = ['01', '02', '03'] as const;
+import { STEPS, STEP_NUMBERS } from '@/data/product/howItWorks';
 
 // ---------------------------------------------------------------------------
 // Suite: step array shape
@@ -81,17 +75,5 @@ describe('HowItWorks — i18n key format', () => {
       const key = `web.homepage.howItWorks.${step}.description`;
       expect(key).toMatch(/^web\.homepage\.howItWorks\.step\d+\.description$/);
     }
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Suite: step number accessibility
-// ---------------------------------------------------------------------------
-
-describe('HowItWorks — step number accessibility', () => {
-  it('step number spans have aria-hidden="true"', () => {
-    // Large decorative "01"/"02"/"03" numbers should be hidden from screen readers
-    const expectedAriaHidden = 'true';
-    expect(expectedAriaHidden).toBe('true');
   });
 });

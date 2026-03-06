@@ -1,10 +1,10 @@
 /**
  * Ambient type declarations for vitest.
  *
- * Vitest is not yet installed (see test/README.md for install instructions).
- * These declarations let TypeScript type-check test files without the package
- * being present. When vitest is installed these declarations are superseded by
- * the real package types.
+ * Vitest is installed as a devDependency. These ambient declarations provide a
+ * lightweight type surface for unit test files so that TypeScript can
+ * type-check them even when node_modules is absent (e.g. in CI lint-only
+ * steps). When vitest is installed, the real package types take precedence.
  */
 
 declare module 'vitest' {
@@ -46,6 +46,7 @@ declare module 'vitest' {
     toHaveLength(n: number): void;
     toContain(item: unknown): void;
     toMatch(pattern: RegExp | string): void;
+    toHaveProperty(key: string, value?: unknown): void;
     toBeDefined(): void;
     toBeUndefined(): void;
     toBeTruthy(): void;

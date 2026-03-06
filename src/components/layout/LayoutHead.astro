@@ -5,6 +5,7 @@ import OptimizedFonts from "./OptimizedFonts.astro";
 
 // Utilities
 import { generateCspConnectSrc } from "@/utils/security";
+import { generateCanonicalUrl } from "@/utils/canonical-url";
 import {
   getRouteSeoConfig,
   generateBreadcrumbsLd,
@@ -66,7 +67,7 @@ const pageOgType =
   propsOgType || routeSpecificSeo.ogType || defaultSeoValues.ogType;
 const pageKeywords = propsKeywords || defaultSeoValues.keywords;
 const pageCanonicalUrl = propsCanonicalUrl ||
-  new URL(currentPath + Astro.url.search, CANONICAL_ORIGIN).href;
+  generateCanonicalUrl(currentPath, Astro.url.search, CANONICAL_ORIGIN);
 const pageTwitterCard = propsTwitterCard || defaultSeoValues.twitterCard;
 
 const pageNoindex =
@@ -98,6 +99,24 @@ const pageStructuredData =
   getDefaultWebApplicationLd(siteOrigin, pageDescription);
 
 const pageBreadcrumbsLd = generateBreadcrumbsLd(currentPath, siteOrigin);
+
+// Site-wide Organization + WebSite JSON-LD (complements per-route structured data)
+const siteJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      name: "Onetime Secret",
+      url: siteOrigin,
+      logo: `${siteOrigin}/etc/img/onetime-logo-md.png`,
+    },
+    {
+      "@type": "WebSite",
+      name: "Onetime Secret",
+      url: siteOrigin,
+    },
+  ],
+};
 
 // Content Security Policy
 const apiUrl = import.meta.env.VITE_PUBLIC_API_BASE_URL;
@@ -137,6 +156,11 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
     alternateLanguages={pageAlternateLanguages}
     structuredData={pageStructuredData}
     breadcrumbsLd={pageBreadcrumbsLd}
+  />
+  <script
+    is:inline
+    type="application/ld+json"
+    set:html={JSON.stringify(siteJsonLd)}
   />
   <link
     rel="sitemap"

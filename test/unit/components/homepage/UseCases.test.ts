@@ -51,10 +51,10 @@ describe('UseCases — developer persona removal', () => {
 // ---------------------------------------------------------------------------
 
 describe('UseCases — expected persona IDs', () => {
-  it('use case IDs are itdevops, hr, legal, healthcare (in any order)', () => {
+  it('use case IDs are itdevops, hr, legal, consultants (in any order)', () => {
     const useCases = getUseCases(t);
     const ids = useCases.map(uc => uc.id).sort();
-    expect(ids).toEqual(['healthcare', 'hr', 'itdevops', 'legal']);
+    expect(ids).toEqual(['consultants', 'hr', 'itdevops', 'legal']);
   });
 });
 
@@ -78,12 +78,10 @@ describe('UseCases — grid data integrity', () => {
     expect(itdevops!.exampleSecret.trim().length).toBeGreaterThan(0);
   });
 
-  it('healthcare use case has an empty exampleSecret (no code preview block)', () => {
+  it('consultants use case has a non-empty exampleSecret', () => {
     const useCases = getUseCases(t);
-    const healthcare = useCases.find(uc => uc.id === 'healthcare');
-    expect(healthcare).toBeDefined();
-    // Healthcare has no inline code snippet — the template hides the block when falsy
-    const hasSecret = healthcare!.exampleSecret && healthcare!.exampleSecret.trim().length > 0;
-    expect(hasSecret).toBeFalsy();
+    const consultants = useCases.find(uc => uc.id === 'consultants');
+    expect(consultants).toBeDefined();
+    expect(consultants!.exampleSecret.trim().length).toBeGreaterThan(0);
   });
 });

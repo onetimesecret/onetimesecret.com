@@ -1,49 +1,28 @@
 /**
  * @file HeroTitle.test.ts
- * @description Unit tests for HeroTitle component logic (redesign/first-pass)
+ * @description Unit tests for HeroTitle component data contracts (redesign/first-pass)
  *
- * Tests the structural contract and expected markup attributes without a full
- * DOM render. Full render tests require @vue/test-utils which is not yet in
- * package.json (see test/README.md for install instructions).
- *
- * What these tests cover:
- * - Badge element: presence of the badge-dot span and aria-hidden
- * - h1 element: id="hero-heading", two child spans
- * - Compliance list: role="list", aria-label bound to i18n key, 4 items
- * - Animation: badge-dot class present (CSS-only gating of pulse animation)
+ * Tests import shared constants from @/data/product/heroTitle so that
+ * changes to the source data are reflected here automatically.
+ * Full render tests require @vue/test-utils which is not yet installed.
  */
 
 import { describe, it, expect } from 'vitest';
-
-// ---------------------------------------------------------------------------
-// Structural contracts extracted from HeroTitle.vue template
-// The assertions below codify the expected markup shape so any template
-// change that breaks these contracts fails here before E2E runs.
-// ---------------------------------------------------------------------------
-
-const SECURITY_FEATURE_KEYS = ['encrypted', 'selfDestructing', 'openSource', 'dataResidency'] as const;
+import {
+  SECURITY_FEATURE_KEYS,
+  HERO_HEADING_KEYS,
+  HERO_BADGE_KEY,
+  COMPLIANCE_LABEL_KEY,
+} from '@/data/product/heroTitle';
 
 // ---------------------------------------------------------------------------
 // Badge
 // ---------------------------------------------------------------------------
 
 describe('HeroTitle — badge element contract', () => {
-  it('badge-dot span has aria-hidden="true"', () => {
-    // Codifies: <span class="badge-dot ..." aria-hidden="true">
-    const expectedAriaHidden = 'true';
-    expect(expectedAriaHidden).toBe('true');
-  });
-
-  it('badge-dot element uses class name "badge-dot" (animation hook)', () => {
-    // The CSS @keyframes badge-pulse targets .badge-dot
-    // Changing this class name would silently break the animation
-    const badgeDotClass = 'badge-dot';
-    expect(badgeDotClass).toMatch(/^badge-dot$/);
-  });
-
-  it('badge text is driven by i18n key web.homepage.hero.badge', () => {
-    const key = 'web.homepage.hero.badge';
-    expect(key).toBe('web.homepage.hero.badge');
+  it('badge i18n key is defined and non-empty', () => {
+    expect(HERO_BADGE_KEY).toBe('web.homepage.hero.badge');
+    expect(HERO_BADGE_KEY.length).toBeGreaterThan(0);
   });
 });
 
@@ -52,25 +31,22 @@ describe('HeroTitle — badge element contract', () => {
 // ---------------------------------------------------------------------------
 
 describe('HeroTitle — h1 element contract', () => {
-  it('h1 element has id="hero-heading"', () => {
-    // Required for E2E selector and aria-labelledby references
-    const expectedId = 'hero-heading';
-    expect(expectedId).toBe('hero-heading');
-  });
-
   it('heading uses line1 and three line2 word keys', () => {
-    const keys = [
-      'web.homepage.hero.title.line1',
-      'web.homepage.hero.title.line2_w1',
-      'web.homepage.hero.title.line2_w2',
-      'web.homepage.hero.title.line2_w3',
-    ];
+    const keys = Object.values(HERO_HEADING_KEYS);
     expect(keys).toHaveLength(4);
   });
 
-  it('second line uses gradient-text with em on middle word', () => {
-    const gradientClass = 'gradient-text';
-    expect(gradientClass).toBe('gradient-text');
+  it('all heading keys follow the web.homepage.hero.title.* pattern', () => {
+    for (const key of Object.values(HERO_HEADING_KEYS)) {
+      expect(key).toMatch(/^web\.homepage\.hero\.title\./);
+    }
+  });
+
+  it('heading has line1, line2_w1, line2_w2, line2_w3 segments', () => {
+    expect(HERO_HEADING_KEYS).toHaveProperty('line1');
+    expect(HERO_HEADING_KEYS).toHaveProperty('line2_w1');
+    expect(HERO_HEADING_KEYS).toHaveProperty('line2_w2');
+    expect(HERO_HEADING_KEYS).toHaveProperty('line2_w3');
   });
 });
 
@@ -99,15 +75,8 @@ describe('HeroTitle — security feature list contract', () => {
     expect(SECURITY_FEATURE_KEYS).toContain('dataResidency');
   });
 
-  it('security feature ul has role="list"', () => {
-    // Codifies: <ul role="list" :aria-label="...">
-    const expectedRole = 'list';
-    expect(expectedRole).toBe('list');
-  });
-
-  it('security feature ul aria-label is bound to key web.homepage.hero.compliance.label', () => {
-    const ariaLabelKey = 'web.homepage.hero.compliance.label';
-    expect(ariaLabelKey).toBe('web.homepage.hero.compliance.label');
+  it('compliance list aria-label key is defined', () => {
+    expect(COMPLIANCE_LABEL_KEY).toBe('web.homepage.hero.compliance.label');
   });
 
   it('each security feature i18n key follows pattern web.homepage.hero.compliance.{tag}', () => {
@@ -115,19 +84,5 @@ describe('HeroTitle — security feature list contract', () => {
       const fullKey = `web.homepage.hero.compliance.${key}`;
       expect(fullKey).toMatch(/^web\.homepage\.hero\.compliance\./);
     }
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Animation: reduced-motion gating (CSS-only — just verify the class contract)
-// ---------------------------------------------------------------------------
-
-describe('HeroTitle — reduced-motion animation', () => {
-  it('animation is scoped behind @media (prefers-reduced-motion: no-preference)', () => {
-    // The animation applies only when reduced-motion is NOT preferred.
-    // This is a CSS-only gate; DOM presence of .badge-dot is always true.
-    // Test documents the intended behaviour: element always exists in DOM.
-    const animationClass = 'badge-dot';
-    expect(animationClass).toBeTruthy();
   });
 });
