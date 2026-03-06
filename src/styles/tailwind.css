@@ -160,6 +160,11 @@
     @apply text-xs font-semibold uppercase tracking-widest text-brand-600;
   }
 
+  /* Dot glow: status indicator dots (hero badge, region map) */
+  .dot-glow {
+    box-shadow: 0 0 8px var(--color-brand-500);
+  }
+
   /* Gradient text: hero h1 and CTA h2 */
   .gradient-text {
     color: var(--color-brand-500); /* solid fallback */
