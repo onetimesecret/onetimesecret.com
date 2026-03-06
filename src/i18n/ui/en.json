@@ -197,6 +197,7 @@
       "passphraseInputLabel": "Passphrase",
       "passphrasePlaceholder": "Enter passphrase",
       "passphraseInputHint": "Recipient will need this passphrase to view the secret",
+      "removePassphrase": "Remove passphrase",
       "ttlLabel": "Secret lifetime",
       "ttlHint": "Secret will be deleted after this time, even if not viewed",
       "customDomainCta": "Want to use your own domain?",

@@ -197,6 +197,7 @@
       "passphraseInputLabel": "Passphrase",
       "passphrasePlaceholder": "Passphrase eingeben",
       "passphraseInputHint": "Empfänger benötigt diese Passphrase, um das Geheimnis anzuzeigen",
+      "removePassphrase": "Passphrase entfernen",
       "ttlLabel": "Geheimnis-Lebensdauer",
       "ttlHint": "Geheimnis wird nach dieser Zeit gelöscht, auch wenn es nicht angesehen wurde",
       "customDomainCta": "Möchten Sie Ihre eigene Domain verwenden?",

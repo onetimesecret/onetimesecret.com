@@ -83,49 +83,81 @@ const copyButtonRef = ref<HTMLButtonElement | null>(null);
 
 // TTL options
 const ttlOptions = ref<TtlOption[]>([
-  { value: 300, label: t("web.secrets.ttl.5minutes") || "5 minutes" },
   { value: 1800, label: t("web.secrets.ttl.30minutes") || "30 minutes" },
   { value: 3600, label: t("web.secrets.ttl.1hour") || "1 hour" },
   { value: 14400, label: t("web.secrets.ttl.4hours") || "4 hours" },
   { value: 86400, label: t("web.secrets.ttl.1day") || "1 day" },
   { value: 259200, label: t("web.secrets.ttl.3days") || "3 days" },
   { value: 604800, label: t("web.secrets.ttl.7days") || "7 days" },
-  { value: 1209600, label: t("web.secrets.ttl.14days") || "14 days" },
-  { value: 2592000, label: t("web.secrets.ttl.30days") || "30 days" },
 ]);
 
 const showTtlDropdown = ref(false);
 const ttlDropdownRef = ref<HTMLElement | null>(null);
+const showPassphrasePopover = ref(false);
+const passphrasePopoverRef = ref<HTMLElement | null>(null);
+const passphraseInputRef = ref<HTMLInputElement | null>(null);
 
-// Close TTL dropdown on click outside
-const handleTtlClickOutside = (event: MouseEvent) => {
+// Close popovers on click outside
+const handleClickOutside = (event: PointerEvent) => {
+  const target = event.target as HTMLElement;
   if (
     showTtlDropdown.value &&
     ttlDropdownRef.value &&
-    !ttlDropdownRef.value.contains(event.target as HTMLElement)
+    !ttlDropdownRef.value.contains(target)
   ) {
     showTtlDropdown.value = false;
   }
-};
-
-const handleTtlEscape = (event: KeyboardEvent) => {
-  if (event.key === "Escape" && showTtlDropdown.value) {
-    showTtlDropdown.value = false;
+  if (
+    showPassphrasePopover.value &&
+    passphrasePopoverRef.value &&
+    !passphrasePopoverRef.value.contains(target)
+  ) {
+    showPassphrasePopover.value = false;
   }
 };
 
+const handleEscape = (event: KeyboardEvent) => {
+  if (event.key === "Escape") {
+    showTtlDropdown.value = false;
+    showPassphrasePopover.value = false;
+  }
+};
+
+const togglePassphrasePopover = async () => {
+  showPassphrasePopover.value = !showPassphrasePopover.value;
+  if (showPassphrasePopover.value) {
+    secretOptions.value.addPassphrase = true;
+    showTtlDropdown.value = false;
+    await nextTick();
+    passphraseInputRef.value?.focus();
+  }
+};
+
+const toggleTtlDropdown = () => {
+  showTtlDropdown.value = !showTtlDropdown.value;
+  if (showTtlDropdown.value) {
+    showPassphrasePopover.value = false;
+  }
+};
+
+const clearPassphrase = () => {
+  secretOptions.value.addPassphrase = false;
+  passphrase.value = "";
+  showPassphrase.value = false;
+  showPassphrasePopover.value = false;
+};
+
 onMounted(() => {
-  document.addEventListener("click", handleTtlClickOutside);
-  document.addEventListener("keydown", handleTtlEscape);
+  document.addEventListener("pointerdown", handleClickOutside);
+  document.addEventListener("keydown", handleEscape);
 });
 
 onUnmounted(() => {
-  document.removeEventListener("click", handleTtlClickOutside);
-  document.removeEventListener("keydown", handleTtlEscape);
+  document.removeEventListener("pointerdown", handleClickOutside);
+  document.removeEventListener("keydown", handleEscape);
 });
 
 // --- Computed ---
-const showPassphraseInput = computed(() => secretOptions.value.addPassphrase);
 const currentTtlLabel = computed(() => {
   const option = ttlOptions.value.find(o => o.value === secretOptions.value.ttl);
   return option ? option.label : "";
@@ -335,105 +367,119 @@ const createAnotherSecret = () => {
           </div>
         </div>
 
-        <!-- Passphrase Input (expands when toggled) -->
-        <div
-          v-if="showPassphraseInput"
-          class="mt-3">
-          <div class="relative max-w-xs">
-            <input
-              id="passphrase-input"
-              v-model="passphrase"
-              :type="showPassphrase ? 'text' : 'password'"
-              maxlength="80"
-              class="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-brand-500 focus-visible:outline-brand-500 text-sm py-2 pl-3 pr-10 disabled:opacity-50"
-              :placeholder="t('web.secrets.passphrasePlaceholder') || 'Enter passphrase'"
-              :disabled="isLoading" />
-            <button
-              type="button"
-              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
-              :aria-label="showPassphrase ? t('web.secrets.hidePassphrase') || 'Hide passphrase' : t('web.secrets.showPassphrase') || 'Show passphrase'"
-              @click="showPassphrase = !showPassphrase">
-              <svg
-                v-if="!showPassphrase"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="size-4">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-              </svg>
-              <svg
-                v-else
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="size-4">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
         <!-- Footer bar: TTL + Passphrase indicators (left), Create Link button (right) -->
         <div
           v-if="showOptions"
           class="mt-4 flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-4">
-            <!-- TTL indicator -->
+            <!-- TTL popover -->
             <div ref="ttlDropdownRef" class="relative">
               <button
                 type="button"
                 class="inline-flex items-center gap-1.5 text-sm text-text-tertiary hover:text-text-secondary transition-colors"
-                @click="showTtlDropdown = !showTtlDropdown">
+                @click="toggleTtlDropdown">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
                 {{ currentTtlLabel }}
               </button>
-              <!-- TTL dropdown -->
+              <!-- TTL popover panel -->
               <div
                 v-if="showTtlDropdown"
-                class="absolute bottom-full left-0 mb-2 z-50 w-44 rounded-md bg-white dark:bg-gray-800 shadow-xl ring-1 ring-black/10 dark:ring-white/10 py-1">
-                <button
-                  v-for="option in ttlOptions"
-                  :key="option.value"
-                  type="button"
-                  class="block w-full px-3 py-1.5 text-left text-sm transition-colors"
-                  :class="secretOptions.ttl === option.value
-                    ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300'
-                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'"
-                  @click="secretOptions.ttl = option.value; showTtlDropdown = false">
-                  {{ option.label }}
-                </button>
+                class="absolute bottom-full left-0 mb-2 z-50 w-52 rounded-md bg-white dark:bg-gray-800 shadow-xl ring-1 ring-black/10 dark:ring-white/10 divide-y divide-gray-100 dark:divide-gray-700">
+                <div class="py-1">
+                  <button
+                    v-for="option in ttlOptions"
+                    :key="option.value"
+                    type="button"
+                    class="block w-full px-3 py-1.5 text-left text-sm transition-colors"
+                    :class="secretOptions.ttl === option.value
+                      ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300'
+                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'"
+                    @click="secretOptions.ttl = option.value; showTtlDropdown = false">
+                    {{ option.label }}
+                  </button>
+                </div>
+                <div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                  {{ t("web.secrets.ttlHint") }}
+                </div>
               </div>
             </div>
 
-            <!-- Passphrase toggle -->
-            <button
-              type="button"
-              class="inline-flex items-center gap-1.5 text-sm transition-colors"
-              :class="secretOptions.addPassphrase
-                ? 'text-brand-600 dark:text-brand-400'
-                : 'text-text-tertiary hover:text-text-secondary'"
-              @click="secretOptions.addPassphrase = !secretOptions.addPassphrase; if (!secretOptions.addPassphrase) { passphrase = ''; showPassphrase = false; }">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-              </svg>
-              {{ t("web.secrets.passphraseInputLabel") || "Passphrase" }}
-            </button>
+            <!-- Passphrase popover -->
+            <div ref="passphrasePopoverRef" class="relative">
+              <button
+                type="button"
+                class="inline-flex items-center gap-1.5 text-sm transition-colors"
+                :class="passphrase.trim()
+                  ? 'text-brand-600 dark:text-brand-400'
+                  : 'text-text-tertiary hover:text-text-secondary'"
+                @click="togglePassphrasePopover">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                </svg>
+                {{ t("web.secrets.passphraseInputLabel") || "Passphrase" }}
+              </button>
+              <!-- Passphrase popover panel -->
+              <div
+                v-if="showPassphrasePopover"
+                class="absolute bottom-full left-0 mb-2 z-50 w-64 rounded-md bg-white dark:bg-gray-800 shadow-xl ring-1 ring-black/10 dark:ring-white/10 divide-y divide-gray-100 dark:divide-gray-700">
+                <div class="p-3">
+                  <div class="relative">
+                    <input
+                      ref="passphraseInputRef"
+                      v-model="passphrase"
+                      :type="showPassphrase ? 'text' : 'password'"
+                      maxlength="80"
+                      autocomplete="off"
+                      data-1p-ignore
+                      data-lpignore="true"
+                      data-protonpass-ignore
+                      class="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm py-2 pl-3 pr-10 focus:border-brand-500 focus-visible:outline-brand-500"
+                      :placeholder="t('web.secrets.passphrasePlaceholder') || 'Enter passphrase'"
+                      :disabled="isLoading"
+                      @keydown.enter="showPassphrasePopover = false" />
+                    <button
+                      type="button"
+                      class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
+                      :aria-label="showPassphrase ? 'Hide passphrase' : 'Show passphrase'"
+                      @click="showPassphrase = !showPassphrase">
+                      <svg
+                        v-if="!showPassphrase"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="size-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                      </svg>
+                      <svg
+                        v-else
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="size-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+                      </svg>
+                    </button>
+                  </div>
+                  <button
+                    v-if="passphrase"
+                    type="button"
+                    class="mt-2 text-xs text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+                    @click="clearPassphrase">
+                    {{ t("web.secrets.removePassphrase") || "Remove passphrase" }}
+                  </button>
+                </div>
+                <div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                  {{ t("web.secrets.passphraseInputHint") }}
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Create Link button -->
