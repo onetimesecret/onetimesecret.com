@@ -86,7 +86,7 @@ if (import.meta.env.DEV) {
     {...seoProps}
   />
   <body
-    class="flex h-full flex-col overflow-x-hidden bg-white dark:bg-gray-900">
+    class="flex h-full flex-col overflow-x-hidden bg-surface-0">
     <!--
       CLS Prevention: The staging banner wrapper uses min-h-0 and collapses
       when not needed. The client:only hydration will expand it smoothly
@@ -107,7 +107,7 @@ if (import.meta.env.DEV) {
         <slot name="header" />
       )
     }
-    <main class="flex-grow bg-white dark:bg-gray-900">
+    <main class="flex-grow bg-surface-0">
       <slot />
     </main>
     {

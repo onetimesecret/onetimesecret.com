@@ -1,7 +1,7 @@
 import { type UseCase } from "@/types/useCase";
-import { getDeveloperUseCase } from "./developerUseCase";
+import { getHealthcareUseCase } from "./healthcareUseCase";
 import { getHRUseCase } from "./hrUseCase";
-import { getITUseCase } from "./itUseCase";
+import { getITDevOpsUseCase } from "./itdevopsUseCase";
 import { getLegalUseCase } from "./legalUseCase";
 
 /**
@@ -11,9 +11,9 @@ import { getLegalUseCase } from "./legalUseCase";
  */
 export function getUseCases(t: (key: string) => string): UseCase[] {
   return [
-    getITUseCase(t),
-    getDeveloperUseCase(t),
+    getITDevOpsUseCase(t),
     getHRUseCase(t),
     getLegalUseCase(t),
+    getHealthcareUseCase(t),
   ];
 }

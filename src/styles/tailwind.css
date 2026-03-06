@@ -33,6 +33,7 @@
   h5,
   h6 {
     font-family: var(--font-brand);
+    letter-spacing: -0.02em;
   }
 
   /*
@@ -49,6 +50,21 @@
 }
 
 @theme {
+  /* Card border radius: 20px — override rounded-lg from Tailwind default (8px) */
+  --radius-lg: 1.25rem;
+
+  /* Semantic surface scale (dark-first, maps to zinc) */
+  --color-surface-0: #09090b;   /* zinc-950 — page background */
+  --color-surface-1: #18181b;   /* zinc-900 — card/panel backgrounds */
+  --color-surface-2: #27272a;   /* zinc-800 — input backgrounds, inset areas */
+  --color-surface-3: #3f3f46;   /* zinc-700 — borders, dividers */
+  --color-surface-4: #52525b;   /* zinc-600 — hover borders, subtle emphasis */
+
+  /* Semantic text scale (dark-first) */
+  --color-text-primary: #f0f0f2;     /* headings, body in dark mode */
+  --color-text-secondary: #a0a0a8;   /* descriptions, secondary copy */
+  --color-text-tertiary: #6b6b75;    /* captions, metadata, labels */
+
   /* Custom accent colors (using brandColour). */
   --color-accent-50: #fcf8f2;
   --color-accent-100: #fcf4e8;
@@ -137,6 +153,41 @@
   preferably within their respective layers (@layer components or @layer utilities).
   https://tailwindcss.com/docs/adding-custom-styles#using-custom-css
 */
+
+@layer components {
+  /* Section label: all-caps, 12px, brand-600, used across all homepage sections */
+  .section-label {
+    @apply text-xs font-semibold uppercase tracking-widest text-brand-600;
+  }
+
+  /* Gradient text: hero h1 and CTA h2 */
+  .gradient-text {
+    color: var(--color-brand-500); /* solid fallback */
+    background: linear-gradient(
+      135deg,
+      var(--color-brand-500) 0%,
+      var(--color-brand-400) 40%,
+      var(--color-brandcomp-400) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+@media (forced-colors: active) {
+  .gradient-text {
+    -webkit-text-fill-color: unset;
+    background: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge-dot,
+  [class*="animate-"] {
+    animation: none !important;
+  }
+}
 
 /**
  * re: safelist support in TailwindCSS 4.

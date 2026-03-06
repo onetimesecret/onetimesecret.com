@@ -2,84 +2,44 @@
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
+
+const steps = ["step1", "step2", "step3"] as const;
+const stepNumbers = ["01", "02", "03"] as const;
 </script>
 
 <template>
   <!-- How It Works Section -->
-  <section class="py-20 sm:py-24 bg-white dark:bg-gray-950 w-full relative overflow-hidden">
-    <!-- Background decoration -->
-    <div
-      class="absolute inset-0 -z-10"
-      aria-hidden="true">
-      <div
-        class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-brand-200 dark:via-brand-500/40 to-transparent"></div>
-    </div>
-
+  <section class="py-20 sm:py-24 bg-surface-0 w-full">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <h2
-          class="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 sm:text-4xl">
+      <!-- Section header -->
+      <div class="text-center mb-12">
+        <p class="section-label mb-3">{{ t("web.homepage.howItWorks.label") }}</p>
+        <h2 class="text-3xl font-extrabold text-text-primary sm:text-4xl">
           {{ t("web.homepage.howItWorks.title") }}
         </h2>
-        <p
-          class="mt-4 max-w-2xl text-xl text-gray-700 dark:text-gray-200 mx-auto">
+        <p class="mt-4 max-w-2xl text-lg text-text-secondary mx-auto">
           {{ t("web.homepage.howItWorks.subtitle") }}
         </p>
       </div>
 
-      <div class="relative mt-16 grid grid-cols-1 gap-12 sm:grid-cols-3 lg:gap-16">
-        <!-- Connecting line (hidden on mobile) -->
+      <!-- Step cards in a container with gap-based dividers -->
+      <div class="rounded-2xl overflow-hidden bg-surface-3 grid grid-cols-1 sm:grid-cols-3 gap-[2px]">
         <div
-          class="hidden sm:block absolute top-6 left-0 right-0 h-0.5 bg-gradient-to-r from-brand-200 via-brand-300 to-brand-200 dark:from-brand-600/30 dark:via-brand-400/50 dark:to-brand-600/30"
-          aria-hidden="true"
-          style="margin-left: 10%; margin-right: 10%"></div>
-
-        <!-- Step 1 -->
-        <div class="relative flex flex-col items-center text-center">
-          <div
-            class="relative flex items-center justify-center size-16 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 dark:from-brand-300 dark:to-brand-400 text-white dark:text-gray-900 shadow-lg shadow-brand-500/30 dark:shadow-brand-300/40 z-10">
-            <span class="text-2xl font-bold">1</span>
-          </div>
-          <div class="mt-6">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-50 mb-3">
-              {{ t("web.homepage.howItWorks.step1.title") }}
-            </h3>
-            <p class="text-base text-gray-700 dark:text-gray-200 leading-relaxed">
-              {{ t("web.homepage.howItWorks.step1.description") }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Step 2 -->
-        <div class="relative flex flex-col items-center text-center">
-          <div
-            class="relative flex items-center justify-center size-16 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 dark:from-brand-300 dark:to-brand-400 text-white dark:text-gray-900 shadow-lg shadow-brand-500/30 dark:shadow-brand-300/40 z-10">
-            <span class="text-2xl font-bold">2</span>
-          </div>
-          <div class="mt-6">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-50 mb-3">
-              {{ t("web.homepage.howItWorks.step2.title") }}
-            </h3>
-            <p class="text-base text-gray-700 dark:text-gray-200 leading-relaxed">
-              {{ t("web.homepage.howItWorks.step2.description") }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Step 3 -->
-        <div class="relative flex flex-col items-center text-center">
-          <div
-            class="relative flex items-center justify-center size-16 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 dark:from-brand-300 dark:to-brand-400 text-white dark:text-gray-900 shadow-lg shadow-brand-500/30 dark:shadow-brand-300/40 z-10">
-            <span class="text-2xl font-bold">3</span>
-          </div>
-          <div class="mt-6">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-50 mb-3">
-              {{ t("web.homepage.howItWorks.step3.title") }}
-            </h3>
-            <p class="text-base text-gray-700 dark:text-gray-200 leading-relaxed">
-              {{ t("web.homepage.howItWorks.step3.description") }}
-            </p>
-          </div>
+          v-for="(step, i) in steps"
+          :key="step"
+          class="bg-surface-1 p-8 sm:p-10 flex flex-col">
+          <!-- Large step number -->
+          <span
+            class="text-[4rem] font-extrabold leading-none text-surface-3 mb-6 select-none"
+            aria-hidden="true">
+            {{ stepNumbers[i] }}
+          </span>
+          <h3 class="text-xl font-bold text-text-primary mb-3">
+            {{ t(`web.homepage.howItWorks.${step}.title`) }}
+          </h3>
+          <p class="text-text-secondary leading-relaxed text-sm">
+            {{ t(`web.homepage.howItWorks.${step}.description`) }}
+          </p>
         </div>
       </div>
     </div>

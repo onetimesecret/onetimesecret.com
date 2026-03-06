@@ -29,12 +29,14 @@ const effectiveLocale: SupportedLanguage =
 import enMessages from "@/i18n/ui/en.json";
 import frMessages from "@/i18n/ui/fr.json";
 import deMessages from "@/i18n/ui/de.json";
+import esMessages from "@/i18n/ui/es.json";
 
 // Set up messages for the current language
 const messagesMap: Record<string, MessageSchema> = {
   en: enMessages as MessageSchema,
   fr: frMessages as MessageSchema,
   de: deMessages as MessageSchema,
+  es: esMessages as MessageSchema,
 };
 
 // Ensure we have the messages for the current language
@@ -53,11 +55,17 @@ const t = pageI18n.global.t;
 
 // Define navigation items
 const navigation = [
-  { name: t("navigation.home"), href: localizeUrl("/", effectiveLocale) },
-  { name: t("navigation.about"), href: localizeUrl("/about", effectiveLocale) },
+  { name: t("navigation.home"), href: localizeUrl("/", effectiveLocale), external: false },
+  { name: t("navigation.about"), href: localizeUrl("/about", effectiveLocale), external: false },
   {
     name: t("navigation.pricing"),
     href: localizeUrl("/pricing", effectiveLocale),
+    external: false,
+  },
+  {
+    name: t("navigation.docs"),
+    href: `https://docs.onetimesecret.com/${effectiveLocale}`,
+    external: true,
   },
 ];
 
@@ -67,7 +75,7 @@ const currentPath = Astro.url.pathname;
 
 <BrandBar />
 <header
-  class="sticky top-0 z-50 bg-white/95 shadow-sm backdrop-blur-sm dark:bg-gray-900/95">
+  class="sticky top-0 z-50 bg-surface-0/70 shadow-sm backdrop-blur-xl backdrop-saturate-150">
   <nav
     class="mx-auto flex max-w-7xl items-center justify-between p-4 sm:p-6 lg:px-8"
     aria-label="Global">
@@ -123,6 +131,8 @@ const currentPath = Astro.url.pathname;
         navigation.map((item) => (
           <a
             href={item.href}
+            target={item.external ? "_blank" : undefined}
+            rel={item.external ? "noopener noreferrer" : undefined}
             class:list={[
               "focus-visible:outline-brand-500 font-brand font-semibold transition-colors focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2",
               large ? "text-lg/6" : "text-base/6",
@@ -208,6 +218,8 @@ const currentPath = Astro.url.pathname;
             navigation.map((item) => (
               <a
                 href={item.href}
+                target={item.external ? "_blank" : undefined}
+                rel={item.external ? "noopener noreferrer" : undefined}
                 class:list={[
                   "focus-visible:outline-brand-500 -mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2",
                   currentPath === item.href ||
