@@ -1,3 +1,12 @@
+export interface FeatureGroup {
+  labelKey: string;
+  features: Array<{
+    labelKey: string;
+    free: boolean;
+    identity: boolean;
+  }>;
+}
+
 export interface PaymentFrequency {
   value: string;
   // i18n translation keys (required - single source of truth)
@@ -92,5 +101,59 @@ export const productTiers: Array<ProductTier> = [
     featured: true,
     frequencySuffixEnabled: true,
     learn_more: "https://docs.onetimesecret.com/en/custom-domains/",
+  },
+];
+
+export const featureGroups: FeatureGroup[] = [
+  {
+    labelKey: "web.pricing.groups.core-sharing",
+    features: [
+      {
+        labelKey:
+          "web.pricing.comparison.features.secret-sharing",
+        free: true,
+        identity: true,
+      },
+      {
+        labelKey:
+          "web.pricing.comparison.features.email-recipients",
+        free: false,
+        identity: true,
+      },
+      {
+        labelKey:
+          "web.pricing.comparison.features.rest-api",
+        free: true,
+        identity: true,
+      },
+    ],
+  },
+  {
+    labelKey: "web.pricing.groups.brand-identity",
+    features: [
+      {
+        labelKey:
+          "web.pricing.comparison.features.custom-domains",
+        free: false,
+        identity: true,
+      },
+      {
+        labelKey:
+          "web.pricing.comparison.features.custom-branding",
+        free: false,
+        identity: true,
+      },
+    ],
+  },
+  {
+    labelKey: "web.pricing.groups.infrastructure",
+    features: [
+      {
+        labelKey:
+          "web.pricing.comparison.features.no-rate-limits",
+        free: false,
+        identity: true,
+      },
+    ],
   },
 ];

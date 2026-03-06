@@ -157,6 +157,11 @@
           }
         }
       },
+      "groups": {
+        "core-sharing": "Kernfunktionen",
+        "brand-identity": "Markenidentität",
+        "infrastructure": "Infrastruktur"
+      },
       "comparison": {
         "feature": "Funktion",
         "features": {
