@@ -282,7 +282,7 @@ const createAnotherSecret = () => {
             autofocus
             :aria-label="t('web.secrets.secret-label')"
             aria-describedby="secret-description"
-            class="block w-full rounded-md border-0 py-2 sm:py-3 pl-3 xs:pl-4 pr-28 xs:pr-32 sm:pr-36 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 placeholder:text-sm text-sm disabled:opacity-50 bg-white dark:bg-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-brand-500 focus:ring-opacity-50"
+            class="block w-full rounded-md border-0 py-2 sm:py-3 pl-3 xs:pl-4 pr-28 xs:pr-32 sm:pr-36 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 placeholder:text-sm text-sm disabled:opacity-50 bg-white dark:bg-gray-800 dark:text-gray-100 focus-visible:outline-2 focus-visible:outline-brand-500/50"
             :placeholder="props.placeholder || t('web.secrets.secret_placeholder')"
             :disabled="isLoading"></textarea>
           <div
@@ -294,7 +294,7 @@ const createAnotherSecret = () => {
           <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5 z-10">
             <button
               type="button"
-              class="inline-flex font-brand items-center justify-center min-w-[4rem] xs:min-w-[5rem] sm:min-w-[7rem] rounded-md border border-transparent bg-brand-500 px-1 xs:px-2 sm:px-3 py-1 sm:py-2 m-1 text-base xs:text-sm text-white font-semibold shadow-sm hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 disabled:opacity-50 disabled:bg-gray-400"
+              class="inline-flex font-brand items-center justify-center min-w-[4rem] xs:min-w-[5rem] sm:min-w-[7rem] rounded-md border border-transparent bg-brand-600 px-1 xs:px-2 sm:px-3 py-1 sm:py-2 m-1 text-base xs:text-sm text-white font-semibold shadow-sm hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-brand-400 focus-visible:outline-offset-2 disabled:opacity-50 disabled:bg-gray-400"
               :disabled="isLoading || !secretText.trim()"
               @click="handleCreateLink">
               <span v-if="!isLoading">
@@ -341,7 +341,7 @@ const createAnotherSecret = () => {
                 <select
                   id="ttl-select"
                   v-model="secretOptions.ttl"
-                  class="block w-full max-w-xs rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm py-2 px-3 disabled:opacity-50"
+                  class="block w-full max-w-xs rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-brand-500 focus-visible:outline-brand-500 text-sm py-2 px-3 disabled:opacity-50"
                   :disabled="isLoading">
                   <option
                     v-for="option in ttlOptions"
@@ -362,7 +362,7 @@ const createAnotherSecret = () => {
                     id="add-passphrase"
                     v-model="secretOptions.addPassphrase"
                     type="checkbox"
-                    class="mt-0.5 size-4 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-brand-600 focus:ring-brand-500 disabled:opacity-50"
+                    class="mt-0.5 size-4 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-brand-600 focus-visible:outline-brand-500 disabled:opacity-50"
                     :disabled="isLoading"
                     @change="!secretOptions.addPassphrase && (passphrase = '', showPassphrase = false)" />
                   <div class="flex-1">
@@ -392,7 +392,7 @@ const createAnotherSecret = () => {
                       v-model="passphrase"
                       :type="showPassphrase ? 'text' : 'password'"
                       maxlength="80"
-                      class="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm py-2 pl-3 pr-10 disabled:opacity-50"
+                      class="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-brand-500 focus-visible:outline-brand-500 text-sm py-2 pl-3 pr-10 disabled:opacity-50"
                       :placeholder="t('web.secrets.passphrasePlaceholder') || 'Enter passphrase'"
                       :disabled="isLoading" />
                     <button
@@ -543,7 +543,7 @@ const createAnotherSecret = () => {
             :href="buildSecretUrl(apiResult as ApiResult)"
             target="_blank"
             rel="noopener noreferrer"
-            class="ml-auto p-2 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 focus:outline-none focus:ring-2 focus:ring-green-500 rounded"
+            class="ml-auto p-2 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 focus-visible:outline-2 focus-visible:outline-green-500 rounded"
             :title="t('web.help.open-new-tab')">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -572,12 +572,12 @@ const createAnotherSecret = () => {
             :value="buildSecretUrl(apiResult as ApiResult)"
             readonly
             aria-label="Secret URL"
-            class="block w-full rounded-none rounded-l-md border-gray-300 dark:border-gray-600 shadow-md focus:border-green-500 focus:ring-green-500 sm:text-sm bg-white text-black dark:bg-gray-700 dark:text-white p-2"
+            class="block w-full rounded-none rounded-l-md border-gray-300 dark:border-gray-600 shadow-md focus:border-green-500 focus-visible:outline-green-500 sm:text-sm bg-white text-black dark:bg-gray-700 dark:text-white p-2"
             @focus="($event.target as HTMLInputElement).select()" />
           <button
             ref="copyButtonRef"
             type="button"
-            class="relative -ml-px min-w-[6rem] inline-flex items-center justify-center space-x-2 rounded-r-md shadow-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+            class="relative -ml-px min-w-[6rem] inline-flex items-center justify-center space-x-2 rounded-r-md shadow-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 focus:border-green-500 focus-visible:outline-1 focus-visible:outline-green-500"
             :class="{
               'bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 hover:bg-green-300 dark:hover:bg-green-700':
                 copySuccess,
@@ -593,7 +593,7 @@ const createAnotherSecret = () => {
           class="text-center border-t border-gray-100 dark:border-gray-700 pt-4">
           <button
             type="button"
-            class="inline-flex font-brand items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500"
+            class="inline-flex font-brand items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-brand-600 hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
             @click="createAnotherSecret">
             {{ t("web.secrets.createAnother") || "Create Another Secret" }}
           </button>

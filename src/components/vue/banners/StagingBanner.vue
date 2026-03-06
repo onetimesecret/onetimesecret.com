@@ -68,9 +68,8 @@ const shouldShowBanner = computed(() => {
                      border-amber-400 bg-white px-4 py-2 text-sm font-medium
                      text-amber-900 shadow-sm hover:bg-amber-50
                      dark:bg-amber-800 dark:text-amber-100 dark:border-amber-700
-                     dark:hover:bg-amber-700 focus:outline-none focus:ring-2
-                     focus:ring-amber-600 focus:ring-offset-2
-                     dark:focus:ring-offset-amber-950">
+                     dark:hover:bg-amber-700 focus-visible:outline-2
+                     focus-visible:outline-amber-600 focus-visible:outline-offset-2">
               {{ t('banner.go-to-production') }}
             </a>
           </div>

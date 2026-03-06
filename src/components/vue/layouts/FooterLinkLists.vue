@@ -70,15 +70,6 @@ const currentLocale = props.locale;
             {{ t("status") }}
           </a>
         </li>
-        <li>
-          <a
-            href="https://blog.onetimesecret.com/changelog"
-            class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-            target="_blank"
-            rel="noopener noreferrer">
-            {{ t("web.footer.links.changelog") }}
-          </a>
-        </li>
       </ul>
     </div>
 
@@ -119,13 +110,6 @@ const currentLocale = props.locale;
             {{ t("web.footer.links.github") }}
           </a>
         </li>
-        <li>
-          <a
-            :href="localizeUrl('/feedback', currentLocale)"
-            class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-            {{ t("web.footer.links.contact") }}
-          </a>
-        </li>
       </ul>
     </div>
 
@@ -161,11 +145,6 @@ const currentLocale = props.locale;
             :aria-label="t('learn-about-our-security-measures')">
             {{ t("LABELS.security") }}
           </a>
-        </li>
-        <li>
-          <span class="text-sm leading-6 text-gray-600 dark:text-gray-400 cursor-default">
-            {{ t("web.footer.links.dpa") }}
-          </span>
         </li>
       </ul>
     </div>
