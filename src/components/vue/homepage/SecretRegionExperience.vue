@@ -86,11 +86,11 @@ defineExpose({
         <div
           class="px-6 py-5 border-b border-surface-3 bg-surface-2/50">
           <div class="flex flex-wrap justify-between items-center gap-4">
-            <h3 id="secret-form-heading" class="text-xl font-bold text-text-primary">
+            <h2 id="secret-form-heading" class="text-xl font-bold text-text-primary">
               {{
                 t("LABELS.create_link")
               }}
-            </h3>
+            </h2>
 
             <!-- Region selector pill -->
             <div class="flex-shrink-0 ml-0 xs:ml-1 sm:ml-2 relative">

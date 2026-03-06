@@ -163,7 +163,7 @@ const currentLocale = props.locale;
           </a>
         </li>
         <li>
-          <span class="text-sm leading-6 text-gray-500 dark:text-gray-500 cursor-default">
+          <span class="text-sm leading-6 text-gray-600 dark:text-gray-400 cursor-default">
             {{ t("web.footer.links.dpa") }}
           </span>
         </li>

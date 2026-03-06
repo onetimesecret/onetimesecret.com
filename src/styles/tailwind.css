@@ -63,7 +63,7 @@
   /* Semantic text scale (dark-first) */
   --color-text-primary: #f0f0f2;     /* headings, body in dark mode */
   --color-text-secondary: #a0a0a8;   /* descriptions, secondary copy */
-  --color-text-tertiary: #6b6b75;    /* captions, metadata, labels */
+  --color-text-tertiary: #93939b;    /* captions, metadata, labels */
 
   /* Custom accent colors (using brandColour). */
   --color-accent-50: #fcf8f2;
@@ -157,7 +157,7 @@
 @layer components {
   /* Section label: all-caps, 12px, brand-600, used across all homepage sections */
   .section-label {
-    @apply text-xs font-semibold uppercase tracking-widest text-brand-600;
+    @apply text-xs font-semibold uppercase tracking-widest text-brand-600 dark:text-brand-400;
   }
 
   /* Dot glow: status indicator dots (hero badge, region map) */

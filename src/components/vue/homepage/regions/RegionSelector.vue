@@ -111,7 +111,7 @@ onUnmounted(() => {
       <!-- Info icon -->
       <button
         type="button"
-        class="ml-1 xs:ml-1.5 rounded-full bg-gray-100 dark:bg-gray-700 p-0.5 inline-flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
+        class="ml-1 xs:ml-1.5 rounded-full bg-gray-100 dark:bg-gray-700 p-1.5 inline-flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
         @click="toggleInfoPopover"
         @keydown.escape="closeAll"
         :aria-label="t('web.help.learn-more-about-data-sovereignty')">
@@ -226,6 +226,9 @@ onUnmounted(() => {
       </p>
       <a
         href="https://docs.onetimesecret.com/en/regions/"
+        target="_blank"
+        rel="noopener noreferrer"
+        :aria-label="t('web.help.learn-more-about-data-sovereignty')"
         class="mt-3 block text-sm font-medium text-brand-600 hover:text-brand-500 dark:text-brand-400 dark:hover:text-brand-300">
         {{ t("web.secrets.learn_more_regions") }}
       </a>

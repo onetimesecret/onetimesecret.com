@@ -10,7 +10,7 @@ html:not(.dark) {
 
   --color-text-primary: #18181b; /* zinc-900 */
   --color-text-secondary: #52525b; /* zinc-600 */
-  --color-text-tertiary: #a1a1aa; /* zinc-400 */
+  --color-text-tertiary: #6e6e78; /* zinc-500 adj — 4.59:1 on surface-2 */
 }
 
 /* Noise texture overlay — subtle grain for visual depth.

@@ -28,7 +28,7 @@ const { t } = useI18n();
           class="bg-surface-1 p-8 sm:p-10 flex flex-col">
           <!-- Large step number -->
           <span
-            class="text-[4rem] font-extrabold leading-none text-surface-3 mb-6 select-none"
+            class="text-[4rem] font-extrabold leading-none text-[#64646c] mb-6 select-none"
             aria-hidden="true">
             {{ stepNumbers[i] }}
           </span>
