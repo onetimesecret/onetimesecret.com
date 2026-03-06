@@ -100,9 +100,10 @@ onUnmounted(() => {
         font-medium text-text-primary
         border border-surface-3 cursor-pointer
         hover:bg-surface-2 transition-colors
-        duration-200 focus:outline-none focus:ring-2
-        focus:ring-brand-500 focus:ring-offset-2
-        focus:ring-offset-surface-0"
+        duration-200
+        focus-visible:outline-2
+        focus-visible:outline-offset-2
+        focus-visible:outline-brand-600"
       @click="toggleDropdown"
       @keydown.enter="toggleDropdown"
       @keydown.space.prevent="toggleDropdown"
@@ -134,10 +135,10 @@ onUnmounted(() => {
       class="rounded-full bg-surface-1
         border border-surface-3 p-2 inline-flex
         items-center justify-center hover:bg-surface-2
-        transition-colors focus:outline-none
-        focus:ring-2 focus:ring-brand-500
-        focus:ring-offset-2
-        focus:ring-offset-surface-0"
+        transition-colors
+        focus-visible:outline-2
+        focus-visible:outline-offset-2
+        focus-visible:outline-brand-600"
       @click="toggleInfoPopover"
       @keydown.escape="closeAll"
       :aria-label="t('web.help.learn-more-about-data-sovereignty')">

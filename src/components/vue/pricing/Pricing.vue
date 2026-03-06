@@ -127,25 +127,25 @@ onUnmounted(() => {
           </div>
 
           <div
-            class="mx-auto max-w-7xl px-6 pb-16 pt-24
-              text-center sm:pt-32 lg:px-8">
+            class="mx-auto max-w-7xl px-4 pb-16 pt-24
+              text-center sm:px-6 sm:pt-32 lg:px-8">
             <div class="mx-auto max-w-4xl">
               <p
-                id="pricing-heading"
                 class="section-label mb-3">
                 {{ t("LABELS.pricing") }}
               </p>
               <h2
-                class="mt-2 font-brand text-5xl font-bold
+                id="pricing-heading"
+                class="mt-2 font-brand text-4xl font-extrabold
                   tracking-tight text-text-primary
-                  sm:text-6xl">
+                  gradient-text sm:text-5xl md:text-6xl">
                 {{ t("web.pricing.secure-links-stronger-connections") }}
               </h2>
             </div>
             <div class="relative mt-14">
               <p
-                class="mx-auto max-w-2xl text-xl
-                  leading-8 text-text-secondary">
+                class="mx-auto max-w-2xl text-lg
+                  leading-8 text-text-secondary sm:text-xl">
                 {{
                   t(
                     "web.pricing.secure-your-brand-and-build-customer-trust-with-",
@@ -159,7 +159,7 @@ onUnmounted(() => {
         <!-- Controls row: frequency toggle + region selector -->
         <div class="bg-surface-0 pb-12">
           <div
-            class="mx-auto max-w-7xl px-6 lg:px-8">
+            class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div
               class="mx-auto max-w-6xl flex flex-col
                 sm:flex-row items-center justify-center
@@ -204,11 +204,11 @@ onUnmounted(() => {
         </div>
 
         <!-- Pricing Cards -->
-        <div class="bg-surface-0 pb-32 sm:pb-40">
-          <div class="mx-auto max-w-7xl px-6 lg:px-8">
+        <div class="bg-surface-0 py-20 sm:py-28">
+          <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div
               class="mx-auto grid max-w-6xl
-                grid-cols-1 gap-8 lg:grid-cols-2">
+                grid-cols-1 gap-6 lg:grid-cols-2">
               <!-- Free Tier -->
               <div
                 :key="tiers[0].id"
@@ -231,7 +231,7 @@ onUnmounted(() => {
                     <OIcon
                       :collection="tiers[0].icon.collection"
                       :name="tiers[0].icon.name"
-                      class="h-8 w-8 text-brand-500"
+                      class="size-6 text-brand-500"
                       aria-hidden="true" />
                   </div>
                   <div
@@ -320,7 +320,7 @@ onUnmounted(() => {
                     <OIcon
                       :collection="tiers[1].icon.collection"
                       :name="tiers[1].icon.name"
-                      class="h-8 w-8 text-brandcomp-500"
+                      class="size-6 text-brandcomp-500"
                       aria-hidden="true" />
                   </div>
                   <div
@@ -389,18 +389,21 @@ onUnmounted(() => {
             <!-- Feature Comparison: Bento-style grouped cards -->
             <div class="mt-20 mx-auto max-w-6xl">
               <h3
-                class="text-center text-2xl font-bold
-                  tracking-tight text-text-primary mb-8">
+                class="text-center text-3xl font-bold
+                  tracking-tight text-text-primary mb-8
+                  sm:text-4xl">
                 {{ t("web.pricing.compare-plans") }}
               </h3>
               <div
                 class="grid grid-cols-1 md:grid-cols-3
-                  gap-6">
+                  gap-4">
                 <div
                   v-for="group in featureGroups"
                   :key="group.labelKey"
                   class="bg-surface-1 rounded-2xl
-                    border border-surface-3 p-6 sm:p-8">
+                    border border-surface-3 p-6 sm:p-8
+                    hover:border-surface-4
+                    transition-colors duration-200">
                   <h4
                     class="font-brand text-lg
                       text-text-primary mb-4">
@@ -423,7 +426,7 @@ onUnmounted(() => {
                         <span
                           class="text-text-tertiary
                             text-xs w-16 text-center">
-                          Plus
+                          {{ t(tiers[1].nameKey) }}
                         </span>
                       </div>
                     </div>
@@ -443,14 +446,14 @@ onUnmounted(() => {
                             v-if="feature.free"
                             collection="heroicons"
                             name="check-solid"
-                            class="h-5 w-5
+                            class="h-6 w-6
                               text-brand-500 mx-auto"
                             aria-hidden="true" />
                           <OIcon
                             v-else
                             collection="heroicons"
                             name="x-mark-solid"
-                            class="h-5 w-5
+                            class="h-6 w-6
                               text-surface-4 mx-auto"
                             aria-hidden="true" />
                         </span>
@@ -459,14 +462,14 @@ onUnmounted(() => {
                             v-if="feature.identity"
                             collection="heroicons"
                             name="check-solid"
-                            class="h-5 w-5
+                            class="h-6 w-6
                               text-brand-500 mx-auto"
                             aria-hidden="true" />
                           <OIcon
                             v-else
                             collection="heroicons"
                             name="x-mark-solid"
-                            class="h-5 w-5
+                            class="h-6 w-6
                               text-surface-4 mx-auto"
                             aria-hidden="true" />
                         </span>
@@ -483,6 +486,8 @@ onUnmounted(() => {
                 flex-col items-start gap-x-8 gap-y-6
                 rounded-2xl bg-surface-1
                 border border-surface-3 p-8
+                hover:border-surface-4
+                transition-colors duration-200
                 sm:gap-y-10 sm:p-10
                 lg:flex-row lg:items-center">
               <div class="lg:min-w-0 lg:flex-1">
