@@ -179,6 +179,57 @@
     background-clip: text;
     padding-bottom: 0.15em; /* prevent descender clipping from background-clip: text */
   }
+
+  /* Button utilities */
+
+  /* Button base — shared reset across all button variants */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg font-semibold
+           transition-colors duration-150
+           focus-visible:outline-2 focus-visible:outline-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Size variants */
+  .btn-sm {
+    @apply px-2.5 py-1.5 text-xs;
+  }
+  .btn-md {
+    @apply px-4 py-2 text-sm;
+  }
+  .btn-lg {
+    @apply px-6 py-3 text-base;
+  }
+
+  /* Primary — brand background, white text */
+  .btn-primary {
+    @apply bg-brand-600 text-white shadow-sm
+           hover:bg-brand-700
+           focus-visible:outline-brand-600
+           dark:bg-brand-700 dark:hover:bg-brand-600;
+  }
+
+  /* Secondary — surface background, primary text */
+  .btn-secondary {
+    @apply bg-surface-1 text-text-primary border border-surface-3 shadow-sm
+           hover:bg-surface-2
+           focus-visible:outline-brand-600;
+  }
+
+  /* Danger — red background, white text */
+  .btn-danger {
+    @apply bg-red-600 text-white shadow-sm
+           hover:bg-red-700
+           focus-visible:outline-red-500
+           dark:bg-red-700 dark:hover:bg-red-600;
+  }
+
+  /* Ghost — no background, subtle hover */
+  .btn-ghost {
+    @apply text-text-primary
+           hover:bg-surface-2
+           focus-visible:outline-brand-600;
+  }
 }
 
 @media (forced-colors: active) {

@@ -111,7 +111,7 @@ onUnmounted(() => {
       <!-- Info icon -->
       <button
         type="button"
-        class="ml-1 xs:ml-1.5 rounded-full bg-gray-100 dark:bg-gray-700 p-0.5 inline-flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
+        class="ml-1 xs:ml-1.5 rounded-full bg-gray-100 dark:bg-gray-700 p-0.5 inline-flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2"
         @click="toggleInfoPopover"
         @keydown.escape="closeAll"
         :aria-label="t('web.help.learn-more-about-data-sovereignty')">

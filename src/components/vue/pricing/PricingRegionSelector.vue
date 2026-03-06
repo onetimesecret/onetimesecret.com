@@ -87,7 +87,7 @@ onUnmounted(() => {
     <!-- Current region button that opens the dropdown -->
     <button
       type="button"
-      class="relative inline-flex items-center rounded-lg bg-white/95 dark:bg-gray-800 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600 shadow-md hover:shadow-lg"
+      class="relative inline-flex items-center rounded-lg bg-white/95 dark:bg-gray-800 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 focus-visible:outline-offset-indigo-600 shadow-md hover:shadow-lg"
       @click="toggleDropdown"
       @keydown.enter="toggleDropdown"
       @keydown.space.prevent="toggleDropdown"
@@ -116,7 +116,7 @@ onUnmounted(() => {
     <!-- Info icon button (sibling, not nested) -->
     <button
       type="button"
-      class="rounded-full bg-white/95 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 p-2 inline-flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600 shadow-md hover:shadow-lg"
+      class="rounded-full bg-white/95 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 p-2 inline-flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 focus-visible:outline-offset-indigo-600 shadow-md hover:shadow-lg"
       @click="toggleInfoPopover"
       @keydown.escape="closeAll"
       :aria-label="t('web.help.learn-more-about-data-sovereignty')">
