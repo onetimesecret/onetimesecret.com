@@ -78,14 +78,15 @@ defineExpose({
 <template>
   <section
     id="secret-form"
-    class="relative">
+    class="relative"
+    aria-labelledby="secret-form-heading">
     <div class="mx-auto max-w-5xl">
       <div
         class="flex flex-col min-h-[400px] sm:min-h-[350px] md:min-h-[400px] lg:min-h-[400px] bg-surface-1 shadow-2xl shadow-black/40 rounded-2xl overflow-hidden border border-surface-3 backdrop-blur-sm">
         <div
           class="px-6 py-5 border-b border-surface-3 bg-surface-2/50">
           <div class="flex flex-wrap justify-between items-center gap-4">
-            <h3 class="text-xl font-bold text-text-primary">
+            <h3 id="secret-form-heading" class="text-xl font-bold text-text-primary">
               {{
                 t("LABELS.create_link")
               }}
@@ -98,7 +99,7 @@ defineExpose({
                   v-if="isClient"
                   :current-region="currentRegion"
                   :available-regions="availableRegions"
-                  class="rounded-full px-3 py-1.5 bg-surface-2 border border-surface-3 shadow-sm hover:shadow-md transition-all duration-300 absolute top-0 left-0"
+                  class="rounded-full px-3 py-1.5 bg-surface-2 border border-surface-3 transition-colors duration-300 absolute top-0 left-0"
                   :class="{
                     'pulse-attention ring-2 ring-brand-500 shadow-lg':
                       secretCreatedSuccessfully,
