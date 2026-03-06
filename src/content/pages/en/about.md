@@ -5,23 +5,19 @@ title: About Us
 
 Hi, I'm Delano, the creator of Onetime Secret. What began in 2012 as a straightforward, secure way to share sensitive information has evolved far beyond the initial vision. More than a decade later, we're fully in the "secrets" service business, serving use cases I never imagined.
 
-## Recent History
+## What We've Built
 
-2024 was our biggest year yet by a slim margin (we had a week-long DDoS attack that also set us back in search results). Better yet, it marked a turning point for us in the numbers game: August 2024 saw the introduction of our first subscription offerings, turning a neat hobby into a fledgling business (we call them goslings in Canada).
+Over the years, we've grown from a simple tool into a focused service for sharing sensitive information:
+- [Custom domains and branding](https://docs.onetimesecret.com/en/custom-domains/) for teams and businesses
+- Multiple regions including [US](https://us.onetimesecret.com), [Canada](https://ca.onetimesecret.com), and [Aotearoa New Zealand](https://nz.onetimesecret.com)
+- Subscription plans that turned a long-running hobby into a sustainable business
+- Regular releases on [GitHub](https://github.com/onetimesecret/onetimesecret/releases)
 
-This past year we've been on an incredible development streak:
-- Released 8 major versions from  [0.12](https://github.com/onetimesecret/onetimesecret/releases/tag/v0.12.0) -> [0.19](https://github.com/onetimesecret/onetimesecret/releases/tag/v0.19.0)
-- Introduced [custom domains and branding](https://docs.onetimesecret.com/en/custom-domains/)
-- Launched in multiple regions, including [US](https://us.onetimesecret.com), [Canada](https://ca.onetimesecret.com), and [Aotearoa New Zealand](https://nz.onetimesecret.com)
-- Published [20+ articles](https://blog.onetimesecret.com/) on our blog (with AI-generated artwork that's been an interesting experiment)
+## Our Approach
 
-## Moving Forward
+We stick to the [core principles](https://docs.onetimesecret.com/en/principles/) that got us started. [Our code is open-source](https://github.com/onetimesecret/onetimesecret) because we believe in transparency, community input, and sharing good stuff.
 
-It's 2025, and we're still sticking to the [core principles](https://docs.onetimesecret.com/en/principles/) that got us started. [Our code is open-source](https://github.com/onetimesecret/onetimesecret) because we believe in transparency, community input, and sharing good stuff.
-
-As digital privacy and internet challenges evolve, so do we – tweaking security, making things easier to use, and ensuring our service works well for everyone who needs it.
-
-Here's to another year of helping people share secrets safely.
+As digital privacy and internet challenges evolve, so do we — tweaking security, making things easier to use, and ensuring our service works well for everyone who needs it.
 
 > Did you know? Back in 2011, Drew Carey suggested that "One Time Secret" would make a [good band name](https://x.com/DrewFromTV/status/142730130689761280). The music industry's loss was the internet's gain.
 

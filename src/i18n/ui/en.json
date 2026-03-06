@@ -157,6 +157,11 @@
           }
         }
       },
+      "groups": {
+        "core-sharing": "Core Sharing",
+        "brand-identity": "Brand Identity",
+        "infrastructure": "Infrastructure"
+      },
       "comparison": {
         "feature": "Feature",
         "features": {

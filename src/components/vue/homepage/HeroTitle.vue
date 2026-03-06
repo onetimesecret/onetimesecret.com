@@ -12,7 +12,7 @@ const { t } = useI18n();
     <!-- Security badge -->
     <div class="mb-6 flex justify-center">
       <span
-        class="inline-flex items-center gap-2 rounded-full border border-brand-500/30 bg-brand-500/10 px-4 py-1.5 text-sm font-medium text-brand-400">
+        class="inline-flex items-center gap-2 rounded-full border border-brand-500/30 bg-brand-500/10 px-4 py-1.5 text-sm font-medium text-brand-700 dark:text-brand-400">
         <span
           class="badge-dot dot-glow size-2 rounded-full bg-brand-400"
           aria-hidden="true"></span>

@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { ExclamationTriangleIcon, XMarkIcon } from "@heroicons/vue/24/outline";
+import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import { computed, ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
-import { useDismissableBanner } from "@/composables/useDismissableBanner";
 import { CANONICAL_ORIGIN, isStagingHostname } from "@config/domains";
 
 /**
@@ -13,13 +12,6 @@ import { CANONICAL_ORIGIN, isStagingHostname } from "@config/domains";
 
 const { t } = useI18n();
 
-const BANNER_EXPIRATION_DAYS = 7;
-
-const { isVisible: isDismissVisible, dismiss } = useDismissableBanner(
-  "staging-warning",
-  BANNER_EXPIRATION_DAYS
-);
-
 // Client-side check for staging domain
 const isOnStagingDomain = ref(false);
 
@@ -28,12 +20,8 @@ onMounted(() => {
 });
 
 const shouldShowBanner = computed(() => {
-  return isOnStagingDomain.value && isDismissVisible.value;
+  return isOnStagingDomain.value;
 });
-
-const dismissBanner = () => {
-  dismiss();
-};
 </script>
 
 <template>
@@ -69,21 +57,6 @@ const dismissBanner = () => {
                 {{ t('banner.staging-description') }}
               </p>
             </div>
-          </div>
-          <div class="flex-shrink-0 sm:order-3 sm:ml-3">
-            <button
-              type="button"
-              data-testid="staging-banner-dismiss"
-              class="mr-1 flex rounded-md bg-amber-200 dark:bg-amber-800 p-1.5
-                     text-amber-900 dark:text-amber-100 hover:bg-amber-300
-                     dark:hover:bg-amber-700 focus-visible:outline-2
-                     focus-visible:outline-amber-600 focus-visible:outline-offset-2"
-              @click="dismissBanner">
-              <span class="sr-only">{{ t('banner.dismiss') }}</span>
-              <XMarkIcon
-                class="size-5"
-                aria-hidden="true" />
-            </button>
           </div>
           <div
             class="order-4 mt-2 w-full flex-shrink-0 sm:order-2 sm:mt-0

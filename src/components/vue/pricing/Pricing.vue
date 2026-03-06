@@ -2,15 +2,21 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import OIcon from "@/components/vue/icons/OIcon.vue";
-import { MessageSchema, setLanguage, setLanguageWithMessages } from "@/i18n";
+import {
+  MessageSchema,
+  setLanguage,
+  setLanguageWithMessages,
+} from "@/i18n";
 import { RadioGroup, RadioGroupOption } from "@headlessui/vue";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useJurisdiction } from "@/composables/useJurisdiction";
-import PricingRegionSelector from "@/components/vue/pricing/PricingRegionSelector.vue";
+import PricingRegionSelector
+  from "@/components/vue/pricing/PricingRegionSelector.vue";
 import type { Region } from "@/types/jurisdiction";
 
 import {
+  featureGroups,
   paymentFrequencies as frequencies,
   ProductTier,
   productTiers as tiers,
@@ -23,11 +29,12 @@ const props = defineProps<{
   initialMessages?: Record<string, MessageSchema>;
 }>();
 
-// Initialize i18n with provided messages
 if (props.initialMessages && props.locale) {
-  setLanguageWithMessages(props.locale, props.initialMessages);
+  setLanguageWithMessages(
+    props.locale,
+    props.initialMessages,
+  );
 } else {
-  // Fallback initialization on mount if no messages provided
   onMounted(async () => {
     await setLanguage(props.locale);
   });
@@ -35,7 +42,6 @@ if (props.initialMessages && props.locale) {
 
 const { t } = useI18n();
 
-// --- Initialize jurisdiction composable for region selection ---
 const {
   availableRegions,
   currentRegion,
@@ -47,455 +53,477 @@ const isClient = ref(false);
 
 const frequency = ref(frequencies[0]);
 
-// Track which card's region selector is open (null = none, 'basic' or 'identity')
-const activeRegionSelector = ref<string | null>(null);
-
-// Toggle region selector for a specific card
-const toggleRegionSelector = (tierId: string) => {
-  activeRegionSelector.value = activeRegionSelector.value === tierId ? null : tierId;
-};
-
-// Handler for region change from the selector component
 const handleRegionChange = (region: Region) => {
   if (region && region.identifier) {
     setJurisdiction(region.identifier);
-    // Close the selector after changing region
-    activeRegionSelector.value = null;
   }
 };
 
-// Computed property to generate regional payment URLs
 const getRegionalHref = (basePath: string) => {
   return computed(() => {
-    const protocol = typeof window !== "undefined" ? window.location.protocol : "https:";
+    const protocol =
+      typeof window !== "undefined"
+        ? window.location.protocol
+        : "https:";
     return `${protocol}//${currentRegion.value.domain}${basePath}`;
   });
 };
 
-// Get price from i18n (single source of truth)
 const getPrice = (tier: ProductTier) => {
   const freq = frequency.value.value;
   return t(tier.priceKeys[freq]);
 };
 
-// Computed properties for each payment button href
 const basicPlanHref = getRegionalHref("/plans/free");
-const identityMonthHref = getRegionalHref("/billing/plans/identity_plus_v1/monthly");
-const identityYearHref = getRegionalHref("/billing/plans/identity_plus_v1/yearly");
+const identityMonthHref = getRegionalHref(
+  "/billing/plans/identity_plus_v1/monthly",
+);
+const identityYearHref = getRegionalHref(
+  "/billing/plans/identity_plus_v1/yearly",
+);
 
-// Get the appropriate href based on frequency
 const getIdentityHref = computed(() => {
   return frequency.value.value === "monthly"
     ? identityMonthHref.value
     : identityYearHref.value;
 });
 
-// Computed property for feedback link
 const feedbackHref = getRegionalHref("/feedback");
 
 onMounted(() => {
   isClient.value = true;
 });
 
-// Clean up store subscriptions when component is unmounted
 onUnmounted(() => {
   cleanup();
 });
-
-// Feature comparison data for the two tiers
-const comparisonFeatures = [
-  {
-    nameKey: "web.pricing.comparison.features.secret-sharing",
-    name: "Secret sharing",
-    basic: true,
-    identity: true,
-  },
-  {
-    nameKey: "web.pricing.comparison.features.email-recipients",
-    name: "Email recipients",
-    basic: true,
-    identity: true,
-  },
-  {
-    nameKey: "web.pricing.comparison.features.rest-api",
-    name: "REST API access",
-    basic: true,
-    identity: true,
-  },
-  {
-    nameKey: "web.pricing.comparison.features.custom-domains",
-    name: "Custom domains",
-    basic: false,
-    identity: true,
-  },
-  {
-    nameKey: "web.pricing.comparison.features.custom-branding",
-    name: "Custom branding",
-    basic: false,
-    identity: true,
-  },
-  {
-    nameKey: "web.pricing.comparison.features.no-rate-limits",
-    name: "No rate limits",
-    basic: false,
-    identity: true,
-  },
-];
 </script>
 
 <template>
   <div
-    class="flex min-h-screen flex-col bg-white dark:bg-gray-900 overflow-hidden">
+    class="flex min-h-screen flex-col bg-surface-0
+      overflow-hidden">
     <main class="flex-grow">
-      <!-- Hero Section with Gradient Background -->
-      <section
-        aria-labelledby="pricing-heading"
-        class="isolate overflow-hidden bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 dark:from-gray-950 dark:via-purple-950 dark:to-indigo-950">
-        <div
-          class="mx-auto max-w-7xl px-6 pb-96 pt-24 text-center sm:pt-32 lg:px-8">
-          <div class="mx-auto max-w-4xl">
-            <h2
-              id="pricing-heading"
-              class="text-base font-semibold leading-7 text-indigo-300 dark:text-indigo-200">
-              {{ t("LABELS.pricing") }}
-            </h2>
-            <p
-              class="mt-2 font-brand text-5xl font-bold tracking-tight text-white sm:text-6xl">
-              {{ t("web.pricing.secure-links-stronger-connections") }}
-            </p>
+      <section aria-labelledby="pricing-heading">
+        <!-- Hero -->
+        <div class="relative overflow-hidden bg-surface-0">
+          <div
+            class="pointer-events-none absolute inset-0
+              -z-10 overflow-hidden"
+            aria-hidden="true">
+            <div
+              class="absolute left-1/4 top-1/4 h-[600px]
+                w-[600px] -translate-x-1/2 -translate-y-1/2
+                rounded-full bg-brand-500 opacity-[0.06]
+                blur-[120px]">
+            </div>
+            <div
+              class="absolute right-1/4 bottom-1/4
+                h-[500px] w-[500px] translate-x-1/2
+                translate-y-1/2 rounded-full
+                bg-brandcomp-500 opacity-[0.05]
+                blur-[120px]">
+            </div>
           </div>
-          <div class="mt-16 flex justify-center">
-            <fieldset aria-label="Payment frequency">
-              <RadioGroup
-                v-model="frequency"
-                class="grid grid-cols-2 gap-x-1 rounded-full bg-white/10 backdrop-blur-sm p-1 text-center text-sm font-semibold leading-5">
-                <RadioGroupOption
-                  v-for="option in frequencies"
-                  :key="option.value"
-                  v-slot="{ checked }"
-                  as="template"
-                  :value="option">
-                  <div
-                    :class="[
-                      checked
-                        ? 'bg-indigo-500 text-white shadow-md'
-                        : 'text-white/80 hover:text-white',
-                      'cursor-pointer rounded-full px-4 py-2 transition-all duration-200',
-                    ]"
-                    role="radio"
-                    :aria-checked="checked"
-                    :tabindex="checked ? 0 : -1">
-                    {{ t(option.labelKey) }}
-                  </div>
-                </RadioGroupOption>
-              </RadioGroup>
-            </fieldset>
+
+          <div
+            class="mx-auto max-w-7xl px-4 pb-16 pt-24
+              text-center sm:px-6 sm:pt-32 lg:px-8">
+            <div class="mx-auto max-w-4xl">
+              <p
+                class="section-label mb-3">
+                {{ t("LABELS.pricing") }}
+              </p>
+              <h2
+                id="pricing-heading"
+                class="mt-2 font-brand text-4xl font-extrabold
+                  tracking-tight text-text-primary
+                  gradient-text sm:text-5xl md:text-6xl">
+                {{ t("web.pricing.secure-links-stronger-connections") }}
+              </h2>
+            </div>
+            <div class="relative mt-14">
+              <p
+                class="mx-auto max-w-2xl text-lg
+                  leading-8 text-text-secondary sm:text-xl">
+                {{
+                  t(
+                    "web.pricing.secure-your-brand-and-build-customer-trust-with-",
+                  )
+                }}
+              </p>
+            </div>
           </div>
-          <div class="relative mt-14">
-            <p
-              class="mx-auto max-w-2xl text-xl leading-8 text-white/80 dark:text-white/90">
-              {{
-                t(
-                  "web.pricing.secure-your-brand-and-build-customer-trust-with-",
-                )
-              }}
-            </p>
-            <svg
-              viewBox="0 0 1208 1024"
-              class="absolute -top-10 left-1/2 -z-10 h-[64rem] -translate-x-1/2 [mask-image:radial-gradient(closest-side,white,transparent)] sm:-top-12 md:-top-20 lg:-top-12 xl:top-0"
-              aria-hidden="true">
-              <ellipse
-                cx="604"
-                cy="512"
-                fill="url(#pricing-gradient)"
-                rx="604"
-                ry="512" />
-              <defs>
-                <radialGradient id="pricing-gradient">
-                  <stop stop-color="#8B5CF6" />
-                  <stop
-                    offset="1"
-                    stop-color="#6366F1" />
-                </radialGradient>
-              </defs>
-            </svg>
+        </div>
+
+        <!-- Controls row: frequency toggle + region selector -->
+        <div class="bg-surface-0 pb-12">
+          <div
+            class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div
+              class="mx-auto max-w-6xl flex flex-col
+                sm:flex-row items-center justify-center
+                gap-6">
+              <fieldset aria-label="Payment frequency">
+                <RadioGroup
+                  v-model="frequency"
+                  class="grid grid-cols-2 gap-x-1
+                    rounded-full border border-surface-3
+                    bg-surface-1 p-1 text-center text-sm
+                    font-semibold leading-5">
+                  <RadioGroupOption
+                    v-for="option in frequencies"
+                    :key="option.value"
+                    v-slot="{ checked }"
+                    as="template"
+                    :value="option">
+                    <div
+                      :class="[
+                        checked
+                          ? 'bg-brand-600 text-white'
+                          : 'text-text-secondary hover:text-text-primary',
+                        'cursor-pointer rounded-full px-4 py-2 transition-colors duration-200',
+                      ]"
+                      role="radio"
+                      :aria-checked="checked"
+                      :tabindex="checked ? 0 : -1">
+                      {{ t(option.labelKey) }}
+                    </div>
+                  </RadioGroupOption>
+                </RadioGroup>
+              </fieldset>
+
+              <div v-if="isClient">
+                <PricingRegionSelector
+                  :current-region="currentRegion"
+                  :available-regions="availableRegions"
+                  @region-change="handleRegionChange" />
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- Pricing Cards -->
-        <div class="flow-root bg-white pb-32 dark:bg-gray-900 sm:pb-40">
-          <div class="-mt-80">
-            <div class="mx-auto max-w-7xl px-6 lg:px-8">
-              <!-- Two-column grid with better spacing -->
+        <div class="bg-surface-0 py-20 sm:py-28">
+          <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div
+              class="mx-auto grid max-w-6xl
+                grid-cols-1 gap-6 lg:grid-cols-2">
+              <!-- Free Tier -->
               <div
-                class="mx-auto grid max-w-6xl grid-cols-1 gap-8 lg:grid-cols-2">
-                <!-- Basic Tier -->
-                <div
-                  :key="tiers[0].id"
-                  class="group relative flex flex-col justify-between rounded-3xl bg-white p-10 shadow-xl hover:shadow-2xl dark:shadow-gray-800/40 ring-1 ring-gray-900/5 dark:bg-gray-800 dark:ring-gray-700 sm:p-12 transition-all duration-300 hover:-translate-y-1">
-                  <div>
-                    <div class="flex items-center justify-between">
-                      <h3
-                        :id="tiers[0].id"
-                        class="text-xl font-bold leading-8 text-gray-900 dark:text-white">
-                        {{ t(tiers[0].nameKey) }}
-                      </h3>
-                      <OIcon
-                        :collection="tiers[0].icon.collection"
-                        :name="tiers[0].icon.name"
-                        class="h-8 w-8 text-indigo-600 dark:text-indigo-400"
-                        aria-hidden="true" />
-                    </div>
-                    <div class="mt-6 flex items-baseline gap-x-2">
-                      <span
-                        class="font-brand text-6xl font-bold tracking-tight text-gray-900 dark:text-white"
-                      >{{ getPrice(tiers[0]) }}</span
-                      >
-                      <span
-                        class="font-brand text-lg font-semibold leading-8 text-gray-500 dark:text-gray-400"
-                      >{{ t(frequency.priceSuffixKey) }}</span
-                      >
-                    </div>
-                    <p
-                      class="mt-6 text-lg leading-7 text-gray-600 dark:text-gray-300">
-                      {{ t(tiers[0].descriptionKey) }}
-                    </p>
-                    <ul
-                      role="list"
-                      class="mt-10 space-y-4 text-base leading-7 text-gray-600 dark:text-gray-300">
-                      <li
-                        v-for="featureKey in tiers[0].featuresKeys"
-                        :key="featureKey"
-                        class="flex gap-x-3">
-                        <OIcon
-                          collection="heroicons"
-                          name="check-circle-20-solid"
-                          class="h-6 w-6 flex-none text-indigo-600 dark:text-indigo-400"
-                          aria-hidden="true" />
-                        {{ t(featureKey) }}
-                      </li>
-                    </ul>
-                  </div>
-
-                  <!-- Region selector on hover -->
-                  <div class="mt-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 relative">
-                    <div v-if="isClient" class="text-center">
-                      <p class="text-xs text-gray-600 dark:text-gray-400">
-                        {{ t("web.pricing.region") || "Region" }}: {{ currentRegion.displayName }} •
-                        <button
-                          type="button"
-                          @click="toggleRegionSelector(tiers[0].id)"
-                          class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium underline">
-                          {{ t("web.pricing.change") || "Change" }}
-                        </button>
-                      </p>
-                      <div v-if="activeRegionSelector === tiers[0].id" class="mt-2">
-                        <PricingRegionSelector
-                          :current-region="currentRegion"
-                          :available-regions="availableRegions"
-                          @region-change="handleRegionChange" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <a
-                    :href="basicPlanHref"
-                    :aria-describedby="tiers[0].id"
-                    class="mt-4 block font-brand rounded-xl bg-indigo-50 px-4 py-3 text-center text-lg font-semibold text-indigo-600 shadow-sm hover:bg-indigo-100 dark:bg-indigo-950 dark:text-indigo-400 dark:hover:bg-indigo-900 transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                    <div class="flex items-center justify-center gap-x-2">
-                      <OIcon
-                        :collection="tiers[0].icon.collection"
-                        :name="tiers[0].icon.name"
-                        size="5" />
-                      {{ t(tiers[0].ctaKey) }}
-                    </div>
-                  </a>
-                </div>
-
-                <!-- Identity Plus Tier (Featured) -->
-                <div
-                  :key="tiers[1].id"
-                  class="group relative flex flex-col justify-between rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 dark:from-indigo-600 dark:to-purple-700 p-10 shadow-2xl hover:shadow-3xl ring-2 ring-indigo-500 dark:ring-indigo-400 sm:p-12 transition-all duration-300 hover:scale-105 transform">
-                  <!-- Featured Badge -->
+                :key="tiers[0].id"
+                class="flex flex-col justify-between
+                  rounded-2xl bg-surface-1
+                  border border-surface-3 p-10
+                  hover:border-surface-4
+                  transition-colors duration-200
+                  sm:p-12">
+                <div>
                   <div
-                    v-if="tiers[1].badgeKey && t(tiers[1].badgeKey)"
-                    class="absolute -top-5 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 px-4 py-1.5 text-sm font-bold text-white shadow-lg">
-                    {{ t(tiers[1].badgeKey) }}
+                    class="flex items-center
+                      justify-between">
+                    <h3
+                      :id="tiers[0].id"
+                      class="text-xl font-bold leading-8
+                        text-text-primary">
+                      {{ t(tiers[0].nameKey) }}
+                    </h3>
+                    <OIcon
+                      :collection="tiers[0].icon.collection"
+                      :name="tiers[0].icon.name"
+                      class="size-6 text-brand-500"
+                      aria-hidden="true" />
                   </div>
-                  <div>
-                    <div class="flex items-center justify-between">
-                      <h3
-                        :id="tiers[1].id"
-                        class="text-xl font-bold leading-8 text-white">
-                        {{ t(tiers[1].nameKey) }}
-                      </h3>
+                  <div
+                    class="mt-6 flex items-baseline
+                      gap-x-2">
+                    <span
+                      class="font-brand text-6xl
+                        font-bold tracking-tight
+                        text-text-primary"
+                    >{{ getPrice(tiers[0]) }}</span>
+                    <span
+                      class="font-brand text-lg
+                        font-semibold leading-8
+                        text-text-tertiary"
+                    >{{ t(frequency.priceSuffixKey) }}</span>
+                  </div>
+                  <p
+                    class="mt-6 text-lg leading-7
+                      text-text-secondary">
+                    {{ t(tiers[0].descriptionKey) }}
+                  </p>
+                  <ul
+                    role="list"
+                    class="mt-10 space-y-4 text-base
+                      leading-7 text-text-secondary">
+                    <li
+                      v-for="featureKey in tiers[0].featuresKeys"
+                      :key="featureKey"
+                      class="flex gap-x-3">
                       <OIcon
-                        :collection="tiers[1].icon.collection"
-                        :name="tiers[1].icon.name"
-                        class="h-8 w-8 text-white"
+                        collection="heroicons"
+                        name="check-circle-20-solid"
+                        class="h-6 w-6 flex-none
+                          text-brand-500"
                         aria-hidden="true" />
-                    </div>
-                    <div class="mt-6 flex items-baseline gap-x-2">
-                      <span
-                        class="font-brand text-6xl font-bold tracking-tight text-white"
-                      >{{ getPrice(tiers[1]) }}</span
-                      >
-                      <span
-                        class="font-brand text-lg font-semibold leading-8 text-white/80"
-                      >{{ t(frequency.priceSuffixKey) }}</span
-                      >
-                    </div>
-                    <p class="mt-6 text-lg leading-7 text-white/90">
-                      {{ t(tiers[1].descriptionKey) }}
-                    </p>
-                    <ul
-                      role="list"
-                      class="mt-10 space-y-4 text-base leading-7 text-white/90">
-                      <li
-                        v-for="featureKey in tiers[1].featuresKeys"
-                        :key="featureKey"
-                        class="flex gap-x-3">
-                        <OIcon
-                          collection="heroicons"
-                          name="check-circle-20-solid"
-                          class="h-6 w-6 flex-none text-white"
-                          aria-hidden="true" />
-                        {{ t(featureKey) }}
-                      </li>
-                    </ul>
-                  </div>
-
-                  <!-- Region selector on hover -->
-                  <div class="mt-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 relative">
-                    <div v-if="isClient" class="text-center">
-                      <p class="text-xs text-white/80">
-                        {{ t("web.pricing.region") || "Region" }}: {{ currentRegion.displayName }} •
-                        <button
-                          type="button"
-                          @click="toggleRegionSelector(tiers[1].id)"
-                          class="text-white hover:text-white/70 font-medium underline">
-                          {{ t("web.pricing.change") || "Change" }}
-                        </button>
-                      </p>
-                      <div v-if="activeRegionSelector === tiers[1].id" class="mt-2">
-                        <PricingRegionSelector
-                          :current-region="currentRegion"
-                          :available-regions="availableRegions"
-                          @region-change="handleRegionChange" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <a
-                    :href="getIdentityHref"
-                    :aria-describedby="tiers[1].id"
-                    class="mt-4 block font-brand rounded-xl bg-white px-4 py-3 text-center text-lg font-semibold text-indigo-600 shadow-lg hover:bg-gray-50 transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-                    <div class="flex items-center justify-center gap-x-2">
-                      <OIcon
-                        :collection="tiers[1].icon.collection"
-                        :name="tiers[1].icon.name"
-                        size="5" />
-                      {{ t(tiers[1].ctaKey) }}
-                    </div>
-                  </a>
+                      {{ t(featureKey) }}
+                    </li>
+                  </ul>
                 </div>
+
+                <a
+                  :href="basicPlanHref"
+                  :aria-describedby="tiers[0].id"
+                  class="mt-8 block rounded-lg
+                    border border-surface-3 bg-surface-1
+                    hover:bg-surface-2 px-6 py-3
+                    text-center text-base font-semibold
+                    text-text-primary transition-colors
+                    focus-visible:outline
+                    focus-visible:outline-2
+                    focus-visible:outline-offset-2
+                    focus-visible:outline-brand-600">
+                  <div
+                    class="flex items-center
+                      justify-center gap-x-2">
+                    <OIcon
+                      :collection="tiers[0].icon.collection"
+                      :name="tiers[0].icon.name"
+                      size="5" />
+                    {{ t(tiers[0].ctaKey) }}
+                  </div>
+                </a>
               </div>
 
-              <!-- Feature Comparison Table -->
-              <div class="mt-20 mx-auto max-w-4xl">
-                <h3
-                  class="text-center text-2xl font-bold tracking-tight text-gray-900 dark:text-white mb-8">
-                  {{ t("web.pricing.compare-plans") }}
-                </h3>
+              <!-- Identity Plus Tier -->
+              <div
+                :key="tiers[1].id"
+                class="flex flex-col justify-between
+                  rounded-2xl bg-surface-1
+                  border border-surface-3
+                  border-t-2 border-t-brand-500
+                  p-12 hover:border-surface-4
+                  hover:border-t-brand-500
+                  transition-colors duration-200
+                  sm:p-14">
+                <div>
+                  <div
+                    class="flex items-center
+                      justify-between">
+                    <h3
+                      :id="tiers[1].id"
+                      class="text-xl font-bold leading-8
+                        text-text-primary">
+                      {{ t(tiers[1].nameKey) }}
+                    </h3>
+                    <OIcon
+                      :collection="tiers[1].icon.collection"
+                      :name="tiers[1].icon.name"
+                      class="size-6 text-brandcomp-500"
+                      aria-hidden="true" />
+                  </div>
+                  <div
+                    class="mt-6 flex items-baseline
+                      gap-x-2">
+                    <span
+                      class="font-brand text-6xl
+                        font-bold tracking-tight
+                        text-text-primary"
+                    >{{ getPrice(tiers[1]) }}</span>
+                    <span
+                      class="font-brand text-lg
+                        font-semibold leading-8
+                        text-text-tertiary"
+                    >{{ t(frequency.priceSuffixKey) }}</span>
+                  </div>
+                  <p
+                    class="mt-6 text-lg leading-7
+                      text-text-secondary">
+                    {{ t(tiers[1].descriptionKey) }}
+                  </p>
+                  <ul
+                    role="list"
+                    class="mt-10 space-y-4 text-base
+                      leading-7 text-text-secondary">
+                    <li
+                      v-for="featureKey in tiers[1].featuresKeys"
+                      :key="featureKey"
+                      class="flex gap-x-3">
+                      <OIcon
+                        collection="heroicons"
+                        name="check-circle-20-solid"
+                        class="h-6 w-6 flex-none
+                          text-brand-500"
+                        aria-hidden="true" />
+                      {{ t(featureKey) }}
+                    </li>
+                  </ul>
+                </div>
+
+                <a
+                  :href="getIdentityHref"
+                  :aria-describedby="tiers[1].id"
+                  class="mt-8 block rounded-lg
+                    bg-brand-600 hover:bg-brand-700
+                    px-6 py-3 text-center text-base
+                    font-semibold text-white
+                    transition-colors
+                    focus-visible:outline
+                    focus-visible:outline-2
+                    focus-visible:outline-offset-2
+                    focus-visible:outline-brand-600">
+                  <div
+                    class="flex items-center
+                      justify-center gap-x-2">
+                    <OIcon
+                      :collection="tiers[1].icon.collection"
+                      :name="tiers[1].icon.name"
+                      size="5" />
+                    {{ t(tiers[1].ctaKey) }}
+                  </div>
+                </a>
+              </div>
+            </div>
+
+            <!-- Feature Comparison: Bento-style grouped cards -->
+            <div class="mt-20 mx-auto max-w-6xl">
+              <h3
+                class="text-center text-3xl font-bold
+                  tracking-tight text-text-primary mb-8
+                  sm:text-4xl">
+                {{ t("web.pricing.compare-plans") }}
+              </h3>
+              <div
+                class="grid grid-cols-1 md:grid-cols-3
+                  gap-4">
                 <div
-                  class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg ring-1 ring-gray-900/5 dark:ring-gray-700 overflow-hidden">
-                  <table class="w-full">
-                    <thead>
-                      <tr
-                        class="border-b border-gray-200 dark:border-gray-700">
-                        <th
-                          class="py-4 px-6 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                          {{ t("web.pricing.comparison.feature") }}
-                        </th>
-                        <th
-                          class="py-4 px-6 text-center text-sm font-semibold text-gray-900 dark:text-white">
+                  v-for="group in featureGroups"
+                  :key="group.labelKey"
+                  class="bg-surface-1 rounded-2xl
+                    border border-surface-3 p-6 sm:p-8
+                    hover:border-surface-4
+                    transition-colors duration-200">
+                  <h4
+                    class="font-brand text-lg
+                      text-text-primary mb-4">
+                    {{ t(group.labelKey) }}
+                  </h4>
+                  <div class="space-y-3">
+                    <div
+                      class="flex items-center
+                        justify-between border-b
+                        border-surface-3 pb-2 mb-1">
+                      <span class="text-xs
+                        text-text-tertiary">
+                      </span>
+                      <div class="flex gap-8">
+                        <span
+                          class="text-text-tertiary
+                            text-xs w-16 text-center">
                           {{ t(tiers[0].nameKey) }}
-                        </th>
-                        <th
-                          class="py-4 px-6 text-center text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+                        </span>
+                        <span
+                          class="text-text-tertiary
+                            text-xs w-16 text-center">
                           {{ t(tiers[1].nameKey) }}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                      <tr
-                        v-for="feature in comparisonFeatures"
-                        :key="feature.name"
-                        class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                        <td
-                          class="py-4 px-6 text-sm text-gray-900 dark:text-gray-100">
-                          {{ feature.nameKey ? t(feature.nameKey) : feature.name }}
-                        </td>
-                        <td class="py-4 px-6 text-center">
+                        </span>
+                      </div>
+                    </div>
+                    <div
+                      v-for="feature in group.features"
+                      :key="feature.labelKey"
+                      class="flex items-center
+                        justify-between py-1">
+                      <span
+                        class="text-text-secondary
+                          text-sm">
+                        {{ t(feature.labelKey) }}
+                      </span>
+                      <div class="flex gap-8">
+                        <span class="w-16 text-center">
                           <OIcon
-                            v-if="feature.basic"
+                            v-if="feature.free"
                             collection="heroicons"
                             name="check-solid"
-                            class="h-5 w-5 text-indigo-600 dark:text-indigo-400 mx-auto"
+                            class="h-6 w-6
+                              text-brand-500 mx-auto"
                             aria-hidden="true" />
                           <OIcon
                             v-else
                             collection="heroicons"
                             name="x-mark-solid"
-                            class="h-5 w-5 text-gray-300 dark:text-gray-600 mx-auto"
+                            class="h-6 w-6
+                              text-surface-4 mx-auto"
                             aria-hidden="true" />
-                        </td>
-                        <td class="py-4 px-6 text-center">
+                        </span>
+                        <span class="w-16 text-center">
                           <OIcon
                             v-if="feature.identity"
                             collection="heroicons"
                             name="check-solid"
-                            class="h-5 w-5 text-indigo-600 dark:text-indigo-400 mx-auto"
+                            class="h-6 w-6
+                              text-brand-500 mx-auto"
                             aria-hidden="true" />
                           <OIcon
                             v-else
                             collection="heroicons"
                             name="x-mark-solid"
-                            class="h-5 w-5 text-gray-300 dark:text-gray-600 mx-auto"
+                            class="h-6 w-6
+                              text-surface-4 mx-auto"
                             aria-hidden="true" />
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <!-- Discount Section -->
-              <div
-                class="mt-16 flex flex-col items-start gap-x-8 gap-y-6 rounded-2xl bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 p-8 ring-1 ring-gray-900/5 dark:ring-gray-700 sm:gap-y-10 sm:p-10 lg:flex-row lg:items-center shadow-lg">
-                <div class="lg:min-w-0 lg:flex-1">
-                  <h3
-                    id="discounted-tier"
-                    class="text-2xl font-bold leading-8 tracking-tight text-indigo-600 dark:text-indigo-400 flex items-center gap-x-2">
-                    <OIcon
-                      collection="heroicons"
-                      name="sparkles-solid"
-                      class="h-6 w-6"
-                      aria-hidden="true" />
-                    {{ t("web.pricing.discounts.title") }}
-                  </h3>
-                  <p
-                    class="mt-3 text-lg leading-7 text-gray-700 dark:text-gray-200">
-                    {{ t("web.pricing.discounts.description") }}
-                  </p>
-                </div>
-                <a
-                  :href="feedbackHref"
-                  aria-describedby="discounted-tier"
-                  class="rounded-xl bg-indigo-600 px-5 py-3 text-base font-semibold text-white shadow-md hover:bg-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-400 transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 whitespace-nowrap">
-                  {{ t("web.pricing.discounts.cta") }} <span aria-hidden="true">&rarr;</span>
-                </a>
+            <!-- Discount Section -->
+            <div
+              class="mt-16 mx-auto max-w-6xl flex
+                flex-col items-start gap-x-8 gap-y-6
+                rounded-2xl bg-surface-1
+                border border-surface-3 p-8
+                hover:border-surface-4
+                transition-colors duration-200
+                sm:gap-y-10 sm:p-10
+                lg:flex-row lg:items-center">
+              <div class="lg:min-w-0 lg:flex-1">
+                <h3
+                  id="discounted-tier"
+                  class="text-2xl font-bold leading-8
+                    tracking-tight text-text-primary
+                    flex items-center gap-x-2">
+                  <OIcon
+                    collection="heroicons"
+                    name="sparkles-solid"
+                    class="h-6 w-6 text-brand-500"
+                    aria-hidden="true" />
+                  {{ t("web.pricing.discounts.title") }}
+                </h3>
+                <p
+                  class="mt-3 text-lg leading-7
+                    text-text-secondary">
+                  {{ t("web.pricing.discounts.description") }}
+                </p>
               </div>
+              <a
+                :href="feedbackHref"
+                aria-describedby="discounted-tier"
+                class="rounded-lg bg-brand-600
+                  hover:bg-brand-700 px-6 py-3
+                  text-base font-semibold text-white
+                  transition-colors
+                  focus-visible:outline
+                  focus-visible:outline-2
+                  focus-visible:outline-offset-2
+                  focus-visible:outline-brand-600
+                  whitespace-nowrap">
+                {{ t("web.pricing.discounts.cta") }}
+                <span aria-hidden="true">&rarr;</span>
+              </a>
             </div>
           </div>
         </div>
