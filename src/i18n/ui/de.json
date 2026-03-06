@@ -304,7 +304,7 @@
       "description": "Teilen Sie sensible Informationen sicher mit selbstzerstörenden Links. Fügen Sie Ihr Geheimnis ein, generieren Sie einen Link und teilen Sie ihn. Nach dem Anzeigen ist es für immer verschwunden.",
       "a-trusted-way-to-share-sensitive-information-etc": "Eine vertrauenswürdige Methode zum Teilen vertraulicher Informationen, die nach dem Anzeigen automatisch gelöscht werden.",
       "hero": {
-        "badge": "SOC 2 & ISO 27001 compliant",
+        "badge": "Sicherheitsorientierte Architektur",
         "title": {
           "line1": "Onetime Secret",
           "line2_w1": "Signed.",
@@ -313,11 +313,11 @@
         },
         "subtitle": "Send passwords, credentials, and sensitive data through links that self-destruct after being viewed.",
         "compliance": {
-          "label": "Compliance certifications",
-          "soc2": "SOC 2",
-          "gdpr": "GDPR",
-          "ccpa": "CCPA",
-          "hipaa": "HIPAA"
+          "label": "Sicherheitsfunktionen",
+          "encrypted": "Verschlüsselt",
+          "selfDestructing": "Selbstzerstörend",
+          "openSource": "Open Source",
+          "dataResidency": "Datenresidenz"
         }
       },
       "features": {
@@ -400,8 +400,8 @@
           "description": "Choose where your secrets live: EU, US, or other regions. Meet data sovereignty requirements at the point of creation."
         },
         "compliance": {
-          "title": "Compliance-ready infrastructure",
-          "description": "SOC 2 Type II certified. Meets GDPR, CCPA, and HIPAA requirements for handling sensitive information. Audit logs, access controls, and SSO for teams that need them."
+          "title": "Hilft Teams bei der Erreichung ihrer Compliance-Ziele",
+          "description": "Entwickelt zur Unterstützung von SOC 2-, DSGVO-, CCPA- und HIPAA-Workflows. Audit-Logs, Zugriffskontrollen und SSO helfen Teams, ihre eigenen Compliance-Anforderungen zu erfüllen."
         },
         "api": {
           "title": "Developer API",

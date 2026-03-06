@@ -21,7 +21,7 @@ import { describe, it, expect } from 'vitest';
 // change that breaks these contracts fails here before E2E runs.
 // ---------------------------------------------------------------------------
 
-const COMPLIANCE_KEYS = ['soc2', 'gdpr', 'ccpa', 'hipaa'] as const;
+const SECURITY_FEATURE_KEYS = ['encrypted', 'selfDestructing', 'openSource', 'dataResidency'] as const;
 
 // ---------------------------------------------------------------------------
 // Badge
@@ -75,43 +75,43 @@ describe('HeroTitle — h1 element contract', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Compliance list
+// Security feature tags
 // ---------------------------------------------------------------------------
 
-describe('HeroTitle — compliance list contract', () => {
-  it('compliance list contains exactly 4 items (soc2, gdpr, ccpa, hipaa)', () => {
-    expect(COMPLIANCE_KEYS).toHaveLength(4);
+describe('HeroTitle — security feature list contract', () => {
+  it('security feature list contains exactly 4 items', () => {
+    expect(SECURITY_FEATURE_KEYS).toHaveLength(4);
   });
 
-  it('compliance items include soc2', () => {
-    expect(COMPLIANCE_KEYS).toContain('soc2');
+  it('security features include encrypted', () => {
+    expect(SECURITY_FEATURE_KEYS).toContain('encrypted');
   });
 
-  it('compliance items include gdpr', () => {
-    expect(COMPLIANCE_KEYS).toContain('gdpr');
+  it('security features include selfDestructing', () => {
+    expect(SECURITY_FEATURE_KEYS).toContain('selfDestructing');
   });
 
-  it('compliance items include ccpa', () => {
-    expect(COMPLIANCE_KEYS).toContain('ccpa');
+  it('security features include openSource', () => {
+    expect(SECURITY_FEATURE_KEYS).toContain('openSource');
   });
 
-  it('compliance items include hipaa', () => {
-    expect(COMPLIANCE_KEYS).toContain('hipaa');
+  it('security features include dataResidency', () => {
+    expect(SECURITY_FEATURE_KEYS).toContain('dataResidency');
   });
 
-  it('compliance ul has role="list"', () => {
+  it('security feature ul has role="list"', () => {
     // Codifies: <ul role="list" :aria-label="...">
     const expectedRole = 'list';
     expect(expectedRole).toBe('list');
   });
 
-  it('compliance ul aria-label is bound to key web.homepage.hero.compliance.label', () => {
+  it('security feature ul aria-label is bound to key web.homepage.hero.compliance.label', () => {
     const ariaLabelKey = 'web.homepage.hero.compliance.label';
     expect(ariaLabelKey).toBe('web.homepage.hero.compliance.label');
   });
 
-  it('each compliance i18n key follows pattern web.homepage.hero.compliance.{tag}', () => {
-    for (const key of COMPLIANCE_KEYS) {
+  it('each security feature i18n key follows pattern web.homepage.hero.compliance.{tag}', () => {
+    for (const key of SECURITY_FEATURE_KEYS) {
       const fullKey = `web.homepage.hero.compliance.${key}`;
       expect(fullKey).toMatch(/^web\.homepage\.hero\.compliance\./);
     }

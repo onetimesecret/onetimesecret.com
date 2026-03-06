@@ -8,7 +8,7 @@ const { t } = useI18n();
 
 <template>
   <div class="text-center">
-    <!-- SOC 2 badge -->
+    <!-- Security badge -->
     <div class="mb-6 flex justify-center">
       <span
         class="inline-flex items-center gap-2 rounded-full border border-brand-500/30 bg-brand-500/10 px-4 py-1.5 text-sm font-medium text-brand-400">
@@ -37,13 +37,13 @@ const { t } = useI18n();
       {{ t("web.homepage.hero.subtitle") }}
     </p>
 
-    <!-- Compliance tags -->
+    <!-- Security feature tags -->
     <ul
       role="list"
       :aria-label="t('web.homepage.hero.compliance.label')"
       class="mt-8 flex flex-wrap justify-center gap-3">
       <li
-        v-for="key in ['soc2', 'gdpr', 'ccpa', 'hipaa']"
+        v-for="key in ['encrypted', 'selfDestructing', 'openSource', 'dataResidency']"
         :key="key"
         class="rounded-full border border-surface-3 bg-surface-1 px-3 py-1 text-xs font-medium text-text-secondary">
         {{ t(`web.homepage.hero.compliance.${key}`) }}

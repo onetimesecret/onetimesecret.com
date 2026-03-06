@@ -1,5 +1,5 @@
 <!-- src/components/vue/homepage/GlobalInfrastructure.vue -->
-<!-- Trust/compliance section with CSS globe visualization -->
+<!-- Trust/infrastructure section with CSS globe visualization -->
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";

@@ -83,17 +83,17 @@ test.describe('Homepage redesign — hero section', () => {
     await expect(spans).toHaveCount(2);
   });
 
-  test('compliance tags list is present', async ({ page }) => {
-    // <ul role="list" aria-label="Compliance certifications">
+  test('security feature tags list is present', async ({ page }) => {
+    // <ul role="list" aria-label="Security features">
     const list = page.locator('ul[role="list"]').filter({
-      hasText: /SOC 2|GDPR|CCPA|HIPAA/,
+      hasText: /Encrypted|Self-destructing|Open source|Data residency/,
     });
     await expect(list).toBeVisible();
   });
 
-  test('compliance list contains all 4 required tags', async ({ page }) => {
+  test('security feature list contains all 4 required tags', async ({ page }) => {
     const list = page.locator('ul[role="list"]').filter({
-      hasText: /SOC 2|GDPR|CCPA|HIPAA/,
+      hasText: /Encrypted|Self-destructing|Open source|Data residency/,
     });
     const items = list.locator('li');
     await expect(items).toHaveCount(4);
