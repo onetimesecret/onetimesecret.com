@@ -49,7 +49,7 @@ defineExpose({
         class="absolute right-1/4 bottom-1/4 h-[500px] w-[500px] translate-x-1/2 translate-y-1/2 rounded-full bg-brandcomp-500 opacity-[0.05] blur-[120px]"></div>
     </div>
 
-    <div class="mx-auto w-full max-w-3xl px-4 sm:px-6 lg:px-8">
+    <div class="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
       <!-- Hero title, badge, compliance tags -->
       <HeroTitle />
 
