@@ -131,13 +131,13 @@ defineExpose({
 <style scoped>
 @keyframes pulse-ring {
   0% {
-    box-shadow: 0 0 0 0 rgba(34, 139, 230, 0.5);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-brand-500) 50%, transparent);
   }
   70% {
-    box-shadow: 0 0 0 6px rgba(34, 139, 230, 0);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-brand-500) 0%, transparent);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(34, 139, 230, 0);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-brand-500) 0%, transparent);
   }
 }
 
