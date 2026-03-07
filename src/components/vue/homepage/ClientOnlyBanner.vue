@@ -79,16 +79,16 @@ const handleSwitchJurisdiction = (jurisdictionId: string) => {
 
 <template>
   <!--
-    CLS Prevention: Banner uses fixed positioning so it overlays page content
-    without pushing anything down. Slides in from top on show, out on dismiss.
+    Banner renders in normal document flow below the header.
+    Works correctly whether or not the staging banner is displayed.
   -->
   <Transition
-    enter-active-class="transition-transform duration-300 ease-out"
-    enter-from-class="-translate-y-full"
-    enter-to-class="translate-y-0"
-    leave-active-class="transition-transform duration-200 ease-in"
-    leave-from-class="translate-y-0"
-    leave-to-class="-translate-y-full">
+    enter-active-class="transition-all duration-300 ease-out overflow-hidden"
+    enter-from-class="opacity-0 max-h-0"
+    enter-to-class="opacity-100 max-h-24"
+    leave-active-class="transition-all duration-200 ease-in overflow-hidden"
+    leave-from-class="opacity-100 max-h-24"
+    leave-to-class="opacity-0 max-h-0">
     <GlobalBanner
       v-if="bannerVisible"
       :detected-region="detectedJurisdiction"
