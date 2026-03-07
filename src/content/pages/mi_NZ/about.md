@@ -3,7 +3,7 @@ title: Mō Mātou
 
 ---
 
-Kia ora, ko Delano au, te kaihanga o Onetime Secret. I tīmata i te tau 2012 hei huarahi māmā, haumaru ki te tuari i ngā mōhiohio tūmataiti, kua tipu whānui atu i te tirohanga tuatahi. Neke atu i te tekau tau ā muri mai, kei roto tonu mātou i te pakihi ratonga "karere huna", e mahi ana i ngā āhuatanga whakamahi kāore au i whakaaro.
+Kia ora, ko Delano au, te kaihanga o Onetime Secret. I tīmata i te tau 2011 hei huarahi māmā, haumaru ki te tuari i ngā mōhiohio tūmataiti, kua tipu whānui atu i te tirohanga tuatahi. Neke atu i te tekau tau ā muri mai, kei roto tonu mātou i te pakihi ratonga "karere huna", e mahi ana i ngā āhuatanga whakamahi kāore au i whakaaro.
 
 ## Tā Mātou i Hanga
 

@@ -3,7 +3,7 @@ title: Über uns
 
 ---
 
-Hallo, ich bin Delano, der Erfinder von Onetime Secret. Was 2012 als einfacher, sicherer Weg begann, sensible Informationen zu teilen, hat sich weit über die ursprüngliche Vision hinaus entwickelt. Mehr als ein Jahrzehnt später sind wir voll und ganz im Geschäft mit "Geheimnissen" und bedienen Anwendungsfälle, die ich mir nie hätte vorstellen können.
+Hallo, ich bin Delano, der Erfinder von Onetime Secret. Was 2011 als einfacher, sicherer Weg begann, sensible Informationen zu teilen, hat sich weit über die ursprüngliche Vision hinaus entwickelt. Mehr als ein Jahrzehnt später sind wir voll und ganz im Geschäft mit "Geheimnissen" und bedienen Anwendungsfälle, die ich mir nie hätte vorstellen können.
 
 ## Was wir aufgebaut haben
 
