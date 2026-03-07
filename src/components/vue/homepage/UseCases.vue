@@ -33,7 +33,7 @@ const useCases = computed(() => getUseCases(t));
           class="flex items-start gap-4 rounded-2xl border border-surface-3 bg-surface-1 p-6 hover:border-surface-4 transition-colors duration-200">
           <!-- Icon container -->
           <div
-            class="flex-shrink-0 flex size-12 items-center justify-center rounded-xl bg-surface-2 border border-surface-3 text-2xl"
+            class="flex-shrink-0 flex size-12 items-center justify-center rounded-xl bg-surface-3 text-3xl leading-none"
             aria-hidden="true">
             {{ useCase.icon }}
           </div>

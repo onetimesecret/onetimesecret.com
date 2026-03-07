@@ -1,7 +1,7 @@
 <!-- src/components/vue/forms/SecretForm.vue -->
 
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from "vue";
+import { computed, ref, watch, nextTick, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 
 // Define the options model
@@ -80,22 +80,96 @@ const apiResult = ref<ApiResult | null>(null);
 const apiError = ref<string | null>(null);
 const copySuccess = ref(false);
 const copyButtonRef = ref<HTMLButtonElement | null>(null);
+const secretUrlInputRef = ref<HTMLInputElement | null>(null);
 
 // TTL options
 const ttlOptions = ref<TtlOption[]>([
-  { value: 300, label: t("web.secrets.ttl.5minutes") || "5 minutes" },
   { value: 1800, label: t("web.secrets.ttl.30minutes") || "30 minutes" },
   { value: 3600, label: t("web.secrets.ttl.1hour") || "1 hour" },
   { value: 14400, label: t("web.secrets.ttl.4hours") || "4 hours" },
   { value: 86400, label: t("web.secrets.ttl.1day") || "1 day" },
   { value: 259200, label: t("web.secrets.ttl.3days") || "3 days" },
   { value: 604800, label: t("web.secrets.ttl.7days") || "7 days" },
-  { value: 1209600, label: t("web.secrets.ttl.14days") || "14 days" },
-  { value: 2592000, label: t("web.secrets.ttl.30days") || "30 days" },
 ]);
 
+const showTtlDropdown = ref(false);
+const ttlDropdownRef = ref<HTMLElement | null>(null);
+const showPassphrasePopover = ref(false);
+const passphrasePopoverRef = ref<HTMLElement | null>(null);
+const passphraseInputRef = ref<HTMLInputElement | null>(null);
+
+// Close popovers on click outside
+const handleClickOutside = (event: PointerEvent) => {
+  const target = event.target as HTMLElement;
+  if (
+    showTtlDropdown.value &&
+    ttlDropdownRef.value &&
+    !ttlDropdownRef.value.contains(target)
+  ) {
+    showTtlDropdown.value = false;
+  }
+  if (
+    showPassphrasePopover.value &&
+    passphrasePopoverRef.value &&
+    !passphrasePopoverRef.value.contains(target)
+  ) {
+    showPassphrasePopover.value = false;
+  }
+};
+
+const handleEscape = (event: KeyboardEvent) => {
+  if (event.key === "Escape") {
+    showTtlDropdown.value = false;
+    showPassphrasePopover.value = false;
+  }
+};
+
+const togglePassphrasePopover = async () => {
+  showPassphrasePopover.value = !showPassphrasePopover.value;
+  if (showPassphrasePopover.value) {
+    secretOptions.value.addPassphrase = true;
+    showTtlDropdown.value = false;
+    await nextTick();
+    passphraseInputRef.value?.focus();
+  }
+};
+
+// Reset addPassphrase flag when popover closes with an empty passphrase
+watch(showPassphrasePopover, (isOpen) => {
+  if (!isOpen && !passphrase.value.trim()) {
+    secretOptions.value.addPassphrase = false;
+  }
+});
+
+const toggleTtlDropdown = () => {
+  showTtlDropdown.value = !showTtlDropdown.value;
+  if (showTtlDropdown.value) {
+    showPassphrasePopover.value = false;
+  }
+};
+
+const clearPassphrase = () => {
+  secretOptions.value.addPassphrase = false;
+  passphrase.value = "";
+  showPassphrase.value = false;
+  showPassphrasePopover.value = false;
+};
+
+onMounted(() => {
+  document.addEventListener("pointerdown", handleClickOutside);
+  document.addEventListener("keydown", handleEscape);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("pointerdown", handleClickOutside);
+  document.removeEventListener("keydown", handleEscape);
+});
+
 // --- Computed ---
-const showPassphraseInput = computed(() => secretOptions.value.addPassphrase);
+const currentTtlLabel = computed(() => {
+  const option = ttlOptions.value.find(o => o.value === secretOptions.value.ttl);
+  return option ? option.label : "";
+});
 const showSuccessView = computed(
   () => apiResult.value?.success && apiResult.value.record,
 );
@@ -229,6 +303,15 @@ const buildSecretUrl = (result: ApiResult): string => {
   return `${baseUrl}/secret/${secretKey}`; // Direct secret link
 };
 
+const buildReceiptUrl = (result: ApiResult): string => {
+  const metadataKey = result.record?.metadata?.key ?? "";
+  const baseUrl = (createdWithBaseUrl.value || props.apiBaseUrl).replace(
+    /\/api$/,
+    "",
+  );
+  return `${baseUrl}/receipt/${metadataKey}`;
+};
+
 const copyUrlToClipboard = async () => {
   if (!apiResult.value || !apiResult.value.record) return;
 
@@ -245,17 +328,19 @@ const copyUrlToClipboard = async () => {
   }
 };
 
-// Focus the copy button when success view is shown
-watch(showSuccessView, async (newValue) => {
-  if (newValue) {
-    // Wait for DOM to update before focusing
-    await nextTick();
-    // Focus the copy button for better a11y
-    if (copyButtonRef.value) {
-      copyButtonRef.value.focus();
-    }
+// Focus the URL input after the success view transition completes
+// Focus the URL input after the success view transition completes.
+// Uses setSelectionRange with 'backward' direction to select all text
+// while keeping the scroll position at the start (showing the scheme).
+// Note: .select() and .select()+scrollLeft=0 both fail in Firefox
+// because select() asynchronously scrolls to the end of the value.
+const onSuccessTransitionEnter = () => {
+  if (showSuccessView.value && secretUrlInputRef.value) {
+    const el = secretUrlInputRef.value;
+    el.focus();
+    el.setSelectionRange(0, el.value.length, 'backward');
   }
-});
+};
 
 // Function to reset form and create another secret
 const createAnotherSecret = () => {
@@ -269,20 +354,21 @@ const createAnotherSecret = () => {
   <div class="mx-auto max-w-xl w-full px-0 xs:px-1 sm:px-0">
     <transition
       name="fade"
-      mode="out-in">
+      mode="out-in"
+      @after-enter="onSuccessTransitionEnter">
       <!-- Form View -->
       <div
         v-if="showFormView"
         key="form-view">
         <!-- Text Area Input -->
-        <div class="relative">
+        <div>
           <textarea
             v-model="secretText"
-            rows="6"
+            rows="5"
             autofocus
             :aria-label="t('web.secrets.secret-label')"
             aria-describedby="secret-description"
-            class="block w-full rounded-md border-0 py-2 sm:py-3 pl-3 xs:pl-4 pr-28 xs:pr-32 sm:pr-36 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 placeholder:text-sm text-sm disabled:opacity-50 bg-white dark:bg-gray-800 dark:text-gray-100 focus-visible:outline-2 focus-visible:outline-brand-500/50"
+            class="block w-full rounded-lg border-0 py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 placeholder:text-sm text-sm disabled:opacity-50 bg-white dark:bg-gray-800 dark:text-gray-100 dark:ring-gray-600 focus-visible:outline-2 focus-visible:outline-brand-500/50 resize-y"
             :placeholder="props.placeholder || t('web.secrets.secret_placeholder')"
             :disabled="isLoading"></textarea>
           <div
@@ -290,117 +376,86 @@ const createAnotherSecret = () => {
             class="sr-only">
             {{ t('web.secrets.secret-description') }}
           </div>
-
-          <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5 z-10">
-            <button
-              type="button"
-              class="inline-flex font-brand items-center justify-center min-w-[4rem] xs:min-w-[5rem] sm:min-w-[7rem] rounded-md border border-transparent bg-brand-600 px-1 xs:px-2 sm:px-3 py-1 sm:py-2 m-1 text-base xs:text-sm text-white font-semibold shadow-sm hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-brand-400 focus-visible:outline-offset-2 disabled:opacity-50 disabled:bg-gray-400"
-              :disabled="isLoading || !secretText.trim()"
-              @click="handleCreateLink">
-              <span v-if="!isLoading">
-                <span class="hidden sm:inline">{{ t("web.secrets.create_link") }}</span>
-                <span class="sm:hidden inline">{{ t("LABELS.create") }}</span>
-              </span>
-              <span v-else>{{ t("LABELS.loading") }}</span>
-            </button>
-          </div>
         </div>
 
-        <!-- Secret Options -->
+        <!-- Footer bar: TTL + Passphrase indicators (left), Create Link button (right) -->
         <div
           v-if="showOptions"
-          class="mt-4 mb-4">
-          <div class="bg-gradient-to-br from-gray-50 to-gray-100/80 dark:from-gray-800 dark:to-gray-850 rounded-lg p-5 shadow-sm border border-gray-200 dark:border-gray-700">
-            <!-- Header -->
-            <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="size-4 text-brand-600 dark:text-brand-400">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-              </svg>
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                {{ t("web.secrets.optionsHeading") || "Privacy Options" }}
-              </h3>
-            </div>
-
-            <div class="space-y-5">
-              <!-- TTL Selector -->
-              <div>
-                <label
-                  for="ttl-select"
-                  class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
-                  {{ t("web.secrets.ttlLabel") || "Secret lifetime" }}
-                </label>
-                <select
-                  id="ttl-select"
-                  v-model="secretOptions.ttl"
-                  class="block w-full max-w-xs rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-brand-500 focus-visible:outline-brand-500 text-sm py-2 px-3 disabled:opacity-50"
-                  :disabled="isLoading">
-                  <option
+          class="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-4">
+            <!-- TTL popover -->
+            <div ref="ttlDropdownRef" class="relative">
+              <button
+                type="button"
+                class="inline-flex items-center gap-1.5 text-sm text-text-tertiary hover:text-text-secondary transition-colors"
+                @click="toggleTtlDropdown">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                {{ currentTtlLabel }}
+              </button>
+              <!-- TTL popover panel -->
+              <div
+                v-if="showTtlDropdown"
+                class="absolute bottom-full left-0 mb-2 z-50 w-52 rounded-md bg-white dark:bg-gray-800 shadow-xl ring-1 ring-black/10 dark:ring-white/10 divide-y divide-gray-100 dark:divide-gray-700">
+                <div class="py-1">
+                  <button
                     v-for="option in ttlOptions"
                     :key="option.value"
-                    :value="option.value">
+                    type="button"
+                    class="block w-full px-3 py-1.5 text-left text-sm transition-colors"
+                    :class="secretOptions.ttl === option.value
+                      ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300'
+                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'"
+                    @click="secretOptions.ttl = option.value; showTtlDropdown = false">
                     {{ option.label }}
-                  </option>
-                </select>
-                <p class="mt-2 text-xs leading-relaxed text-gray-600 dark:text-gray-400">
-                  {{ t("web.secrets.ttlHint") || "Secret will be deleted after this time, even if not viewed" }}
-                </p>
-              </div>
-
-              <!-- Passphrase Option -->
-              <div>
-                <div class="flex items-start gap-2 mb-2">
-                  <input
-                    id="add-passphrase"
-                    v-model="secretOptions.addPassphrase"
-                    type="checkbox"
-                    class="mt-0.5 size-4 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-brand-600 focus-visible:outline-brand-500 disabled:opacity-50"
-                    :disabled="isLoading"
-                    @change="!secretOptions.addPassphrase && (passphrase = '', showPassphrase = false)" />
-                  <div class="flex-1">
-                    <label
-                      for="add-passphrase"
-                      class="block text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
-                      {{ t("web.secrets.addPassphrase") || "Require passphrase" }}
-                    </label>
-                    <p class="mt-0.5 text-xs leading-relaxed text-gray-600 dark:text-gray-400">
-                      {{ t("web.secrets.passphraseHint") || "Add an extra layer of security" }}
-                    </p>
-                  </div>
+                  </button>
                 </div>
+                <div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                  {{ t("web.secrets.ttlHint") }}
+                </div>
+              </div>
+            </div>
 
-                <!-- Passphrase Input (Conditional) -->
-                <div
-                  v-if="showPassphraseInput"
-                  class="mt-3">
-                  <label
-                    for="passphrase-input"
-                    class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
-                    {{ t("web.secrets.passphraseInputLabel") || "Passphrase" }}
-                  </label>
-                  <div class="relative max-w-xs">
+            <!-- Passphrase popover -->
+            <div ref="passphrasePopoverRef" class="relative">
+              <button
+                type="button"
+                class="inline-flex items-center gap-1.5 text-sm transition-colors"
+                :class="passphrase.trim()
+                  ? 'text-brand-600 dark:text-brand-400'
+                  : 'text-text-tertiary hover:text-text-secondary'"
+                @click="togglePassphrasePopover">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                </svg>
+                {{ t("web.secrets.passphraseInputLabel") || "Passphrase" }}
+              </button>
+              <!-- Passphrase popover panel -->
+              <div
+                v-if="showPassphrasePopover"
+                class="absolute bottom-full left-0 mb-2 z-50 w-64 rounded-md bg-white dark:bg-gray-800 shadow-xl ring-1 ring-black/10 dark:ring-white/10 divide-y divide-gray-100 dark:divide-gray-700">
+                <div class="p-3">
+                  <div class="relative">
                     <input
-                      id="passphrase-input"
+                      ref="passphraseInputRef"
                       v-model="passphrase"
                       :type="showPassphrase ? 'text' : 'password'"
+                      :aria-label="t('web.secrets.passphraseInputLabel')"
                       maxlength="80"
-                      class="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-brand-500 focus-visible:outline-brand-500 text-sm py-2 pl-3 pr-10 disabled:opacity-50"
+                      autocomplete="off"
+                      data-1p-ignore
+                      data-lpignore="true"
+                      data-protonpass-ignore
+                      class="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm py-2 pl-3 pr-10 focus:border-brand-500 focus-visible:outline-brand-500"
                       :placeholder="t('web.secrets.passphrasePlaceholder') || 'Enter passphrase'"
-                      :disabled="isLoading" />
+                      :disabled="isLoading"
+                      @keydown.enter="showPassphrasePopover = false" />
                     <button
                       type="button"
                       class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
-                      :aria-label="showPassphrase ? t('web.secrets.hidePassphrase') || 'Hide passphrase' : t('web.secrets.showPassphrase') || 'Show passphrase'"
+                      :aria-label="showPassphrase ? t('web.secrets.hidePassphrase') : t('web.secrets.showPassphrase')"
                       @click="showPassphrase = !showPassphrase">
-                      <!-- Eye icon (show) -->
                       <svg
                         v-if="!showPassphrase"
                         xmlns="http://www.w3.org/2000/svg"
@@ -408,17 +463,10 @@ const createAnotherSecret = () => {
                         viewBox="0 0 24 24"
                         stroke-width="1.5"
                         stroke="currentColor"
-                        class="size-5">
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        class="size-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                       </svg>
-                      <!-- Eye-slash icon (hide) -->
                       <svg
                         v-else
                         xmlns="http://www.w3.org/2000/svg"
@@ -426,89 +474,59 @@ const createAnotherSecret = () => {
                         viewBox="0 0 24 24"
                         stroke-width="1.5"
                         stroke="currentColor"
-                        class="size-5">
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+                        class="size-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
                       </svg>
                     </button>
                   </div>
-                  <p class="mt-2 text-xs leading-relaxed text-gray-600 dark:text-gray-400">
-                    {{ t("web.secrets.passphraseInputHint") || "Recipient will need this passphrase to view the secret" }}
-                  </p>
+                  <button
+                    v-if="passphrase"
+                    type="button"
+                    class="mt-2 text-xs text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+                    @click="clearPassphrase">
+                    {{ t("web.secrets.removePassphrase") || "Remove passphrase" }}
+                  </button>
                 </div>
-              </div>
-
-              <!-- Custom Domain CTA -->
-              <div class="pt-2">
-                <div class="bg-gradient-to-br from-brand-50/50 to-brand-100/30 dark:from-brand-900/20 dark:to-brand-800/10 rounded-lg p-4 border border-brand-200/60 dark:border-brand-800/40 shadow-sm">
-                  <div class="flex items-start gap-3">
-                    <div class="flex-shrink-0 mt-0.5">
-                      <div class="p-1.5 bg-brand-100 dark:bg-brand-900/40 rounded-md">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke-width="1.5"
-                          stroke="currentColor"
-                          class="size-4 text-brand-600 dark:text-brand-400">
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
-                        </svg>
-                      </div>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {{ t("web.secrets.customDomainCta") || "Want to use your own domain?" }}
-                      </p>
-                      <p class="text-xs text-gray-700 dark:text-gray-400 mt-1 leading-relaxed">
-                        {{ t("web.secrets.customDomainDesc") || "Share secrets from secrets.yourdomain.com" }}
-                      </p>
-                      <a
-                        href="/pricing"
-                        class="inline-flex items-center gap-1.5 mt-2.5 text-xs font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-colors group">
-                        {{ t("web.secrets.learnMorePricing") || "Learn more" }}
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke-width="2.5"
-                          stroke="currentColor"
-                          class="size-3 transition-transform group-hover:translate-x-0.5">
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
+                <div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                  {{ t("web.secrets.passphraseInputHint") }}
                 </div>
               </div>
             </div>
           </div>
+
+          <!-- Create Link button -->
+          <button
+            type="button"
+            class="inline-flex font-brand items-center justify-center rounded-lg bg-brand-600 px-5 py-2.5 text-sm text-white font-semibold shadow-sm hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-brand-400 focus-visible:outline-offset-2 disabled:opacity-50 disabled:bg-gray-400 transition-colors"
+            :disabled="isLoading || !secretText.trim()"
+            @click="handleCreateLink">
+            <span v-if="!isLoading">{{ t("web.secrets.create_link") }}</span>
+            <span v-else>{{ t("LABELS.loading") }}</span>
+          </button>
+        </div>
+
+        <!-- Minimal create button when no text entered yet -->
+        <div
+          v-if="!showOptions"
+          class="mt-4 flex justify-end">
+          <button
+            type="button"
+            class="inline-flex font-brand items-center justify-center rounded-lg bg-brand-600 px-5 py-2.5 text-sm text-white font-semibold shadow-sm hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-brand-400 focus-visible:outline-offset-2 disabled:opacity-50 disabled:bg-gray-400 transition-colors"
+            :disabled="true">
+            {{ t("web.secrets.create_link") }}
+          </button>
         </div>
 
         <!-- Error Display -->
         <div
           v-if="apiError"
-          class="mt-4 mb-10">
+          class="mt-4">
           <div
             class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
             role="alert">
             <strong class="font-bold">{{ t("web.errors.errorTitle") }}</strong>
             <span class="block sm:inline sm:pl-2"> {{ apiError }}</span>
           </div>
-        </div>
-
-        <!-- Loading Indicator -->
-        <div
-          v-if="isLoading"
-          class="mt-4 mb-10 text-center text-gray-500">
-          {{ t("LABELS.processing") }}...
         </div>
       </div>
 
@@ -568,12 +586,18 @@ const createAnotherSecret = () => {
         <!-- URL Field with Copy Button -->
         <div class="flex rounded-md shadow-sm mb-6">
           <input
+            ref="secretUrlInputRef"
             type="text"
             :value="buildSecretUrl(apiResult as ApiResult)"
             readonly
             aria-label="Secret URL"
             class="block w-full rounded-none rounded-l-md border-gray-300 dark:border-gray-600 shadow-md focus:border-green-500 focus-visible:outline-green-500 sm:text-sm bg-white text-black dark:bg-gray-700 dark:text-white p-2"
-            @focus="($event.target as HTMLInputElement).select()" />
+            @focus="($event.target as HTMLInputElement).setSelectionRange(0, ($event.target as HTMLInputElement).value.length, 'backward')" /><!-- Select-all on focus using 'backward' direction so the browser scrolls
+                 to show the start of the URL (the scheme). Alternatives that
+                 did NOT work in Firefox:
+                 - .select() scrolls to the end of the value
+                 - .select() + scrollLeft=0 — the select() resets scrollLeft async -->
+
           <button
             ref="copyButtonRef"
             type="button"
@@ -593,16 +617,22 @@ const createAnotherSecret = () => {
           class="text-center border-t border-gray-100 dark:border-gray-700 pt-4">
           <button
             type="button"
-            class="inline-flex font-brand items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-brand-600 hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+            class="inline-flex font-brand items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 transition-colors"
             @click="createAnotherSecret">
             {{ t("web.secrets.createAnother") || "Create Another Secret" }}
           </button>
-          <!-- Region hint message -->
-          <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
-            {{
-              t("web.secrets.regionSwitchHint") ||
-                "Try creating secrets in different regions for your various needs."
-            }}
+          <p
+            v-if="apiResult?.record?.metadata?.key"
+            class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+            {{ t("web.secrets.receiptHint") || "Your" }}
+            <a
+              :href="buildReceiptUrl(apiResult as ApiResult)"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-colors">
+              {{ t("web.secrets.receiptLink") || "receipt" }}
+            </a>
+            {{ t("web.secrets.receiptHintSuffix") || "tracks when the secret is viewed or expires." }}
           </p>
         </div>
       </div>

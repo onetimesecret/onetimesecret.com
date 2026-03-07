@@ -7,9 +7,10 @@ import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 
 const capabilities = [
-  "web.homepage.infrastructure.features.customDomain",
+  "web.homepage.infrastructure.features.customBranding",
   "web.homepage.infrastructure.features.sso",
-  "web.homepage.infrastructure.features.auditLogs",
+  "web.homepage.infrastructure.features.incomingSecrets",
+  "web.homepage.infrastructure.features.accessControls",
 ];
 
 const iconMap: Record<string, Component> = {

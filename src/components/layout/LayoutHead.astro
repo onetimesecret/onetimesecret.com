@@ -186,12 +186,12 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
       if (storedTheme && AVAILABLE_THEMES.includes(storedTheme)) {
         themeToApply = storedTheme;
       } else {
+        // Honor system preference — must match ThemeManager.getPreferredTheme()
+        // to avoid a dark→light flip on hydration (which causes CLS)
         const prefersDark = window.matchMedia(
           "(prefers-color-scheme: dark)",
         ).matches;
-        if (prefersDark) {
-          themeToApply = "dark";
-        }
+        themeToApply = prefersDark ? "dark" : "light";
       }
     } catch (e) {
       // localStorage might be unavailable

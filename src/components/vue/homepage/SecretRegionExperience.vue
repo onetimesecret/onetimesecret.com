@@ -82,35 +82,31 @@ defineExpose({
     aria-labelledby="secret-form-heading">
     <div class="mx-auto max-w-5xl">
       <div
-        class="flex flex-col min-h-[400px] sm:min-h-[350px] md:min-h-[400px] lg:min-h-[400px] bg-surface-1 shadow-2xl shadow-black/40 rounded-2xl overflow-hidden border border-surface-3 backdrop-blur-sm">
+        class="flex flex-col bg-surface-1 shadow-2xl shadow-black/40 rounded-2xl border border-surface-3 backdrop-blur-sm">
         <div
-          class="px-6 py-5 border-b border-surface-3 bg-surface-2/50">
+          class="px-6 py-5 border-b border-surface-3 bg-surface-2/50 rounded-t-2xl">
           <div class="flex flex-wrap justify-between items-center gap-4">
-            <h3 id="secret-form-heading" class="text-xl font-bold text-text-primary">
+            <h2 id="secret-form-heading" class="text-xl font-bold text-text-primary">
               {{
                 t("LABELS.create_link")
               }}
-            </h3>
+            </h2>
 
             <!-- Region selector pill -->
-            <div class="flex-shrink-0 ml-0 xs:ml-1 sm:ml-2 relative">
-              <div class="h-7 xs:h-8">
-                <ClientOnlyRegionSelector
-                  v-if="isClient"
-                  :current-region="currentRegion"
-                  :available-regions="availableRegions"
-                  class="rounded-full px-3 py-1.5 bg-surface-2 border border-surface-3 transition-colors duration-300 absolute top-0 left-0"
-                  :class="{
-                    'pulse-attention ring-2 ring-brand-500 shadow-lg':
-                      secretCreatedSuccessfully,
-                  }"
-                  @region-change="handleRegionChange" />
-              </div>
-            </div>
+            <ClientOnlyRegionSelector
+              v-if="isClient"
+              :current-region="currentRegion"
+              :available-regions="availableRegions"
+              class="flex-shrink-0 transition-colors duration-300"
+              :class="{
+                'pulse-attention ring-2 ring-brand-500 shadow-lg':
+                  secretCreatedSuccessfully,
+              }"
+              @region-change="handleRegionChange" />
           </div>
         </div>
 
-        <div class="px-0 xs:px-3 sm:px-8 py-3 xs:py-4 sm:py-6 flex-grow">
+        <div class="px-4 sm:px-6 py-4 sm:py-6 flex-grow">
           <HomepageSecretForm
             ref="secretFormRef"
             :region-name="currentRegion.displayName"
@@ -119,11 +115,6 @@ defineExpose({
             @create-link="handleSecretCreationResult" />
         </div>
 
-        <div
-          v-if="!showingResult"
-          class="mt-auto px-6 py-4 text-sm text-center text-text-tertiary border-t border-surface-3 bg-surface-2/30">
-          {{ t("web.secrets.complianceNote") }}
-        </div>
       </div>
     </div>
   </section>
