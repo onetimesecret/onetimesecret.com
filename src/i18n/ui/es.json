@@ -125,35 +125,35 @@
         "basic": {
           "name": "Básico",
           "badge": null,
-          "description": "Características esenciales para compartir secretos de uso ocasional.",
+          "description": "Todo lo que necesita para compartir secretos de forma segura, incluido su propio dominio personalizado, gratis.",
           "cta": "Comenzar",
           "price": {
             "monthly": "$0",
             "annually": "$0"
           },
           "features": {
-            "0": "Compartir secretos de forma segura",
-            "1": "Enviar enlaces por correo electrónico a los destinatarios",
-            "2": "Destrucción automática",
-            "3": "Más opciones de caducidad",
+            "0": "Un dominio personalizado (ej. secrets.ejemplo.com)",
+            "1": "Destrucción automática tras la lectura",
+            "2": "Opciones de caducidad configurables hasta 14 días",
+            "3": "Enviar enlaces por correo electrónico a los destinatarios",
             "4": "API REST"
           }
         },
         "identity": {
           "name": "Identity Plus",
           "badge": "Destacado",
-          "description": "Eleve la confianza en su marca con intercambio seguro desde su propio dominio. Por ej. secrets.ejemplo.com.",
+          "description": "Control total sobre su experiencia de intercambio de secretos con marca propia.",
           "cta": "Comience hoy",
           "price": {
             "monthly": "$35",
             "annually": "$356"
           },
           "features": {
-            "0": "Dominios personalizados ilimitados",
-            "1": "Marca personalizada con su logotipo",
-            "2": "Página de inicio de marca",
-            "3": "Diseño centrado en la privacidad",
-            "4": "Sin límites de velocidad"
+            "0": "Todo lo incluido en Básico",
+            "1": "Dominios personalizados ilimitados",
+            "2": "Marca personalizada con su logotipo",
+            "3": "Caducidad hasta 30 días",
+            "4": "Control de acceso a la página de inicio (decida quién puede crear secretos en su dominio)"
           }
         }
       },
@@ -374,7 +374,7 @@
       },
       "howItWorks": {
         "label": "Cómo funciona",
-        "title": "Se envía. Se lee. Y desaparece.",
+        "title": "Enviado. Leído. Eliminado.",
         "subtitle": "Comparta información confidencial sin dejar rastro en su correo electrónico, registros de chat o sistemas de tickets.",
         "step1": {
           "title": "Pegue su secreto",

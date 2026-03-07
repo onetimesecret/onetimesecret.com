@@ -125,35 +125,35 @@
         "basic": {
           "name": "Basis",
           "badge": null,
-          "description": "Wesentliche Funktionen zum Teilen von Geheimnissen für gelegentliche Nutzung.",
+          "description": "Alles, was Sie brauchen, um Geheimnisse sicher zu teilen — inklusive eigener Domain, kostenlos.",
           "cta": "Loslegen",
           "price": {
             "monthly": "0 €",
             "annually": "0 €"
           },
           "features": {
-            "0": "Geheimnisse sicher teilen",
-            "1": "Links per E-Mail an Empfänger senden",
-            "2": "Automatische Zerstörung",
-            "3": "Mehr Ablaufoptionen",
+            "0": "Eine benutzerdefinierte Domain (z. B. secrets.beispiel.com)",
+            "1": "Automatische Zerstörung nach dem Ansehen",
+            "2": "Konfigurierbare Ablaufoptionen bis zu 14 Tage",
+            "3": "Links per E-Mail an Empfänger senden",
             "4": "REST-API"
           }
         },
         "identity": {
           "name": "Identity Plus",
           "badge": "Vorgestellt",
-          "description": "Stärken Sie das Vertrauen in Ihre Marke durch sicheres Teilen von Ihrer eigenen Domain. Z.B. secrets.beispiel.com.",
+          "description": "Volle Kontrolle über Ihr gebrandetes Geheimnis-Sharing-Erlebnis.",
           "cta": "Heute starten",
           "price": {
             "monthly": "35 €",
             "annually": "356 €"
           },
           "features": {
-            "0": "Unbegrenzte benutzerdefinierte Domains",
-            "1": "Benutzerdefiniertes Branding mit Ihrem Logo",
-            "2": "Gebrandete Startseite",
-            "3": "Datenschutz-orientiertes Design",
-            "4": "Keine Ratenbegrenzungen"
+            "0": "Alles aus Basis",
+            "1": "Unbegrenzte benutzerdefinierte Domains",
+            "2": "Benutzerdefiniertes Branding mit Ihrem Logo",
+            "3": "Ablaufzeit bis zu 30 Tage",
+            "4": "Startseiten-Zugriffskontrolle (bestimmen Sie, wer Geheimnisse auf Ihrer Domain erstellen kann)"
           }
         }
       },
@@ -374,7 +374,7 @@
       },
       "howItWorks": {
         "label": "So funktioniert es",
-        "title": "Senden. Lesen. Weg.",
+        "title": "Gesendet. Gelesen. Weg.",
         "subtitle": "Teilen Sie vertrauliche Informationen, ohne Spuren in E-Mails, Chat-Protokollen oder Ticketsystemen zu hinterlassen.",
         "step1": {
           "title": "Geheimnis einfügen",

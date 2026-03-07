@@ -125,35 +125,35 @@
         "basic": {
           "name": "Basique",
           "badge": null,
-          "description": "Fonctionnalités essentielles de partage de secrets pour une utilisation occasionnelle.",
+          "description": "Tout ce qu'il vous faut pour partager des secrets en toute sécurité, y compris votre propre domaine personnalisé, gratuitement.",
           "cta": "Commencer",
           "price": {
             "monthly": "0 €",
             "annually": "0 €"
           },
           "features": {
-            "0": "Partager des secrets en toute sécurité",
-            "1": "Envoyer des liens par e-mail aux destinataires",
-            "2": "Destruction automatique",
-            "3": "Plus d'options d'expiration",
+            "0": "Un domaine personnalisé (ex. secrets.exemple.com)",
+            "1": "Destruction automatique après consultation",
+            "2": "Options d'expiration configurables jusqu'à 14 jours",
+            "3": "Envoyer des liens par e-mail aux destinataires",
             "4": "API REST"
           }
         },
         "identity": {
           "name": "Identity Plus",
           "badge": "En vedette",
-          "description": "Renforcez la confiance dans votre marque grâce au partage sécurisé depuis votre propre domaine. Par ex. secrets.exemple.com.",
+          "description": "Contrôle total sur votre expérience de partage de secrets à votre image.",
           "cta": "Commencer aujourd'hui",
           "price": {
             "monthly": "35 €",
             "annually": "356 €"
           },
           "features": {
-            "0": "Domaines personnalisés illimités",
-            "1": "Image de marque personnalisée avec votre logo",
-            "2": "Page d'accueil de marque",
-            "3": "Conception axée sur la confidentialité",
-            "4": "Aucune limite de débit"
+            "0": "Tout ce qui est inclus dans Basique",
+            "1": "Domaines personnalisés illimités",
+            "2": "Image de marque personnalisée avec votre logo",
+            "3": "Expiration jusqu'à 30 jours",
+            "4": "Contrôle d'accès à la page d'accueil (décidez qui peut créer des secrets sur votre domaine)"
           }
         }
       },
