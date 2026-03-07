@@ -158,9 +158,9 @@
 */
 
 @layer components {
-  /* Section label: all-caps, 12px, brand-600, used across all homepage sections */
+  /* Section label: all-caps, 12px, brand-700, used across all homepage sections */
   .section-label {
-    @apply text-xs font-semibold uppercase tracking-widest text-brand-600 dark:text-brand-400;
+    @apply text-xs font-semibold uppercase tracking-widest text-brand-700 dark:text-brand-400;
   }
 
   /* Dot glow: status indicator dots (hero badge, region map) */
