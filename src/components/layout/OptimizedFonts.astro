@@ -14,15 +14,15 @@ const fontPath = "/fonts";
 const preloadedFonts = [
   { name: "ZillaSlab-Regular", weight: "400", style: "normal" },
   { name: "ZillaSlab-Bold", weight: "700", style: "normal" },
+  { name: "ZillaSlab-SemiBold", weight: "600", style: "normal" },
+  { name: "ZillaSlab-BoldItalic", weight: "700", style: "italic" },
 ];
 
 // Define all other font variations
 export const otherFonts = [
   { name: "ZillaSlab-Italic", weight: "400", style: "italic" },
-  { name: "ZillaSlab-BoldItalic", weight: "700", style: "italic" },
   { name: "ZillaSlab-Medium", weight: "500", style: "normal" },
   { name: "ZillaSlab-MediumItalic", weight: "500", style: "italic" },
-  { name: "ZillaSlab-SemiBold", weight: "600", style: "normal" },
   { name: "ZillaSlab-SemiBoldItalic", weight: "600", style: "italic" },
   { name: "ZillaSlab-Light", weight: "300", style: "normal" },
   { name: "ZillaSlab-LightItalic", weight: "300", style: "italic" },
@@ -77,7 +77,7 @@ export const otherFonts = [
       url("/fonts/ZillaSlab-Italic.woff") format("woff");
     font-weight: 400;
     font-style: italic;
-    font-display: swap;
+    font-display: optional;
   }
 
   /* Zilla Slab Bold Italic */
@@ -99,7 +99,7 @@ export const otherFonts = [
       url("/fonts/ZillaSlab-Medium.woff") format("woff");
     font-weight: 500;
     font-style: normal;
-    font-display: swap;
+    font-display: optional;
   }
 
   /* Zilla Slab Medium Italic */
@@ -110,7 +110,7 @@ export const otherFonts = [
       url("/fonts/ZillaSlab-MediumItalic.woff") format("woff");
     font-weight: 500;
     font-style: italic;
-    font-display: swap;
+    font-display: optional;
   }
 
   /* Zilla Slab SemiBold */
@@ -132,7 +132,7 @@ export const otherFonts = [
       url("/fonts/ZillaSlab-SemiBoldItalic.woff") format("woff");
     font-weight: 600;
     font-style: italic;
-    font-display: swap;
+    font-display: optional;
   }
 
   /* Zilla Slab Light */
@@ -143,7 +143,7 @@ export const otherFonts = [
       url("/fonts/ZillaSlab-Light.woff") format("woff");
     font-weight: 300;
     font-style: normal;
-    font-display: swap;
+    font-display: optional;
   }
 
   /* Zilla Slab Light Italic */
@@ -154,7 +154,7 @@ export const otherFonts = [
       url("/fonts/ZillaSlab-LightItalic.woff") format("woff");
     font-weight: 300;
     font-style: italic;
-    font-display: swap;
+    font-display: optional;
   }
 
   /* Zilla Slab Highlight Regular */
@@ -165,7 +165,7 @@ export const otherFonts = [
       url("/fonts/ZillaSlabHighlight-Regular.woff") format("woff");
     font-weight: 400;
     font-style: normal;
-    font-display: swap;
+    font-display: optional;
   }
 
   /* Zilla Slab Highlight Bold */
@@ -176,6 +176,6 @@ export const otherFonts = [
       url("/fonts/ZillaSlabHighlight-Bold.woff") format("woff");
     font-weight: 700;
     font-style: normal;
-    font-display: swap;
+    font-display: optional;
   }
 </style>
