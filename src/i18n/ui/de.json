@@ -373,20 +373,20 @@
         "secondaryButton": "View pricing"
       },
       "howItWorks": {
-        "label": "How it works",
-        "title": "Three steps. Zero residue.",
-        "subtitle": "Share sensitive information without leaving a trail in your email, chat logs, or ticketing systems.",
+        "label": "So funktioniert es",
+        "title": "Senden. Lesen. Weg.",
+        "subtitle": "Teilen Sie vertrauliche Informationen, ohne Spuren in E-Mails, Chat-Protokollen oder Ticketsystemen zu hinterlassen.",
         "step1": {
-          "title": "Paste your secret",
-          "description": "Enter any sensitive text: passwords, API keys, credentials, private notes. Set an expiration and optional passphrase."
+          "title": "Geheimnis einfügen",
+          "description": "Geben Sie beliebigen vertraulichen Text ein — Passwörter, API-Schlüssel, Zugangsdaten, private Notizen. Legen Sie eine Ablaufzeit und eine optionale Passphrase fest."
         },
         "step2": {
-          "title": "Share the link",
-          "description": "Get a unique, one-time URL. Send it over any channel: email, Slack, text. The link itself reveals nothing about the content."
+          "title": "Link teilen",
+          "description": "Erhalten Sie eine einzigartige Einmal-URL. Senden Sie sie über jeden Kanal: E-Mail, Slack, SMS. Der Link selbst verrät nichts über den Inhalt."
         },
         "step3": {
-          "title": "It self-destructs",
-          "description": "Once the recipient views the secret, the data is permanently destroyed. The link is dead. No one, including us, can retrieve it."
+          "title": "Nach dem Lesen verschwunden",
+          "description": "Sobald der Empfänger den Link öffnet, werden die Daten unwiderruflich gelöscht. Der Link erlischt mit ihnen. Niemand — auch wir nicht — kann sie wiederherstellen."
         }
       },
       "visual_examples": {
@@ -405,26 +405,26 @@
           "description": "Fügen Sie eine Passphrase für eine zusätzliche Sicherheitsebene hinzu. Nur wer die Passphrase kennt, kann das Geheimnis einsehen."
         },
         "encryption": {
-          "title": "State-of-the-art encryption",
-          "description": "Secrets are encrypted at rest and in transit. The decryption key is embedded in the URL fragment, never sent to our servers, never logged. We can't read your data even if compelled."
+          "title": "Verschlüsselung pro Geheimnis",
+          "description": "Jedes Geheimnis wird vor der Speicherung mit einem eigenen Schlüssel verschlüsselt. Die Entschlüsselungsschlüssel befinden sich auf dem Anwendungsserver, niemals in der Datenbank — eine Defense-in-Depth-Maßnahme, die die Gefährdung im Falle eines Datenlecks begrenzt."
         },
         "selfDestruction": {
-          "title": "Read once, gone forever",
-          "description": "After a single view, the secret is permanently purged from all storage. No copies, no recovery, no trace."
+          "title": "Einmal lesen, für immer verschwunden",
+          "description": "Nach einer einzigen Ansicht wird das Geheimnis dauerhaft aus allen Speichern gelöscht. Keine Kopien, keine Wiederherstellung, keine Spur."
         },
         "dataResidency": {
-          "title": "Regional data storage",
-          "description": "Choose where your secrets live: EU, US, or other regions. Meet data sovereignty requirements at the point of creation."
+          "title": "Regionale Datenspeicherung",
+          "description": "Wählen Sie, wo Ihre Geheimnisse gespeichert werden: EU, USA oder andere Regionen. Erfüllen Sie Datensouveränitätsanforderungen bereits bei der Erstellung."
         },
         "compliance": {
           "title": "Hilft Teams bei der Erreichung ihrer Compliance-Ziele",
           "description": "Entwickelt zur Unterstützung von SOC 2-, DSGVO-, CCPA- und HIPAA-Workflows. Audit-Logs, Zugriffskontrollen und SSO helfen Teams, ihre eigenen Compliance-Anforderungen zu erfüllen."
         },
         "api": {
-          "title": "Developer API",
-          "description": "Integrate secret sharing into your workflows, CI/CD pipelines, and internal tools. Full REST API with language-specific SDKs."
+          "title": "Entwickler-API",
+          "description": "Integrieren Sie das sichere Teilen von Geheimnissen in Ihre Arbeitsabläufe, CI/CD-Pipelines und internen Tools. Vollständige REST-API mit sprachspezifischen SDKs."
         },
-        "also": "Also available:"
+        "also": "Ebenfalls verfügbar:"
       }
     }
   }
