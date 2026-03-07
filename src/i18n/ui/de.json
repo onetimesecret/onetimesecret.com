@@ -405,7 +405,7 @@
           "description": "Fügen Sie eine Passphrase für eine zusätzliche Sicherheitsebene hinzu. Nur wer die Passphrase kennt, kann das Geheimnis einsehen."
         },
         "encryption": {
-          "title": "End-to-end encryption",
+          "title": "State-of-the-art encryption",
           "description": "Secrets are encrypted at rest and in transit. The decryption key is embedded in the URL fragment, never sent to our servers, never logged. We can't read your data even if compelled."
         },
         "selfDestruction": {
