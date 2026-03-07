@@ -88,9 +88,19 @@ const isClient = ref(false);
 
 onMounted(async () => {
   isClient.value = true;
-  // Detect appropriate jurisdiction for the user
+
+  // Detect appropriate jurisdiction for the user first
   await detectJurisdiction();
-  // Banner will show if detected jurisdiction differs from current
+
+  // If no jurisdiction was detected (no geo-detection result),
+  // select a random active region so we don't always default to the first
+  if (!detectedJurisdiction.value) {
+    const activeRegions = availableRegions.value.filter(r => !r.comingSoon);
+    if (activeRegions.length > 0) {
+      const random = activeRegions[Math.floor(Math.random() * activeRegions.length)];
+      setJurisdiction(random.identifier);
+    }
+  }
 });
 
 // Clean up store subscriptions when component is unmounted

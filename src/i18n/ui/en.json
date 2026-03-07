@@ -125,35 +125,35 @@
         "basic": {
           "name": "Basic",
           "badge": null,
-          "description": "Essential secret sharing features for casual use.",
+          "description": "Everything you need to share secrets securely, including your own custom domain, free.",
           "cta": "Get Started",
           "price": {
             "monthly": "$0",
             "annually": "$0"
           },
           "features": {
-            "0": "Share secrets securely",
-            "1": "Email links to recipients",
-            "2": "Automatic destruction",
-            "3": "More expiration options",
+            "0": "One custom domain (e.g. secrets.example.com)",
+            "1": "Automatic destruction after viewing",
+            "2": "Configurable expiration options up to 14 days",
+            "3": "Email links to recipients",
             "4": "REST API"
           }
         },
         "identity": {
           "name": "Identity Plus",
           "badge": "Featured",
-          "description": "Elevate brand trust with secure sharing from your own domain. e.g. secrets.example.com.",
+          "description": "Full control over your branded secret-sharing experience.",
           "cta": "Start today",
           "price": {
             "monthly": "$35",
             "annually": "$356"
           },
           "features": {
-            "0": "Unlimited custom domains",
-            "1": "Custom branding with your logo",
-            "2": "Branded homepage destination",
-            "3": "Privacy-first design",
-            "4": "No rate limits"
+            "0": "Everything in Basic",
+            "1": "Unlimited custom domains",
+            "2": "Custom branding with your logo",
+            "3": "Expiration up to 30 days",
+            "4": "Homepage access control (decide who can create secrets at your domain)"
           }
         }
       },
@@ -197,6 +197,9 @@
       "passphraseInputLabel": "Passphrase",
       "passphrasePlaceholder": "Enter passphrase",
       "passphraseInputHint": "Recipient will need this passphrase to view the secret",
+      "hidePassphrase": "Hide passphrase",
+      "showPassphrase": "Show passphrase",
+      "removePassphrase": "Remove passphrase",
       "ttlLabel": "Secret lifetime",
       "ttlHint": "Secret will be deleted after this time, even if not viewed",
       "customDomainCta": "Want to use your own domain?",
@@ -231,7 +234,10 @@
       "successTitle": "Success!",
       "shareLinkDescription": "Share your secret link with others.",
       "createAnother": "Create Another Secret",
-      "regionSwitchHint": "Try creating secrets in different regions for your various needs."
+      "regionSwitchHint": "Try creating secrets in different regions for your various needs.",
+      "receiptHint": "Your",
+      "receiptLink": "receipt",
+      "receiptHintSuffix": "tracks when the secret is viewed or expires."
     },
     "useCases": {
       "sectionTitle": "Security for Professionals",
@@ -317,13 +323,13 @@
           "line2_w2": "Sealed.",
           "line2_w3": "Delivered."
         },
-        "subtitle": "Send passwords, credentials, and sensitive data through links that self-destruct after being viewed.",
+        "subtitle": "Send passwords, credentials, and sensitive data with links that work only once.",
         "compliance": {
           "label": "Security features",
           "encrypted": "Encrypted",
           "selfDestructing": "Self-destructing",
           "openSource": "Open source",
-          "dataResidency": "Data sovereignty"
+          "dataResidency": "Sovereign data"
         }
       },
       "features": {
@@ -350,7 +356,10 @@
         "capabilitiesLabel": "Available regions",
         "features": {
           "customDomain": "Custom Domain",
+          "customBranding": "Custom Branding",
           "sso": "SSO / SAML",
+          "incomingSecrets": "Incoming Secrets",
+          "accessControls": "Access Controls",
           "auditLogs": "Audit Logs"
         }
       },
@@ -365,19 +374,19 @@
       },
       "howItWorks": {
         "label": "How it works",
-        "title": "Three steps. Zero residue.",
+        "title": "Sent. Read. Gone.",
         "subtitle": "Share sensitive information without leaving a trail in your email, chat logs, or ticketing systems.",
         "step1": {
           "title": "Paste your secret",
-          "description": "Enter any sensitive text: passwords, API keys, credentials, private notes. Set an expiration and optional passphrase."
+          "description": "Enter any sensitive text — passwords, API keys, credentials, private notes. Set an expiration and optional passphrase."
         },
         "step2": {
           "title": "Share the link",
           "description": "Get a unique, one-time URL. Send it over any channel: email, Slack, text. The link itself reveals nothing about the content."
         },
         "step3": {
-          "title": "It self-destructs",
-          "description": "Once the recipient views the secret, the data is permanently destroyed. The link is dead. No one, including us, can retrieve it."
+          "title": "Gone after viewing",
+          "description": "Once the recipient opens the link, the data is permanently destroyed. The link dies with it. No one — including us — can retrieve it."
         }
       },
       "visual_examples": {
@@ -396,8 +405,8 @@
           "description": "Add a passphrase for an extra layer of security. Only those with the passphrase can view the secret."
         },
         "encryption": {
-          "title": "End-to-end encryption",
-          "description": "Secrets are encrypted at rest and in transit. The decryption key is embedded in the URL fragment, never sent to our servers, never logged. We can't read your data even if compelled."
+          "title": "Per-secret encryption",
+          "description": "Every secret is encrypted with its own unique key before being stored. Decryption keys live on the application server, never in the database — a defense-in-depth measure that limits exposure in the event of a data breach."
         },
         "selfDestruction": {
           "title": "Read once, gone forever",

@@ -2,7 +2,6 @@
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-import { SECURITY_FEATURE_KEYS } from "@/data/product/heroTitle";
 
 const { t } = useI18n();
 </script>
@@ -12,7 +11,7 @@ const { t } = useI18n();
     <!-- Security badge -->
     <div class="mb-6 flex justify-center">
       <span
-        class="inline-flex items-center gap-2 rounded-full border border-brand-500/30 bg-brand-500/10 px-4 py-1.5 text-sm font-medium text-brand-400">
+        class="inline-flex items-center gap-2 rounded-full border border-brand-500/30 bg-brand-500/10 px-4 py-1.5 text-sm font-medium text-brand-700 dark:text-brand-400">
         <span
           class="badge-dot dot-glow size-2 rounded-full bg-brand-400"
           aria-hidden="true"></span>
@@ -37,18 +36,6 @@ const { t } = useI18n();
       {{ t("web.homepage.hero.subtitle") }}
     </p>
 
-    <!-- Security feature tags -->
-    <ul
-      role="list"
-      :aria-label="t('web.homepage.hero.compliance.label')"
-      class="mt-8 flex flex-wrap justify-center gap-3">
-      <li
-        v-for="key in SECURITY_FEATURE_KEYS"
-        :key="key"
-        class="rounded-full border border-surface-3 bg-surface-1 px-3 py-1 text-xs font-medium text-text-secondary">
-        {{ t(`web.homepage.hero.compliance.${key}`) }}
-      </li>
-    </ul>
   </div>
 </template>
 

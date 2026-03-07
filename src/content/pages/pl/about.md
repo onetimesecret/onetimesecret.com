@@ -1,105 +1,83 @@
 ---
 title: O nas
+
 ---
 
-<article class="prose dark:prose-invert md:prose-lg lg:prose-xl">
-  <h2>
-    O nas
-  </h2>
+Cześć, jestem Delano, twórca Onetime Secret. To, co zaczęło się w 2011 roku jako prosty, bezpieczny sposób udostępniania poufnych informacji, wyewoluowało daleko poza początkową wizję. Ponad dekadę później w pełni zajmujemy się usługami związanymi z "sekretami", obsługując przypadki użycia, których nigdy sobie nie wyobrażałem.
 
-  <p>
-    Cześć, jestem Delano, twórca Onetime Secret. To, co zaczęło się w 2012 roku jako prosty, bezpieczny sposób udostępniania poufnych informacji, przerosło nasze najśmielsze oczekiwania. Ponad dekadę później umożliwiamy bezpieczne udostępnianie milionów wiadomości miesięcznie, w przypadkach użycia, których nigdy sobie nie wyobrażaliśmy.
-  </p>
+## Co zbudowaliśmy
 
-  <p>
-    Pierwsza połowa 2025 roku była naszym najbardziej pracowitym okresem. Jesteśmy wdzięczni, że ludzie nadal używają i udostępniają nasz produkt od ponad dekady. Obecnie pracujemy nad ulepszeniami, które naszym zdaniem uczynią usługę jeszcze bardziej użyteczną — wkrótce podzielimy się szczegółami.
-  </p>
+Na przestrzeni lat przeszliśmy od prostego narzędzia do wyspecjalizowanego serwisu do udostępniania poufnych informacji:
+- [Własne domeny i branding](https://docs.onetimesecret.com/en/custom-domains/) dla zespołów i firm
+- Wiele regionów, w tym [USA](https://us.onetimesecret.com), [Kanada](https://ca.onetimesecret.com) i [Aotearoa Nowa Zelandia](https://nz.onetimesecret.com)
+- Plany subskrypcyjne, które przekształciły wieloletnie hobby w zrównoważony biznes
+- Regularne wydania na [GitHubie](https://github.com/onetimesecret/onetimesecret/releases)
 
-  <p>
-    Wierni naszym korzeniom, <a href="https://github.com/onetimesecret/onetimesecret">our code remains open-source</a> na GitHubie. Poruszając się po ewoluującym krajobrazie cyfrowej prywatności i bezpieczeństwa, jesteśmy zaangażowani w przejrzystość i ciągłe doskonalenie.
-  </p>
+## Nasze podejście
 
-  <p>
-    Dziękujemy, że jesteś częścią naszej podróży. Za kolejną dekadę bezpiecznego, efemerycznego udostępniania.
-  </p>
+Trzymamy się [podstawowych zasad](https://docs.onetimesecret.com/en/principles/), które dały nam początek. [Nasz kod jest open-source](https://github.com/onetimesecret/onetimesecret), ponieważ wierzymy w przejrzystość, wkład społeczności i dzielenie się dobrymi rzeczami.
 
-  <p>
-    Jeśli masz jakieś pytania, na dole (prawie) każdej strony znajduje się formularz opinii.
-  </p>
+W miarę jak cyfrowa prywatność i wyzwania internetu ewoluują, my również — dostosowujemy zabezpieczenia, upraszczamy obsługę i dbamy o to, aby nasz serwis dobrze służył każdemu, kto go potrzebuje.
 
-  <p>
-    Miłego udostępniania,
+> Czy wiesz, że? W 2011 roku Drew Carey zasugerował, że "One Time Secret" byłoby [dobrą nazwą dla zespołu muzycznego](https://x.com/DrewFromTV/status/142730130689761280). Co stracił przemysł muzyczny, zyskał internet.
+
+## Skrzynka sugestii
+
+Masz pytania lub pomysły? Na dole (prawie) każdej strony znajduje się [formularz opinii](/feedback).
+
+Miłego udostępniania,
 Delano
-  </p>
 
-  <p style="margin-left: 40%; margin-right: 40%">
-    <a
-      href="https://delanotes.com/"
-      title="Delano Mandelbaum"><img
-        src="/etc/img/delano-g.png"
-        width="95"
-        height="120"
-        border="0"
-      /></a>
-  </p>
+<img src="/etc/img/delano-g.png" alt="Delano" width="95" height="120" />
 
-  <h3>F.A.Q.</h3>
+---
 
-  <h4>Dlaczego miałbym tego używać?</h4>
-  <p>
-    Gdy wysyłasz ludziom hasła i prywatne linki e-mailem lub na czacie, kopie tych informacji są przechowywane w wielu miejscach. Jeśli zamiast tego użyjesz linku Onetime, informacja istnieje tylko do jednorazowego wyświetlenia, co oznacza, że nie może zostać odczytana przez kogoś innego później. Pozwala to na bezpieczne wysyłanie poufnych informacji, wiedząc, że zobaczy je tylko jedna osoba. Pomyśl o tym jak o wiadomości ulegającej samozniszczeniu.
-  </p>
 
-  <h4>Dlaczego nie mogę wysyłać zdjęć ani innych rodzajów plików?</h4>
-  <p>
-    Nasza usługa jest zaprojektowana specjalnie dla wiadomości tekstowych, aby zapewnić maksymalne bezpieczeństwo i prostotę. Pliki, zwłaszcza obrazy, mogą zawierać metadane, które mogą nieumyślnie ujawnić informacje o nadawcy lub odbiorcy. Koncentrując się na tekście, możemy zagwarantować, że żadne dodatkowe dane nie są przesyłane poza tym, co jawnie wpiszesz. Jeśli potrzebujesz bezpiecznie udostępnić plik, zalecamy skorzystanie z dedykowanej usługi bezpiecznego transferu plików. Możemy rozważyć dodanie obsługi plików w przyszłości, jeśli pojawią się ku temu przekonujące przypadki użycia.
-  </p>
 
-  <h4>Ale mogę skopiować tekst wiadomości. Jaka jest różnica?</h4>
-  <p>
-    Prawda, ale masz tylko tekst. Obrazy i inne typy plików mogą zawierać metadane i inne potencjalnie ujawniające informacje o nadawcy lub odbiorcy. Ponownie, ma to na celu zapewnienie, że żadne prywatne informacje nie zostaną udostępnione poza zamierzonym odbiorcą.
-  </p>
+## F.A.Q.
 
-  <h4>Czy mogę odzyskać wiadomość, która została już udostępniona?</h4>
-  <p>
-    Nie. Wyświetlamy ją raz, a następnie usuwamy. Potem znika na zawsze.
-  </p>
+### Dlaczego miałbym tego używać?
 
-  <h4>Jaka jest różnica między anonimowym użyciem a posiadaniem darmowego konta?</h4>
-  <p>
-    Anonimowi użytkownicy mogą tworzyć wiadomości ważne do 7 dni i o maksymalnym rozmiarze 100 KB. Posiadacze darmowych kont otrzymują rozszerzone korzyści: wiadomości mogą być ważne do 14 dni i mieć rozmiar do 1000 KB. Posiadacze kont mają również dostęp do dodatkowych funkcji, takich jak opcje unieważnienia przed odczytem, które pozwalają nadawcom usuwać wiadomości, zanim zostaną odebrane.
-  </p>
+Gdy wysyłasz ludziom hasła i prywatne linki e-mailem lub na czacie, kopie tych informacji są przechowywane w wielu miejscach. Jeśli zamiast tego użyjesz linku Onetime, informacja istnieje tylko do jednorazowego wyświetlenia, co oznacza, że nie może zostać odczytana przez kogoś innego później. Pozwala to na bezpieczne wysyłanie poufnych informacji, wiedząc, że zobaczy je tylko jedna osoba. Pomyśl o tym jak o wiadomości ulegającej samozniszczeniu.
 
-  <h4>Jak obsługujecie żądania danych od organów ścigania lub innych stron trzecich?</h4>
-  <p>
-    Wierni naszym korzeniom, <a href="https://github.com/onetimesecret/onetimesecret">our code remains open-source</a> na GitHubie. Poruszając się po ewoluującym krajobrazie cyfrowej prywatności i bezpieczeństwa, jesteśmy zaangażowani w przejrzystość i ciągłe doskonalenie.
-  </p>
-  <p>
-    Zaprojektowaliśmy nasz system z myślą o prywatności. Nie przechowujemy wiadomości po ich wyświetleniu i nie przechowujemy logów dostępu poza niezbędnym minimum. Oznacza to, że w większości przypadków po prostu nie mamy żadnych danych do przekazania w odpowiedzi na takie żądania. Aby uzyskać więcej szczegółów, zapoznaj się z naszą <a href="/privacy">privacy policy</a>.
-  </p>
+### Dlaczego nie mogę wysyłać zdjęć ani innych rodzajów plików?
 
-  <h4>Dlaczego powinienem Wam ufać?</h4>
-  <p>
-    Zaprojektowaliśmy nasz system, traktując prywatność i bezpieczeństwo jako najwyższe priorytety. Oto dlaczego możesz nam zaufać:
-  </p>
-  <ul>
-    <li>Nie mamy dostępu do Twoich informacji, nawet gdybyśmy chcieli (a nie chcemy). Na przykład, jeśli udostępniasz hasło, nie znamy nazwy użytkownika ani nawet aplikacji, do której ono służy.</li>
-    <li>Jeśli używasz frazy dostępowej (dostępnej w „Opcjach prywatności”), uwzględniamy ją w kluczu szyfrowania wiadomości. Przechowujemy tylko hash bcrypt frazy dostępowej, co uniemożliwia nam odszyfrowanie Twojej wiadomości po jej zapisaniu.</li>
-    <li>Nasz kod jest <a href="https://github.com/onetimesecret/onetimesecret">open source</a>. Możesz go przejrzeć samodzielnie lub nawet uruchomić własną instancję, jeśli wolisz.</li>
-    <li>Stosujemy standardowe praktyki bezpieczeństwa, w tym HTTPS dla wszystkich połączeń i szyfrowanie przechowywanych danych (at rest).</li>
-  </ul>
+Nasza usługa jest zaprojektowana specjalnie dla sekretów tekstowych, aby zapewnić maksymalne bezpieczeństwo i prostotę. Pliki, zwłaszcza obrazy, mogą zawierać metadane, które mogą nieumyślnie ujawnić informacje o nadawcy lub odbiorcy. Koncentrując się na tekście, możemy zagwarantować, że żadne dodatkowe dane nie są przesyłane poza tym, co jawnie wpiszesz. Jeśli potrzebujesz bezpiecznie udostępnić plik, zalecamy skorzystanie z dedykowanej usługi bezpiecznego transferu plików. Możemy rozważyć dodanie obsługi plików w przyszłości, jeśli pojawią się ku temu przekonujące przypadki użycia.
 
-  <h4>Jak działa opcja frazy dostępowej?</h4>
-  <p>
-    Gdy używasz frazy dostępowej, szyfrujemy Twoją wiadomość na naszych serwerach przy użyciu podanej przez Ciebie frazy. Nie przechowujemy samej frazy dostępowej, a jedynie jej hash bcrypt. Ten hash służy do weryfikacji frazy dostępowej, gdy odbiorca ją wprowadzi. Oto dlaczego jest to bezpieczne:
-  </p>
-  <ul>
-    <li>Nigdy nie przechowujemy niezaszyfrowanej wiadomości ani frazy dostępowej.</li>
-    <li>Hash bcrypt nie może być użyty do odszyfrowania wiadomości.</li>
-    <li>Bez oryginalnej frazy dostępowej zaszyfrowana wiadomość nie może zostać odszyfrowana, nawet przez nas.</li>
-    <li>Oznacza to, że nawet jeśli nasze serwery zostałyby naruszone, Twoja wiadomość pozostałaby bezpieczna, o ile fraza dostępowa pozostanie nieznana.</li>
-  </ul>
-  <p>
-    Pamiętaj, bezpieczeństwo Twojej wiadomości zależy od siły Twojej frazy dostępowej i tego, jak bezpiecznie przekażesz ją odbiorcy.
-  </p>
-</article>
+### Ale mogę skopiować tekst wiadomości. Jaka jest różnica?
+
+Prawda, ale masz tylko tekst. Obrazy i inne typy plików mogą zawierać metadane i inne potencjalnie ujawniające informacje o nadawcy lub odbiorcy. Ponownie, ma to na celu zapewnienie, że żadne prywatne informacje nie zostaną udostępnione poza zamierzonym odbiorcą.
+
+### Czy mogę odzyskać wiadomość, która została już udostępniona?
+
+Nie. Wyświetlamy ją raz, a następnie usuwamy. Potem znika na zawsze.
+
+### Jaka jest różnica między anonimowym użyciem a posiadaniem darmowego konta?
+
+Anonimowi użytkownicy mogą tworzyć wiadomości ważne do 7 dni i o maksymalnym rozmiarze 100 KB. Posiadacze darmowych kont otrzymują rozszerzone korzyści: wiadomości mogą być ważne do 14 dni i mieć rozmiar do 1000 KB. Posiadacze kont mają również dostęp do dodatkowych funkcji, takich jak opcje unieważnienia przed odczytem, które pozwalają nadawcom usuwać wiadomości, zanim zostaną odebrane.
+
+### Jak obsługujecie żądania danych od organów ścigania lub innych stron trzecich?
+
+Wierni naszym korzeniom, [nasz kod pozostaje open-source](https://github.com/onetimesecret/onetimesecret) na GitHubie. Poruszając się po ewoluującym krajobrazie cyfrowej prywatności i bezpieczeństwa, jesteśmy zaangażowani w przejrzystość i ciągłe doskonalenie.
+
+Zaprojektowaliśmy nasz system z myślą o prywatności. Nie przechowujemy wiadomości po ich wyświetleniu i nie przechowujemy logów dostępu poza niezbędnym minimum. Oznacza to, że w większości przypadków po prostu nie mamy żadnych danych do przekazania w odpowiedzi na takie żądania. Aby uzyskać więcej szczegółów, zapoznaj się z naszą [polityką prywatności](/privacy).
+
+### Dlaczego powinienem wam ufać?
+
+Zaprojektowaliśmy nasz system, traktując prywatność i bezpieczeństwo jako najwyższe priorytety. Oto dlaczego możesz nam zaufać:
+
+- Nie mamy dostępu do Twoich informacji, nawet gdybyśmy chcieli (a nie chcemy). Na przykład, jeśli udostępniasz hasło, nie znamy nazwy użytkownika ani nawet aplikacji, do której ono służy.
+- Jeśli używasz frazy dostępowej (dostępnej w „Opcjach prywatności"), uwzględniamy ją w kluczu szyfrowania wiadomości. Przechowujemy tylko hash bcrypt frazy dostępowej, co uniemożliwia nam odszyfrowanie Twojej wiadomości po jej zapisaniu.
+- Nasz kod jest [open source](https://github.com/onetimesecret/onetimesecret). Możesz go przejrzeć samodzielnie lub nawet uruchomić własną instancję, jeśli wolisz.
+- Stosujemy standardowe praktyki bezpieczeństwa, w tym HTTPS dla wszystkich połączeń i szyfrowanie przechowywanych danych (at rest).
+
+### Jak działa opcja frazy dostępowej?
+
+Gdy używasz frazy dostępowej, szyfrujemy Twoją wiadomość na naszych serwerach przy użyciu podanej przez Ciebie frazy. Nie przechowujemy samej frazy dostępowej, a jedynie jej hash bcrypt. Ten hash służy do weryfikacji frazy dostępowej, gdy odbiorca ją wprowadzi. Oto dlaczego jest to bezpieczne:
+
+- Nigdy nie przechowujemy niezaszyfrowanej wiadomości ani frazy dostępowej.
+- Hash bcrypt nie może być użyty do odszyfrowania wiadomości.
+- Bez oryginalnej frazy dostępowej zaszyfrowana wiadomość nie może zostać odszyfrowana, nawet przez nas.
+- Oznacza to, że nawet jeśli nasze serwery zostałyby naruszone, Twoja wiadomość pozostałaby bezpieczna, o ile fraza dostępowa pozostanie nieznana.
+
+> **Pamiętaj**: Bezpieczeństwo Twojej wiadomości zależy od siły Twojej frazy dostępowej i tego, jak bezpiecznie przekażesz ją odbiorcy.

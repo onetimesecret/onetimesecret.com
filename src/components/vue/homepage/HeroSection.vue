@@ -9,8 +9,12 @@
 import type { ApiResult } from "@/components/vue/forms/SecretForm.vue";
 import HeroTitle from "@/components/vue/homepage/HeroTitle.vue";
 import SecretRegionExperience from "@/components/vue/homepage/SecretRegionExperience.vue";
+import { SECURITY_FEATURE_KEYS } from "@/data/product/heroTitle";
 import type { Region } from "@/types/jurisdiction";
 import { ref } from "vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 interface Props {
   currentRegion: Region;
@@ -38,7 +42,7 @@ defineExpose({
 <template>
   <section
     aria-labelledby="hero-heading"
-    class="relative min-h-screen w-full overflow-hidden bg-surface-0 flex flex-col items-center justify-center pt-20 sm:pt-24 pb-16 sm:pb-20">
+    class="relative w-full overflow-hidden bg-surface-0 flex flex-col items-center pt-24 sm:pt-32 md:pt-40 pb-24 sm:pb-32 md:pb-40">
     <!--
       Ambient glow decorations: two separate blurred circles create a subtle
       dual-tone radiance behind the hero content. They use distinct brand
@@ -60,7 +64,7 @@ defineExpose({
       <HeroTitle />
 
       <!-- Secret form -->
-      <div class="mt-10">
+      <div class="mt-10 sm:mt-12">
         <SecretRegionExperience
           ref="secretRegionRef"
           :current-region="currentRegion"
@@ -70,6 +74,19 @@ defineExpose({
           @region-change="(region) => emit('regionChange', region)"
           @create-secret="(result) => emit('createSecret', result)" />
       </div>
+
+      <!-- Security feature tags -->
+      <ul
+        role="list"
+        :aria-label="t('web.homepage.hero.compliance.label')"
+        class="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2">
+        <li
+          v-for="key in SECURITY_FEATURE_KEYS"
+          :key="key"
+          class="text-xs text-text-tertiary">
+          {{ t(`web.homepage.hero.compliance.${key}`) }}
+        </li>
+      </ul>
     </div>
   </section>
 </template>

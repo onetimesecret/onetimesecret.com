@@ -21,6 +21,7 @@ import {
   ProductTier,
   productTiers as tiers,
 } from "@/data/product/productTiers";
+import { getRegionPrice } from "@/data/product/regionPricing";
 
 const props = defineProps<{
   locale: string;
@@ -70,8 +71,12 @@ const getRegionalHref = (basePath: string) => {
 };
 
 const getPrice = (tier: ProductTier) => {
-  const freq = frequency.value.value;
-  return t(tier.priceKeys[freq]);
+  return getRegionPrice(
+    currentRegion.value.identifier,
+    tier.id,
+    frequency.value.value,
+    props.locale,
+  );
 };
 
 const basicPlanHref = getRegionalHref("/plans/free");
@@ -386,8 +391,9 @@ onUnmounted(() => {
               </div>
             </div>
 
+            <!-- TODO: Redo compare plans content before re-enabling -->
             <!-- Feature Comparison: Bento-style grouped cards -->
-            <div class="mt-20 mx-auto max-w-6xl">
+            <div v-if="false" class="mt-20 mx-auto max-w-6xl">
               <h3
                 class="text-center text-3xl font-bold
                   tracking-tight text-text-primary mb-8
@@ -512,14 +518,14 @@ onUnmounted(() => {
               <a
                 :href="feedbackHref"
                 aria-describedby="discounted-tier"
-                class="rounded-lg bg-brand-600
-                  hover:bg-brand-700 px-6 py-3
+                class="rounded-lg bg-brandcompdim-600
+                  hover:bg-brandcompdim-700 px-6 py-3
                   text-base font-semibold text-white
                   transition-colors
                   focus-visible:outline
                   focus-visible:outline-2
                   focus-visible:outline-offset-2
-                  focus-visible:outline-brand-600
+                  focus-visible:outline-brandcompdim-600
                   whitespace-nowrap">
                 {{ t("web.pricing.discounts.cta") }}
                 <span aria-hidden="true">&rarr;</span>

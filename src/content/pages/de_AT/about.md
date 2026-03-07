@@ -1,105 +1,83 @@
 ---
 title: Über uns
+
 ---
 
-<article class="prose dark:prose-invert md:prose-lg lg:prose-xl">
-  <h2>
-    Über uns
-  </h2>
+Hallo, ich bin Delano, der Erfinder von Onetime Secret. Was 2011 als einfache, sichere Möglichkeit zum Austausch vertraulicher Informationen begann, hat sich weit über die ursprüngliche Vision hinaus entwickelt. Mehr als ein Jahrzehnt später sind wir vollständig im Geschäft mit "Geheimnissen" und bedienen Anwendungsfälle, die ich mir nie hätte vorstellen können.
 
-  <p>
-    Hallo, ich bin Delano, der Erfinder von Onetime Secret. Was 2012 als einfache, sichere Möglichkeit zum Austausch vertraulicher Informationen begann, hat unsere kühnsten Erwartungen übertroffen. Mehr als ein Jahrzehnt später ermöglichen wir den sicheren Austausch von Millionen von Geheimnissen pro Monat, mit Anwendungsfällen, die wir uns nie vorstellen konnten.
-  </p>
+## Was wir aufgebaut haben
 
-  <p>
-    Die erste Hälfte des Jahres 2025 war unsere bisher arbeitsreichste Zeit. Wir sind dankbar, dass die Menschen unser Produkt seit mehr als einem Jahrzehnt nutzen und weitergeben. Wir arbeiten derzeit an Verbesserungen, die den Dienst noch nützlicher machen werden - wir werden bald weitere Details bekannt geben.
-  </p>
+Im Laufe der Jahre sind wir von einem einfachen Werkzeug zu einem spezialisierten Dienst für den Austausch vertraulicher Informationen gewachsen:
+- [Eigene Domains und Branding](https://docs.onetimesecret.com/en/custom-domains/) für Teams und Unternehmen
+- Mehrere Regionen, darunter [USA](https://us.onetimesecret.com), [Kanada](https://ca.onetimesecret.com) und [Aotearoa Neuseeland](https://nz.onetimesecret.com)
+- Abonnement-Pläne, die ein langjähriges Hobby in ein nachhaltiges Geschäft verwandelt haben
+- Regelmäßige Releases auf [GitHub](https://github.com/onetimesecret/onetimesecret/releases)
 
-  <p>
-    Getreu unseren Wurzeln, <a href="https://github.com/onetimesecret/onetimesecret">our code remains open-source</a> auf GitHub. Wir navigieren durch die sich entwickelnde Landschaft des digitalen Datenschutzes und der Sicherheit und haben uns zu Transparenz und kontinuierlicher Verbesserung verpflichtet.
-  </p>
+## Unser Ansatz
 
-  <p>
-    Danke, dass Sie Teil unserer Reise waren. Auf ein weiteres Jahrzehnt des sicheren, flüchtigen Austauschs.
-  </p>
+Wir halten an den [Grundprinzipien](https://docs.onetimesecret.com/en/principles/) fest, mit denen alles begonnen hat. [Unser Code ist Open Source](https://github.com/onetimesecret/onetimesecret), weil wir an Transparenz, Beteiligung der Gemeinschaft und das Teilen guter Dinge glauben.
 
-  <p>
-    Wenn Sie Fragen haben, finden Sie am Ende (fast) jeder Seite ein Rückmeldung-Formular.
-  </p>
+Wie sich digitale Privatsphäre und die Herausforderungen des Internets weiterentwickeln, tun wir das auch -- wir optimieren die Sicherheit, machen die Nutzung einfacher und sorgen dafür, dass unser Dienst für alle gut funktioniert, die ihn benötigen.
 
-  <p>
-    Fröhliches Teilen,
+> Wussten Sie? Im Jahr 2011 schlug Drew Carey vor, dass "One Time Secret" ein [guter Bandname](https://x.com/DrewFromTV/status/142730130689761280) wäre. Der Verlust der Musikbranche war der Gewinn des Internets.
+
+## Der Kummerkasten
+
+Haben Sie Fragen oder Ideen? Es gibt ein [Feedback-Formular](/feedback) am Ende (fast) jeder Seite.
+
+Fröhliches Teilen,
 Delano
-  </p>
 
-  <p style="margin-left: 40%; margin-right: 40%">
-    <a
-      href="https://delanotes.com/"
-      title="Delano Mandelbaum"><img
-        src="/etc/img/delano-g.png"
-        width="95"
-        height="120"
-        border="0"
-      /></a>
-  </p>
+<img src="/etc/img/delano-g.png" alt="Delano" width="95" height="120" />
 
-  <h3>F.A.Q.</h3>
+---
 
-  <h4>Warum sollte ich das verwenden?</h4>
-  <p>
-    Wenn Sie Passwörter und private Links per E-Mail oder Chat an andere Personen senden, werden Kopien dieser Informationen an vielen Orten gespeichert. Wenn Sie stattdessen einen Onetime-Link verwenden, werden die Informationen nur einmal angezeigt, so dass sie später nicht mehr von anderen Personen gelesen werden können. Auf diese Weise können Sie vertrauliche Informationen auf sichere Weise versenden und wissen, dass sie nur von einer Person gesehen werden. Stellen Sie sich das wie eine sich selbst zerstörende Nachricht vor.
-  </p>
 
-  <h4>Warum kann ich keine Bilder oder andere Dateien senden?</h4>
-  <p>
-    Unser Dienst ist speziell für textbasierte Geheimnisse konzipiert, um maximale Sicherheit und Einfachheit zu gewährleisten. Dateien, insbesondere Bilder, können Metadaten enthalten, die ungewollt Informationen über den Absender oder Empfänger preisgeben könnten. Da wir uns auf Text konzentrieren, können wir garantieren, dass keine zusätzlichen Daten über das hinaus, was Sie ausdrücklich eingeben, übertragen werden. Wenn Sie eine Datei auf sichere Weise weitergeben möchten, empfehlen wir Ihnen die Verwendung eines speziellen sicheren Dateiübertragungsdienstes. Möglicherweise werden wir in Zukunft die Unterstützung von Dateien hinzufügen, wenn es zwingende Anwendungsfälle dafür gibt.
-  </p>
 
-  <h4>Aber ich kann den geheimen Text kopieren. Worin liegt der Unterschied?</h4>
-  <p>
-    Stimmt, aber Sie haben nur Text. Bilder und andere Dateitypen können Metadaten und andere potenziell aufschlussreiche Informationen über den Absender oder Empfänger enthalten. Auch hier geht es nur darum, sicherzustellen, dass keine privaten Informationen außerhalb des vorgesehenen Empfängers weitergegeben werden.
-  </p>
+## F.A.Q.
 
-  <h4>Kann ich ein Geheimnis abrufen, das bereits weitergegeben wurde?</h4>
-  <p>
-    Nein. Wir zeigen sie einmal an und löschen sie dann. Danach ist es für immer verschwunden.
-  </p>
+### Warum sollte ich das verwenden?
 
-  <h4>Was ist der Unterschied zwischen anonymer Nutzung und einem kostenlosen Konto?</h4>
-  <p>
-    Anonyme Benutzer können Geheimnisse erstellen, die bis zu 7 Tage dauern und eine maximale Größe von 100 KB HABEN. Inhaber eines kostenlosen Kontos erhalten erweiterte Vorteile: Geheimnisse können bis zu 14 Tage dauern und bis zu 1000 KB groß sein. Kontoinhaber erhalten außerdem Zugriff auf zusätzliche Funktionen wie die "Brennen-vor-Lesen"-Option, die es Absendern ermöglicht, Geheimnisse zu löschen, bevor sie sie erhalten.
-  </p>
+Wenn Sie Passwörter und private Links per E-Mail oder Chat an andere Personen senden, werden Kopien dieser Informationen an vielen Orten gespeichert. Wenn Sie stattdessen einen Onetime-Link verwenden, werden die Informationen nur einmal angezeigt, sodass sie später nicht mehr von anderen Personen gelesen werden können. Auf diese Weise können Sie vertrauliche Informationen auf sichere Weise versenden und wissen, dass sie nur von einer Person gesehen werden. Stellen Sie sich das wie eine sich selbst zerstörende Nachricht vor.
 
-  <h4>Wie gehen Sie mit Datenanfragen von Strafverfolgungsbehörden oder anderen Dritten um?</h4>
-  <p>
-    Getreu unseren Wurzeln, <a href="https://github.com/onetimesecret/onetimesecret">our code remains open-source</a> auf GitHub. Wir navigieren durch die sich entwickelnde Landschaft des digitalen Datenschutzes und der Sicherheit und haben uns zu Transparenz und kontinuierlicher Verbesserung verpflichtet.
-  </p>
-  <p>
-    Wir haben unser System unter Berücksichtigung des Datenschutzes entwickelt. Wir speichern keine Geheimnisse, nachdem sie angesehen wurden, und wir führen keine Zugriffsprotokolle, die über das erforderliche Minimum hinausgehen. Das bedeutet, dass wir in den meisten Fällen einfach keine Daten haben, die wir als Antwort auf solche Anfragen zur Verfügung stellen können. Weitere Einzelheiten finden Sie in unserer <a href="/privacy">privacy policy</a>.
-  </p>
+### Warum kann ich keine Bilder oder andere Dateien senden?
 
-  <h4>Warum sollte ich Ihnen vertrauen?</h4>
-  <p>
-    Wir haben unser System so konzipiert, dass Datenschutz und Sicherheit oberste Priorität haben. Hier ist der Grund, warum Sie uns vertrauen können:
-  </p>
-  <ul>
-    <li>Wir können nicht auf Ihre Daten zugreifen, selbst wenn wir es wollten (was wir nicht tun). Wenn Sie zum Beispiel ein Systemkennwort weitergeben, kennen wir weder die Benutzerkennung noch die Anwendung, für die es bestimmt ist.</li>
-    <li>Bei Verwendung einer Sicherheitsphrase (verfügbar unter "Datenschutzoptionen"), wird diese in den Datenverschlüsselungsschlüssel für das Geheimnis eingebunden. Wir speichern ausschließlich einen BCrypt-Prüfwert der Sicherheitsphrase, wodurch eine Entschlüsselung Ihres Geheimnisses nach der Speicherung technisch ausgeschlossen ist.</li>
-    <li>Unser Quellcode ist <a href="https://github.com/onetimesecret/onetimesecret">open source</a>. Sie können diesen selbst prüfen oder eine eigene Instanz betreiben.</li>
-    <li>Wir setzen normierte Sicherheitsstandards ein, einschließlich TLS-Sicherheitsprotokolle für alle Verbindungen und Datenverschlüsselung im Ruhezustand für gespeicherte Informationen.</li>
-  </ul>
+Unser Dienst ist speziell für textbasierte Geheimnisse konzipiert, um maximale Sicherheit und Einfachheit zu gewährleisten. Dateien, insbesondere Bilder, können Metadaten enthalten, die ungewollt Informationen über den Absender oder Empfänger preisgeben könnten. Da wir uns auf Text konzentrieren, können wir garantieren, dass keine zusätzlichen Daten über das hinaus, was Sie ausdrücklich eingeben, übertragen werden. Wenn Sie eine Datei auf sichere Weise weitergeben möchten, empfehlen wir Ihnen die Verwendung eines speziellen sicheren Dateiübertragungsdienstes. Möglicherweise werden wir in Zukunft die Unterstützung von Dateien hinzufügen, wenn es zwingende Anwendungsfälle dafür gibt.
 
-  <h4>Wie funktioniert die Sicherheitsphrase-Option?</h4>
-  <p>
-    Wenn Sie eine Sicherheitsphrase verwenden, verschlüsseln wir Ihr Geheimnis auf unseren Servern mit der von Ihnen angegebenen Sicherheitsphrase. Wir speichern nicht die Sicherheitsphrase selbst, sondern nur einen bcrypt-Prüfwert davon. Dieser Hash wird verwendet, um die Sicherheitsphrase zu verifizieren, wenn der Empfänger sie eingibt. Dies ist der Grund, warum dies sicher ist:
-  </p>
-  <ul>
-    <li>Wir speichern zu keinem Zeitpunkt unverschlüsselte Geheimnisse oder Sicherheitsphrasen.</li>
-    <li>Der BCrypt-Prüfwert kann nicht zur Entschlüsselung des Geheimnisses herangezogen werden.</li>
-    <li>Ohne die ursprüngliche Sicherheitsphrase ist eine Entschlüsselung des verschlüsselten Geheimnisses technisch unmöglich, auch für uns nicht.</li>
-    <li>Dies bedeutet, selbst bei einem unbefugten Zugriff auf unsere Systeme bleibt Ihr Geheimnis geschützt, solange die Sicherheitsphrase unbekannt bleibt.</li>
-  </ul>
-  <p>
-    Denken Sie daran, dass die Sicherheit Ihres Geheimnisses davon abhängt, wie stark Ihre Sicherheitsphrase ist und wie sicher Sie sie dem Empfänger mitteilen.
-  </p>
-</article>
+### Aber ich kann den geheimen Text kopieren. Worin liegt der Unterschied?
+
+Stimmt, aber Sie haben nur Text. Bilder und andere Dateitypen können Metadaten und andere potenziell aufschlussreiche Informationen über den Absender oder Empfänger enthalten. Auch hier geht es nur darum, sicherzustellen, dass keine privaten Informationen außerhalb des vorgesehenen Empfängers weitergegeben werden.
+
+### Kann ich ein Geheimnis abrufen, das bereits weitergegeben wurde?
+
+Nein. Wir zeigen es einmal an und löschen es dann. Danach ist es für immer verschwunden.
+
+### Was ist der Unterschied zwischen anonymer Nutzung und einem kostenlosen Konto?
+
+Anonyme Benutzer können Geheimnisse erstellen, die bis zu 7 Tage gültig sind und eine maximale Größe von 100 KB haben. Inhaber eines kostenlosen Kontos erhalten erweiterte Vorteile: Geheimnisse können bis zu 14 Tage gültig sein und bis zu 1000 KB groß sein. Kontoinhaber erhalten außerdem Zugriff auf zusätzliche Funktionen wie die "Brennen-vor-Lesen"-Option, die es Absendern ermöglicht, Geheimnisse zu löschen, bevor sie empfangen werden.
+
+### Wie gehen Sie mit Datenanfragen von Strafverfolgungsbehörden oder anderen Dritten um?
+
+Getreu unseren Wurzeln ist [unser Code Open Source](https://github.com/onetimesecret/onetimesecret) auf GitHub. Wir navigieren durch die sich entwickelnde Landschaft des digitalen Datenschutzes und der Sicherheit und haben uns zu Transparenz und kontinuierlicher Verbesserung verpflichtet.
+
+Wir haben unser System unter Berücksichtigung des Datenschutzes entwickelt. Wir speichern keine Geheimnisse, nachdem sie angesehen wurden, und wir führen keine Zugriffsprotokolle, die über das erforderliche Minimum hinausgehen. Das bedeutet, dass wir in den meisten Fällen einfach keine Daten haben, die wir als Antwort auf solche Anfragen zur Verfügung stellen können. Weitere Einzelheiten finden Sie in unserer [Datenschutzerklärung](/privacy).
+
+### Warum sollte ich Ihnen vertrauen?
+
+Wir haben unser System so konzipiert, dass Datenschutz und Sicherheit oberste Priorität haben. Hier ist der Grund, warum Sie uns vertrauen können:
+
+- Wir können nicht auf Ihre Daten zugreifen, selbst wenn wir es wollten (was wir nicht tun). Wenn Sie zum Beispiel ein Passwort weitergeben, kennen wir weder den Benutzernamen noch die Anwendung, für die es bestimmt ist.
+- Bei Verwendung einer Passphrase (verfügbar unter "Datenschutzoptionen") wird diese in den Verschlüsselungsschlüssel für das Geheimnis eingebunden. Wir speichern ausschließlich einen bcrypt-Hash der Passphrase, wodurch eine Entschlüsselung Ihres Geheimnisses nach der Speicherung technisch ausgeschlossen ist.
+- Unser Code ist [Open Source](https://github.com/onetimesecret/onetimesecret). Sie können diesen selbst prüfen oder eine eigene Instanz betreiben.
+- Wir setzen branchenübliche Sicherheitsstandards ein, einschließlich HTTPS für alle Verbindungen und Verschlüsselung im Ruhezustand für gespeicherte Daten.
+
+### Wie funktioniert die Passphrase-Option?
+
+Wenn Sie eine Passphrase verwenden, verschlüsseln wir Ihr Geheimnis auf unseren Servern mit der von Ihnen angegebenen Passphrase. Wir speichern nicht die Passphrase selbst, sondern nur einen bcrypt-Hash davon. Dieser Hash wird verwendet, um die Passphrase zu verifizieren, wenn der Empfänger sie eingibt. Dies ist der Grund, warum dies sicher ist:
+
+- Wir speichern zu keinem Zeitpunkt das unverschlüsselte Geheimnis oder die Passphrase.
+- Der bcrypt-Hash kann nicht zur Entschlüsselung des Geheimnisses herangezogen werden.
+- Ohne die ursprüngliche Passphrase ist eine Entschlüsselung des verschlüsselten Geheimnisses technisch unmöglich, auch nicht durch uns.
+- Dies bedeutet, selbst bei einem unbefugten Zugriff auf unsere Server bleibt Ihr Geheimnis geschützt, solange die Passphrase unbekannt bleibt.
+
+> **Denken Sie daran**: Die Sicherheit Ihres Geheimnisses hängt von der Stärke Ihrer Passphrase ab und davon, wie sicher Sie diese dem Empfänger mitteilen.

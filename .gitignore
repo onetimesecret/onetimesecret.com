@@ -79,6 +79,9 @@ CLAUDE.md
 .env*
 !.env.example
 
+# Lighthouse CI artifacts
+.lighthouseci/
+
 # Playwright paths
 test-results/
 playwright-report/
