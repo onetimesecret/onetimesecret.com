@@ -80,6 +80,7 @@ const apiResult = ref<ApiResult | null>(null);
 const apiError = ref<string | null>(null);
 const copySuccess = ref(false);
 const copyButtonRef = ref<HTMLButtonElement | null>(null);
+const secretUrlInputRef = ref<HTMLInputElement | null>(null);
 
 // TTL options
 const ttlOptions = ref<TtlOption[]>([
@@ -327,17 +328,19 @@ const copyUrlToClipboard = async () => {
   }
 };
 
-// Focus the copy button when success view is shown
-watch(showSuccessView, async (newValue) => {
-  if (newValue) {
-    // Wait for DOM to update before focusing
-    await nextTick();
-    // Focus the copy button for better a11y
-    if (copyButtonRef.value) {
-      copyButtonRef.value.focus();
-    }
+// Focus the URL input after the success view transition completes
+// Focus the URL input after the success view transition completes.
+// Uses setSelectionRange with 'backward' direction to select all text
+// while keeping the scroll position at the start (showing the scheme).
+// Note: .select() and .select()+scrollLeft=0 both fail in Firefox
+// because select() asynchronously scrolls to the end of the value.
+const onSuccessTransitionEnter = () => {
+  if (showSuccessView.value && secretUrlInputRef.value) {
+    const el = secretUrlInputRef.value;
+    el.focus();
+    el.setSelectionRange(0, el.value.length, 'backward');
   }
-});
+};
 
 // Function to reset form and create another secret
 const createAnotherSecret = () => {
@@ -351,7 +354,8 @@ const createAnotherSecret = () => {
   <div class="mx-auto max-w-xl w-full px-0 xs:px-1 sm:px-0">
     <transition
       name="fade"
-      mode="out-in">
+      mode="out-in"
+      @after-enter="onSuccessTransitionEnter">
       <!-- Form View -->
       <div
         v-if="showFormView"
@@ -582,12 +586,18 @@ const createAnotherSecret = () => {
         <!-- URL Field with Copy Button -->
         <div class="flex rounded-md shadow-sm mb-6">
           <input
+            ref="secretUrlInputRef"
             type="text"
             :value="buildSecretUrl(apiResult as ApiResult)"
             readonly
             aria-label="Secret URL"
             class="block w-full rounded-none rounded-l-md border-gray-300 dark:border-gray-600 shadow-md focus:border-green-500 focus-visible:outline-green-500 sm:text-sm bg-white text-black dark:bg-gray-700 dark:text-white p-2"
-            @focus="($event.target as HTMLInputElement).select()" />
+            @focus="($event.target as HTMLInputElement).setSelectionRange(0, ($event.target as HTMLInputElement).value.length, 'backward')" /><!-- Select-all on focus using 'backward' direction so the browser scrolls
+                 to show the start of the URL (the scheme). Alternatives that
+                 did NOT work in Firefox:
+                 - .select() scrolls to the end of the value
+                 - .select() + scrollLeft=0 — the select() resets scrollLeft async -->
+
           <button
             ref="copyButtonRef"
             type="button"
@@ -607,7 +617,7 @@ const createAnotherSecret = () => {
           class="text-center border-t border-gray-100 dark:border-gray-700 pt-4">
           <button
             type="button"
-            class="inline-flex font-brand items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-brand-600 hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+            class="inline-flex font-brand items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 transition-colors"
             @click="createAnotherSecret">
             {{ t("web.secrets.createAnother") || "Create Another Secret" }}
           </button>

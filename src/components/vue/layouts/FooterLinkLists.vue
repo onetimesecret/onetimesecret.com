@@ -32,7 +32,7 @@ const currentLocale = props.locale;
 </script>
 
 <template>
-  <div class="grid grid-cols-2 gap-8 md:grid-cols-3">
+  <div class="grid grid-cols-2 gap-8">
     <!-- Product links -->
     <div class="space-y-4">
       <h3
@@ -113,40 +113,5 @@ const currentLocale = props.locale;
       </ul>
     </div>
 
-    <!-- Legal links -->
-    <div class="space-y-4">
-      <h3
-        class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-        {{ t("LABELS.legals") }}
-      </h3>
-      <ul
-        role="list"
-        class="space-y-3">
-        <li>
-          <a
-            href="/privacy"
-            class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-            :aria-label="t('read-our-privacy-policy')">
-            {{ t("LABELS.privacy") }}
-          </a>
-        </li>
-        <li>
-          <a
-            href="/terms"
-            class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-            :aria-label="t('view-our-terms-and-conditions')">
-            {{ t("LABELS.terms") }}
-          </a>
-        </li>
-        <li>
-          <a
-            :href="localizeUrl('/security', currentLocale)"
-            class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-            :aria-label="t('learn-about-our-security-measures')">
-            {{ t("LABELS.security") }}
-          </a>
-        </li>
-      </ul>
-    </div>
   </div>
 </template>

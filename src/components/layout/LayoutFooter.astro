@@ -53,8 +53,8 @@ const currentYear = new Date().getFullYear();
     Breakpoints reference: sm:640px, md:768px, lg:1024px, xl:1280px, 2xl:1536px
   -->
   <div class="mx-auto max-w-7xl px-6 py-10 md:px-8 md:py-14">
-    <div class="md:grid md:grid-cols-3 md:gap-12">
-      <div class="space-y-6 md:col-span-1">
+    <div class="md:grid md:grid-cols-2 md:gap-12">
+      <div class="space-y-6">
         <div class="flex items-center">
           <a
             href="/"
@@ -79,7 +79,7 @@ const currentYear = new Date().getFullYear();
 
       <!-- Footer link lists from Vue component -->
       <div
-        class="mt-10 md:col-span-2 md:mt-0 md:border-l md:border-gray-200 md:pl-8 dark:md:border-gray-800">
+        class="mt-10 md:mt-0 md:border-l md:border-gray-200 md:pl-8 dark:md:border-gray-800">
         <FooterLinkLists
           client:load
           locale={effectiveLocale as SupportedLanguage}
