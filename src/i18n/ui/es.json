@@ -356,10 +356,10 @@
         "capabilitiesLabel": "Available regions",
         "features": {
           "customDomain": "Custom Domain",
-          "customBranding": "Custom Branding",
+          "customBranding": "Marca personalizada",
           "sso": "SSO / SAML",
-          "incomingSecrets": "Incoming Secrets",
-          "accessControls": "Access Controls",
+          "incomingSecrets": "Secretos entrantes",
+          "accessControls": "Controles de acceso",
           "auditLogs": "Audit Logs"
         }
       },
