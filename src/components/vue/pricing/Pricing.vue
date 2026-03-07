@@ -519,13 +519,13 @@ onUnmounted(() => {
                 :href="feedbackHref"
                 aria-describedby="discounted-tier"
                 class="rounded-lg bg-brandcompdim-600
-                  hover:bg-brand-700 px-6 py-3
+                  hover:bg-brandcompdim-700 px-6 py-3
                   text-base font-semibold text-white
                   transition-colors
                   focus-visible:outline
                   focus-visible:outline-2
                   focus-visible:outline-offset-2
-                  focus-visible:outline-brand-600
+                  focus-visible:outline-brandcompdim-600
                   whitespace-nowrap">
                 {{ t("web.pricing.discounts.cta") }}
                 <span aria-hidden="true">&rarr;</span>
