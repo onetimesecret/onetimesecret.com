@@ -40,7 +40,7 @@ Defined in `src/styles/tailwind.css` (`@layer components`):
 
 | Class | Definition |
 |---|---|
-| `.section-label` | `text-xs font-semibold uppercase tracking-widest text-brand-600` |
+| `.section-label` | `text-xs font-semibold uppercase tracking-widest text-brand-700 dark:text-brand-400` |
 | `.dot-glow` | `box-shadow: 0 0 8px var(--color-brand-500)` — status indicator dots |
 | `.gradient-text` | Brand gradient with `-webkit-background-clip: text`, solid `brand-500` fallback |
 
@@ -60,7 +60,7 @@ Defined in `src/styles/tailwind.css` (`@layer components`):
 |---|---|
 | Neutral pill | `rounded-full border border-surface-3 bg-surface-1 px-3 py-1 text-xs font-medium text-text-secondary` |
 | Trust badge | `rounded-full border border-surface-3 bg-surface-2 px-4 py-1.5 text-sm font-medium text-text-secondary` |
-| Brand badge | `rounded-full border border-brand-500/30 bg-brand-500/10 px-4 py-1.5 text-sm font-medium text-brand-700` |
+| Brand badge | `rounded-full border border-brand-500/30 bg-brand-500/10 px-4 py-1.5 text-sm font-medium text-brand-700 dark:text-brand-400` |
 
 ## Icons
 
@@ -96,7 +96,7 @@ Defined in `src/styles/tailwind.css` (`@layer components`):
 | `text-text-primary` | Headings, card titles |
 | `text-text-secondary` | Body text, descriptions |
 | `text-text-tertiary` | Fine print, labels |
-| `text-brand-500` / `text-brand-600` | Accent text, section labels |
+| `text-brand-500` / `text-brand-700` | Accent text, section labels |
 | `text-brandcomp-400` | Complementary accent (API feature) |
 
 ## Contrast Compliance
@@ -127,13 +127,13 @@ Both light and dark modes must pass independently (SSG renders dark-first).
 | Combination | Light | Dark | Passes AA |
 |---|---|---|---|
 | Badge text on `bg-brand-500/10` | `text-brand-700` (5.99:1) | `dark:text-brand-400` (7.24:1) | Yes |
-| `.section-label` on surfaces | `text-brand-600` (4.37:1 on surface-0) | `dark:text-brand-400` (7.79:1) | Light: marginal; dark: yes |
+| `.section-label` on surfaces | `text-brand-700` (≥4.5:1 on surface-0) | `dark:text-brand-400` (7.79:1) | Yes (both modes) |
 | White on `bg-brand-600` buttons | 5.21:1 | 5.21:1 | Yes |
 | White on `bg-brand-500` buttons | 4.16:1 | 4.16:1 | No — use `bg-brand-600` minimum |
 
 **Rules:**
 - Badge text: `text-brand-700 dark:text-brand-400` on `bg-brand-500/10`
-- Section labels: `.section-label` applies `text-brand-600 dark:text-brand-400`
+- Section labels: `.section-label` applies `text-brand-700 dark:text-brand-400`
 - Buttons with white text: use `bg-brand-600` minimum (both modes). Never `bg-brand-500`.
 
 ### Decorative text

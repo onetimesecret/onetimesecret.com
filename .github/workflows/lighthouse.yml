@@ -62,6 +62,16 @@ jobs:
 
               if (!fs.existsSync(manifestPath)) {
                 console.log('No Lighthouse manifest found.');
+                const runId = context.runId;
+                const repoUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}`;
+                await github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: `## 🚦 Lighthouse Audit Results\n\n` +
+                        `⚠️ No Lighthouse results were produced. The build or audit step may have failed.\n\n` +
+                        `📦 [View Workflow Run](${repoUrl}/actions/runs/${runId})`
+                });
                 return;
               }
 
