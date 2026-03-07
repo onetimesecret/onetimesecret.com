@@ -60,7 +60,7 @@ Defined in `src/styles/tailwind.css` (`@layer components`):
 |---|---|
 | Neutral pill | `rounded-full border border-surface-3 bg-surface-1 px-3 py-1 text-xs font-medium text-text-secondary` |
 | Trust badge | `rounded-full border border-surface-3 bg-surface-2 px-4 py-1.5 text-sm font-medium text-text-secondary` |
-| Brand badge | `rounded-full border border-brand-500/30 bg-brand-500/10 px-4 py-1.5 text-sm font-medium text-brand-400` |
+| Brand badge | `rounded-full border border-brand-500/30 bg-brand-500/10 px-4 py-1.5 text-sm font-medium text-brand-700` |
 
 ## Icons
 
@@ -98,3 +98,48 @@ Defined in `src/styles/tailwind.css` (`@layer components`):
 | `text-text-tertiary` | Fine print, labels |
 | `text-brand-500` / `text-brand-600` | Accent text, section labels |
 | `text-brandcomp-400` | Complementary accent (API feature) |
+
+## Contrast Compliance
+
+WCAG 2.1 AA requires 4.5:1 for normal text and 3:1 for large text (18px+ bold or 24px+).
+Both light and dark modes must pass independently (SSG renders dark-first).
+
+### Light-mode text tokens on surfaces
+
+| Token | Value | On `surface-0` (#fafafa) | On `surface-1` (#fff) | On `surface-2` (#f4f4f5) |
+|---|---|---|---|---|
+| `text-text-primary` | #18181b | 16.97:1 | 17.72:1 | 16.12:1 |
+| `text-text-secondary` | #52525b | 7.41:1 | 7.73:1 | 7.03:1 |
+| `text-text-tertiary` | #6d6d77 | 4.90:1 | 5.12:1 | 4.66:1 |
+
+### Dark-mode text tokens on surfaces
+
+| Token | Value | On `surface-0` (#09090b) | On `surface-1` (#18181b) | On `surface-2` (#27272a) |
+|---|---|---|---|---|
+| `text-text-primary` | #f0f0f2 | 17.48:1 | 15.57:1 | 13.09:1 |
+| `text-text-secondary` | #a0a0a8 | 7.66:1 | 6.82:1 | 5.74:1 |
+| `text-text-tertiary` | #8e8e90 | 6.08:1 | 5.42:1 | 4.55:1 |
+
+**Rule:** `text-text-tertiary` must pass 4.5:1 on all three surfaces in both modes. Light: #6d6d77, dark: #8e8e90. Do not use lighter values.
+
+### Brand text on tinted backgrounds
+
+| Combination | Light | Dark | Passes AA |
+|---|---|---|---|
+| Badge text on `bg-brand-500/10` | `text-brand-700` (5.99:1) | `dark:text-brand-400` (7.24:1) | Yes |
+| `.section-label` on surfaces | `text-brand-600` (4.37:1 on surface-0) | `dark:text-brand-400` (7.79:1) | Light: marginal; dark: yes |
+| White on `bg-brand-600` buttons | 5.21:1 | 5.21:1 | Yes |
+| White on `bg-brand-500` buttons | 4.16:1 | 4.16:1 | No — use `bg-brand-600` minimum |
+
+**Rules:**
+- Badge text: `text-brand-700 dark:text-brand-400` on `bg-brand-500/10`
+- Section labels: `.section-label` applies `text-brand-600 dark:text-brand-400`
+- Buttons with white text: use `bg-brand-600` minimum (both modes). Never `bg-brand-500`.
+
+### Decorative text
+
+| Element | Token | Ratio | Notes |
+|---|---|---|---|
+| HowItWorks step numbers | CSS `::before` | N/A | Pseudo-element text is invisible to axe-core |
+
+**Rule:** Decorative text should use CSS pseudo-elements (`::before`/`::after`) rather than DOM text with `aria-hidden`. Pseudo-element content is not audited by accessibility tools.
