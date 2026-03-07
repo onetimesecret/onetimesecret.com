@@ -83,11 +83,11 @@ const handleSwitchJurisdiction = (jurisdictionId: string) => {
     Works correctly whether or not the staging banner is displayed.
   -->
   <Transition
-    enter-active-class="transition-all duration-300 ease-out overflow-hidden"
+    enter-active-class="transition-[max-height,opacity] duration-300 ease-out overflow-hidden"
     enter-from-class="opacity-0 max-h-0"
-    enter-to-class="opacity-100 max-h-24"
-    leave-active-class="transition-all duration-200 ease-in overflow-hidden"
-    leave-from-class="opacity-100 max-h-24"
+    enter-to-class="opacity-100 max-h-screen"
+    leave-active-class="transition-[max-height,opacity] duration-200 ease-in overflow-hidden"
+    leave-from-class="opacity-100 max-h-screen"
     leave-to-class="opacity-0 max-h-0">
     <GlobalBanner
       v-if="bannerVisible"
