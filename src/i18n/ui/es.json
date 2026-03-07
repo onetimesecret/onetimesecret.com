@@ -125,35 +125,35 @@
         "basic": {
           "name": "Básico",
           "badge": null,
-          "description": "Características esenciales para compartir secretos de uso ocasional.",
+          "description": "Todo lo que necesita para compartir secretos de forma segura, incluido su propio dominio personalizado, gratis.",
           "cta": "Comenzar",
           "price": {
             "monthly": "$0",
             "annually": "$0"
           },
           "features": {
-            "0": "Compartir secretos de forma segura",
-            "1": "Enviar enlaces por correo electrónico a los destinatarios",
-            "2": "Destrucción automática",
-            "3": "Más opciones de caducidad",
+            "0": "Un dominio personalizado (ej. secrets.ejemplo.com)",
+            "1": "Destrucción automática tras la lectura",
+            "2": "Opciones de caducidad configurables hasta 14 días",
+            "3": "Enviar enlaces por correo electrónico a los destinatarios",
             "4": "API REST"
           }
         },
         "identity": {
           "name": "Identity Plus",
           "badge": "Destacado",
-          "description": "Eleve la confianza en su marca con intercambio seguro desde su propio dominio. Por ej. secrets.ejemplo.com.",
+          "description": "Control total sobre su experiencia de intercambio de secretos con marca propia.",
           "cta": "Comience hoy",
           "price": {
             "monthly": "$35",
             "annually": "$356"
           },
           "features": {
-            "0": "Dominios personalizados ilimitados",
-            "1": "Marca personalizada con su logotipo",
-            "2": "Página de inicio de marca",
-            "3": "Diseño centrado en la privacidad",
-            "4": "Sin límites de velocidad"
+            "0": "Todo lo incluido en Básico",
+            "1": "Dominios personalizados ilimitados",
+            "2": "Marca personalizada con su logotipo",
+            "3": "Caducidad hasta 30 días",
+            "4": "Control de acceso a la página de inicio (decida quién puede crear secretos en su dominio)"
           }
         }
       },
@@ -197,6 +197,9 @@
       "passphraseInputLabel": "Frase de contraseña",
       "passphrasePlaceholder": "Ingrese la frase de contraseña",
       "passphraseInputHint": "El destinatario necesitará esta frase de contraseña para ver el secreto",
+      "hidePassphrase": "Ocultar frase de contraseña",
+      "showPassphrase": "Mostrar frase de contraseña",
+      "removePassphrase": "Eliminar frase de contraseña",
       "ttlLabel": "Duración del secreto",
       "ttlHint": "El secreto se eliminará después de este tiempo, incluso si no se visualiza",
       "customDomainCta": "¿Quiere usar su propio dominio?",
@@ -231,7 +234,10 @@
       "successTitle": "¡Éxito!",
       "shareLinkDescription": "Comparta su enlace secreto con otros.",
       "createAnother": "Crear otro secreto",
-      "regionSwitchHint": "Pruebe crear secretos en diferentes regiones para sus diversas necesidades."
+      "regionSwitchHint": "Pruebe crear secretos en diferentes regiones para sus diversas necesidades.",
+      "receiptHint": "Su",
+      "receiptLink": "recibo",
+      "receiptHintSuffix": "registra cuándo se ve o expira el secreto."
     },
     "useCases": {
       "sectionTitle": "Seguridad para profesionales",
@@ -317,7 +323,7 @@
           "line2_w2": "Sealed.",
           "line2_w3": "Delivered."
         },
-        "subtitle": "Send passwords, credentials, and sensitive data through links that self-destruct after being viewed.",
+        "subtitle": "Envíe contraseñas, credenciales y datos sensibles con enlaces que funcionan una sola vez.",
         "compliance": {
           "label": "Funciones de seguridad",
           "encrypted": "Cifrado",
@@ -350,7 +356,10 @@
         "capabilitiesLabel": "Available regions",
         "features": {
           "customDomain": "Custom Domain",
+          "customBranding": "Marca personalizada",
           "sso": "SSO / SAML",
+          "incomingSecrets": "Secretos entrantes",
+          "accessControls": "Controles de acceso",
           "auditLogs": "Audit Logs"
         }
       },
@@ -364,20 +373,20 @@
         "secondaryButton": "View pricing"
       },
       "howItWorks": {
-        "label": "How it works",
-        "title": "Three steps. Zero residue.",
-        "subtitle": "Share sensitive information without leaving a trail in your email, chat logs, or ticketing systems.",
+        "label": "Cómo funciona",
+        "title": "Enviado. Leído. Eliminado.",
+        "subtitle": "Comparta información confidencial sin dejar rastro en su correo electrónico, registros de chat o sistemas de tickets.",
         "step1": {
-          "title": "Paste your secret",
-          "description": "Enter any sensitive text: passwords, API keys, credentials, private notes. Set an expiration and optional passphrase."
+          "title": "Pegue su secreto",
+          "description": "Introduzca cualquier texto confidencial — contraseñas, claves de API, credenciales, notas privadas. Establezca una caducidad y una frase de seguridad opcional."
         },
         "step2": {
-          "title": "Share the link",
-          "description": "Get a unique, one-time URL. Send it over any channel: email, Slack, text. The link itself reveals nothing about the content."
+          "title": "Comparta el enlace",
+          "description": "Obtenga una URL única de un solo uso. Envíela por cualquier canal: correo electrónico, Slack, mensaje de texto. El enlace en sí no revela nada sobre el contenido."
         },
         "step3": {
-          "title": "It self-destructs",
-          "description": "Once the recipient views the secret, the data is permanently destroyed. The link is dead. No one, including us, can retrieve it."
+          "title": "Desaparece tras la lectura",
+          "description": "Una vez que el destinatario abre el enlace, los datos se destruyen de forma permanente. El enlace muere con ellos. Nadie — incluidos nosotros — puede recuperarlos."
         }
       },
       "visual_examples": {
@@ -396,26 +405,26 @@
           "description": "Agregue una frase de contraseña para una capa adicional de seguridad. Solo quienes tengan la frase de contraseña pueden ver el secreto."
         },
         "encryption": {
-          "title": "End-to-end encryption",
-          "description": "Secrets are encrypted at rest and in transit. The decryption key is embedded in the URL fragment, never sent to our servers, never logged. We can't read your data even if compelled."
+          "title": "Cifrado por secreto",
+          "description": "Cada secreto se cifra con su propia clave única antes de almacenarse. Las claves de descifrado residen en el servidor de aplicaciones, nunca en la base de datos — una medida de defensa en profundidad que limita la exposición en caso de una filtración de datos."
         },
         "selfDestruction": {
-          "title": "Read once, gone forever",
-          "description": "After a single view, the secret is permanently purged from all storage. No copies, no recovery, no trace."
+          "title": "Se lee una vez y desaparece para siempre",
+          "description": "Tras una única visualización, el secreto se elimina permanentemente de todos los almacenamientos. Sin copias, sin recuperación, sin rastro."
         },
         "dataResidency": {
-          "title": "Regional data storage",
-          "description": "Choose where your secrets live: EU, US, or other regions. Meet data sovereignty requirements at the point of creation."
+          "title": "Almacenamiento regional de datos",
+          "description": "Elija dónde se almacenan sus secretos: UE, EE. UU. u otras regiones. Cumpla los requisitos de soberanía de datos desde el momento de la creación."
         },
         "compliance": {
           "title": "Ayuda a los equipos a cumplir sus objetivos de conformidad",
           "description": "Diseñado para acompañar los flujos de trabajo SOC 2, RGPD, CCPA e HIPAA. Los registros de auditoría, los controles de acceso y el SSO ayudan a los equipos a cumplir sus propios requisitos de conformidad."
         },
         "api": {
-          "title": "Developer API",
-          "description": "Integrate secret sharing into your workflows, CI/CD pipelines, and internal tools. Full REST API with language-specific SDKs."
+          "title": "API para desarrolladores",
+          "description": "Integre el intercambio seguro de secretos en sus flujos de trabajo, pipelines CI/CD y herramientas internas. API REST completa con SDKs específicos para cada lenguaje."
         },
-        "also": "Also available:"
+        "also": "También disponible:"
       }
     }
   }

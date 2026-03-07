@@ -3,7 +3,7 @@ title: Acerca de Nosotros
 
 ---
 
-Hola, soy Delano, el creador de Onetime Secret. Lo que comenzó en 2012 como una forma sencilla y segura de compartir información sensible ha evolucionado mucho más allá de la visión inicial. Más de una década después, estamos de lleno en el negocio de los "secretos", atendiendo casos de uso que nunca imaginé.
+Hola, soy Delano, el creador de Onetime Secret. Lo que comenzó en 2011 como una forma sencilla y segura de compartir información sensible ha evolucionado mucho más allá de la visión inicial. Más de una década después, estamos de lleno en el negocio de los "secretos", atendiendo casos de uso que nunca imaginé.
 
 ## Lo que hemos construido
 

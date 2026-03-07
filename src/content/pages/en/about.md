@@ -3,7 +3,7 @@ title: About Us
 
 ---
 
-Hi, I'm Delano, the creator of Onetime Secret. What began in 2012 as a straightforward, secure way to share sensitive information has evolved far beyond the initial vision. More than a decade later, we're fully in the "secrets" service business, serving use cases I never imagined.
+Hi, I'm Delano, the creator of Onetime Secret. What began in 2011 as a straightforward, secure way to share sensitive information has evolved far beyond the initial vision. More than a decade later, we're fully in the "secrets" service business, serving use cases I never imagined.
 
 ## What We've Built
 

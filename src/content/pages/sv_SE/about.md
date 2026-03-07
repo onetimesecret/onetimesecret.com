@@ -3,7 +3,7 @@ title: Om oss
 
 ---
 
-Hej, jag är Delano, skaparen av Onetime Secret. Det som började 2012 som ett enkelt, säkert sätt att dela känslig information har utvecklats långt bortom den ursprungliga visionen. Mer än ett decennium senare är vi fullt ut i "hemligheter"-branschen och betjänar användningsfall jag aldrig föreställt mig.
+Hej, jag är Delano, skaparen av Onetime Secret. Det som började 2011 som ett enkelt, säkert sätt att dela känslig information har utvecklats långt bortom den ursprungliga visionen. Mer än ett decennium senare är vi fullt ut i "hemligheter"-branschen och betjänar användningsfall jag aldrig föreställt mig.
 
 ## Vad vi har byggt
 

@@ -3,7 +3,7 @@ title: Over ons
 
 ---
 
-Hallo, ik ben Delano, de maker van Onetime Secret. Wat in 2012 begon als een eenvoudige, veilige manier om gevoelige informatie te delen, is ver voorbij de oorspronkelijke visie gegroeid. Meer dan tien jaar later zitten we volledig in de "geheimen"-business en bedienen we toepassingen die ik me nooit had voorgesteld.
+Hallo, ik ben Delano, de maker van Onetime Secret. Wat in 2011 begon als een eenvoudige, veilige manier om gevoelige informatie te delen, is ver voorbij de oorspronkelijke visie gegroeid. Meer dan tien jaar later zitten we volledig in de "geheimen"-business en bedienen we toepassingen die ik me nooit had voorgesteld.
 
 ## Wat we hebben gebouwd
 

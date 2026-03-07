@@ -3,7 +3,7 @@ title: O nas
 
 ---
 
-Cześć, jestem Delano, twórca Onetime Secret. To, co zaczęło się w 2012 roku jako prosty, bezpieczny sposób udostępniania poufnych informacji, wyewoluowało daleko poza początkową wizję. Ponad dekadę później w pełni zajmujemy się usługami związanymi z "sekretami", obsługując przypadki użycia, których nigdy sobie nie wyobrażałem.
+Cześć, jestem Delano, twórca Onetime Secret. To, co zaczęło się w 2011 roku jako prosty, bezpieczny sposób udostępniania poufnych informacji, wyewoluowało daleko poza początkową wizję. Ponad dekadę później w pełni zajmujemy się usługami związanymi z "sekretami", obsługując przypadki użycia, których nigdy sobie nie wyobrażałem.
 
 ## Co zbudowaliśmy
 

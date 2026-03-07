@@ -125,35 +125,35 @@
         "basic": {
           "name": "Basique",
           "badge": null,
-          "description": "Fonctionnalités essentielles de partage de secrets pour une utilisation occasionnelle.",
+          "description": "Tout ce qu'il vous faut pour partager des secrets en toute sécurité, y compris votre propre domaine personnalisé, gratuitement.",
           "cta": "Commencer",
           "price": {
             "monthly": "0 €",
             "annually": "0 €"
           },
           "features": {
-            "0": "Partager des secrets en toute sécurité",
-            "1": "Envoyer des liens par e-mail aux destinataires",
-            "2": "Destruction automatique",
-            "3": "Plus d'options d'expiration",
+            "0": "Un domaine personnalisé (ex. secrets.exemple.com)",
+            "1": "Destruction automatique après consultation",
+            "2": "Options d'expiration configurables jusqu'à 14 jours",
+            "3": "Envoyer des liens par e-mail aux destinataires",
             "4": "API REST"
           }
         },
         "identity": {
           "name": "Identity Plus",
           "badge": "En vedette",
-          "description": "Renforcez la confiance dans votre marque grâce au partage sécurisé depuis votre propre domaine. Par ex. secrets.exemple.com.",
+          "description": "Contrôle total sur votre expérience de partage de secrets à votre image.",
           "cta": "Commencer aujourd'hui",
           "price": {
             "monthly": "35 €",
             "annually": "356 €"
           },
           "features": {
-            "0": "Domaines personnalisés illimités",
-            "1": "Image de marque personnalisée avec votre logo",
-            "2": "Page d'accueil de marque",
-            "3": "Conception axée sur la confidentialité",
-            "4": "Aucune limite de débit"
+            "0": "Tout ce qui est inclus dans Basique",
+            "1": "Domaines personnalisés illimités",
+            "2": "Image de marque personnalisée avec votre logo",
+            "3": "Expiration jusqu'à 30 jours",
+            "4": "Contrôle d'accès à la page d'accueil (décidez qui peut créer des secrets sur votre domaine)"
           }
         }
       },
@@ -197,6 +197,9 @@
       "passphraseInputLabel": "Phrase de passe",
       "passphrasePlaceholder": "Saisissez la phrase de passe",
       "passphraseInputHint": "Le destinataire aura besoin de cette phrase de passe pour voir le secret",
+      "hidePassphrase": "Masquer la phrase secrète",
+      "showPassphrase": "Afficher la phrase secrète",
+      "removePassphrase": "Supprimer la phrase de passe",
       "ttlLabel": "Durée de vie du secret",
       "ttlHint": "Le secret sera supprimé après ce délai, même s'il n'a pas été consulté",
       "customDomainCta": "Vous voulez utiliser votre propre domaine ?",
@@ -231,7 +234,10 @@
       "successTitle": "Succès !",
       "shareLinkDescription": "Partagez votre lien secret avec d'autres personnes.",
       "createAnother": "Créer un autre secret",
-      "regionSwitchHint": "Essayez de créer des secrets dans différentes régions selon vos besoins."
+      "regionSwitchHint": "Essayez de créer des secrets dans différentes régions selon vos besoins.",
+      "receiptHint": "Votre",
+      "receiptLink": "reçu",
+      "receiptHintSuffix": "indique quand le secret est consulté ou expire."
     },
     "useCases": {
       "sectionTitle": "Sécurité pour les professionnels",
@@ -317,7 +323,7 @@
           "line2_w2": "Sealed.",
           "line2_w3": "Delivered."
         },
-        "subtitle": "Send passwords, credentials, and sensitive data through links that self-destruct after being viewed.",
+        "subtitle": "Envoyez des mots de passe, des identifiants et des données sensibles avec des liens à usage unique.",
         "compliance": {
           "label": "Fonctionnalités de sécurité",
           "encrypted": "Chiffré",
@@ -350,7 +356,10 @@
         "capabilitiesLabel": "Available regions",
         "features": {
           "customDomain": "Custom Domain",
+          "customBranding": "Image de marque personnalisée",
           "sso": "SSO / SAML",
+          "incomingSecrets": "Secrets entrants",
+          "accessControls": "Contrôles d'accès",
           "auditLogs": "Audit Logs"
         }
       },
@@ -364,20 +373,20 @@
         "secondaryButton": "View pricing"
       },
       "howItWorks": {
-        "label": "How it works",
-        "title": "Three steps. Zero residue.",
-        "subtitle": "Share sensitive information without leaving a trail in your email, chat logs, or ticketing systems.",
+        "label": "Comment ça marche",
+        "title": "Envoyé. Lu. Disparu.",
+        "subtitle": "Partagez des informations sensibles sans laisser de trace dans vos e-mails, journaux de chat ou systèmes de tickets.",
         "step1": {
-          "title": "Paste your secret",
-          "description": "Enter any sensitive text: passwords, API keys, credentials, private notes. Set an expiration and optional passphrase."
+          "title": "Collez votre secret",
+          "description": "Saisissez n'importe quel texte confidentiel — mots de passe, clés d'API, identifiants, notes privées. Définissez une expiration et une phrase de passe optionnelle."
         },
         "step2": {
-          "title": "Share the link",
-          "description": "Get a unique, one-time URL. Send it over any channel: email, Slack, text. The link itself reveals nothing about the content."
+          "title": "Partagez le lien",
+          "description": "Obtenez une URL unique à usage unique. Envoyez-la par n'importe quel canal : e-mail, Slack, SMS. Le lien lui-même ne révèle rien sur le contenu."
         },
         "step3": {
-          "title": "It self-destructs",
-          "description": "Once the recipient views the secret, the data is permanently destroyed. The link is dead. No one, including us, can retrieve it."
+          "title": "Disparu après lecture",
+          "description": "Une fois que le destinataire ouvre le lien, les données sont définitivement détruites. Le lien meurt avec elles. Personne — y compris nous — ne peut les récupérer."
         }
       },
       "visual_examples": {
@@ -396,26 +405,26 @@
           "description": "Ajoutez une phrase de passe pour une couche de sécurité supplémentaire. Seules les personnes connaissant la phrase de passe peuvent consulter le secret."
         },
         "encryption": {
-          "title": "End-to-end encryption",
-          "description": "Secrets are encrypted at rest and in transit. The decryption key is embedded in the URL fragment, never sent to our servers, never logged. We can't read your data even if compelled."
+          "title": "Chiffrement par secret",
+          "description": "Chaque secret est chiffré avec sa propre clé unique avant d'être stocké. Les clés de déchiffrement résident sur le serveur applicatif, jamais dans la base de données — une mesure de défense en profondeur qui limite l'exposition en cas de violation de données."
         },
         "selfDestruction": {
-          "title": "Read once, gone forever",
-          "description": "After a single view, the secret is permanently purged from all storage. No copies, no recovery, no trace."
+          "title": "Lu une fois, disparu pour toujours",
+          "description": "Après une seule consultation, le secret est définitivement supprimé de tous les stockages. Aucune copie, aucune récupération, aucune trace."
         },
         "dataResidency": {
-          "title": "Regional data storage",
-          "description": "Choose where your secrets live: EU, US, or other regions. Meet data sovereignty requirements at the point of creation."
+          "title": "Stockage régional des données",
+          "description": "Choisissez où vos secrets sont stockés : UE, États-Unis ou autres régions. Respectez les exigences de souveraineté des données dès la création."
         },
         "compliance": {
           "title": "Aide les équipes à atteindre leurs objectifs de conformité",
           "description": "Conçu pour accompagner les flux de travail SOC 2, RGPD, CCPA et HIPAA. Les journaux d'audit, les contrôles d'accès et le SSO aident les équipes à répondre à leurs propres exigences de conformité."
         },
         "api": {
-          "title": "Developer API",
-          "description": "Integrate secret sharing into your workflows, CI/CD pipelines, and internal tools. Full REST API with language-specific SDKs."
+          "title": "API développeur",
+          "description": "Intégrez le partage sécurisé de secrets dans vos flux de travail, pipelines CI/CD et outils internes. API REST complète avec des SDKs spécifiques à chaque langage."
         },
-        "also": "Also available:"
+        "also": "Également disponible :"
       }
     }
   }

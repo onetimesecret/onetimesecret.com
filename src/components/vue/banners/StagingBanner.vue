@@ -44,12 +44,13 @@ const shouldShowBanner = computed(() => {
       class="w-full bg-amber-50 dark:bg-amber-950 border-b border-amber-300
              dark:border-amber-800 sticky top-0 left-0 right-0 z-[100]">
       <div class="mx-auto max-w-7xl px-3 py-3 sm:px-6 lg:px-8">
-        <div class="flex flex-wrap items-center justify-between">
-          <div class="flex w-0 flex-1 items-center">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center
+                    sm:justify-between">
+          <div class="flex items-center min-w-0">
             <ExclamationTriangleIcon
-              class="size-5 text-amber-700 dark:text-amber-400"
+              class="size-5 shrink-0 text-amber-700 dark:text-amber-400"
               aria-hidden="true" />
-            <div class="ml-3">
+            <div class="ml-3 min-w-0">
               <p class="font-medium text-amber-900 dark:text-amber-100 text-sm">
                 {{ t('banner.staging-warning') }}
               </p>
@@ -58,9 +59,7 @@ const shouldShowBanner = computed(() => {
               </p>
             </div>
           </div>
-          <div
-            class="order-4 mt-2 w-full flex-shrink-0 sm:order-2 sm:mt-0
-                   sm:w-auto">
+          <div class="shrink-0">
             <a
               :href="CANONICAL_ORIGIN"
               data-testid="staging-banner-production-link"

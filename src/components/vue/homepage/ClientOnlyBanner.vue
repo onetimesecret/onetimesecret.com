@@ -4,7 +4,7 @@
 /**
  * ClientOnlyBanner
  *
- * A client-side only wrapper for the FirstTimeVisitorBannerAlt component that:
+ * A client-side only wrapper for the GlobalBanner component that:
  * 1. Prevents hydration mismatches in Astro static sites
  * 2. Manages banner dismissal state with localStorage
  * 3. Only renders on the client after successful hydration
@@ -27,9 +27,9 @@
  * components with browser API dependencies work correctly in Astro's
  * static site generation model.
  */
-import FirstTimeVisitorBannerAlt from "@/components/vue/homepage/FirstTimeVisitorBannerAlt.vue";
+import GlobalBanner from "@/components/vue/homepage/GlobalBanner.vue";
 import { useDismissableBanner } from "@/composables/useDismissableBanner";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 defineProps<{
   detectedJurisdiction: string;
@@ -49,6 +49,10 @@ const isClient = ref(false);
  */
 const { isVisible: showJurisdictionBanner, dismiss: dismissBanner } =
   useDismissableBanner("jurisdiction-banner", 30);
+
+const bannerVisible = computed(
+  () => isClient.value && showJurisdictionBanner.value
+);
 
 defineExpose({ isVisible: showJurisdictionBanner });
 
@@ -75,18 +79,22 @@ const handleSwitchJurisdiction = (jurisdictionId: string) => {
 
 <template>
   <!--
-    Conditional rendering that only shows the banner:
-    1. After client-side hydration is complete (isClient === true)
-    2. When the banner hasn't been dismissed (showJurisdictionBanner === true)
-
-    During SSR/build, this component renders nothing at all,
-    avoiding any hydration mismatches completely.
+    CLS Prevention: Banner uses fixed positioning so it overlays page content
+    without pushing anything down. Slides in from top on show, out on dismiss.
   -->
-  <FirstTimeVisitorBannerAlt
-    v-if="isClient && showJurisdictionBanner"
-    :detected-region="detectedJurisdiction"
-    :suggested-domain="suggestedDomain"
-    :show-banner="true"
-    @dismiss="dismissBanner"
-    @switch-region="handleSwitchJurisdiction" />
+  <Transition
+    enter-active-class="transition-transform duration-300 ease-out"
+    enter-from-class="-translate-y-full"
+    enter-to-class="translate-y-0"
+    leave-active-class="transition-transform duration-200 ease-in"
+    leave-from-class="translate-y-0"
+    leave-to-class="-translate-y-full">
+    <GlobalBanner
+      v-if="bannerVisible"
+      :detected-region="detectedJurisdiction"
+      :suggested-domain="suggestedDomain"
+      :show-banner="true"
+      @dismiss="dismissBanner"
+      @switch-region="handleSwitchJurisdiction" />
+  </Transition>
 </template>

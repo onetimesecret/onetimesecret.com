@@ -3,7 +3,7 @@ title: Hakkımızda
 
 ---
 
-Merhaba, ben Delano, Onetime Secret'in yaratıcısı. 2012 yılında hassas bilgileri paylaşmak için basit ve güvenli bir yol olarak başlayan bu girişim, başlangıçtaki vizyonun çok ötesine geçti. On yıldan fazla bir süre sonra, "sır" hizmeti işinde tam anlamıyla yerimizi aldık ve hayal bile edemeyeceğim kullanım senaryolarına hizmet veriyoruz.
+Merhaba, ben Delano, Onetime Secret'in yaratıcısı. 2011 yılında hassas bilgileri paylaşmak için basit ve güvenli bir yol olarak başlayan bu girişim, başlangıçtaki vizyonun çok ötesine geçti. On yıldan fazla bir süre sonra, "sır" hizmeti işinde tam anlamıyla yerimizi aldık ve hayal bile edemeyeceğim kullanım senaryolarına hizmet veriyoruz.
 
 ## Neler İnşa Ettik
 
