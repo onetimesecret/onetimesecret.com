@@ -4,28 +4,22 @@
 /**
  * ClientOnlyBanner
  *
- * A client-side only wrapper for the GlobalBanner component that:
+ * A client-side wrapper for the GlobalBanner component that:
  * 1. Prevents hydration mismatches in Astro static sites
  * 2. Manages banner dismissal state with localStorage
- * 3. Only renders on the client after successful hydration
+ * 3. Minimizes CLS by reading dismissed state synchronously and
+ *    always rendering a wrapper that reserves space
  *
- * ## Astro Static Site Considerations:
+ * ## CLS Prevention Strategy:
  *
- * In Astro's static site generation model:
- * - Components are pre-rendered to HTML during build time
- * - Browser APIs like localStorage aren't available during build/SSR
- * - Hydration requires DOM structures to match between server and client
+ * The wrapper div is always present in the DOM (both SSR and client).
+ * On SSR, we can't read localStorage so we default to showing the
+ * wrapper expanded — this reserves space for first-time visitors
+ * (the common case). On hydration, we immediately read localStorage:
+ * - If not dismissed: banner renders in already-reserved space (no CLS)
+ * - If dismissed: wrapper smoothly collapses (minimal visual impact)
  *
- * ## Differences from standard Vue applications:
- *
- * In a pure Vue SPA or client-rendered app:
- * - Components are only rendered on the client
- * - Browser APIs are always available during rendering
- * - There's no hydration process to worry about
- *
- * This wrapper serves as an adaptation layer that makes interactive Vue
- * components with browser API dependencies work correctly in Astro's
- * static site generation model.
+ * This follows the same pattern as StagingBanner.vue.
  */
 import GlobalBanner from "@/components/vue/homepage/GlobalBanner.vue";
 import { useDismissableBanner } from "@/composables/useDismissableBanner";
@@ -37,15 +31,47 @@ defineProps<{
 }>();
 
 /**
- * Client detection flag - always false during SSR/build
- * Only becomes true after the component mounts in the browser
+ * Read dismissed state synchronously from localStorage at setup time.
+ * This runs during hydration (before mount/paint) so we know whether
+ * to reserve space before the first render.
+ *
+ * Falls back to false (not dismissed = show banner) during SSR
+ * where window/localStorage are unavailable.
+ */
+const isDismissedOnLoad = (() => {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const stored = window.localStorage
+        .getItem('banner-jurisdiction-banner');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed?.dismissed === true) {
+          // Check expiration (30 days)
+          const timestamp = parsed.timestamp
+            ? new Date(parsed.timestamp).getTime()
+            : 0;
+          const daysPassed =
+            (Date.now() - timestamp) / (1000 * 60 * 60 * 24);
+          return daysPassed <= 30;
+        }
+      }
+    }
+  } catch {
+    // localStorage unavailable or corrupted — default to showing
+  }
+  return false;
+})();
+
+/**
+ * Client detection flag - always false during SSR/build.
+ * Only becomes true after the component mounts in the browser.
  */
 const isClient = ref(false);
 
 /**
- * Banner visibility state managed by the useDismissableBanner composable
- * Uses localStorage to persist dismissal state across page visits
- * The 30-day parameter controls how long the banner stays dismissed
+ * Banner visibility state managed by the useDismissableBanner composable.
+ * Uses localStorage to persist dismissal state across page visits.
+ * The 30-day parameter controls how long the banner stays dismissed.
  */
 const { isVisible: showJurisdictionBanner, dismiss: dismissBanner } =
   useDismissableBanner("jurisdiction-banner", 30);
@@ -54,24 +80,25 @@ const bannerVisible = computed(
   () => isClient.value && showJurisdictionBanner.value
 );
 
+/**
+ * Whether the wrapper should reserve space for the banner.
+ * - During SSR: true if not dismissed on load (reserves space)
+ * - After hydration: follows actual banner visibility
+ */
+const shouldReserveSpace = computed(
+  () => isClient.value ? bannerVisible.value : !isDismissedOnLoad
+);
+
 defineExpose({ isVisible: showJurisdictionBanner });
 
 const emit = defineEmits<{
   (e: "switchJurisdiction", jurisdictionId: string): void;
 }>();
 
-/**
- * onMounted hook only executes in the browser environment, never during SSR
- * This provides a safe way to enable client-only rendering
- */
 onMounted(() => {
   isClient.value = true;
 });
 
-/**
- * Handler for the switchJurisdiction event from the banner
- * Forwards the event to the parent component
- */
 const handleSwitchJurisdiction = (jurisdictionId: string) => {
   emit("switchJurisdiction", jurisdictionId);
 };
@@ -79,16 +106,17 @@ const handleSwitchJurisdiction = (jurisdictionId: string) => {
 
 <template>
   <!--
-    Banner renders in normal document flow below the header.
-    Works correctly whether or not the staging banner is displayed.
+    CLS Prevention: Wrapper always renders in the DOM with reserved
+    space. Collapses smoothly when banner is dismissed. Follows the
+    same pattern as StagingBanner.vue.
   -->
-  <Transition
-    enter-active-class="transition-[max-height,opacity] duration-300 ease-out overflow-hidden"
-    enter-from-class="opacity-0 max-h-0"
-    enter-to-class="opacity-100 max-h-screen"
-    leave-active-class="transition-[max-height,opacity] duration-200 ease-in overflow-hidden"
-    leave-from-class="opacity-100 max-h-screen"
-    leave-to-class="opacity-0 max-h-0">
+  <div
+    :class="[
+      'w-full transition-[min-height,opacity] duration-300',
+      shouldReserveSpace
+        ? 'min-h-[auto] opacity-100'
+        : 'min-h-0 overflow-hidden opacity-0'
+    ]">
     <GlobalBanner
       v-if="bannerVisible"
       :detected-region="detectedJurisdiction"
@@ -96,5 +124,5 @@ const handleSwitchJurisdiction = (jurisdictionId: string) => {
       :show-banner="true"
       @dismiss="dismissBanner"
       @switch-region="handleSwitchJurisdiction" />
-  </Transition>
+  </div>
 </template>
