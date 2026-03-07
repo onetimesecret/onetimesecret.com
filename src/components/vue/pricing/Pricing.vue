@@ -21,6 +21,7 @@ import {
   ProductTier,
   productTiers as tiers,
 } from "@/data/product/productTiers";
+import { getRegionPrice } from "@/data/product/regionPricing";
 
 const props = defineProps<{
   locale: string;
@@ -70,8 +71,12 @@ const getRegionalHref = (basePath: string) => {
 };
 
 const getPrice = (tier: ProductTier) => {
-  const freq = frequency.value.value;
-  return t(tier.priceKeys[freq]);
+  return getRegionPrice(
+    currentRegion.value.identifier,
+    tier.id,
+    frequency.value.value,
+    props.locale,
+  );
 };
 
 const basicPlanHref = getRegionalHref("/plans/free");
@@ -513,7 +518,7 @@ onUnmounted(() => {
               <a
                 :href="feedbackHref"
                 aria-describedby="discounted-tier"
-                class="rounded-lg bg-brand-600
+                class="rounded-lg bg-brandcompdim-600
                   hover:bg-brand-700 px-6 py-3
                   text-base font-semibold text-white
                   transition-colors
