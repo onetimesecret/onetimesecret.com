@@ -26,11 +26,11 @@ const { t } = useI18n();
           v-for="(step, i) in steps"
           :key="step"
           class="bg-surface-1 p-8 sm:p-10 flex flex-col">
-          <!-- Large decorative step number (rendered via CSS to avoid false axe contrast flags) -->
+          <!-- Large step number -->
           <span
-            class="step-number mb-6 block select-none"
-            :data-step="stepNumbers[i]"
+            class="text-[4rem] font-extrabold leading-none text-[#64646c] mb-6 select-none"
             aria-hidden="true">
+            {{ stepNumbers[i] }}
           </span>
           <h3 class="text-xl font-bold text-text-primary mb-3">
             {{ t(`web.homepage.howItWorks.${step}.title`) }}
@@ -44,14 +44,4 @@ const { t } = useI18n();
   </section>
 </template>
 
-<style scoped>
-/* Decorative step numbers rendered via ::before to avoid
-   false-positive axe color-contrast flags on aria-hidden text. */
-.step-number::before {
-  content: attr(data-step);
-  font-size: 4rem;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--color-surface-4);
-}
-</style>
+<style scoped></style>
