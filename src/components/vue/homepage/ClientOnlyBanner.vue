@@ -4,22 +4,34 @@
 /**
  * ClientOnlyBanner
  *
- * A client-side wrapper for the GlobalBanner component that:
- * 1. Prevents hydration mismatches in Astro static sites
- * 2. Manages banner dismissal state with localStorage
- * 3. Minimizes CLS by reading dismissed state synchronously and
- *    always rendering a wrapper that reserves space
+ * A wrapper for the GlobalBanner that manages dismissal state and
+ * minimizes Cumulative Layout Shift (CLS).
  *
- * ## CLS Prevention Strategy:
+ * ## CLS Prevention Strategy
  *
- * The wrapper div is always present in the DOM (both SSR and client).
- * On SSR, we can't read localStorage so we default to showing the
- * wrapper expanded — this reserves space for first-time visitors
- * (the common case). On hydration, we immediately read localStorage:
- * - If not dismissed: banner renders in already-reserved space (no CLS)
- * - If dismissed: wrapper smoothly collapses (minimal visual impact)
+ * The banner content renders during SSR (not gated behind isClient)
+ * so the wrapper has real height in the server-rendered HTML. On
+ * hydration we read localStorage synchronously to determine the
+ * initial collapsed/expanded state:
  *
- * This follows the same pattern as StagingBanner.vue.
+ * - First visit (no localStorage): wrapper and content already
+ *   rendered at full height from SSR — zero CLS.
+ * - Return visit (dismissed): wrapper starts collapsed via the
+ *   synchronous localStorage read — zero CLS.
+ * - Return visit (dismissal expired): same as first visit.
+ *
+ * Follows the same wrapper pattern as StagingBanner.vue but with
+ * a concrete SSR render to actually reserve space.
+ *
+ * ## Hydration mismatch note
+ *
+ * For returning visitors who dismissed the banner, the SSR HTML
+ * includes the banner (server can't read localStorage) while the
+ * client immediately collapses it. Vue patches the DOM during
+ * hydration which may log a mismatch warning. This is an
+ * acceptable tradeoff: first-time visitors (the primary audience
+ * for this banner) get zero CLS, while returning visitors see a
+ * brief collapse that happens before LCP.
  */
 import GlobalBanner from "@/components/vue/homepage/GlobalBanner.vue";
 import { useDismissableBanner } from "@/composables/useDismissableBanner";
@@ -30,29 +42,32 @@ defineProps<{
   suggestedDomain: string;
 }>();
 
+const BANNER_ID = 'jurisdiction-banner';
+const EXPIRATION_DAYS = 30;
+
 /**
- * Read dismissed state synchronously from localStorage at setup time.
- * This runs during hydration (before mount/paint) so we know whether
- * to reserve space before the first render.
+ * Read dismissed state synchronously from localStorage.
  *
- * Falls back to false (not dismissed = show banner) during SSR
- * where window/localStorage are unavailable.
+ * During SSR (typeof window === 'undefined') this returns false,
+ * meaning "not dismissed — render the banner." During client-side
+ * hydration this runs before the first paint so the initial DOM
+ * matches what the user should see.
  */
 const isDismissedOnLoad = (() => {
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
       const stored = window.localStorage
-        .getItem('banner-jurisdiction-banner');
+        .getItem(`banner-${BANNER_ID}`);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed?.dismissed === true) {
-          // Check expiration (30 days)
+          if (EXPIRATION_DAYS === 0) return true;
           const timestamp = parsed.timestamp
             ? new Date(parsed.timestamp).getTime()
             : 0;
           const daysPassed =
             (Date.now() - timestamp) / (1000 * 60 * 60 * 24);
-          return daysPassed <= 30;
+          return daysPassed <= EXPIRATION_DAYS;
         }
       }
     }
@@ -63,30 +78,22 @@ const isDismissedOnLoad = (() => {
 })();
 
 /**
- * Client detection flag - always false during SSR/build.
- * Only becomes true after the component mounts in the browser.
+ * Tracks whether the component has mounted (client-side).
+ * Before mount, visibility is driven by isDismissedOnLoad.
+ * After mount, visibility is driven by the composable.
  */
 const isClient = ref(false);
 
-/**
- * Banner visibility state managed by the useDismissableBanner composable.
- * Uses localStorage to persist dismissal state across page visits.
- * The 30-day parameter controls how long the banner stays dismissed.
- */
 const { isVisible: showJurisdictionBanner, dismiss: dismissBanner } =
-  useDismissableBanner("jurisdiction-banner", 30);
-
-const bannerVisible = computed(
-  () => isClient.value && showJurisdictionBanner.value
-);
+  useDismissableBanner(BANNER_ID, EXPIRATION_DAYS);
 
 /**
- * Whether the wrapper should reserve space for the banner.
- * - During SSR: true if not dismissed on load (reserves space)
- * - After hydration: follows actual banner visibility
+ * Banner visibility:
+ * - Pre-hydration: show unless dismissed (via synchronous check)
+ * - Post-hydration: defer to composable (handles expiration, etc.)
  */
-const shouldReserveSpace = computed(
-  () => isClient.value ? bannerVisible.value : !isDismissedOnLoad
+const bannerVisible = computed(() =>
+  isClient.value ? showJurisdictionBanner.value : !isDismissedOnLoad
 );
 
 defineExpose({ isVisible: showJurisdictionBanner });
@@ -106,14 +113,16 @@ const handleSwitchJurisdiction = (jurisdictionId: string) => {
 
 <template>
   <!--
-    CLS Prevention: Wrapper always renders in the DOM with reserved
-    space. Collapses smoothly when banner is dismissed. Follows the
-    same pattern as StagingBanner.vue.
+    CLS Prevention: Wrapper always renders in the DOM. The
+    GlobalBanner content is NOT gated behind isClient, so the
+    SSR HTML includes the full banner markup with real height.
+    The wrapper collapses only for returning visitors who have
+    previously dismissed the banner.
   -->
   <div
     :class="[
       'w-full transition-[min-height,opacity] duration-300',
-      shouldReserveSpace
+      bannerVisible
         ? 'min-h-[auto] opacity-100'
         : 'min-h-0 overflow-hidden opacity-0'
     ]">
