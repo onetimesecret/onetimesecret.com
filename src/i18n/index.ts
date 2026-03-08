@@ -64,9 +64,6 @@ export async function setLanguage(lang: string) {
   }
 
   try {
-    // Set the locale immediately to avoid hydration mismatches
-    i18n.global.locale.value = lang as typeof i18n.global.locale.value;
-
     // Dynamically import the locale messages
     // This assumes locale files are named `[lang].json` and are in `./ui/`
     const messages = await import(`./ui/${lang}.json`);
