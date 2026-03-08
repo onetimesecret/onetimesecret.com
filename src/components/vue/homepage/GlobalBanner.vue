@@ -38,8 +38,7 @@ const _switchToSuggestedRegion = () => {
 
 <template>
 <div
-  class="fixed left-0 right-0 z-[100] w-full bg-brand-50 dark:bg-brand-800 border-b border-brand-200 dark:border-brand-700 shadow-md"
-  :style="{ top: 'var(--header-height, 4rem)' }">
+  class="relative w-full bg-brand-50 dark:bg-brand-800 border-b border-brand-200 dark:border-brand-700 shadow-md">
   <div class="mx-auto max-w-7xl px-3 py-3 sm:px-6 lg:px-8">
     <div class="flex flex-col gap-2 sm:flex-row sm:items-center
                 sm:justify-between">

@@ -1,10 +1,13 @@
 ---
+// src/components/layout/LayoutBase.astro
+
 // Import layout components
 import LayoutHead from "./LayoutHead.astro";
 import LayoutHeader from "./LayoutHeader.astro";
 import LayoutFooter from "./LayoutFooter.astro";
 import SvgSprites from "./SvgSprites.astro";
 import StagingBanner from "@/components/vue/banners/StagingBanner.vue";
+import StagingWatermark from "@/components/vue/banners/StagingWatermark.vue";
 
 // Import styles
 import "@/styles/global.css";
@@ -74,7 +77,10 @@ const messagesMap: Record<string, MessageSchema> = {
 const effectiveMessages =
   initialMessages && Object.keys(initialMessages).length > 0
     ? initialMessages
-    : { [effectiveLocale]: messagesMap[effectiveLocale] || enMessages as MessageSchema };
+    : {
+        [effectiveLocale]:
+          messagesMap[effectiveLocale] || (enMessages as MessageSchema),
+      };
 
 // Initialize a page-specific i18n instance for SSR content
 const pageI18n = await createLocaleI18n(effectiveLocale, effectiveMessages);
@@ -93,7 +99,7 @@ if (import.meta.env.DEV) {
 }
 ---
 
-<!doctype html>
+<!-- src/components/layout/LayoutBase.astro --><!doctype html>
 <html
   lang={effectiveLocale}
   dir={langDir}
@@ -103,21 +109,39 @@ if (import.meta.env.DEV) {
     langDir={langDir}
     {...seoProps}
   />
-  <body
-    class="flex h-full flex-col overflow-x-hidden bg-surface-0">
+  <body class="bg-surface-0 flex h-full flex-col overflow-x-hidden">
     <a
       href="#main-content"
-      class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-surface-0 focus:text-brand-600 focus:underline focus:outline-2 focus:outline-brand-500"
-    >
+      class="focus:bg-surface-0 focus:text-brand-600 focus:outline-brand-500 sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:underline focus:outline-2">
       {t("web.aria.skip_to_content")}
     </a>
     <!--
-      CLS Prevention: The staging banner wrapper uses min-h-0 and collapses
-      when not needed. The client:only hydration will expand it smoothly
-      if on a staging domain. No pre-reserved space needed since the banner
-      wrapper handles its own height transition.
+      Banner CLS strategy
+      ============================================================
+      | Banner          | Hydration    | SSR HTML    | CLS impact |
+      |-----------------|--------------|-------------|------------|
+      | StagingBanner   | client:only  | None        | Expands on |
+      |                 |              |             | staging    |
+      | GlobalBanner    | client:load  | Full banner | Zero for   |
+      | (via ClientOnly |  (inherited  | rendered at | first-time |
+      |  Banner in      |   from       | real height | visitors;  |
+      |  Homepage.vue)  |   Homepage)  |             | collapses  |
+      |                 |              |             | on return  |
+      |                 |              |             | if dismiss |
+      ============================================================
+      StagingBanner: wrapper collapses via min-h-0 when not on a
+      staging domain. client:only means no SSR footprint.
+
+      GlobalBanner: renders content during SSR so the wrapper has
+      real height. localStorage is read synchronously at setup to
+      collapse the wrapper for returning dismissed visitors before
+      first paint. See ClientOnlyBanner.vue for full details.
     -->
     <StagingBanner client:only="vue" />
+    <StagingWatermark
+      client:only="vue"
+      v-if="false"
+    />
     {
       /* If header prop is true, use LayoutHeader, otherwise render the header slot directly */
       header ? (
@@ -131,7 +155,9 @@ if (import.meta.env.DEV) {
         <slot name="header" />
       )
     }
-    <main id="main-content" class="flex-grow bg-surface-0">
+    <main
+      id="main-content"
+      class="bg-surface-0 flex-grow">
       <slot />
     </main>
     {
