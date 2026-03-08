@@ -4,8 +4,8 @@ import { isStagingHostname } from "@config/domains";
 
 /**
  * Full-page diagonal "STAGING" watermark overlay.
- * Renders a repeating rotated text pattern across the entire viewport,
- * similar to "COPY" / "DUPLICATE" stamps on legal documents.
+ * Uses a repeating SVG background pattern rotated -30° to create
+ * the legal-document "COPY" / "DUPLICATE" stamp effect.
  * pointer-events: none ensures it never blocks user interaction.
  */
 
@@ -14,6 +14,22 @@ const isStaging = ref(false);
 onMounted(() => {
   isStaging.value = isStagingHostname(window.location.hostname);
 });
+
+function buildSvgBackground(color: string): string {
+  const svg = [
+    '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200">',
+    `<text x="200" y="110" text-anchor="middle"`,
+    ` font-size="48" font-weight="900" font-family="sans-serif"`,
+    ` letter-spacing="0.2em"`,
+    ` fill="${color}">STAGING</text>`,
+    '</svg>',
+  ].join('');
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}
+
+// Amber-900 for light mode, amber-200 for dark mode
+const lightBg = buildSvgBackground('#78350f');
+const darkBg = buildSvgBackground('#fde68a');
 </script>
 
 <template>
@@ -21,31 +37,39 @@ onMounted(() => {
     v-if="isStaging"
     data-testid="staging-watermark"
     aria-hidden="true"
-    class="pointer-events-none fixed inset-0 z-[9999] overflow-hidden
-           select-none"
+    class="pointer-events-none fixed inset-0 z-[9999] select-none"
   >
     <!--
-      The inner container is oversized and rotated so the repeating
-      text grid covers the entire viewport without visible corners.
-      We double the dimensions and offset by -50% to ensure full
-      diagonal coverage regardless of viewport aspect ratio.
+      The inner div is oversized (200vmax square) and rotated so the
+      repeating tile pattern covers the full viewport diagonally with
+      no visible corners, regardless of viewport aspect ratio.
+
+      Two layers are rendered (light + dark) with CSS dark: toggling
+      visibility, since SVG data URIs can't use currentColor.
     -->
     <div
-      class="absolute top-1/2 left-1/2 flex flex-wrap items-start
-             justify-start gap-x-24 gap-y-20"
+      class="absolute top-1/2 left-1/2 opacity-[0.06]
+             dark:opacity-0"
       :style="{
         width: '200vmax',
         height: '200vmax',
         transform: 'translate(-50%, -50%) rotate(-30deg)',
+        backgroundImage: lightBg,
+        backgroundRepeat: 'repeat',
+        backgroundSize: '400px 200px',
       }"
-    >
-      <span
-        v-for="n in 200"
-        :key="n"
-        class="whitespace-nowrap text-5xl font-black uppercase
-               tracking-[0.2em] opacity-[0.04]
-               text-amber-900 dark:text-amber-200"
-      >STAGING</span>
-    </div>
+    ></div>
+    <div
+      class="absolute top-1/2 left-1/2 opacity-0
+             dark:opacity-[0.06]"
+      :style="{
+        width: '200vmax',
+        height: '200vmax',
+        transform: 'translate(-50%, -50%) rotate(-30deg)',
+        backgroundImage: darkBg,
+        backgroundRepeat: 'repeat',
+        backgroundSize: '400px 200px',
+      }"
+    ></div>
   </div>
 </template>
