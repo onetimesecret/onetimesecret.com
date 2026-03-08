@@ -1,3 +1,5 @@
+<!-- src/components/vue/banners/StagingBanner.vue -->
+
 <script setup lang="ts">
 import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import { computed, ref, onMounted } from "vue";

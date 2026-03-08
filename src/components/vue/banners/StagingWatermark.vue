@@ -1,3 +1,5 @@
+<!-- src/components/vue/banners/StagingWatermark.vue -->
+
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { isStagingHostname } from "@config/domains";
