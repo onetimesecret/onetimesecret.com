@@ -5,6 +5,7 @@ import LayoutHeader from "./LayoutHeader.astro";
 import LayoutFooter from "./LayoutFooter.astro";
 import SvgSprites from "./SvgSprites.astro";
 import StagingBanner from "@/components/vue/banners/StagingBanner.vue";
+import StagingWatermark from "@/components/vue/banners/StagingWatermark.vue";
 
 // Import styles
 import "@/styles/global.css";
@@ -134,6 +135,7 @@ if (import.meta.env.DEV) {
       first paint. See ClientOnlyBanner.vue for full details.
     -->
     <StagingBanner client:only="vue" />
+    <StagingWatermark client:only="vue" />
     {
       /* If header prop is true, use LayoutHeader, otherwise render the header slot directly */
       header ? (
