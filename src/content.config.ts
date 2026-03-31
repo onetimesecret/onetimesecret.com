@@ -1,6 +1,7 @@
 // https://docs.astro.build/en/guides/content-collections/
 
 import { defineCollection, z } from "astro:content";
+import { glob } from "astro/loaders";
 
 /**
  * Define a comprehensive schema for page frontmatter
@@ -63,8 +64,31 @@ const useCasesCollection = defineCollection({
   }),
 });
 
+/**
+ * Changelog collection using Content Layer API with glob loader.
+ * Entries are MDX files in src/content/changelog/ organized as
+ * directories with co-located images.
+ */
+const changelogCollection = defineCollection({
+  loader: glob({
+    pattern: "**/index.{md,mdx}",
+    base: "./src/content/changelog",
+  }),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      date: z.coerce.date(),
+      description: z.string(),
+      category: z.enum(["new", "improved", "fixed", "security"]),
+      image: image().optional(),
+      imageAlt: z.string().optional(),
+      featured: z.boolean().default(false),
+    }),
+});
+
 // Export collections with improved typing
 export const collections = {
   pages: pageCollection,
   useCases: useCasesCollection,
+  changelog: changelogCollection,
 };

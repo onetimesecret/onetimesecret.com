@@ -1,0 +1,55 @@
+---
+/**
+ * src/components/changelog/VideoEmbed.astro
+ * Responsive video player for changelog entries.
+ * Supports local mp4 files or YouTube embeds.
+ */
+
+export interface Props {
+  src?: string;
+  youtube?: string;
+  caption?: string;
+}
+
+const { src, youtube, caption } = Astro.props;
+
+const youtubeEmbedUrl = youtube
+  ? `https://www.youtube-nocookie.com/embed/${youtube}`
+  : null;
+---
+
+<figure class="not-prose my-8">
+  <div
+    class="overflow-hidden rounded-lg border border-surface-3 bg-surface-2">
+    {
+      youtubeEmbedUrl ? (
+        <div class="relative w-full" style="padding-bottom: 56.25%;">
+          <iframe
+            src={youtubeEmbedUrl}
+            title={caption || "Video"}
+            class="absolute inset-0 h-full w-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+            loading="lazy"
+          />
+        </div>
+      ) : src ? (
+        <video
+          controls
+          preload="metadata"
+          class="w-full"
+          playsinline>
+          <source src={src} type="video/mp4" />
+          Your browser does not support the video element.
+        </video>
+      ) : null
+    }
+  </div>
+  {
+    caption && (
+      <figcaption class="mt-3 text-center text-sm text-text-tertiary">
+        {caption}
+      </figcaption>
+    )
+  }
+</figure>

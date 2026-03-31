@@ -1,0 +1,31 @@
+---
+title: "January improvements roundup"
+date: 2026-01-31
+description: "A collection of smaller improvements and fixes from January 2026: faster page loads, better mobile experience, and several bug fixes."
+category: "improved"
+image: "./hero.png"
+imageAlt: "Illustration representing January 2026 improvements"
+featured: false
+---
+
+import Callout from "@/components/changelog/Callout.astro";
+
+Here's a roundup of the smaller improvements and fixes we shipped in January.
+
+## Faster page loads
+
+We optimized how the site loads static assets. Pages now load noticeably faster, especially on slower connections. The secret creation form appears instantly instead of waiting for the full page to render.
+
+## Better mobile experience
+
+The secret creation form now works better on small screens. The passphrase field, expiration options, and submit button are easier to tap and navigate on phones. We also fixed a layout issue where long secret text could overflow the container on narrow screens.
+
+## Bug fixes
+
+- **Passphrase field clarity** — The optional passphrase field now clearly indicates it's optional, reducing confusion for first-time users who thought it was required.
+- **Copy button reliability** — The "copy link" button now works consistently across all browsers, including Safari on iOS where clipboard access requires special handling.
+- **Email notifications** — Fixed an issue where view-confirmation emails were sometimes delayed by several minutes. They now arrive within seconds.
+
+<Callout type="info">
+  Have a feature request or found a bug? We'd love to hear from you — reach out through the feedback link in the site footer.
+</Callout>

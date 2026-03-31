@@ -1,0 +1,32 @@
+---
+title: "Dark mode is here"
+date: 2026-02-15
+description: "Onetime Secret now respects your system theme preference. Switch between light and dark mode, or let it follow your OS setting automatically."
+category: "improved"
+image: "./hero.png"
+imageAlt: "Screenshot of Onetime Secret in dark mode"
+featured: false
+---
+
+import ScreenshotFrame from "@/components/changelog/ScreenshotFrame.astro";
+import Callout from "@/components/changelog/Callout.astro";
+
+We've heard this request for a while — and it's finally here. Onetime Secret now supports dark mode across the entire site.
+
+<ScreenshotFrame
+  image={import("./hero.png")}
+  alt="Onetime Secret homepage in dark mode showing the secret creation form"
+  caption="The full site adapts to your preferred color scheme."
+/>
+
+## How to switch
+
+By default, the site follows your operating system's theme preference. If your OS is set to dark mode, Onetime Secret will automatically appear in dark mode.
+
+You can also toggle between light and dark manually using the theme switcher in the footer of every page. Your preference is saved locally so it persists across visits.
+
+<Callout type="info">
+  Dark mode applies to the full site including the secret creation form, the secret viewing page, and your account dashboard.
+</Callout>
+
+The design uses carefully chosen contrast ratios to ensure readability in both modes. All text meets WCAG 2.1 AA accessibility standards.

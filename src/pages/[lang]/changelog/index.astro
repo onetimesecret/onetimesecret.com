@@ -1,0 +1,85 @@
+---
+/**
+ * src/pages/[lang]/changelog/index.astro
+ * Changelog index page — reverse-chronological feed of entry cards.
+ */
+import Layout from "@/layouts/Layout.astro";
+import EntryCard from "@/components/changelog/EntryCard.astro";
+import { getCollection } from "astro:content";
+import { getLanguagePaths } from "@/i18n";
+import {
+  createLocaleI18n,
+  type MessageSchema,
+  type SupportedLanguage,
+} from "@/i18n";
+
+export async function getStaticPaths() {
+  return getLanguagePaths();
+}
+
+const { lang } = Astro.params;
+const { initialMessages } = Astro.props;
+
+const pageI18n = await createLocaleI18n(
+  lang as SupportedLanguage,
+  initialMessages as Record<string, MessageSchema>,
+);
+const t = pageI18n.global.t;
+
+// Fetch all changelog entries and sort by date descending
+const entries = (await getCollection("changelog")).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+---
+
+<Layout
+  title={`${t("navigation.whats-new")} | Onetime Secret`}
+  description="The latest features, improvements, and fixes for Onetime Secret."
+  htmlLang={lang}
+  initialMessages={initialMessages as Record<string, MessageSchema>}>
+  {/* Page header */}
+  <div
+    class="border-b border-surface-3 bg-surface-0 py-12 sm:py-16">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6">
+      <p class="section-label mb-3">Changelog</p>
+      <h1
+        class="font-brand text-3xl font-bold tracking-tight
+               text-text-primary sm:text-4xl">
+        {t("navigation.whats-new")}
+      </h1>
+      <p class="mt-4 text-lg text-text-secondary">
+        The latest features, improvements, and fixes
+        for Onetime Secret.
+      </p>
+    </div>
+  </div>
+
+  {/* Entry feed */}
+  <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
+    <div class="flex flex-col gap-10">
+      {
+        entries.map((entry) => (
+          <EntryCard
+            slug={entry.id}
+            title={entry.data.title}
+            date={entry.data.date}
+            description={entry.data.description}
+            category={entry.data.category}
+            image={entry.data.image}
+            imageAlt={entry.data.imageAlt}
+            featured={entry.data.featured}
+            locale={lang as string}
+          />
+        ))
+      }
+    </div>
+
+    {
+      entries.length === 0 && (
+        <p class="py-12 text-center text-text-secondary">
+          No updates yet. Check back soon!
+        </p>
+      )
+    }
+  </div>
+</Layout>
