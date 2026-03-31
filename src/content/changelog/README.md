@@ -69,12 +69,24 @@ Wraps a screenshot in a browser-window chrome frame.
 
 ### VideoEmbed
 
-Responsive video player — local MP4 or YouTube.
+Responsive video player — local MP4 or privacy-respecting YouTube
+(embedded via `youtube-nocookie.com`, no tracking cookies, GDPR-friendly).
 
 ```mdx
+<!-- Local MP4 -->
 <VideoEmbed src="./walkthrough.mp4" caption="Quick walkthrough." />
-<VideoEmbed youtube="dQw4w9WgXcQ" caption="YouTube embed." />
+
+<!-- YouTube (privacy-enhanced) -->
+<VideoEmbed
+  youtube="dQw4w9WgXcQ"
+  title="Descriptive title for accessibility"
+  caption="YouTube embed."
+  aspectRatio="16/9"
+/>
 ```
+
+Props: `src` (MP4 path), `youtube` (video ID), `title` (iframe title for
+accessibility — falls back to caption), `caption`, `aspectRatio` (default `16/9`).
 
 ### Callout
 

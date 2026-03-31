@@ -275,8 +275,10 @@ Your markdown content starts here.`}</code></pre>
         <h2 id="comp-videoembed">Component: VideoEmbed</h2>
         <p>
           Responsive video player for walkthroughs. Supports local MP4
-          files or YouTube embeds. Use for major features where a static
-          screenshot doesn't capture the interaction.
+          files or privacy-respecting YouTube embeds via
+          <code>youtube-nocookie.com</code> (no tracking cookies, GDPR-friendly).
+          Use for major features where a static screenshot doesn't capture
+          the interaction.
         </p>
         <h3>Recording tips (macOS)</h3>
         <ol>
@@ -306,8 +308,13 @@ Your markdown content starts here.`}</code></pre>
 <!-- Local MP4 -->
 <VideoEmbed src="./walkthrough.mp4" caption="Quick walkthrough." />
 
-<!-- YouTube -->
-<VideoEmbed youtube="VIDEO_ID" caption="Optional caption." />`}</code></pre>
+<!-- YouTube (embedded via youtube-nocookie.com for privacy) -->
+<VideoEmbed
+  youtube="VIDEO_ID"
+  title="Descriptive title for accessibility"
+  caption="Optional caption."
+  aspectRatio="16/9"
+/>`}</code></pre>
       </div>
     </section>
 
