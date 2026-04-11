@@ -6,6 +6,11 @@ import rss from "@astrojs/rss";
 import { getCollection } from "astro:content";
 import type { APIContext } from "astro";
 
+/** Strip trailing "/index" that the glob loader may include in IDs. */
+function entrySlug(id: string): string {
+  return id.replace(/\/index$/, "");
+}
+
 export async function GET(context: APIContext) {
   const allEntries = await getCollection("changelog");
   const entries = allEntries.sort(
@@ -17,7 +22,7 @@ export async function GET(context: APIContext) {
     title: "Onetime Secret \u2014 What's New",
     description:
       "The latest features, improvements, and fixes for Onetime Secret.",
-    site: context.site?.toString() ?? "https://onetimesecret.com",
+    site: context.site?.toString() ?? context.url.origin,
     items: entries.map(
       (entry: {
         id: string;
@@ -31,7 +36,7 @@ export async function GET(context: APIContext) {
         title: entry.data.title,
         pubDate: entry.data.date,
         description: entry.data.description,
-        link: `/en/changelog/${entry.id}`,
+        link: `/en/changelog/${entrySlug(entry.id)}`,
         categories: [entry.data.category],
       }),
     ),

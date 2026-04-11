@@ -46,6 +46,21 @@
     "sign-in": "Iniciar sesión",
     "sign-up": "Registrarse"
   },
+  "changelog": {
+    "label": "Registro de cambios",
+    "description": "Las últimas funciones, mejoras y correcciones de Onetime Secret.",
+    "empty": "Sin novedades por ahora. ¡Vuelva pronto!",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "back": "Volver a todas las novedades",
+    "nav-label": "Navegación del registro de cambios",
+    "category-new": "Nuevo",
+    "category-improved": "Mejorado",
+    "category-fixed": "Corregido",
+    "category-security": "Seguridad",
+    "before": "Antes",
+    "after": "Después"
+  },
   "LABELS": {
     "about": "Acerca de",
     "pricing": "Precios",

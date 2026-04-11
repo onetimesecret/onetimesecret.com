@@ -8,7 +8,11 @@ import { Image } from "astro:assets";
 import Layout from "@/layouts/Layout.astro";
 import Prose from "@/components/vue/Prose.astro";
 import CategoryBadge from "./CategoryBadge.astro";
-import type { MessageSchema } from "@/i18n";
+import {
+  createLocaleI18n,
+  type MessageSchema,
+  type SupportedLanguage,
+} from "@/i18n";
 
 export interface Props {
   title: string;
@@ -36,15 +40,23 @@ const {
   next,
 } = Astro.props;
 
+const pageI18n = await createLocaleI18n(
+  locale as SupportedLanguage,
+  initialMessages,
+);
+const t = pageI18n.global.t;
+
 const formattedDate = date.toLocaleDateString(locale, {
   year: "numeric",
   month: "long",
   day: "numeric",
 });
+
+const categoryLabelKey = `changelog.category-${category}` as const;
 ---
 
 <Layout
-  title={`${title} | Changelog | Onetime Secret`}
+  title={`${title} | ${t("changelog.label")} | Onetime Secret`}
   description={description}
   htmlLang={locale}
   initialMessages={initialMessages}>
@@ -52,7 +64,10 @@ const formattedDate = date.toLocaleDateString(locale, {
     {/* Header */}
     <header class="mb-8">
       <div class="mb-4 flex flex-wrap items-center gap-3">
-        <CategoryBadge category={category} />
+        <CategoryBadge
+          category={category}
+          label={t(categoryLabelKey)}
+        />
         <time
           datetime={date.toISOString()}
           class="text-sm text-text-tertiary">
@@ -91,14 +106,14 @@ const formattedDate = date.toLocaleDateString(locale, {
       (prev || next) && (
         <nav
           class="mt-12 flex items-stretch gap-4 border-t border-surface-3 pt-8"
-          aria-label="Changelog navigation">
+          aria-label={t("changelog.nav-label")}>
           {prev ? (
             <a
               href={`/${locale}/changelog/${prev.slug}`}
               class="group flex flex-1 flex-col rounded-lg border border-surface-3
                      p-4 transition-colors hover:border-surface-4 hover:bg-surface-1">
               <span class="mb-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-                Previous
+                {t("changelog.previous")}
               </span>
               <span class="text-sm font-medium text-text-primary group-hover:text-brand-500 dark:group-hover:text-brand-400">
                 {prev.title}
@@ -114,7 +129,7 @@ const formattedDate = date.toLocaleDateString(locale, {
                      border-surface-3 p-4 text-right transition-colors
                      hover:border-surface-4 hover:bg-surface-1">
               <span class="mb-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-                Next
+                {t("changelog.next")}
               </span>
               <span class="text-sm font-medium text-text-primary group-hover:text-brand-500 dark:group-hover:text-brand-400">
                 {next.title}
@@ -133,7 +148,7 @@ const formattedDate = date.toLocaleDateString(locale, {
         href={`/${locale}/changelog`}
         class="text-sm font-medium text-text-secondary
                hover:text-brand-500 dark:hover:text-brand-400">
-        &larr; Back to all updates
+        &larr; {t("changelog.back")}
       </a>
     </div>
   </article>

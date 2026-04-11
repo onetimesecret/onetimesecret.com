@@ -4,6 +4,10 @@
  * Responsive video player for changelog entries.
  * Supports local mp4 files or privacy-respecting YouTube embeds
  * via youtube-nocookie.com (no tracking cookies, GDPR-friendly).
+ *
+ * IMPORTANT: Astro does not serve co-located video files from content
+ * collections. Place videos in `public/` and use absolute paths:
+ *   <VideoEmbed src="/videos/changelog/walkthrough.mp4" />
  */
 
 export interface Props {

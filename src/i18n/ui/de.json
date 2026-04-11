@@ -46,6 +46,21 @@
     "sign-in": "Anmelden",
     "sign-up": "Registrieren"
   },
+  "changelog": {
+    "label": "Änderungsprotokoll",
+    "description": "Die neuesten Funktionen, Verbesserungen und Fehlerbehebungen für Onetime Secret.",
+    "empty": "Noch keine Aktualisierungen. Schauen Sie bald wieder vorbei!",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "back": "Zurück zu allen Aktualisierungen",
+    "nav-label": "Änderungsprotokoll-Navigation",
+    "category-new": "Neu",
+    "category-improved": "Verbessert",
+    "category-fixed": "Behoben",
+    "category-security": "Sicherheit",
+    "before": "Vorher",
+    "after": "Nachher"
+  },
   "LABELS": {
     "about": "Über uns",
     "pricing": "Preise",

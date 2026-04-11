@@ -46,6 +46,21 @@
     "sign-in": "Se connecter",
     "sign-up": "S'inscrire"
   },
+  "changelog": {
+    "label": "Journal des modifications",
+    "description": "Les dernières fonctionnalités, améliorations et corrections pour Onetime Secret.",
+    "empty": "Aucune mise à jour pour le moment. Revenez bientôt !",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "back": "Retour à toutes les mises à jour",
+    "nav-label": "Navigation du journal des modifications",
+    "category-new": "Nouveau",
+    "category-improved": "Amélioré",
+    "category-fixed": "Corrigé",
+    "category-security": "Sécurité",
+    "before": "Avant",
+    "after": "Après"
+  },
   "LABELS": {
     "about": "À propos",
     "pricing": "Tarifs",

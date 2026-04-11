@@ -13,6 +13,7 @@ export interface Props {
   date: Date;
   description: string;
   category: "new" | "improved" | "fixed" | "security";
+  categoryLabel?: string;
   image?: ImageMetadata;
   imageAlt?: string;
   featured?: boolean;
@@ -25,9 +26,9 @@ const {
   date,
   description,
   category,
+  categoryLabel,
   image,
   imageAlt,
-  featured = false,
   locale,
 } = Astro.props;
 
@@ -41,10 +42,7 @@ const entryUrl = `/${locale}/changelog/${slug}`;
 ---
 
 <article
-  class:list={[
-    "group grid grid-cols-1 gap-x-8 md:grid-cols-[140px_1fr]",
-    featured && "md:grid-cols-[140px_1fr]",
-  ]}>
+  class="group grid grid-cols-1 gap-x-8 md:grid-cols-[140px_1fr]">
   {/* Date column (visible on md+) */}
   <div class="hidden pt-1 md:block">
     <time
@@ -76,7 +74,7 @@ const entryUrl = `/${locale}/changelog/${slug}`;
     }
     <div class="p-5 sm:p-6">
       <div class="mb-3 flex flex-wrap items-center gap-3">
-        <CategoryBadge category={category} />
+        <CategoryBadge category={category} label={categoryLabel} />
         <time
           datetime={date.toISOString()}
           class="text-sm text-text-tertiary md:hidden">

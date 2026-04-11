@@ -17,6 +17,12 @@ import deMessages from "@/i18n/ui/de.json";
 import esMessages from "@/i18n/ui/es.json";
 
 export async function getStaticPaths() {
+  // Derive a URL-safe slug from a glob-loaded entry ID.
+  // Strips trailing "/index" that the glob loader may include.
+  function entrySlug(id: string): string {
+    return id.replace(/\/index$/, "");
+  }
+
   const entries = (await getCollection("changelog")).sort(
     (a, b) => b.data.date.getTime() - a.data.date.getTime(),
   );
@@ -39,15 +45,21 @@ export async function getStaticPaths() {
     for (let i = 0; i < entries.length; i++) {
       const entry = entries[i];
       paths.push({
-        params: { lang, slug: entry.id },
+        params: { lang, slug: entrySlug(entry.id) },
         props: {
           entry,
           initialMessages,
           prev: i < entries.length - 1
-            ? { slug: entries[i + 1].id, title: entries[i + 1].data.title }
+            ? {
+                slug: entrySlug(entries[i + 1].id),
+                title: entries[i + 1].data.title,
+              }
             : null,
           next: i > 0
-            ? { slug: entries[i - 1].id, title: entries[i - 1].data.title }
+            ? {
+                slug: entrySlug(entries[i - 1].id),
+                title: entries[i - 1].data.title,
+              }
             : null,
         },
       });

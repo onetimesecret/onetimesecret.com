@@ -75,15 +75,23 @@ const changelogCollection = defineCollection({
     base: "./src/content/changelog",
   }),
   schema: ({ image }) =>
-    z.object({
-      title: z.string(),
-      date: z.coerce.date(),
-      description: z.string(),
-      category: z.enum(["new", "improved", "fixed", "security"]),
-      image: image().optional(),
-      imageAlt: z.string().optional(),
-      featured: z.boolean().default(false),
-    }),
+    z
+      .object({
+        title: z.string(),
+        date: z.coerce.date(),
+        description: z.string(),
+        category: z.enum(["new", "improved", "fixed", "security"]),
+        image: image().optional(),
+        imageAlt: z.string().optional(),
+        featured: z.boolean().default(false),
+      })
+      .refine(
+        (data) => !data.image || (data.imageAlt && data.imageAlt.trim().length > 0),
+        {
+          message: "imageAlt is required when image is provided",
+          path: ["imageAlt"],
+        },
+      ),
 });
 
 // Export collections with improved typing

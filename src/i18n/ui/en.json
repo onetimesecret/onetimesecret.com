@@ -46,6 +46,21 @@
     "sign-in": "Sign In",
     "sign-up": "Sign Up"
   },
+  "changelog": {
+    "label": "Changelog",
+    "description": "The latest features, improvements, and fixes for Onetime Secret.",
+    "empty": "No updates yet. Check back soon!",
+    "previous": "Previous",
+    "next": "Next",
+    "back": "Back to all updates",
+    "nav-label": "Changelog navigation",
+    "category-new": "New",
+    "category-improved": "Improved",
+    "category-fixed": "Fixed",
+    "category-security": "Security",
+    "before": "Before",
+    "after": "After"
+  },
   "LABELS": {
     "about": "About",
     "pricing": "Pricing",

@@ -72,9 +72,13 @@ Wraps a screenshot in a browser-window chrome frame.
 Responsive video player — local MP4 or privacy-respecting YouTube
 (embedded via `youtube-nocookie.com`, no tracking cookies, GDPR-friendly).
 
+**Important:** Astro does not serve co-located video files from content
+collections. Place videos in `public/videos/changelog/` and use absolute
+paths. Only images benefit from co-location in the entry directory.
+
 ```mdx
-<!-- Local MP4 -->
-<VideoEmbed src="./walkthrough.mp4" caption="Quick walkthrough." />
+<!-- Local MP4 — file lives in public/videos/changelog/ -->
+<VideoEmbed src="/videos/changelog/walkthrough.mp4" caption="Quick walkthrough." />
 
 <!-- YouTube (privacy-enhanced) -->
 <VideoEmbed
@@ -85,8 +89,9 @@ Responsive video player — local MP4 or privacy-respecting YouTube
 />
 ```
 
-Props: `src` (MP4 path), `youtube` (video ID), `title` (iframe title for
-accessibility — falls back to caption), `caption`, `aspectRatio` (default `16/9`).
+Props: `src` (absolute MP4 path from `public/`), `youtube` (video ID),
+`title` (iframe title for accessibility — falls back to caption),
+`caption`, `aspectRatio` (default `16/9`).
 
 ### Callout
 
