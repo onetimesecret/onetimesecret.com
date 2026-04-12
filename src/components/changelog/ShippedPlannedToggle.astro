@@ -19,7 +19,7 @@ const {
 } = Astro.props;
 ---
 
-<div class="flex items-center gap-1 rounded-lg bg-surface-2 p-1"
+<div class="inline-flex items-center gap-1 rounded-xl bg-surface-2 p-1"
      role="tablist"
      aria-label="Update status filter">
   <button
@@ -27,7 +27,7 @@ const {
     aria-selected="true"
     aria-controls="changelog-shipped"
     id="tab-shipped"
-    class="changelog-tab rounded-md px-4 py-1.5 text-sm font-medium
+    class="changelog-tab rounded-lg px-4 py-1.5 text-sm font-medium
            transition-colors bg-surface-0 text-text-primary shadow-sm"
     data-target="shipped">
     {shippedLabel}
@@ -37,7 +37,7 @@ const {
     aria-selected="false"
     aria-controls="changelog-planned"
     id="tab-planned"
-    class="changelog-tab rounded-md px-4 py-1.5 text-sm font-medium
+    class="changelog-tab rounded-lg px-4 py-1.5 text-sm font-medium
            transition-colors text-text-tertiary hover:text-text-secondary"
     data-target="planned">
     {plannedLabel}
