@@ -1,0 +1,19 @@
+---
+title: "Stronger encryption for stored secrets"
+date: 2026-02-15
+description: "All secrets are now encrypted with AES-256-GCM before storage. Previously stored secrets using older encryption have been migrated automatically."
+category: "improved"
+githubRelease: "https://github.com/onetimesecret/onetimesecret/releases/tag/v0.18.0"
+---
+
+import Callout from "@/components/changelog/Callout.astro";
+
+We've upgraded the encryption used for all stored secrets to AES-256-GCM, a modern authenticated encryption standard. This applies to every secret created from now on, and all previously stored secrets have been transparently migrated.
+
+## What this means for you
+
+Nothing changes in how you use the service. You still create and share secrets the same way. The difference is under the hood: your data is now protected by a stronger, more modern encryption algorithm that provides both confidentiality and integrity verification.
+
+<Callout type="info">
+  This change was part of our regular security review cycle. No secrets were compromised — this is a proactive upgrade to stay ahead of evolving best practices.
+</Callout>

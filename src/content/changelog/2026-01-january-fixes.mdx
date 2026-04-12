@@ -1,0 +1,10 @@
+---
+title: "Copy button now works reliably on all browsers"
+date: 2026-01-31
+description: "Fixed an issue where the copy-to-clipboard button failed silently on Safari and iOS. The button now works consistently across all supported browsers."
+category: "fixed"
+---
+
+The "copy link" button on the secret sharing page was silently failing for users on Safari and iOS. The clipboard API requires a specific user-gesture context on those platforms, and our implementation wasn't handling that correctly.
+
+This is now fixed. The copy button works reliably across Chrome, Firefox, Safari (desktop and iOS), and Edge. You'll see a brief confirmation when the link is copied successfully.

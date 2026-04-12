@@ -1,0 +1,80 @@
+---
+/**
+ * src/components/changelog/BeforeAfter.astro
+ * Side-by-side (desktop) or stacked (mobile) comparison component.
+ * Used in MDX changelog entries to show before/after screenshots.
+ */
+import { Image } from "astro:assets";
+
+export interface Props {
+  before: ImageMetadata;
+  after: ImageMetadata;
+  beforeAlt?: string;
+  afterAlt?: string;
+  beforeLabel?: string;
+  afterLabel?: string;
+  caption?: string;
+}
+
+const {
+  before,
+  after,
+  beforeAlt,
+  afterAlt,
+  beforeLabel = "Before",
+  afterLabel = "After",
+  caption,
+} = Astro.props;
+---
+
+<figure class="not-prose my-8">
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div>
+      <span
+        class="mb-2 inline-block rounded-full bg-rose-100 px-2.5 py-0.5
+               text-xs font-semibold text-rose-800 ring-1 ring-inset
+               ring-rose-700/20 dark:bg-rose-950 dark:text-rose-300
+               dark:ring-rose-800/30">
+        {beforeLabel}
+      </span>
+      <div
+        class="overflow-hidden rounded-lg border border-surface-3
+               bg-surface-2">
+        <Image
+          src={before}
+          alt={beforeAlt || beforeLabel}
+          widths={[480, 640]}
+          sizes="(max-width: 640px) 100vw, 50vw"
+          class="w-full object-cover"
+        />
+      </div>
+    </div>
+    <div>
+      <span
+        class="mb-2 inline-block rounded-full bg-emerald-100 px-2.5 py-0.5
+               text-xs font-semibold text-emerald-800 ring-1 ring-inset
+               ring-emerald-700/20 dark:bg-emerald-950 dark:text-emerald-300
+               dark:ring-emerald-800/30">
+        {afterLabel}
+      </span>
+      <div
+        class="overflow-hidden rounded-lg border border-surface-3
+               bg-surface-2">
+        <Image
+          src={after}
+          alt={afterAlt || afterLabel}
+          widths={[480, 640]}
+          sizes="(max-width: 640px) 100vw, 50vw"
+          class="w-full object-cover"
+        />
+      </div>
+    </div>
+  </div>
+  {
+    caption && (
+      <figcaption class="mt-3 text-center text-sm text-text-tertiary">
+        {caption}
+      </figcaption>
+    )
+  }
+</figure>

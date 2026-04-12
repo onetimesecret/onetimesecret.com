@@ -1,0 +1,179 @@
+---
+/**
+ * src/components/changelog/EntryLayout.astro
+ * Full entry page layout for individual changelog entries.
+ * Wraps MDX content with title, date, category, hero image, and prev/next nav.
+ */
+import { Image } from "astro:assets";
+import Layout from "@/layouts/Layout.astro";
+import Prose from "@/components/vue/Prose.astro";
+import CategoryBadge from "./CategoryBadge.astro";
+import {
+  createLocaleI18n,
+  type MessageSchema,
+  type SupportedLanguage,
+} from "@/i18n";
+
+export interface Props {
+  title: string;
+  date: Date;
+  description: string;
+  category: "new" | "improved" | "fixed" | "security";
+  image?: ImageMetadata;
+  imageAlt?: string;
+  githubRelease?: string;
+  locale: string;
+  initialMessages?: Record<string, MessageSchema>;
+  prev?: { slug: string; title: string } | null;
+  next?: { slug: string; title: string } | null;
+}
+
+const {
+  title,
+  date,
+  description,
+  category,
+  image,
+  imageAlt,
+  githubRelease,
+  locale,
+  initialMessages,
+  prev,
+  next,
+} = Astro.props;
+
+const pageI18n = await createLocaleI18n(
+  locale as SupportedLanguage,
+  initialMessages,
+);
+const t = pageI18n.global.t;
+
+const formattedDate = date.toLocaleDateString(locale, {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+
+const categoryLabelKey = `changelog.category-${category}` as const;
+---
+
+<Layout
+  title={`${title} | ${t("changelog.label")} | Onetime Secret`}
+  description={description}
+  htmlLang={locale}
+  initialMessages={initialMessages}>
+  <article class="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
+    {/* Header */}
+    <header class="mb-8">
+      <div class="mb-4 flex flex-wrap items-center gap-3">
+        <CategoryBadge
+          category={category}
+          label={t(categoryLabelKey)}
+        />
+        <time
+          datetime={date.toISOString()}
+          class="text-sm text-text-tertiary">
+          {formattedDate}
+        </time>
+      </div>
+      <h1
+        class="font-brand text-3xl font-bold tracking-tight
+               text-text-primary sm:text-4xl">
+        {title}
+      </h1>
+      {
+        githubRelease && (
+          <a
+            href={githubRelease}
+            class="mt-3 inline-flex items-center gap-1 text-sm font-medium
+                   text-text-tertiary transition-colors hover:text-brand-500
+                   dark:hover:text-brand-400"
+            target="_blank"
+            rel="noopener noreferrer">
+            <span>&rarr;</span> GitHub release notes
+          </a>
+        )
+      }
+    </header>
+
+    {/* Hero image */}
+    {
+      image && (
+        <div class="mb-10 overflow-hidden rounded-xl border border-surface-3">
+          <Image
+            src={image}
+            alt={imageAlt || title}
+            widths={[640, 960, 1280]}
+            sizes="(max-width: 768px) 100vw, 720px"
+            class="w-full object-cover"
+          />
+        </div>
+      )
+    }
+
+    {/* MDX content */}
+    <Prose>
+      <slot />
+    </Prose>
+
+    {/* Prev/Next navigation */}
+    {
+      (prev || next) && (
+        <nav
+          class="mt-12 flex items-stretch gap-4 border-t
+                 border-surface-3 pt-8"
+          aria-label={t("changelog.nav-label")}>
+          {prev ? (
+            <a
+              href={`/${locale}/changelog/${prev.slug}`}
+              class="group flex flex-1 flex-col rounded-lg border
+                     border-surface-3 p-4 transition-colors
+                     hover:border-surface-4 hover:bg-surface-1">
+              <span class="mb-1 text-xs font-semibold uppercase
+                           tracking-wider text-text-tertiary">
+                {t("changelog.previous")}
+              </span>
+              <span class="text-sm font-medium text-text-primary
+                           group-hover:text-brand-500
+                           dark:group-hover:text-brand-400">
+                {prev.title}
+              </span>
+            </a>
+          ) : (
+            <div class="flex-1" />
+          )}
+          {next ? (
+            <a
+              href={`/${locale}/changelog/${next.slug}`}
+              class="group flex flex-1 flex-col items-end rounded-lg
+                     border border-surface-3 p-4 text-right
+                     transition-colors hover:border-surface-4
+                     hover:bg-surface-1">
+              <span class="mb-1 text-xs font-semibold uppercase
+                           tracking-wider text-text-tertiary">
+                {t("changelog.next")}
+              </span>
+              <span class="text-sm font-medium text-text-primary
+                           group-hover:text-brand-500
+                           dark:group-hover:text-brand-400">
+                {next.title}
+              </span>
+            </a>
+          ) : (
+            <div class="flex-1" />
+          )}
+        </nav>
+      )
+    }
+
+    {/* Back to changelog */}
+    <div class="mt-8 text-center">
+      <a
+        href={`/${locale}/changelog`}
+        class="text-sm font-medium text-text-secondary
+               hover:text-brand-500 dark:hover:text-brand-400">
+        &larr; {t("changelog.back")}
+      </a>
+    </div>
+  </article>
+</Layout>

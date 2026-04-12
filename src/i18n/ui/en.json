@@ -39,6 +39,7 @@
     "regions": "Regions",
     "about": "About",
     "pricing": "Pricing",
+    "whats-new": "What's New",
     "docs": "Docs"
   },
   "auth": {
@@ -427,5 +428,23 @@
         "also": "Also available:"
       }
     }
+  },
+  "changelog": {
+    "label": "Changelog",
+    "description": "The latest features, improvements, and fixes for Onetime Secret.",
+    "empty": "No updates yet. Check back soon!",
+    "shipped": "Shipped",
+    "planned": "Planned",
+    "planned-empty": "No upcoming items right now.",
+    "previous": "Previous",
+    "next": "Next",
+    "back": "Back to all updates",
+    "nav-label": "Changelog navigation",
+    "category-new": "New",
+    "category-improved": "Improved",
+    "category-fixed": "Fixed",
+    "category-security": "Security",
+    "before": "Before",
+    "after": "After"
   }
 }

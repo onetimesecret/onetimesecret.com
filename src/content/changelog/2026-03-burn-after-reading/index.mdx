@@ -1,0 +1,41 @@
+---
+title: "Share secrets with a burn-after-reading link"
+date: 2026-03-24
+description: "Recipients now see a single-use page that self-destructs after viewing. The link expires immediately, and the sender gets a confirmation."
+category: "new"
+image: "./hero.png"
+imageAlt: "Screenshot of the new burn-after-reading secret view"
+featured: true
+githubRelease: "https://github.com/onetimesecret/onetimesecret/releases/tag/v0.19.0"
+---
+
+import ScreenshotFrame from "@/components/changelog/ScreenshotFrame.astro";
+import Callout from "@/components/changelog/Callout.astro";
+
+We've completely redesigned how secret links work when the recipient opens them. Instead of a plain text reveal, your recipient now sees a focused, single-use page that makes it crystal clear the information will vanish after viewing.
+
+## What changed
+
+Previously, opening a secret link showed the content right away on a standard page. It worked, but there was no visual cue that this was a one-time event. Recipients sometimes didn't realize the link wouldn't work again.
+
+<ScreenshotFrame
+  image={import("./hero.png")}
+  alt="The new burn-after-reading view with clear self-destruct messaging"
+  caption="The new design makes it obvious that the secret is single-use."
+/>
+
+Now, the page shows a clear countdown and confirmation that the content has been revealed exactly once. After viewing, the link returns a "this secret has been destroyed" message.
+
+## How it works
+
+1. **Create a secret** as usual — paste your text, set an optional passphrase
+2. **Share the link** with your recipient
+3. **They open it once** — the content appears with a clear "viewed" confirmation
+4. **The link self-destructs** — any future visits show a "destroyed" notice
+5. **You get notified** (if you're signed in) that the secret was viewed
+
+<Callout type="tip">
+  You can still set an expiration time as a backup. If the recipient doesn't open the link within your timeframe, it's destroyed automatically.
+</Callout>
+
+This feature is available on all plans, including free accounts.

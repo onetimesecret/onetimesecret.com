@@ -1,0 +1,33 @@
+---
+/**
+ * src/components/changelog/StatsHeader.astro
+ * Displays total shipped entry count and most recent entry date.
+ */
+
+export interface Props {
+  totalEntries: number;
+  latestDate: Date;
+  locale: string;
+}
+
+const { totalEntries, latestDate, locale } = Astro.props;
+
+const formattedDate = latestDate.toLocaleDateString(locale, {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+---
+
+<div
+  class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm
+         text-text-tertiary">
+  <span>
+    <span class="font-semibold text-text-secondary">{totalEntries}</span>
+    {totalEntries === 1 ? "update" : "updates"} shipped
+  </span>
+  <span class="hidden sm:inline" aria-hidden="true">&middot;</span>
+  <span>
+    Latest: <time datetime={latestDate.toISOString()}>{formattedDate}</time>
+  </span>
+</div>

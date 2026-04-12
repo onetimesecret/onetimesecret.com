@@ -39,6 +39,7 @@
     "regions": "Régions",
     "about": "À propos",
     "pricing": "Tarifs",
+    "whats-new": "Nouveautés",
     "docs": "Docs"
   },
   "auth": {
@@ -427,5 +428,23 @@
         "also": "Également disponible :"
       }
     }
+  },
+  "changelog": {
+    "label": "Journal des modifications",
+    "description": "Les dernières fonctionnalités, améliorations et corrections pour Onetime Secret.",
+    "empty": "Aucune mise à jour pour le moment. Revenez bientôt !",
+    "shipped": "Livrées",
+    "planned": "Prévues",
+    "planned-empty": "Aucun élément prévu pour le moment.",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "back": "Retour à toutes les mises à jour",
+    "nav-label": "Navigation du journal des modifications",
+    "category-new": "Nouveau",
+    "category-improved": "Amélioré",
+    "category-fixed": "Corrigé",
+    "category-security": "Sécurité",
+    "before": "Avant",
+    "after": "Après"
   }
 }

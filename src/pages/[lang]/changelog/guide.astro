@@ -1,0 +1,716 @@
+---
+/**
+ * src/pages/[lang]/changelog/guide.astro
+ *
+ * Visual Production Workflow — Runbook & Interactive Documentation
+ *
+ * An unlinked reference page for content authors. Demonstrates every
+ * changelog MDX component with live rendered examples and copy-pasteable
+ * code snippets. Follow the steps here when creating a new changelog entry.
+ *
+ * Structure (runbook-first):
+ *   1. Quick-start checklist
+ *   2. Entry types at a glance (decision point → anchor links to components)
+ *   3. Frontmatter template
+ *   4. Category badges
+ *   5. Screenshot workflow
+ *   6. Component reference (ScreenshotFrame, BeforeAfter, VideoEmbed, Callout)
+ *   7. Screenshot consistency rules
+ *   8. Full example entry
+ *   9. File structure reference
+ */
+import Layout from "@/layouts/Layout.astro";
+import Prose from "@/components/vue/Prose.astro";
+import CategoryBadge from "@/components/changelog/CategoryBadge.astro";
+import ScreenshotFrame from "@/components/changelog/ScreenshotFrame.astro";
+import BeforeAfter from "@/components/changelog/BeforeAfter.astro";
+import VideoEmbed from "@/components/changelog/VideoEmbed.astro";
+import Callout from "@/components/changelog/Callout.astro";
+import { getLanguagePaths } from "@/i18n";
+import type { MessageSchema } from "@/i18n";
+
+import sampleScreenshot from "@/assets/changelog-guide/sample-screenshot.png";
+import sampleBefore from "@/assets/changelog-guide/sample-before.png";
+import sampleAfter from "@/assets/changelog-guide/sample-after.png";
+
+export async function getStaticPaths() {
+  return getLanguagePaths();
+}
+
+const { lang } = Astro.params;
+const { initialMessages } = Astro.props;
+---
+
+<Layout
+  title="Changelog Guide | Onetime Secret"
+  description="Visual production workflow and component reference for creating changelog entries."
+  htmlLang={lang}
+  noindex={true}
+  initialMessages={initialMessages as Record<string, MessageSchema>}>
+
+  {/* ── Header ────────────────────────────────────────────────── */}
+  <div class="border-b border-surface-3 bg-surface-0 py-12 sm:py-16">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6">
+      <p class="section-label mb-3">Internal Reference</p>
+      <h1
+        class="font-brand text-3xl font-bold tracking-tight
+               text-text-primary sm:text-4xl">
+        Visual Production Workflow
+      </h1>
+      <p class="mt-4 text-lg text-text-secondary">
+        A runbook for creating changelog entries. Every component is
+        rendered live below with copy-pasteable code.
+      </p>
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
+
+    {/* ═══════════════════════════════════════════════════════════
+        1. Quick-start checklist
+        ═══════════════════════════════════════════════════════════ */}
+    <Prose>
+      <h2>Quick-start checklist</h2>
+      <ol>
+        <li>
+          Decide which <a href="#entry-types">entry type</a> you're
+          creating (standard, text-only, or major feature).
+        </li>
+        <li>Create a directory under <code>src/content/changelog/</code>
+            named with the pattern <code>YYYY-MM-slug</code>
+            (e.g. <code>2026-04-passphrase-hints</code>).</li>
+        <li>Add an <code>index.mdx</code> file with the required frontmatter
+            (see <a href="#frontmatter-template">template below</a>).</li>
+        <li>Capture your screenshot at <strong>1280&times;800</strong> and save
+            it as <code>hero.png</code> in the same directory.</li>
+        <li>Write 2-4 sentences describing the user benefit.</li>
+        <li>Import any components you need at the top of the MDX file.</li>
+        <li>Commit, push, rebuild.</li>
+      </ol>
+    </Prose>
+
+    {/* ═══════════════════════════════════════════════════════════
+        2. Entry types at a glance (decision point)
+        ═══════════════════════════════════════════════════════════ */}
+    <section id="entry-types" class="mt-14">
+      <Prose>
+        <h2>Entry types at a glance</h2>
+        <p>
+          Start here. Pick the tier that matches your change, then follow
+          the links to the components you'll need.
+        </p>
+      </Prose>
+      <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div class="rounded-lg border border-surface-3 bg-surface-1 p-5">
+          <p class="mb-3 text-sm font-semibold text-text-primary">
+            Standard entry (~5 min)
+          </p>
+          <ul class="space-y-1 text-sm text-text-secondary">
+            <li>One hero screenshot</li>
+            <li>
+              <a href="#comp-screenshotframe"
+                 class="text-brandcomp-600 hover:text-brandcomp-500
+                        dark:text-brandcomp-400 dark:hover:text-brandcomp-300">
+                ScreenshotFrame
+              </a> component
+            </li>
+            <li>2-4 sentence description</li>
+            <li>
+              One <a href="#comp-callout"
+                     class="text-brandcomp-600 hover:text-brandcomp-500
+                            dark:text-brandcomp-400 dark:hover:text-brandcomp-300">
+                Callout
+              </a> if needed
+            </li>
+          </ul>
+        </div>
+        <div class="rounded-lg border border-surface-3 bg-surface-1 p-5">
+          <p class="mb-3 text-sm font-semibold text-text-primary">
+            Text-only entry (~3 min)
+          </p>
+          <ul class="space-y-1 text-sm text-text-secondary">
+            <li>No <code>image</code> in frontmatter</li>
+            <li>For backend, security, or performance changes</li>
+            <li>
+              <a href="#comp-callout"
+                 class="text-brandcomp-600 hover:text-brandcomp-500
+                        dark:text-brandcomp-400 dark:hover:text-brandcomp-300">
+                Callout
+              </a> for key takeaway
+            </li>
+            <li>Keep it concise</li>
+          </ul>
+        </div>
+        <div class="rounded-lg border border-surface-3 bg-surface-1 p-5">
+          <p class="mb-3 text-sm font-semibold text-text-primary">
+            Major feature (~15 min)
+          </p>
+          <ul class="space-y-1 text-sm text-text-secondary">
+            <li>
+              Hero screenshot +
+              <a href="#comp-beforeafter"
+                 class="text-brandcomp-600 hover:text-brandcomp-500
+                        dark:text-brandcomp-400 dark:hover:text-brandcomp-300">
+                BeforeAfter
+              </a>
+            </li>
+            <li>
+              15-30s
+              <a href="#comp-videoembed"
+                 class="text-brandcomp-600 hover:text-brandcomp-500
+                        dark:text-brandcomp-400 dark:hover:text-brandcomp-300">
+                video walkthrough
+              </a>
+            </li>
+            <li>Longer narrative, multiple sections</li>
+            <li>Set <code>featured: true</code></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    {/* ═══════════════════════════════════════════════════════════
+        3. Frontmatter template
+        ═══════════════════════════════════════════════════════════ */}
+    <section id="frontmatter-template" class="mt-14">
+      <Prose>
+        <h2>Frontmatter template</h2>
+        <p>
+          Copy this into your <code>index.mdx</code> and fill in the fields.
+          The <code>image</code>, <code>featured</code>, <code>githubRelease</code>,
+          and <code>planned</code> fields are optional.
+        </p>
+      </Prose>
+      <div class="code-block group relative mt-4 overflow-x-auto rounded-lg
+                  border border-surface-3 bg-slate-900 p-4 text-sm
+                  leading-relaxed text-slate-300">
+        <button
+          class="copy-btn absolute top-2.5 right-2.5 rounded-md bg-slate-700/60
+                 px-2 py-1 text-xs text-slate-400 opacity-0 transition-opacity
+                 hover:bg-slate-600/80 hover:text-slate-200
+                 focus:opacity-100 group-hover:opacity-100"
+          aria-label="Copy to clipboard">
+          Copy
+        </button>
+        <pre><code>{`---
+title: "Plain-language headline focused on user benefit"
+date: 2026-04-01
+description: "2-4 sentence summary shown on the index card and RSS feed."
+category: "new"            # new | improved | fixed | security
+image: "./hero.png"        # optional — relative to this directory
+imageAlt: "Descriptive alt text for the hero image"
+featured: false            # true → richer treatment on index
+githubRelease: "https://github.com/onetimesecret/onetimesecret/releases/tag/v1.0"
+planned: false             # true → appears in Planned tab only
+---
+
+import Callout from "@/components/changelog/Callout.astro";
+import ScreenshotFrame from "@/components/changelog/ScreenshotFrame.astro";
+
+Your markdown content starts here.`}</code></pre>
+      </div>
+    </section>
+
+    {/* ═══════════════════════════════════════════════════════════
+        4. Category badges
+        ═══════════════════════════════════════════════════════════ */}
+    <section class="mt-14">
+      <Prose>
+        <h2>Category badges</h2>
+        <p>
+          Every entry gets exactly one category. Pick the one that best
+          describes the change from the customer's perspective.
+        </p>
+      </Prose>
+      <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="rounded-lg border border-surface-3 bg-surface-1 p-5">
+          <div class="mb-2">
+            <CategoryBadge category="new" />
+          </div>
+          <p class="text-sm text-text-secondary">
+            <strong class="text-text-primary">New</strong> —
+            A capability that didn't exist before. Use for first-time
+            features, new integrations, or new pages.
+          </p>
+        </div>
+        <div class="rounded-lg border border-surface-3 bg-surface-1 p-5">
+          <div class="mb-2">
+            <CategoryBadge category="improved" />
+          </div>
+          <p class="text-sm text-text-secondary">
+            <strong class="text-text-primary">Improved</strong> —
+            An existing feature made better. Faster performance, better UX,
+            expanded options, or visual refreshes.
+          </p>
+        </div>
+        <div class="rounded-lg border border-surface-3 bg-surface-1 p-5">
+          <div class="mb-2">
+            <CategoryBadge category="fixed" />
+          </div>
+          <p class="text-sm text-text-secondary">
+            <strong class="text-text-primary">Fixed</strong> —
+            A bug fix. Describe the symptom the user experienced,
+            not the technical cause.
+          </p>
+        </div>
+        <div class="rounded-lg border border-surface-3 bg-surface-1 p-5">
+          <div class="mb-2">
+            <CategoryBadge category="security" />
+          </div>
+          <p class="text-sm text-text-secondary">
+            <strong class="text-text-primary">Security</strong> —
+            Security improvements, vulnerability patches, or new
+            protective measures.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    {/* ═══════════════════════════════════════════════════════════
+        5. Screenshot workflow
+        ═══════════════════════════════════════════════════════════ */}
+    <section class="mt-14">
+      <Prose>
+        <h2>Screenshot workflow (~5 min)</h2>
+        <p>
+          Most entries need one screenshot. Follow these steps for
+          consistent results every time.
+        </p>
+        <ol>
+          <li>
+            Deploy the feature to <strong>staging</strong> or
+            <strong>production</strong>.
+          </li>
+          <li>
+            Open the relevant page in Chrome. Set the viewport to
+            <strong>1280&times;800</strong> via DevTools
+            <span class="text-text-tertiary">
+              (Device toolbar &rarr; Responsive &rarr; 1280 &times; 800)
+            </span>.
+          </li>
+          <li>
+            Screenshot the key UI state.
+            <ul>
+              <li>macOS: <kbd>Cmd+Shift+4</kbd> (region) or DevTools
+                  &rarr; <em>Capture screenshot</em></li>
+              <li>Linux/Windows: DevTools &rarr; <kbd>Ctrl+Shift+P</kbd>
+                  &rarr; <em>"Capture full size screenshot"</em></li>
+            </ul>
+          </li>
+          <li>
+            Save the file as <code>hero.png</code> inside your entry
+            directory.
+          </li>
+          <li>
+            Wrap it in a
+            <a href="#comp-screenshotframe">ScreenshotFrame</a> component for
+            consistent browser-chrome framing.
+          </li>
+        </ol>
+      </Prose>
+    </section>
+
+    {/* ═══════════════════════════════════════════════════════════
+        6a. Component: ScreenshotFrame
+        ═══════════════════════════════════════════════════════════ */}
+    <section class="mt-14">
+      <Prose>
+        <h2 id="comp-screenshotframe">Component: ScreenshotFrame</h2>
+        <p>
+          Wraps a raw screenshot in a browser-window frame with
+          traffic-light dots and an address bar. Use this for most
+          entries — it adds visual polish without any extra work.
+        </p>
+      </Prose>
+
+      {/* Live example */}
+      <div class="mt-6 rounded-xl border border-dashed border-surface-4
+                  bg-surface-0 p-4 sm:p-6">
+        <p class="section-label mb-4">Live preview</p>
+        <ScreenshotFrame
+          image={sampleScreenshot}
+          alt="Sample screenshot showing the secret creation form"
+          caption="This caption appears below the frame."
+        />
+      </div>
+
+      {/* Code */}
+      <div class="code-block group relative mt-4 overflow-x-auto rounded-lg
+                  border border-surface-3 bg-slate-900 p-4 text-sm
+                  leading-relaxed text-slate-300">
+        <button
+          class="copy-btn absolute top-2.5 right-2.5 rounded-md bg-slate-700/60
+                 px-2 py-1 text-xs text-slate-400 opacity-0 transition-opacity
+                 hover:bg-slate-600/80 hover:text-slate-200
+                 focus:opacity-100 group-hover:opacity-100"
+          aria-label="Copy to clipboard">
+          Copy
+        </button>
+        <pre><code>{`import ScreenshotFrame from "@/components/changelog/ScreenshotFrame.astro";
+
+<ScreenshotFrame
+  image={import("./hero.png")}
+  alt="What the screenshot shows"
+  caption="Optional caption below the frame."
+/>`}</code></pre>
+      </div>
+    </section>
+
+    {/* ═══════════════════════════════════════════════════════════
+        6b. Component: BeforeAfter
+        ═══════════════════════════════════════════════════════════ */}
+    <section class="mt-14">
+      <Prose>
+        <h2 id="comp-beforeafter">Component: BeforeAfter</h2>
+        <p>
+          Side-by-side comparison (stacked on mobile). Use when a change
+          is best understood by contrasting the old and new states.
+          Save two images — <code>before.png</code> and
+          <code>after.png</code> — in your entry directory.
+        </p>
+      </Prose>
+
+      {/* Live example */}
+      <div class="mt-6 rounded-xl border border-dashed border-surface-4
+                  bg-surface-0 p-4 sm:p-6">
+        <p class="section-label mb-4">Live preview</p>
+        <BeforeAfter
+          before={sampleBefore}
+          after={sampleAfter}
+          beforeAlt="The old interface before the change"
+          afterAlt="The new interface after the change"
+          caption="Label your before/after images clearly."
+        />
+      </div>
+
+      {/* Code */}
+      <div class="code-block group relative mt-4 overflow-x-auto rounded-lg
+                  border border-surface-3 bg-slate-900 p-4 text-sm
+                  leading-relaxed text-slate-300">
+        <button
+          class="copy-btn absolute top-2.5 right-2.5 rounded-md bg-slate-700/60
+                 px-2 py-1 text-xs text-slate-400 opacity-0 transition-opacity
+                 hover:bg-slate-600/80 hover:text-slate-200
+                 focus:opacity-100 group-hover:opacity-100"
+          aria-label="Copy to clipboard">
+          Copy
+        </button>
+        <pre><code>{`import BeforeAfter from "@/components/changelog/BeforeAfter.astro";
+
+<BeforeAfter
+  before={import("./before.png")}
+  after={import("./after.png")}
+  beforeAlt="Description of the before state"
+  afterAlt="Description of the after state"
+  caption="Optional caption below both images."
+/>`}</code></pre>
+      </div>
+    </section>
+
+    {/* ═══════════════════════════════════════════════════════════
+        6c. Component: VideoEmbed
+        ═══════════════════════════════════════════════════════════ */}
+    <section class="mt-14">
+      <Prose>
+        <h2 id="comp-videoembed">Component: VideoEmbed</h2>
+        <p>
+          Responsive video player for walkthroughs. Supports local MP4
+          files or privacy-respecting YouTube embeds via
+          <code>youtube-nocookie.com</code> (no tracking cookies, GDPR-friendly).
+          Use for major features where a static screenshot doesn't capture
+          the interaction.
+        </p>
+        <h3>Recording tips (macOS)</h3>
+        <ol>
+          <li><kbd>Cmd+Shift+5</kbd> &rarr; <em>Record Selected Portion</em></li>
+          <li>Set the recording region to 1280&times;800</li>
+          <li>Keep it to 15-30 seconds — show the core flow, skip setup</li>
+          <li>Trim in QuickTime (<em>Edit &rarr; Trim</em>), export as MP4</li>
+          <li>Save as <code>walkthrough.mp4</code> in the entry directory</li>
+        </ol>
+      </Prose>
+
+      {/* Live example — Astro intro video (public, embeddable) */}
+      <div class="mt-6 rounded-xl border border-dashed border-surface-4
+                  bg-surface-0 p-4 sm:p-6">
+        <p class="section-label mb-4">Live preview (YouTube embed via youtube-nocookie.com)</p>
+        <VideoEmbed
+          youtube="gxBkghlglTg"
+          title="Astro in 100 Seconds — example embed"
+          caption="Example embed showing an Astro overview video."
+        />
+      </div>
+
+      {/* Code */}
+      <div class="code-block group relative mt-4 overflow-x-auto rounded-lg
+                  border border-surface-3 bg-slate-900 p-4 text-sm
+                  leading-relaxed text-slate-300">
+        <button
+          class="copy-btn absolute top-2.5 right-2.5 rounded-md bg-slate-700/60
+                 px-2 py-1 text-xs text-slate-400 opacity-0 transition-opacity
+                 hover:bg-slate-600/80 hover:text-slate-200
+                 focus:opacity-100 group-hover:opacity-100"
+          aria-label="Copy to clipboard">
+          Copy
+        </button>
+        <pre><code>{`import VideoEmbed from "@/components/changelog/VideoEmbed.astro";
+
+<!-- Local MP4 (place file in public/videos/changelog/) -->
+<VideoEmbed src="/videos/changelog/walkthrough.mp4" caption="Quick walkthrough." />
+
+<!-- YouTube (embedded via youtube-nocookie.com for privacy) -->
+<VideoEmbed
+  youtube="VIDEO_ID"
+  title="Descriptive title for accessibility"
+  caption="Optional caption."
+  aspectRatio="16/9"
+/>`}</code></pre>
+      </div>
+    </section>
+
+    {/* ═══════════════════════════════════════════════════════════
+        6d. Component: Callout
+        ═══════════════════════════════════════════════════════════ */}
+    <section class="mt-14">
+      <Prose>
+        <h2 id="comp-callout">Component: Callout</h2>
+        <p>
+          Highlighted box for supplementary information. Three variants
+          for different contexts. Choose the type that matches the tone
+          of the message.
+        </p>
+      </Prose>
+
+      {/* Live examples — all three variants */}
+      <div class="mt-6 rounded-xl border border-dashed border-surface-4
+                  bg-surface-0 p-4 sm:p-6">
+        <p class="section-label mb-4">Live preview — info variant</p>
+        <Callout type="info">
+          <strong>Info</strong> — Use for supplementary context.
+          "This feature is available on all plans, including free."
+        </Callout>
+
+        <p class="section-label mb-4 mt-6">Live preview — tip variant</p>
+        <Callout type="tip">
+          <strong>Tip</strong> — Use for helpful suggestions.
+          "Set an expiration time as a backup in case the recipient
+          doesn't open the link."
+        </Callout>
+
+        <p class="section-label mb-4 mt-6">Live preview — warning variant</p>
+        <Callout type="warning">
+          <strong>Warning</strong> — Use for important caveats.
+          "Secrets with passphrases cannot be recovered if the
+          passphrase is lost."
+        </Callout>
+      </div>
+
+      {/* Code */}
+      <div class="code-block group relative mt-4 overflow-x-auto rounded-lg
+                  border border-surface-3 bg-slate-900 p-4 text-sm
+                  leading-relaxed text-slate-300">
+        <button
+          class="copy-btn absolute top-2.5 right-2.5 rounded-md bg-slate-700/60
+                 px-2 py-1 text-xs text-slate-400 opacity-0 transition-opacity
+                 hover:bg-slate-600/80 hover:text-slate-200
+                 focus:opacity-100 group-hover:opacity-100"
+          aria-label="Copy to clipboard">
+          Copy
+        </button>
+        <pre><code>{`import Callout from "@/components/changelog/Callout.astro";
+
+<Callout type="info">Informational note.</Callout>
+<Callout type="tip">Helpful suggestion.</Callout>
+<Callout type="warning">Important caveat.</Callout>`}</code></pre>
+      </div>
+    </section>
+
+    {/* ═══════════════════════════════════════════════════════════
+        7. Screenshot consistency rules
+        ═══════════════════════════════════════════════════════════ */}
+    <section class="mt-14">
+      <Prose>
+        <h2>Screenshot consistency rules</h2>
+      </Prose>
+      <div class="mt-4 grid grid-cols-1 gap-px overflow-hidden
+                  rounded-xl border border-surface-3 bg-surface-3">
+        {[
+          {
+            rule: "Viewport size",
+            detail: "Always 1280\u00d7800. Set via Chrome DevTools device toolbar.",
+          },
+          {
+            rule: "Browser profile",
+            detail: "No personal bookmarks bar, no extensions visible. Use a clean profile or Guest mode.",
+          },
+          {
+            rule: "Color mode",
+            detail: "Light mode by default. Only use dark mode if the feature is specifically about dark mode.",
+          },
+          {
+            rule: "Crop",
+            detail: "Crop to the relevant area. Full-page screenshots are rarely useful \u2014 focus on the UI that changed.",
+          },
+          {
+            rule: "Sensitive data",
+            detail: "Never screenshot real user data. Use test/demo accounts with fictional names and emails.",
+          },
+          {
+            rule: "File format",
+            detail: "Save as PNG. Astro\u2019s image pipeline will generate optimized WebP variants automatically.",
+          },
+        ].map(({ rule, detail }) => (
+          <div class="flex flex-col gap-1 bg-surface-1 px-5 py-4 sm:flex-row sm:gap-4">
+            <span class="w-36 shrink-0 text-sm font-semibold text-text-primary">
+              {rule}
+            </span>
+            <span class="text-sm text-text-secondary">{detail}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    {/* ═══════════════════════════════════════════════════════════
+        8. Full example entry
+        ═══════════════════════════════════════════════════════════ */}
+    <section class="mt-14">
+      <Prose>
+        <h2>Full example: standard entry</h2>
+        <p>
+          Here's a complete MDX file you can copy as a starting point.
+          Create a directory, drop in <code>hero.png</code>, and paste
+          this as <code>index.mdx</code>.
+        </p>
+      </Prose>
+      <div class="code-block group relative mt-4 overflow-x-auto rounded-lg
+                  border border-surface-3 bg-slate-900 p-4 text-sm
+                  leading-relaxed text-slate-300">
+        <button
+          class="copy-btn absolute top-2.5 right-2.5 rounded-md bg-slate-700/60
+                 px-2 py-1 text-xs text-slate-400 opacity-0 transition-opacity
+                 hover:bg-slate-600/80 hover:text-slate-200
+                 focus:opacity-100 group-hover:opacity-100"
+          aria-label="Copy to clipboard">
+          Copy
+        </button>
+        <pre><code>{`---
+title: "Set a custom expiration for your secret links"
+date: 2026-04-15
+description: "You can now choose exactly when a secret link expires — from 5 minutes to 14 days. Previously the default was fixed at 7 days."
+category: "improved"
+image: "./hero.png"
+imageAlt: "The new expiration picker showing time presets"
+featured: false
+githubRelease: "https://github.com/onetimesecret/onetimesecret/releases/tag/v1.0"
+---
+
+import ScreenshotFrame from "@/components/changelog/ScreenshotFrame.astro";
+import Callout from "@/components/changelog/Callout.astro";
+
+We've added a flexible expiration picker to the secret creation form.
+You can now choose exactly when your secret link expires, from as short
+as 5 minutes to as long as 14 days.
+
+<ScreenshotFrame
+  image={import("./hero.png")}
+  alt="Expiration picker with time presets"
+  caption="Choose a preset or type a custom duration."
+/>
+
+## How it works
+
+When creating a secret, click the expiration dropdown to see preset
+options (5 min, 1 hour, 1 day, 7 days, 14 days). Pick the one that
+fits your use case.
+
+<Callout type="tip">
+  For highly sensitive information, use the shortest expiration that
+  gives your recipient enough time to open the link.
+</Callout>
+
+This feature is available to all users, including free accounts.`}</code></pre>
+      </div>
+    </section>
+
+    {/* ═══════════════════════════════════════════════════════════
+        9. File structure reference
+        ═══════════════════════════════════════════════════════════ */}
+    <section class="mt-14 mb-8">
+      <Prose>
+        <h2>File structure reference</h2>
+        <p>
+          Each entry is a directory with an <code>index.mdx</code> and
+          co-located images. The directory name becomes the URL slug.
+          Text-only entries can be standalone <code>.mdx</code> files.
+        </p>
+      </Prose>
+      <div class="code-block group relative mt-4 overflow-x-auto rounded-lg
+                  border border-surface-3 bg-slate-900 p-4 text-sm
+                  leading-relaxed text-slate-300">
+        <button
+          class="copy-btn absolute top-2.5 right-2.5 rounded-md bg-slate-700/60
+                 px-2 py-1 text-xs text-slate-400 opacity-0 transition-opacity
+                 hover:bg-slate-600/80 hover:text-slate-200
+                 focus:opacity-100 group-hover:opacity-100"
+          aria-label="Copy to clipboard">
+          Copy
+        </button>
+        <pre><code>{`src/content/changelog/
+  2026-04-custom-expiration/      ← directory name = URL slug
+    index.mdx                     ← entry content (required)
+    hero.png                      ← hero image (optional)
+    before.png                    ← for BeforeAfter (optional)
+    after.png                     ← for BeforeAfter (optional)
+  2026-03-burn-after-reading.mdx  ← text-only (standalone file)
+  planned-api-v2.mdx              ← planned item
+  ...`}</code></pre>
+      </div>
+
+      <div class="mt-6 text-center">
+        <a
+          href={`/${lang}/changelog`}
+          class="text-sm font-medium text-text-secondary
+                 hover:text-brand-500 dark:hover:text-brand-400">
+          &larr; View the live changelog
+        </a>
+      </div>
+    </section>
+  </div>
+</Layout>
+
+{/* ── Copy-to-clipboard script ──────────────────────────────── */}
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".copy-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const block = btn.closest(".code-block");
+        if (!block) return;
+        const code = block.querySelector("code");
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code.textContent || "");
+          const original = btn.textContent;
+          btn.textContent = "Copied!";
+          btn.classList.add("text-emerald-400");
+          setTimeout(() => {
+            btn.textContent = original;
+            btn.classList.remove("text-emerald-400");
+          }, 2000);
+        } catch {
+          const range = document.createRange();
+          range.selectNodeContents(code);
+          const selection = window.getSelection();
+          if (selection) {
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+          btn.textContent = "Selected!";
+          setTimeout(() => {
+            btn.textContent = "Copy";
+          }, 2000);
+        }
+      });
+    });
+  });
+</script>

@@ -1,0 +1,144 @@
+---
+/**
+ * src/pages/[lang]/changelog/index.astro
+ * Changelog index page — reverse-chronological feed with shipped/planned toggle.
+ */
+import Layout from "@/layouts/Layout.astro";
+import EntryCard from "@/components/changelog/EntryCard.astro";
+import StatsHeader from "@/components/changelog/StatsHeader.astro";
+import ShippedPlannedToggle from "@/components/changelog/ShippedPlannedToggle.astro";
+import { getCollection } from "astro:content";
+import { getLanguagePaths } from "@/i18n";
+import {
+  createLocaleI18n,
+  type MessageSchema,
+  type SupportedLanguage,
+} from "@/i18n";
+
+function entrySlug(id: string): string {
+  return id.replace(/\/index$/, "");
+}
+
+export async function getStaticPaths() {
+  return getLanguagePaths();
+}
+
+const { lang } = Astro.params;
+const { initialMessages } = Astro.props;
+
+const pageI18n = await createLocaleI18n(
+  lang as SupportedLanguage,
+  initialMessages as Record<string, MessageSchema>,
+);
+const t = pageI18n.global.t;
+
+const allEntries = await getCollection("changelog");
+
+const shippedEntries = allEntries
+  .filter((e) => !e.data.planned)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const plannedEntries = allEntries
+  .filter((e) => e.data.planned)
+  .sort((a, b) => a.data.date.getTime() - b.data.date.getTime());
+
+const latestDate = shippedEntries.length > 0
+  ? shippedEntries[0].data.date
+  : new Date();
+---
+
+<Layout
+  title={`${t("navigation.whats-new")} | Onetime Secret`}
+  description={t("changelog.description")}
+  htmlLang={lang}
+  initialMessages={initialMessages as Record<string, MessageSchema>}>
+  {/* Page header */}
+  <div class="border-b border-surface-3 bg-surface-0 py-12 sm:py-16">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6">
+      <p class="section-label mb-3">{t("changelog.label")}</p>
+      <h1
+        class="font-brand text-3xl font-bold tracking-tight
+               text-text-primary sm:text-4xl">
+        {t("navigation.whats-new")}
+      </h1>
+      <p class="mt-4 text-lg text-text-secondary">
+        {t("changelog.description")}
+      </p>
+
+      {/* Stats + Toggle row */}
+      <div class="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center
+                  sm:justify-between">
+        {
+          shippedEntries.length > 0 && (
+            <StatsHeader
+              totalEntries={shippedEntries.length}
+              latestDate={latestDate}
+              locale={lang as string}
+            />
+          )
+        }
+        {
+          plannedEntries.length > 0 && (
+            <ShippedPlannedToggle
+              shippedLabel={t("changelog.shipped")}
+              plannedLabel={t("changelog.planned")}
+              plannedCount={plannedEntries.length}
+            />
+          )
+        }
+      </div>
+    </div>
+  </div>
+
+  {/* Entry feeds */}
+  <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
+    {/* Shipped entries */}
+    <div id="changelog-shipped" class="flex flex-col gap-10">
+      {
+        shippedEntries.map((entry) => (
+          <EntryCard
+            slug={entrySlug(entry.id)}
+            title={entry.data.title}
+            date={entry.data.date}
+            description={entry.data.description}
+            category={entry.data.category}
+            categoryLabel={t(`changelog.category-${entry.data.category}`)}
+            githubRelease={entry.data.githubRelease}
+            locale={lang as string}
+          />
+        ))
+      }
+      {
+        shippedEntries.length === 0 && (
+          <p class="py-12 text-center text-text-secondary">
+            {t("changelog.empty")}
+          </p>
+        )
+      }
+    </div>
+
+    {/* Planned entries */}
+    <div id="changelog-planned" class="hidden flex flex-col gap-10">
+      {
+        plannedEntries.map((entry) => (
+          <EntryCard
+            slug={entrySlug(entry.id)}
+            title={entry.data.title}
+            date={entry.data.date}
+            description={entry.data.description}
+            category={entry.data.category}
+            categoryLabel={t(`changelog.category-${entry.data.category}`)}
+            locale={lang as string}
+          />
+        ))
+      }
+      {
+        plannedEntries.length === 0 && (
+          <p class="py-12 text-center text-text-secondary">
+            {t("changelog.planned-empty")}
+          </p>
+        )
+      }
+    </div>
+  </div>
+</Layout>
