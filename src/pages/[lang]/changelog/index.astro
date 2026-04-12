@@ -105,6 +105,7 @@ const latestDate = shippedEntries.length > 0
             categoryLabel={t(`changelog.category-${entry.data.category}`)}
             githubRelease={entry.data.githubRelease}
             locale={lang as string}
+            highlights={entry.data.highlights}
           />
         ))
       }
@@ -129,6 +130,7 @@ const latestDate = shippedEntries.length > 0
             category={entry.data.category}
             categoryLabel={t(`changelog.category-${entry.data.category}`)}
             locale={lang as string}
+            highlights={entry.data.highlights}
           />
         ))
       }

@@ -6,6 +6,8 @@
  * No hero image on the card — images appear only on the full entry page.
  */
 import CategoryBadge from "./CategoryBadge.astro";
+import EntryHighlights from "./EntryHighlights.astro";
+import type { HighlightItem } from "./highlights";
 
 export interface Props {
   slug: string;
@@ -16,6 +18,7 @@ export interface Props {
   categoryLabel?: string;
   githubRelease?: string;
   locale: string;
+  highlights?: HighlightItem[];
 }
 
 const {
@@ -27,6 +30,7 @@ const {
   categoryLabel,
   githubRelease,
   locale,
+  highlights,
 } = Astro.props;
 
 const formattedDate = date.toLocaleDateString(locale, {
@@ -72,6 +76,7 @@ const entryUrl = `/${locale}/changelog/${slug}`;
     <p class="text-base leading-relaxed text-text-secondary">
       {description}
     </p>
+    <EntryHighlights highlights={highlights} />
     {
       githubRelease && (
         <a

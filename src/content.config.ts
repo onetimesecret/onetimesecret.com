@@ -86,6 +86,18 @@ const changelogCollection = defineCollection({
         featured: z.boolean().default(false),
         githubRelease: z.string().url().optional(),
         planned: z.boolean().default(false),
+        highlights: z
+          .array(
+            z.union([
+              z.string(),
+              z.object({
+                icon: z.enum(["check", "info", "warn", "ask"]),
+                text: z.string(),
+              }),
+            ]),
+          )
+          .max(6)
+          .optional(),
       })
       .refine(
         (data) =>
