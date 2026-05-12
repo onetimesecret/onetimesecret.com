@@ -7,6 +7,36 @@
       content="width=device-width, initial-scale=1.0" />
     <title>Onetime Secret - Maintenance</title>
     <style>
+      @font-face {
+        font-family: "Zilla Slab";
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src:
+          url("/fonts/ZillaSlab-Regular.woff2") format("woff2"),
+          url("/fonts/ZillaSlab-Regular.woff") format("woff");
+      }
+
+      @font-face {
+        font-family: "Zilla Slab";
+        font-style: normal;
+        font-weight: 600;
+        font-display: swap;
+        src:
+          url("/fonts/ZillaSlab-SemiBold.woff2") format("woff2"),
+          url("/fonts/ZillaSlab-SemiBold.woff") format("woff");
+      }
+
+      @font-face {
+        font-family: "Zilla Slab";
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src:
+          url("/fonts/ZillaSlab-Bold.woff2") format("woff2"),
+          url("/fonts/ZillaSlab-Bold.woff") format("woff");
+      }
+
       :root {
         --brand-500: #dc4a22;
         --brand-600: #c43d1b;
@@ -116,13 +146,13 @@
       }
 
       .brand-text {
-        font-family: Georgia, "Times New Roman", serif;
+        font-family: "Zilla Slab", Georgia, serif;
         font-size: 2rem;
         color: var(--brand-600);
       }
 
       .error-code {
-        font-family: Georgia, "Times New Roman", serif;
+        font-family: "Zilla Slab", Georgia, serif;
         font-size: 4rem;
         font-weight: 700;
         color: var(--brand-500);
@@ -133,7 +163,7 @@
       }
 
       .error-title {
-        font-family: Georgia, "Times New Roman", serif;
+        font-family: "Zilla Slab", Georgia, serif;
         font-size: 1.75rem;
         font-weight: 600;
         color: var(--gray-800);
@@ -152,10 +182,18 @@
         margin-top: 1.5rem;
       }
 
-      .footer {
-        margin-top: 2rem;
-        font-size: 0.875rem;
-        color: var(--gray-600);
+      .action-link {
+        display: inline-block;
+        margin-top: 1.5rem;
+        color: var(--brand-600);
+        text-decoration: none;
+        font-weight: 500;
+        position: relative;
+        z-index: 1;
+      }
+
+      .action-link:hover {
+        text-decoration: underline;
       }
 
       @media (prefers-color-scheme: dark) {
@@ -184,6 +222,10 @@
 
         .error-description {
           color: var(--gray-300);
+        }
+
+        .action-link {
+          color: var(--brandcomp-500);
         }
       }
 
@@ -220,9 +262,11 @@
         </p>
         <p class="error-description">Thank you for your patience.</p>
       </div>
-      <div class="footer">
-        <p>&copy; Onetime Secret</p>
-      </div>
+      <a
+        href="/"
+        class="action-link"
+        >Go to Homepage</a
+      >
     </div>
   </body>
 </html>
