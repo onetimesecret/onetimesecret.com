@@ -29,6 +29,16 @@ if (props.initialMessages && props.locale) {
 
 // The locale to be used for translations and link generation
 const currentLocale = props.locale;
+
+// docs.onetimesecret.com currently only ships English. Fall back to 'en'
+// for any non-supported locale so links don't 404. Mirror this list with
+// DOCS_SUPPORTED_LOCALES in src/components/layout/LayoutHeader.astro.
+const DOCS_SUPPORTED_LOCALES = ["en"] as const;
+const docsLocale = (DOCS_SUPPORTED_LOCALES as readonly string[]).includes(
+  currentLocale,
+)
+  ? currentLocale
+  : "en";
 </script>
 
 <template>
@@ -44,7 +54,7 @@ const currentLocale = props.locale;
         class="space-y-3">
         <li>
           <a
-            :href="`https://docs.onetimesecret.com/${currentLocale}/rest-api`"
+            :href="`https://docs.onetimesecret.com/${docsLocale}/rest-api`"
             class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
             :aria-label="t('explore-our-api-documentation')"
             target="_blank"
@@ -54,7 +64,7 @@ const currentLocale = props.locale;
         </li>
         <li>
           <a
-            :href="`https://docs.onetimesecret.com/${currentLocale}/introduction/guides/`"
+            :href="`https://docs.onetimesecret.com/${docsLocale}/introduction/guides/`"
             class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
             :aria-label="t('read-our-product-guides')"
             target="_blank"
@@ -64,7 +74,7 @@ const currentLocale = props.locale;
         </li>
         <li>
           <a
-            :href="`https://docs.onetimesecret.com/${currentLocale}/self-hosting/`"
+            :href="`https://docs.onetimesecret.com/${docsLocale}/self-hosting/`"
             class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
             :aria-label="t('learn-about-self-hosting')"
             target="_blank"
