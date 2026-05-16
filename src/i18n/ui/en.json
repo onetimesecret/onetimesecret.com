@@ -431,7 +431,7 @@
   },
   "changelog": {
     "label": "Changelog",
-    "description": "The latest features, improvements, and fixes for Onetime Secret.",
+    "description": "Releases, service updates, and announcements from Onetime Secret.",
     "empty": "No updates yet. Check back soon!",
     "shipped": "Shipped",
     "planned": "Planned",

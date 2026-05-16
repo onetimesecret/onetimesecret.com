@@ -431,7 +431,7 @@
   },
   "changelog": {
     "label": "Journal des modifications",
-    "description": "Les dernières fonctionnalités, améliorations et corrections pour Onetime Secret.",
+    "description": "Versions, mises à jour de service et annonces de Onetime Secret.",
     "empty": "Aucune mise à jour pour le moment. Revenez bientôt !",
     "shipped": "Livrées",
     "planned": "Prévues",

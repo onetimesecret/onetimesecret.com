@@ -431,7 +431,7 @@
   },
   "changelog": {
     "label": "Registro de cambios",
-    "description": "Las últimas funciones, mejoras y correcciones para Onetime Secret.",
+    "description": "Lanzamientos, actualizaciones del servicio y anuncios de Onetime Secret.",
     "empty": "Aún no hay actualizaciones. Vuelva pronto.",
     "shipped": "Publicadas",
     "planned": "Planificadas",
