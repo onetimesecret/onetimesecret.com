@@ -80,7 +80,7 @@ const changelogCollection = defineCollection({
         title: z.string(),
         date: z.coerce.date(),
         description: z.string(),
-        category: z.enum(["new", "improved", "fixed", "security"]),
+        category: z.enum(["new", "improved", "operations", "fixed", "security"]),
         image: image().optional(),
         imageAlt: z.string().optional(),
         featured: z.boolean().default(false),

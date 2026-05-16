@@ -65,7 +65,7 @@ Literal superset — every frontmatter field, every body component, every accept
 title: "Required string"
 date: 2026-01-01                       # required; YYYY-MM-DD (coerced to Date)
 description: "Required string; used in previews/listings"
-category: new                          # new | improved | fixed | security
+category: new                          # new | improved | operations | fixed | security
 image: "./hero.png"                    # optional; relative path, resolved via Astro image()
 imageAlt: "Required iff image is set"  # non-empty when image present
 featured: false                        # default false
