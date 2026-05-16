@@ -1,0 +1,20 @@
+---
+title: "v0.25.0 released"
+date: 2026-04-30
+description: "Organizations, team members, site-wide and per-domain SSO, incoming secrets, and per-domain email sender configuration."
+category: new
+githubRelease: "https://github.com/onetimesecret/onetimesecret/releases/tag/v0.25.0"
+highlights:
+  - { icon: check, text: "Organizations with role-based membership and branded invitations" }
+  - { icon: check, text: "SSO authentication site-wide and per-domain (OIDC, Google, GitHub, Entra, and more IdP providers to come)" }
+  - { icon: check, text: "Incoming Secrets, site-wide and per-custom-domain with recipient management UI" }
+  - { icon: check, text: "Email sender configuration per custom domain with per-record DKIM verification" }
+---
+
+v0.25 builds on the v0.24 foundation with organizations and team member functionality.
+This release establishes a new convention for implementing a feature per-install
+(i.e. site-wide) and per-domain, where the YAML config documents a feature's settings
+and provides the site-wide configuration; the per-domain settings are saved in the main
+database.
+
+[GitHub release notes](https://github.com/onetimesecret/onetimesecret/releases/tag/v0.25.0)
