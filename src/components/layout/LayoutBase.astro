@@ -9,16 +9,18 @@
   | StagingBanner     | banners/           | Marks non-prod env       |
   | StagingWatermark  | banners/           | Sibling staging marker   |
   |                   |                    | (currently v-if="false") |
+  | ClientOnlyBanner  | vue/homepage/      | Wraps GlobalBanner for   |
+  |                   |                    | CLS-safe dismissal of    |
+  |                   |                    | operational/legal notes  |
+  |                   |                    | (jurisdiction nudges,    |
+  |                   |                    | privacy policy updates)  |
+  | GlobalBanner      | vue/homepage/      | Banner UI rendered by    |
+  |                   |                    | ClientOnlyBanner         |
   | ChangelogBanner   | homepage/          | Release-pointer banner;  |
   |                   |                    | links to latest /[lang]/ |
   |                   |                    | changelog entry, keyed   |
   |                   |                    | by slug in localStorage  |
   ====================================================================
-
-  Retired (files still present, no longer wired up):
-  - ClientOnlyBanner (vue/homepage/) — wrapped GlobalBanner for CLS-safe
-    dismissal of operational/legal notes; removed from Homepage.vue.
-  - GlobalBanner (vue/homepage/) — banner UI rendered by ClientOnlyBanner.
 
   CLS particulars
   ---------------
