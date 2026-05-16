@@ -1,0 +1,91 @@
+---
+/**
+ * Option B: "What's new" pill for the homepage.
+ * Server-rendered banner with the single latest changelog entry,
+ * dismissible via tiny inline script that persists state in localStorage.
+ * Keyed by entry slug so a new release re-shows the pill to returning visitors.
+ */
+import { getCollection } from "astro:content";
+
+export interface Props {
+  locale: string;
+  newLabel?: string;
+  dismissLabel?: string;
+}
+
+const {
+  locale,
+  newLabel = "New",
+  dismissLabel = "Dismiss",
+} = Astro.props;
+
+function entrySlug(id: string): string {
+  return id.replace(/\/index$/, "");
+}
+
+const entries = await getCollection("changelog");
+const latest = entries
+  .filter((e) => !e.data.planned)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())[0];
+
+const slug = latest ? entrySlug(latest.id) : null;
+const storageKey = slug ? `whatsNewDismissed:${slug}` : null;
+---
+
+{
+  latest && (
+    <div
+      data-whats-new-pill
+      data-storage-key={storageKey}
+      class="hidden border-b border-surface-3 bg-surface-1">
+      <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2 sm:px-6">
+        <a
+          href={`/${locale}/changelog/${slug}`}
+          class="flex min-w-0 items-center gap-2 text-sm text-text-secondary transition-colors hover:text-text-primary">
+          <span class="inline-flex shrink-0 items-center rounded-full bg-brand-100 px-2 py-0.5 text-xs font-semibold text-brand-800 ring-1 ring-inset ring-brand-700/20 dark:bg-brand-950 dark:text-brand-300 dark:ring-brand-800/30">
+            {newLabel}
+          </span>
+          <span class="truncate font-medium text-text-primary">
+            {latest.data.title}
+          </span>
+          <span class="hidden truncate text-text-tertiary sm:inline">
+            &mdash; {latest.data.description}
+          </span>
+          <span class="shrink-0 text-brand-600 dark:text-brand-400">
+            &rarr;
+          </span>
+        </a>
+        <button
+          type="button"
+          data-whats-new-dismiss
+          class="-m-1 shrink-0 rounded p-1 text-text-tertiary transition-colors hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+          aria-label={dismissLabel}>
+          <svg
+            class="size-4"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            aria-hidden="true">
+            <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  )
+}
+
+<script>
+  const pill = document.querySelector<HTMLElement>("[data-whats-new-pill]");
+  if (pill) {
+    const key = pill.dataset.storageKey;
+    const dismissed = key && localStorage.getItem(key) === "1";
+    if (!dismissed) {
+      pill.classList.remove("hidden");
+    }
+    pill
+      .querySelector<HTMLButtonElement>("[data-whats-new-dismiss]")
+      ?.addEventListener("click", () => {
+        if (key) localStorage.setItem(key, "1");
+        pill.remove();
+      });
+  }
+</script>
