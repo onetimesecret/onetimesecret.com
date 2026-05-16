@@ -76,15 +76,11 @@ const latestDate =
             />
           )
         }
-        {
-          plannedEntries.length > 0 && (
-            <ShippedPlannedToggle
-              shippedLabel={t("changelog.shipped")}
-              plannedLabel={t("changelog.planned")}
-              plannedCount={plannedEntries.length}
-            />
-          )
-        }
+        <ShippedPlannedToggle
+          shippedLabel={t("changelog.shipped")}
+          plannedLabel={t("changelog.planned")}
+          plannedCount={plannedEntries.length}
+        />
       </div>
     </div>
   </div>
