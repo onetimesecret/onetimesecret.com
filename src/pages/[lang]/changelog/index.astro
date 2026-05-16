@@ -119,31 +119,26 @@ const latestDate =
       }
     </div>
 
-    {/* Planned entries */}
-    <div
-      id="changelog-planned"
-      class="flex hidden flex-col gap-10">
-      {
-        plannedEntries.map((entry) => (
-          <EntryCard
-            slug={entrySlug(entry.id)}
-            title={entry.data.title}
-            date={entry.data.date}
-            description={entry.data.description}
-            category={entry.data.category}
-            categoryLabel={t(`changelog.category-${entry.data.category}`)}
-            locale={lang as string}
-            highlights={entry.data.highlights}
-          />
-        ))
-      }
-      {
-        plannedEntries.length === 0 && (
-          <p class="text-text-secondary py-12 text-center">
-            {t("changelog.planned-empty")}
-          </p>
-        )
-      }
-    </div>
+    {/* Planned entries — only rendered when there are planned entries to show */}
+    {
+      plannedEntries.length > 0 && (
+        <div
+          id="changelog-planned"
+          class="flex hidden flex-col gap-10">
+          {plannedEntries.map((entry) => (
+            <EntryCard
+              slug={entrySlug(entry.id)}
+              title={entry.data.title}
+              date={entry.data.date}
+              description={entry.data.description}
+              category={entry.data.category}
+              categoryLabel={t(`changelog.category-${entry.data.category}`)}
+              locale={lang as string}
+              highlights={entry.data.highlights}
+            />
+          ))}
+        </div>
+      )
+    }
   </div>
 </Layout>

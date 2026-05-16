@@ -54,31 +54,54 @@ const {
 </div>
 
 <script>
-  // Use DOMContentLoaded — this site does not use Astro View Transitions,
-  // so astro:page-load never fires.
-  document.addEventListener("DOMContentLoaded", () => {
+  // ES modules are deferred (run after DOMContentLoaded), so attaching a
+  // DOMContentLoaded listener here would never fire. Run init directly,
+  // or wait for the event if for some reason the DOM isn't ready yet.
+  function init() {
     const tabs = document.querySelectorAll<HTMLButtonElement>(".changelog-tab");
     const shipped = document.getElementById("changelog-shipped");
     const planned = document.getElementById("changelog-planned");
-    if (!shipped || !planned || tabs.length === 0) return;
+    if (!shipped || tabs.length === 0) return;
+
+    function activate(target: string, updateHash: boolean) {
+      const isShipped = target === "shipped";
+      // Fall back to shipped if planned panel doesn't exist (zero planned entries).
+      const effective = isShipped || !planned ? "shipped" : "planned";
+      const isEffectiveShipped = effective === "shipped";
+
+      shipped!.classList.toggle("hidden", !isEffectiveShipped);
+      if (planned) planned.classList.toggle("hidden", isEffectiveShipped);
+
+      tabs.forEach((t) => {
+        const active = t.dataset.target === effective;
+        t.setAttribute("aria-selected", String(active));
+        t.classList.toggle("bg-surface-0", active);
+        t.classList.toggle("text-text-primary", active);
+        t.classList.toggle("shadow-sm", active);
+        t.classList.toggle("text-text-tertiary", !active);
+      });
+
+      if (updateHash) {
+        const newHash = isEffectiveShipped ? "" : "#planned";
+        history.replaceState(null, "", `${location.pathname}${location.search}${newHash}`);
+      }
+    }
 
     tabs.forEach((tab) => {
       tab.addEventListener("click", () => {
-        const target = tab.dataset.target;
-        const isShipped = target === "shipped";
-
-        shipped.classList.toggle("hidden", !isShipped);
-        planned.classList.toggle("hidden", isShipped);
-
-        tabs.forEach((t) => {
-          const active = t.dataset.target === target;
-          t.setAttribute("aria-selected", String(active));
-          t.classList.toggle("bg-surface-0", active);
-          t.classList.toggle("text-text-primary", active);
-          t.classList.toggle("shadow-sm", active);
-          t.classList.toggle("text-text-tertiary", !active);
-        });
+        if (tab.dataset.target) activate(tab.dataset.target, true);
       });
     });
-  });
+
+    // Deep-link: activate planned tab when URL ends in #planned.
+    if (location.hash === "#planned" && planned) {
+      activate("planned", false);
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
 </script>
