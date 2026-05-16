@@ -321,7 +321,7 @@
       "description": "Teilen Sie sensible Informationen sicher mit selbstzerstörenden Links. Fügen Sie Ihr Geheimnis ein, generieren Sie einen Link und teilen Sie ihn. Nach dem Anzeigen ist es für immer verschwunden.",
       "a-trusted-way-to-share-sensitive-information-etc": "Eine vertrauenswürdige Methode zum Teilen vertraulicher Informationen, die nach dem Anzeigen automatisch gelöscht werden.",
       "hero": {
-        "badge": "Datenschutzorientierte Architektur",
+        "badge": "Datenschutzorientiertes Design",
         "title": {
           "line1": "Onetime Secret",
           "line2_w1": "Signed.",
@@ -449,6 +449,11 @@
     "category-operations": "Betrieb",
     "category-security": "Sicherheit",
     "before": "Vorher",
-    "after": "Nachher"
+    "after": "Nachher",
+    "stats-update-singular": "Update veröffentlicht",
+    "stats-update-plural": "Updates veröffentlicht",
+    "stats-latest": "Zuletzt",
+    "filter-aria-label": "Filter nach Update-Status",
+    "read-more": "Mehr erfahren"
   }
 }

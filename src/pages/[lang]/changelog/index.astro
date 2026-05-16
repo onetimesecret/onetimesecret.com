@@ -73,6 +73,7 @@ const latestDate =
               totalEntries={shippedEntries.length}
               latestDate={latestDate}
               locale={lang as string}
+              initialMessages={initialMessages as Record<string, MessageSchema>}
             />
           )
         }
@@ -80,6 +81,7 @@ const latestDate =
           shippedLabel={t("changelog.shipped")}
           plannedLabel={t("changelog.planned")}
           plannedCount={plannedEntries.length}
+          ariaLabel={t("changelog.filter-aria-label")}
         />
       </div>
     </div>
@@ -102,6 +104,7 @@ const latestDate =
             categoryLabel={t(`changelog.category-${entry.data.category}`)}
             highlightedLinkUrl={entry.data.highlightedLinkUrl}
             highlightedLinkText={entry.data.highlightedLinkText}
+            readMoreLabel={t("changelog.read-more")}
             locale={lang as string}
             highlights={entry.data.highlights}
           />
@@ -130,6 +133,7 @@ const latestDate =
               description={entry.data.description}
               category={entry.data.category}
               categoryLabel={t(`changelog.category-${entry.data.category}`)}
+              readMoreLabel={t("changelog.read-more")}
               locale={lang as string}
               highlights={entry.data.highlights}
               planned

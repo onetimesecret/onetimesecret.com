@@ -449,6 +449,11 @@
     "category-operations": "Operations",
     "category-security": "Security",
     "before": "Before",
-    "after": "After"
+    "after": "After",
+    "stats-update-singular": "update shipped",
+    "stats-update-plural": "updates shipped",
+    "stats-latest": "Latest",
+    "filter-aria-label": "Update status filter",
+    "read-more": "Read more"
   }
 }

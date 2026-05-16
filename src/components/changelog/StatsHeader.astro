@@ -3,20 +3,38 @@
  * src/components/changelog/StatsHeader.astro
  * Displays total shipped entry count and most recent entry date.
  */
+import {
+  createLocaleI18n,
+  type MessageSchema,
+  type SupportedLanguage,
+} from "@/i18n";
 
 export interface Props {
   totalEntries: number;
   latestDate: Date;
   locale: string;
+  initialMessages?: Record<string, MessageSchema>;
 }
 
-const { totalEntries, latestDate, locale } = Astro.props;
+const { totalEntries, latestDate, locale, initialMessages } = Astro.props;
+
+const pageI18n = await createLocaleI18n(
+  locale as SupportedLanguage,
+  initialMessages,
+);
+const t = pageI18n.global.t;
 
 const formattedDate = latestDate.toLocaleDateString(locale, {
   year: "numeric",
   month: "long",
   day: "numeric",
+  timeZone: "UTC",
 });
+
+const updatesLabel =
+  totalEntries === 1
+    ? t("changelog.stats-update-singular")
+    : t("changelog.stats-update-plural");
 ---
 
 <div
@@ -24,10 +42,10 @@ const formattedDate = latestDate.toLocaleDateString(locale, {
          text-text-tertiary">
   <span>
     <span class="font-semibold text-text-secondary">{totalEntries}</span>
-    {totalEntries === 1 ? "update" : "updates"} shipped
+    {updatesLabel}
   </span>
   <span class="hidden sm:inline" aria-hidden="true">&middot;</span>
   <span>
-    Latest: <time datetime={latestDate.toISOString()}>{formattedDate}</time>
+    {t("changelog.stats-latest")}: <time datetime={latestDate.toISOString()}>{formattedDate}</time>
   </span>
 </div>

@@ -321,7 +321,7 @@
       "description": "Comparta información sensible de forma segura con enlaces autodestructibles. Pegue su secreto, genere un enlace y compártalo. Una vez visto, desaparece para siempre",
       "a-trusted-way-to-share-sensitive-information-etc": "Una forma confiable de compartir información sensible que se autodestruye después de ser vista.",
       "hero": {
-        "badge": "Arquitectura orientada a la privacidad",
+        "badge": "Diseño orientado a la privacidad",
         "title": {
           "line1": "Onetime Secret",
           "line2_w1": "Signed.",
@@ -449,6 +449,11 @@
     "category-operations": "Operaciones",
     "category-security": "Seguridad",
     "before": "Antes",
-    "after": "Después"
+    "after": "Después",
+    "stats-update-singular": "actualización publicada",
+    "stats-update-plural": "actualizaciones publicadas",
+    "stats-latest": "Última",
+    "filter-aria-label": "Filtro por estado de la actualización",
+    "read-more": "Leer más"
   }
 }

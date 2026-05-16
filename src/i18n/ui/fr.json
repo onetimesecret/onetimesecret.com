@@ -321,7 +321,7 @@
       "description": "Partagez des informations sensibles en toute sécurité avec des liens auto-destructibles. Collez votre secret, générez un lien et partagez-le. Une fois consulté, il disparaît à jamais.",
       "a-trusted-way-to-share-sensitive-information-etc": "Une méthode fiable pour partager des informations confidentielles qui s'autodétruisent après consultation.",
       "hero": {
-        "badge": "Architecture axée sur la vie privée",
+        "badge": "Conception axée sur la vie privée",
         "title": {
           "line1": "Onetime Secret",
           "line2_w1": "Signed.",
@@ -449,6 +449,11 @@
     "category-operations": "Opérations",
     "category-security": "Sécurité",
     "before": "Avant",
-    "after": "Après"
+    "after": "Après",
+    "stats-update-singular": "mise à jour livrée",
+    "stats-update-plural": "mises à jour livrées",
+    "stats-latest": "Dernière",
+    "filter-aria-label": "Filtre par statut de mise à jour",
+    "read-more": "En savoir plus"
   }
 }
