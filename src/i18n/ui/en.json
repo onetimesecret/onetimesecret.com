@@ -7,6 +7,8 @@
   "learn-about-our-company": "Learn about our company",
   "check-our-service-status": "Check our service status",
   "explore-our-api-documentation": "Explore our API documentation",
+  "read-our-product-guides": "Read our product guides",
+  "learn-about-self-hosting": "Learn about self-hosting",
   "learn-about-our-security-measures": "Learn about our security measures",
   "access-our-documentation": "Access our documentation",
   "view-our-source-code-on-github": "View our source code on GitHub",
@@ -309,7 +311,9 @@
         "changelog": "Changelog",
         "github": "GitHub",
         "contact": "Contact",
-        "dpa": "DPA"
+        "dpa": "DPA",
+        "guides": "Guides",
+        "selfHosting": "Self-Hosting"
       }
     },
     "homepage": {
