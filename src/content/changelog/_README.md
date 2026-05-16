@@ -32,18 +32,6 @@ frontmatter flag are independent — they answer different questions
 | Planned | `planned: true` in frontmatter           | yes            | `/<lang>/changelog` "Planned" tab only |
 | Shipped | `planned: false` (default) and no `_`    | yes            | everywhere: homepage banner, `/<lang>/changelog` "Shipped" tab, `/<lang>/changelog/<slug>` page, RSS feed |
 
-Concrete consumers of `planned`:
-
-- `src/components/homepage/ChangelogBanner.astro` — filters out planned, shows latest shipped
-- `src/pages/[lang]/changelog/index.astro` — splits into two tabs via `ShippedPlannedToggle`; shipped sorted date-desc, planned sorted date-asc (soonest first)
-- `src/pages/[lang]/changelog/[slug].astro` — `getStaticPaths` only emits pages for shipped entries
-- `src/pages/changelog/rss.xml.ts` — feed includes shipped only
-
-Workflow: draft an entry as `_YYYY-MM-DD-slug.mdx`. When the work is queued
-but unreleased, rename to `YYYY-MM-DD-slug.mdx` and set `planned: true` —
-it appears on the roadmap. On ship day, flip `planned` to `false` (or remove
-the field) and update the `date` if it shifted.
-
 ## Homepage banner
 
 `src/components/homepage/ChangelogBanner.astro` runs at build time, calls
@@ -57,7 +45,7 @@ banner to returning visitors.
 
 ## Entry shape
 
-Literal superset — every frontmatter field, every body component, every accepted value:
+Literal superset with every frontmatter field, every body component, every accepted value:
 
 ```mdx
 ---
@@ -114,3 +102,8 @@ Prose, headings, lists — all standard MDX/Markdown.
   aspectRatio="16/9"                   {/* default "16/9" */}
 />
 ```
+
+
+## Refer to the visual guide
+
+/en/changelog/guide
