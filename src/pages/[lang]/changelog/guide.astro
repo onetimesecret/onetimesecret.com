@@ -77,8 +77,8 @@ const { initialMessages } = Astro.props;
           creating (standard, text-only, or major feature).
         </li>
         <li>Create a directory under <code>src/content/changelog/</code>
-            named with the pattern <code>YYYY-MM-slug</code>
-            (e.g. <code>2026-04-passphrase-hints</code>).</li>
+            named with the pattern <code>YYYY-MM-DD-slug</code>
+            (e.g. <code>2026-04-15-passphrase-hints</code>).</li>
         <li>Add an <code>index.mdx</code> file with the required frontmatter
             (see <a href="#frontmatter-template">template below</a>).</li>
         <li>Capture your screenshot at <strong>1280&times;800</strong> and save
@@ -656,13 +656,13 @@ This feature is available to all users, including free accounts.`}</code></pre>
           Copy
         </button>
         <pre><code>{`src/content/changelog/
-  2026-04-custom-expiration/      ← directory name = URL slug
-    index.mdx                     ← entry content (required)
-    hero.png                      ← hero image (optional)
-    before.png                    ← for BeforeAfter (optional)
-    after.png                     ← for BeforeAfter (optional)
-  2026-03-burn-after-reading.mdx  ← text-only (standalone file)
-  planned-api-v2.mdx              ← planned item
+  2026-04-15-custom-expiration/      ← directory name = URL slug
+    index.mdx                        ← entry content (required)
+    hero.png                         ← hero image (optional)
+    before.png                       ← for BeforeAfter (optional)
+    after.png                        ← for BeforeAfter (optional)
+  2026-03-24-burn-after-reading.mdx  ← text-only (standalone file)
+  2026-06-01-api-v2.mdx              ← planned item (planned: true)
   ...`}</code></pre>
       </div>
 
