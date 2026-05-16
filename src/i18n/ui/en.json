@@ -440,10 +440,9 @@
     "next": "Next",
     "back": "Back to all updates",
     "nav-label": "Changelog navigation",
-    "category-new": "New",
-    "category-improved": "Improvement",
+    "category-release": "Release",
+    "category-news": "News",
     "category-operations": "Operations",
-    "category-fixed": "Fixed",
     "category-security": "Security",
     "before": "Before",
     "after": "After"

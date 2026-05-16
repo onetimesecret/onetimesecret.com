@@ -9,21 +9,21 @@
  */
 
 export interface Props {
-  category: "new" | "operations" | "improved" | "fixed" | "security";
+  category: "release" | "news" | "operations" | "security";
   label?: string;
 }
 
 const { category, label } = Astro.props;
 
 const categoryConfig = {
-  new: {
-    defaultLabel: "New",
+  release: {
+    defaultLabel: "Release",
     classes:
       "bg-emerald-100 text-emerald-800 ring-emerald-700/20 " +
       "dark:bg-emerald-950 dark:text-emerald-300 dark:ring-emerald-800/30",
   },
-  improved: {
-    defaultLabel: "Improvement",
+  news: {
+    defaultLabel: "News",
     classes:
       "bg-amber-100 text-amber-800 ring-amber-700/20 " +
       "dark:bg-amber-950 dark:text-amber-300 dark:ring-amber-800/30",
@@ -33,12 +33,6 @@ const categoryConfig = {
     classes:
       "bg-violet-100 text-violet-800 ring-violet-700/20 " +
       "dark:bg-violet-950 dark:text-violet-300 dark:ring-violet-800/30",
-  },
-  fixed: {
-    defaultLabel: "Fixed",
-    classes:
-      "bg-rose-100 text-rose-800 ring-rose-700/20 " +
-      "dark:bg-rose-950 dark:text-rose-300 dark:ring-rose-800/30",
   },
   security: {
     defaultLabel: "Security",

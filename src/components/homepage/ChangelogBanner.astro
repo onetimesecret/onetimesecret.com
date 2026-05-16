@@ -6,8 +6,8 @@
  * Server-rendered banner with the single latest changelog entry,
  * dismissible via tiny inline script that persists state in localStorage.
  * Keyed by entry slug so a new release re-shows the banner to returning visitors.
- * Renders the entry's actual category badge ("New", "Improvement", "Operations", …),
- * not a hardcoded "New" pill.
+ * Renders the entry's actual category badge ("Release", "News", "Operations", …),
+ * not a hardcoded label.
  */
 import { getCollection } from "astro:content";
 import CategoryBadge from "@/components/changelog/CategoryBadge.astro";

@@ -440,10 +440,9 @@
     "next": "Siguiente",
     "back": "Volver a todas las actualizaciones",
     "nav-label": "Navegación del registro de cambios",
-    "category-new": "Nuevo",
-    "category-improved": "Mejora",
+    "category-release": "Lanzamiento",
+    "category-news": "Noticias",
     "category-operations": "Operaciones",
-    "category-fixed": "Corregido",
     "category-security": "Seguridad",
     "before": "Antes",
     "after": "Después"

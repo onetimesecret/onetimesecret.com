@@ -14,7 +14,7 @@ export interface Props {
   title: string;
   date: Date;
   description: string;
-  category: "new" | "improved" | "operations" | "fixed" | "security";
+  category: "release" | "news" | "operations" | "security";
   categoryLabel?: string;
   githubRelease?: string;
   locale: string;
@@ -42,38 +42,38 @@ const formattedDate = date.toLocaleDateString(locale, {
 const entryUrl = `/${locale}/changelog/${slug}`;
 ---
 
-<article
-  class="group grid grid-cols-1 gap-x-8 md:grid-cols-[140px_1fr]">
+<article class="group grid grid-cols-1 gap-x-8 md:grid-cols-[140px_1fr]">
   {/* Date column (visible on md+) */}
   <div class="hidden pt-1 md:block">
     <time
       datetime={date.toISOString()}
-      class="text-sm text-text-tertiary">
+      class="text-text-tertiary text-sm">
       {formattedDate}
     </time>
   </div>
 
   {/* Entry card */}
   <div
-    class="overflow-hidden rounded-xl border border-surface-3 bg-surface-1
-           p-5 transition-colors hover:border-surface-4 sm:p-6">
+    class="border-surface-3 bg-surface-1 hover:border-surface-4 overflow-hidden rounded-xl border p-5 transition-colors sm:p-6">
     <div class="mb-3 flex flex-wrap items-center gap-3">
-      <CategoryBadge category={category} label={categoryLabel} />
+      <CategoryBadge
+        category={category}
+        label={categoryLabel}
+      />
       <time
         datetime={date.toISOString()}
-        class="text-sm text-text-tertiary md:hidden">
+        class="text-text-tertiary text-sm md:hidden">
         {formattedDate}
       </time>
     </div>
-    <h2 class="mb-2 text-xl font-bold tracking-tight text-text-primary">
+    <h2 class="text-text-primary mb-2 text-xl font-bold tracking-tight">
       <a
         href={entryUrl}
-        class="transition-colors hover:text-brand-500
-               dark:hover:text-brand-400">
+        class="hover:text-brand-500 dark:hover:text-brand-400 transition-colors">
         {title}
       </a>
     </h2>
-    <p class="text-base leading-relaxed text-text-secondary">
+    <p class="text-text-secondary text-base leading-relaxed">
       {description}
     </p>
     <EntryHighlights highlights={highlights} />
