@@ -108,6 +108,17 @@ const changelogCollection = defineCollection({
           message: "imageAlt is required when image is provided",
           path: ["imageAlt"],
         },
+      )
+      .refine(
+        (data) =>
+          !data.highlightedLinkUrl ||
+          (data.highlightedLinkText &&
+            data.highlightedLinkText.trim().length > 0),
+        {
+          message:
+            "highlightedLinkText is required when highlightedLinkUrl is set",
+          path: ["highlightedLinkText"],
+        },
       ),
 });
 
