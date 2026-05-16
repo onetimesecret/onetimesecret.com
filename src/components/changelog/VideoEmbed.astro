@@ -35,11 +35,8 @@ const isYoutube = !!youtubeEmbedUrl;
 
 <figure class="not-prose my-8">
   <div
-    class:list={[
-      "overflow-hidden rounded-lg border border-surface-3 bg-surface-2 shadow-md",
-      isYoutube && "relative w-full",
-    ]}
-    style={isYoutube ? `aspect-ratio: ${aspectRatio}` : undefined}>
+    class="relative w-full overflow-hidden rounded-lg border border-surface-3 bg-surface-2 shadow-md"
+    style={`aspect-ratio: ${aspectRatio}`}>
     {
       youtubeEmbedUrl ? (
         <iframe
@@ -55,7 +52,7 @@ const isYoutube = !!youtubeEmbedUrl;
         <video
           controls
           preload="metadata"
-          class="w-full"
+          class="absolute inset-0 h-full w-full object-contain"
           playsinline>
           <source src={src} type="video/mp4" />
           Your browser does not support the video element.
@@ -63,12 +60,24 @@ const isYoutube = !!youtubeEmbedUrl;
       ) : null
     }
   </div>
-  <figcaption class="mt-3 text-center text-sm text-text-tertiary">
-    {caption && <span>{caption} &mdash; </span>}
-    {isYoutube && (
-      <span class="italic">
-        Embedded via youtube-nocookie.com for privacy
-      </span>
-    )}
-  </figcaption>
+  {
+    (caption || isYoutube) && (
+      <figcaption class="mt-3 text-center text-sm text-text-tertiary">
+        {caption && isYoutube ? (
+          <>
+            <span>{caption} &mdash; </span>
+            <span class="italic">
+              Embedded via youtube-nocookie.com for privacy
+            </span>
+          </>
+        ) : caption ? (
+          <span>{caption}</span>
+        ) : (
+          <span class="italic">
+            Embedded via youtube-nocookie.com for privacy
+          </span>
+        )}
+      </figcaption>
+    )
+  }
 </figure>
