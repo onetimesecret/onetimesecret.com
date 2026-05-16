@@ -71,7 +71,7 @@ const useCasesCollection = defineCollection({
  */
 const changelogCollection = defineCollection({
   loader: glob({
-    pattern: "**/*.{md,mdx}",
+    pattern: ["**/*.{md,mdx}", "!**/_*", "!**/_*/**"],
     base: "./src/content/changelog",
   }),
   schema: ({ image }) =>

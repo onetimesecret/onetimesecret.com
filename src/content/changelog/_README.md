@@ -1,12 +1,13 @@
-# src/content/changelog/README.md
+# src/content/changelog/_README.md
 ---
 # Changelog content
 
-Astro content collection. Loader: `glob("**/*.{md,mdx}", base: "./src/content/changelog")`.
+Astro content collection. Loader excludes `_`-prefixed files/dirs:
+`glob(["**/*.{md,mdx}", "!**/_*", "!**/_*/**"], base: "./src/content/changelog")`.
 Schema: `src/content.config.ts` → `changelogCollection`.
 
-Directory is empty pending real entries. The schema, layouts, and component
-surface are documented below.
+The `_` prefix doubles as a draft mechanism — rename `_2026-06-01-foo.mdx` to
+`2026-06-01-foo.mdx` to publish. This file is named `_README.md` for the same reason.
 
 ## File layout
 
