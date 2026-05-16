@@ -1,6 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import Homepage from "@/components/vue/homepage/Homepage.vue";
+import WhatsNewPill from "@/components/homepage/WhatsNewPill.astro";
 import { createLocaleI18n, type MessageSchema } from "@/i18n";
 import enMessages from "@/i18n/ui/en.json";
 import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
@@ -73,6 +74,9 @@ const pageDescription = t("web.homepage.description");
   large={true}>
   <!-- Homepage has its own navigation so we disable the default header -->
   <div slot="header"></div>
+
+  <!-- Option B: dismissible "What's new" pill above the hero -->
+  <WhatsNewPill locale={currentLang} />
 
   <!-- Render the Homepage component -->
   <!-- client:load ensures the Vue component hydrates and runs client-side -->
