@@ -7,6 +7,8 @@
   "learn-about-our-company": "Learn about our company",
   "check-our-service-status": "Check our service status",
   "explore-our-api-documentation": "Explore our API documentation",
+  "read-our-product-guides": "Read our product guides",
+  "learn-about-self-hosting": "Learn about self-hosting",
   "learn-about-our-security-measures": "Learn about our security measures",
   "access-our-documentation": "Access our documentation",
   "view-our-source-code-on-github": "View our source code on GitHub",
@@ -39,6 +41,7 @@
     "regions": "Regions",
     "about": "About",
     "pricing": "Pricing",
+    "whats-new": "What's New",
     "docs": "Docs"
   },
   "auth": {
@@ -308,7 +311,9 @@
         "changelog": "Changelog",
         "github": "GitHub",
         "contact": "Contact",
-        "dpa": "DPA"
+        "dpa": "DPA",
+        "guides": "Guides",
+        "selfHosting": "Self-Hosting"
       }
     },
     "homepage": {
@@ -316,7 +321,7 @@
       "description": "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever",
       "a-trusted-way-to-share-sensitive-information-etc": "A trusted way to share sensitive information that self-destructs after being viewed.",
       "hero": {
-        "badge": "Privacy-first architecture",
+        "badge": "Privacy-first design",
         "title": {
           "line1": "Onetime Secret",
           "line2_w1": "Signed.",
@@ -427,5 +432,28 @@
         "also": "Also available:"
       }
     }
+  },
+  "changelog": {
+    "label": "Changelog",
+    "description": "Releases, service updates, and announcements from Onetime Secret.",
+    "empty": "No updates yet. Check back soon!",
+    "shipped": "Shipped",
+    "planned": "Planned",
+    "planned-empty": "No upcoming items right now.",
+    "previous": "Previous",
+    "next": "Next",
+    "back": "Back to all updates",
+    "nav-label": "Changelog navigation",
+    "category-release": "Release",
+    "category-news": "News",
+    "category-operations": "Operations",
+    "category-security": "Security",
+    "before": "Before",
+    "after": "After",
+    "stats-update-singular": "update shipped",
+    "stats-update-plural": "updates shipped",
+    "stats-latest": "Latest",
+    "filter-aria-label": "Update status filter",
+    "read-more": "Read more"
   }
 }

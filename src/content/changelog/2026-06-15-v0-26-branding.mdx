@@ -1,0 +1,27 @@
+---
+title: "Better branding and private-label in v0.26"
+date: 2026-06-15
+description: "A cohesive branding experience across the app, emails, and every recipient touchpoint."
+category: release
+planned: true
+highlightedLinkUrl: "https://github.com/onetimesecret/onetimesecret/pull/3054"
+highlightedLinkText: "PR #3054"
+highlights:
+  - { icon: check, text: "Neutral-by-default: self-hosted instances no longer ship with OTS orange or OTS branding" }
+  - { icon: check, text: "BrandSettings expanded from 15 to 22 fields (product name, domain, support email, footer, logos, favicon)" }
+  - { icon: check, text: "12 email templates ported to brand helpers, replacing hardcoded colors/logos" }
+---
+
+v0.26 will ship a full branding and private-label system. Self-hosted operators get
+neutral defaults out of the box and can customize through `BRAND_*` ENV vars or
+per-domain settings (see `etc/defaults/config.defaults.yaml` for the full list). Custom
+domains can layer their own brand on top via settings stored in the main database.
+
+The default `primary_color` is now neutral blue (`#3B82F6`) instead of OTS
+red-orange. This is an important security and trust property: a self-hosted instance
+shouldn't look exactly like the sites we run, and a site we operate shouldn't look
+like one you operate. Recipients of a secret link need a consistent, distinct
+visual signal for the brand that issued it. Even accidental mimicry erodes that signal
+for everyone. Custom domains make this concrete: a link on your own domain,
+styled in your own brand, is what carries trust. Sending recipients to a domain
+that isn't yours spends trust capital you can't easily earn back.

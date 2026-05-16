@@ -1,0 +1,99 @@
+---
+/**
+ * src/components/changelog/EntryCard.astro
+ * Card component for the changelog index page.
+ * Two-column layout: narrow date column, wide entry card.
+ * No hero image on the card — images appear only on the full entry page.
+ */
+import CategoryBadge from "./CategoryBadge.astro";
+import EntryHighlights from "./EntryHighlights.astro";
+import type { HighlightItem } from "./highlights";
+
+export interface Props {
+  slug: string;
+  title: string;
+  date: Date;
+  description: string;
+  category: "release" | "news" | "operations" | "security";
+  categoryLabel?: string;
+  highlightedLinkUrl?: string;
+  highlightedLinkText?: string;
+  readMoreLabel?: string;
+  locale: string;
+  highlights?: HighlightItem[];
+  planned?: boolean;
+}
+
+const {
+  slug,
+  title,
+  date,
+  description,
+  category,
+  categoryLabel,
+  highlightedLinkUrl,
+  highlightedLinkText,
+  readMoreLabel,
+  locale,
+  highlights,
+  planned = false,
+} = Astro.props;
+
+const formattedDate = date.toLocaleDateString(locale, {
+  year: "numeric",
+  month: "long",
+  ...(planned ? {} : { day: "numeric" }),
+  timeZone: "UTC",
+});
+
+const entryUrl = `/${locale}/changelog/${slug}`;
+---
+
+<article class="group grid grid-cols-1 gap-x-8 md:grid-cols-[140px_1fr]">
+  {/* Date column (visible on md+) */}
+  <div class="hidden pt-1 md:block">
+    <time
+      datetime={date.toISOString()}
+      class="text-text-tertiary text-sm">
+      {formattedDate}
+    </time>
+  </div>
+
+  {/* Entry card */}
+  <div
+    class="border-surface-3 bg-surface-1 hover:border-surface-4 overflow-hidden rounded-xl border p-5 transition-colors sm:p-6">
+    <div class="mb-3 flex flex-wrap items-center gap-3">
+      <CategoryBadge
+        category={category}
+        label={categoryLabel}
+      />
+      <time
+        datetime={date.toISOString()}
+        class="text-text-tertiary text-sm md:hidden">
+        {formattedDate}
+      </time>
+    </div>
+    <h2 class="text-text-primary mb-2 text-xl font-bold tracking-tight">
+      <a
+        href={entryUrl}
+        class="hover:text-brand-500 dark:hover:text-brand-400 transition-colors">
+        {title}
+      </a>
+    </h2>
+    <p class="text-text-secondary text-base leading-relaxed">
+      {description}
+    </p>
+    <EntryHighlights highlights={highlights} />
+    {
+      highlightedLinkUrl && (
+        <a
+          href={highlightedLinkUrl}
+          class="text-text-tertiary hover:text-brand-500 dark:hover:text-brand-400 mt-3 inline-flex items-center gap-1 text-sm font-medium transition-colors"
+          target="_blank"
+          rel="noopener noreferrer">
+          <span>&rarr;</span> {highlightedLinkText ?? readMoreLabel ?? "Read more"}
+        </a>
+      )
+    }
+  </div>
+</article>

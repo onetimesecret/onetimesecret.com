@@ -1,0 +1,110 @@
+---
+/**
+ * src/pages/[lang]/changelog/[slug].astro
+ * Individual changelog entry page.
+ * Renders full MDX content with entry layout and prev/next navigation.
+ */
+import EntryLayout from "@/components/changelog/EntryLayout.astro";
+import { getCollection, render } from "astro:content";
+import {
+  SUPPORTED_LANGUAGES,
+  type MessageSchema,
+} from "@/i18n";
+
+import enMessages from "@/i18n/ui/en.json";
+import frMessages from "@/i18n/ui/fr.json";
+import deMessages from "@/i18n/ui/de.json";
+import esMessages from "@/i18n/ui/es.json";
+
+export async function getStaticPaths() {
+  // Helper must be defined inside getStaticPaths — Astro evaluates this
+  // function in an isolated context where module-level scope is not
+  // guaranteed to be available.
+  function entrySlug(id: string): string {
+    return id.replace(/\/index$/, "");
+  }
+
+  // Generate pages for all entries (shipped and planned) so cards in
+  // the index page don't link to a 404. Prev/next chains stay scoped
+  // to shipped entries to keep navigation chronological for visitors
+  // reading the release feed.
+  const allEntries = (await getCollection("changelog")).sort(
+    (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+  );
+  const entries = allEntries.filter((e) => !e.data.planned);
+  const plannedEntries = allEntries.filter((e) => e.data.planned);
+
+  const messagesMap: Record<string, MessageSchema> = {
+    en: enMessages as MessageSchema,
+    fr: frMessages as MessageSchema,
+    de: deMessages as MessageSchema,
+    es: esMessages as MessageSchema,
+  };
+
+  const paths = [];
+
+  for (const lang of SUPPORTED_LANGUAGES) {
+    const initialMessages: Record<string, MessageSchema> = {
+      en: enMessages as MessageSchema,
+      [lang]: messagesMap[lang] || (enMessages as MessageSchema),
+    };
+
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
+      paths.push({
+        params: { lang, slug: entrySlug(entry.id) },
+        props: {
+          entry,
+          initialMessages,
+          prev: i < entries.length - 1
+            ? {
+                slug: entrySlug(entries[i + 1].id),
+                title: entries[i + 1].data.title,
+              }
+            : null,
+          next: i > 0
+            ? {
+                slug: entrySlug(entries[i - 1].id),
+                title: entries[i - 1].data.title,
+              }
+            : null,
+        },
+      });
+    }
+
+    for (const entry of plannedEntries) {
+      paths.push({
+        params: { lang, slug: entrySlug(entry.id) },
+        props: {
+          entry,
+          initialMessages,
+          prev: null,
+          next: null,
+        },
+      });
+    }
+  }
+
+  return paths;
+}
+
+const { lang } = Astro.params;
+const { entry, initialMessages, prev, next } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<EntryLayout
+  title={entry.data.title}
+  date={entry.data.date}
+  description={entry.data.description}
+  category={entry.data.category}
+  image={entry.data.image}
+  imageAlt={entry.data.imageAlt}
+  highlightedLinkUrl={entry.data.highlightedLinkUrl}
+  highlightedLinkText={entry.data.highlightedLinkText}
+  locale={lang as string}
+  initialMessages={initialMessages}
+  prev={prev}
+  next={next}>
+  <Content />
+</EntryLayout>

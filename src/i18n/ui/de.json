@@ -7,6 +7,8 @@
   "learn-about-our-company": "Erfahren Sie mehr über unser Unternehmen",
   "check-our-service-status": "Prüfen Sie unseren Servicestatus",
   "explore-our-api-documentation": "Entdecken Sie unsere API-Dokumentation",
+  "read-our-product-guides": "Lesen Sie unsere Produktanleitungen",
+  "learn-about-self-hosting": "Erfahren Sie mehr über Self-Hosting",
   "learn-about-our-security-measures": "Informieren Sie sich über unsere Sicherheitsmaßnahmen",
   "access-our-documentation": "Zugriff auf unsere Dokumentation",
   "view-our-source-code-on-github": "Sehen Sie unseren Quellcode auf GitHub",
@@ -39,6 +41,7 @@
     "regions": "Regionen",
     "about": "Über uns",
     "pricing": "Preise",
+    "whats-new": "Neuigkeiten",
     "docs": "Docs"
   },
   "auth": {
@@ -308,7 +311,9 @@
         "changelog": "Changelog",
         "github": "GitHub",
         "contact": "Contact",
-        "dpa": "DPA"
+        "dpa": "DPA",
+        "guides": "Anleitungen",
+        "selfHosting": "Self-Hosting"
       }
     },
     "homepage": {
@@ -316,7 +321,7 @@
       "description": "Teilen Sie sensible Informationen sicher mit selbstzerstörenden Links. Fügen Sie Ihr Geheimnis ein, generieren Sie einen Link und teilen Sie ihn. Nach dem Anzeigen ist es für immer verschwunden.",
       "a-trusted-way-to-share-sensitive-information-etc": "Eine vertrauenswürdige Methode zum Teilen vertraulicher Informationen, die nach dem Anzeigen automatisch gelöscht werden.",
       "hero": {
-        "badge": "Datenschutzorientierte Architektur",
+        "badge": "Datenschutzorientiertes Design",
         "title": {
           "line1": "Onetime Secret",
           "line2_w1": "Signed.",
@@ -427,5 +432,28 @@
         "also": "Ebenfalls verfügbar:"
       }
     }
+  },
+  "changelog": {
+    "label": "Änderungsprotokoll",
+    "description": "Releases, Service-Updates und Ankündigungen von Onetime Secret.",
+    "empty": "Noch keine Updates. Schauen Sie bald wieder vorbei!",
+    "shipped": "Veröffentlicht",
+    "planned": "Geplant",
+    "planned-empty": "Derzeit keine geplanten Einträge.",
+    "previous": "Vorheriger",
+    "next": "Nächster",
+    "back": "Zurück zu allen Updates",
+    "nav-label": "Änderungsprotokoll-Navigation",
+    "category-release": "Release",
+    "category-news": "News",
+    "category-operations": "Betrieb",
+    "category-security": "Sicherheit",
+    "before": "Vorher",
+    "after": "Nachher",
+    "stats-update-singular": "Update veröffentlicht",
+    "stats-update-plural": "Updates veröffentlicht",
+    "stats-latest": "Zuletzt",
+    "filter-aria-label": "Filter nach Update-Status",
+    "read-more": "Mehr erfahren"
   }
 }

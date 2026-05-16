@@ -1,0 +1,55 @@
+---
+/**
+ * src/components/changelog/CategoryBadge.astro
+ * Small pill/tag component for changelog entry categories.
+ * Maps category to a distinct color scheme.
+ *
+ * Pass `label` to override the default English category name
+ * (e.g. with a translated string from i18n).
+ */
+
+export interface Props {
+  category: "release" | "news" | "operations" | "security";
+  label?: string;
+}
+
+const { category, label } = Astro.props;
+
+const categoryConfig = {
+  release: {
+    defaultLabel: "Release",
+    classes:
+      "bg-emerald-100 text-emerald-800 ring-emerald-700/20 " +
+      "dark:bg-emerald-950 dark:text-emerald-300 dark:ring-emerald-800/30",
+  },
+  news: {
+    defaultLabel: "News",
+    classes:
+      "bg-amber-100 text-amber-800 ring-amber-700/20 " +
+      "dark:bg-amber-950 dark:text-amber-300 dark:ring-amber-800/30",
+  },
+  operations: {
+    defaultLabel: "Operations",
+    classes:
+      "bg-violet-100 text-violet-800 ring-violet-700/20 " +
+      "dark:bg-violet-950 dark:text-violet-300 dark:ring-violet-800/30",
+  },
+  security: {
+    defaultLabel: "Security",
+    classes:
+      "bg-cyan-100 text-cyan-800 ring-cyan-700/20 " +
+      "dark:bg-cyan-950 dark:text-cyan-300 dark:ring-cyan-800/30",
+  },
+};
+
+const config = categoryConfig[category];
+const displayLabel = label || config.defaultLabel;
+---
+
+<span
+  class:list={[
+    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset",
+    config.classes,
+  ]}>
+  {displayLabel}
+</span>

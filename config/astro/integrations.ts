@@ -1,6 +1,7 @@
 // config/astro/integrations.ts
 
 import markdoc from "@astrojs/markdoc";
+import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import vue from "@astrojs/vue";
 import sentry from "@sentry/astro";
@@ -87,5 +88,6 @@ export function createConfig(): AstroUserConfig["integrations"] {
       jsx: true,
     }),
     markdoc(),
+    mdx(),
   ];
 }

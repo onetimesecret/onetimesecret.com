@@ -1,7 +1,6 @@
 <!-- src/components/vue/homepage/Homepage.vue -->
 
 <script setup lang="ts">
-import ClientOnlyBanner from "@/components/vue/homepage/ClientOnlyBanner.vue";
 import FeatureHighlights from "@/components/vue/homepage/FeatureHighlights.vue";
 import HeroSection from "@/components/vue/homepage/HeroSection.vue";
 import HowItWorks from "@/components/vue/homepage/HowItWorks.vue";
@@ -38,7 +37,6 @@ const {
   currentRegion,
   apiBaseUrl,
   detectedJurisdiction,
-  suggestedDomain,
   setJurisdiction,
   detectJurisdiction,
   cleanup,
@@ -113,12 +111,6 @@ onUnmounted(() => {
   <div
     class="flex flex-col overflow-hidden"
     style="scroll-padding-top: var(--header-height, 4rem)">
-    <!-- First Time Visitor Banner (Client-Only) -->
-    <ClientOnlyBanner
-      :detected-jurisdiction="detectedJurisdiction"
-      :suggested-domain="suggestedDomain"
-      @switch-jurisdiction="switchRegion" />
-
     <div class="flex-grow">
       <!-- Section 1+2: Hero (title + form unified) -->
       <HeroSection

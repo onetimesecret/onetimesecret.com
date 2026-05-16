@@ -7,6 +7,8 @@
   "learn-about-our-company": "Conozca más sobre nuestra empresa",
   "check-our-service-status": "Consulte el estado de nuestro servicio",
   "explore-our-api-documentation": "Explore nuestra documentación de API",
+  "read-our-product-guides": "Lea nuestras guías del producto",
+  "learn-about-self-hosting": "Conozca el autoalojamiento",
   "learn-about-our-security-measures": "Conozca nuestras medidas de seguridad",
   "access-our-documentation": "Acceda a nuestra documentación",
   "view-our-source-code-on-github": "Vea nuestro código fuente en GitHub",
@@ -39,6 +41,7 @@
     "regions": "Regiones",
     "about": "Acerca de",
     "pricing": "Precios",
+    "whats-new": "Novedades",
     "docs": "Docs"
   },
   "auth": {
@@ -308,7 +311,9 @@
         "changelog": "Changelog",
         "github": "GitHub",
         "contact": "Contact",
-        "dpa": "DPA"
+        "dpa": "DPA",
+        "guides": "Guías",
+        "selfHosting": "Autoalojamiento"
       }
     },
     "homepage": {
@@ -316,7 +321,7 @@
       "description": "Comparta información sensible de forma segura con enlaces autodestructibles. Pegue su secreto, genere un enlace y compártalo. Una vez visto, desaparece para siempre",
       "a-trusted-way-to-share-sensitive-information-etc": "Una forma confiable de compartir información sensible que se autodestruye después de ser vista.",
       "hero": {
-        "badge": "Arquitectura orientada a la privacidad",
+        "badge": "Diseño orientado a la privacidad",
         "title": {
           "line1": "Onetime Secret",
           "line2_w1": "Signed.",
@@ -427,5 +432,28 @@
         "also": "También disponible:"
       }
     }
+  },
+  "changelog": {
+    "label": "Registro de cambios",
+    "description": "Lanzamientos, actualizaciones del servicio y anuncios de Onetime Secret.",
+    "empty": "Aún no hay actualizaciones. Vuelva pronto.",
+    "shipped": "Publicadas",
+    "planned": "Planificadas",
+    "planned-empty": "No hay elementos planificados por el momento.",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "back": "Volver a todas las actualizaciones",
+    "nav-label": "Navegación del registro de cambios",
+    "category-release": "Lanzamiento",
+    "category-news": "Noticias",
+    "category-operations": "Operaciones",
+    "category-security": "Seguridad",
+    "before": "Antes",
+    "after": "Después",
+    "stats-update-singular": "actualización publicada",
+    "stats-update-plural": "actualizaciones publicadas",
+    "stats-latest": "Última",
+    "filter-aria-label": "Filtro por estado de la actualización",
+    "read-more": "Leer más"
   }
 }

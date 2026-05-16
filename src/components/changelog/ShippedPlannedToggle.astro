@@ -1,0 +1,164 @@
+---
+/**
+ * src/components/changelog/ShippedPlannedToggle.astro
+ * Segmented control toggling between shipped and planned entry lists.
+ * Both lists are rendered statically; a small inline script toggles visibility.
+ * No framework dependencies.
+ *
+ * Panel targets are passed as CSS selectors via data attributes on the root
+ * so the script stays scoped to this component instance.
+ */
+
+export interface Props {
+  shippedLabel?: string;
+  plannedLabel?: string;
+  plannedCount?: number;
+  ariaLabel?: string;
+  shippedPanelSelector?: string;
+  plannedPanelSelector?: string;
+}
+
+const {
+  shippedLabel = "Shipped",
+  plannedLabel = "Planned",
+  plannedCount = 0,
+  ariaLabel = "Update status filter",
+  shippedPanelSelector = "#changelog-shipped",
+  plannedPanelSelector = "#changelog-planned",
+} = Astro.props;
+
+const hasPlanned = plannedCount > 0;
+---
+
+<div
+  class="inline-flex items-center gap-1 rounded-xl bg-surface-2 p-1"
+  role="tablist"
+  aria-label={ariaLabel}
+  data-changelog-toggle
+  data-shipped-panel={shippedPanelSelector}
+  data-planned-panel={plannedPanelSelector}>
+  <button
+    role="tab"
+    aria-selected="true"
+    aria-controls={shippedPanelSelector.replace(/^#/, "")}
+    id="tab-shipped"
+    tabindex="0"
+    class="changelog-tab rounded-lg px-4 py-1.5 text-sm font-medium
+           transition-colors bg-surface-0 text-text-primary shadow-sm"
+    data-target="shipped">
+    {shippedLabel}
+  </button>
+  <button
+    role="tab"
+    aria-selected="false"
+    {...(hasPlanned
+      ? { "aria-controls": plannedPanelSelector.replace(/^#/, "") }
+      : {})}
+    id="tab-planned"
+    tabindex="-1"
+    class="changelog-tab rounded-lg px-4 py-1.5 text-sm font-medium
+           transition-colors text-text-tertiary hover:text-text-secondary"
+    data-target="planned">
+    {plannedLabel}
+    <span
+      class="ml-1.5 inline-flex size-5 items-center justify-center
+             rounded-full bg-surface-3 text-xs text-text-tertiary">
+      {plannedCount}
+    </span>
+  </button>
+</div>
+
+<script>
+  // ES modules are deferred (run after DOMContentLoaded), so attaching a
+  // DOMContentLoaded listener here would never fire. Run init directly,
+  // or wait for the event if for some reason the DOM isn't ready yet.
+  function init() {
+    const roots = document.querySelectorAll<HTMLElement>(
+      "[data-changelog-toggle]",
+    );
+
+    roots.forEach((root) => {
+      const tabs = Array.from(
+        root.querySelectorAll<HTMLButtonElement>(".changelog-tab"),
+      );
+      const shippedSelector = root.dataset.shippedPanel || "";
+      const plannedSelector = root.dataset.plannedPanel || "";
+      const shipped = shippedSelector
+        ? document.querySelector<HTMLElement>(shippedSelector)
+        : null;
+      const planned = plannedSelector
+        ? document.querySelector<HTMLElement>(plannedSelector)
+        : null;
+      if (!shipped || tabs.length === 0) return;
+
+      function activate(target: string, updateHash: boolean) {
+        const isShipped = target === "shipped";
+        // Fall back to shipped if planned panel doesn't exist (zero planned).
+        const effective = isShipped || !planned ? "shipped" : "planned";
+        const isEffectiveShipped = effective === "shipped";
+
+        shipped!.classList.toggle("hidden", !isEffectiveShipped);
+        if (planned) planned.classList.toggle("hidden", isEffectiveShipped);
+
+        tabs.forEach((t) => {
+          const active = t.dataset.target === effective;
+          t.setAttribute("aria-selected", String(active));
+          t.setAttribute("tabindex", active ? "0" : "-1");
+          t.classList.toggle("bg-surface-0", active);
+          t.classList.toggle("text-text-primary", active);
+          t.classList.toggle("shadow-sm", active);
+          t.classList.toggle("text-text-tertiary", !active);
+        });
+
+        if (updateHash) {
+          const newHash = isEffectiveShipped ? "" : "#planned";
+          history.replaceState(
+            null,
+            "",
+            `${location.pathname}${location.search}${newHash}`,
+          );
+        }
+      }
+
+      tabs.forEach((tab, index) => {
+        tab.addEventListener("click", () => {
+          if (tab.dataset.target) activate(tab.dataset.target, true);
+        });
+
+        // WAI-ARIA tablist keyboard pattern.
+        tab.addEventListener("keydown", (event) => {
+          const key = event.key;
+          let nextIndex = -1;
+          if (key === "ArrowRight") {
+            nextIndex = (index + 1) % tabs.length;
+          } else if (key === "ArrowLeft") {
+            nextIndex = (index - 1 + tabs.length) % tabs.length;
+          } else if (key === "Home") {
+            nextIndex = 0;
+          } else if (key === "End") {
+            nextIndex = tabs.length - 1;
+          } else {
+            return;
+          }
+          event.preventDefault();
+          const nextTab = tabs[nextIndex];
+          if (nextTab?.dataset.target) {
+            activate(nextTab.dataset.target, true);
+            nextTab.focus();
+          }
+        });
+      });
+
+      // Deep-link: activate planned tab when URL ends in #planned.
+      if (location.hash === "#planned" && planned) {
+        activate("planned", false);
+      }
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+</script>
