@@ -34,8 +34,9 @@ const {
   large = false,
   effectiveLocale: propsLocale,
 } = Astro.props;
-const effectiveLocale: SupportedLanguage =
-  (propsLocale || getLocaleFromUrl(Astro.url) || DEFAULT_LANGUAGE) as SupportedLanguage;
+const effectiveLocale: SupportedLanguage = (propsLocale ||
+  getLocaleFromUrl(Astro.url) ||
+  DEFAULT_LANGUAGE) as SupportedLanguage;
 
 // Import all language message files
 import enMessages from "@/i18n/ui/en.json";
@@ -67,7 +68,11 @@ const t = pageI18n.global.t;
 
 // Define navigation items
 const navigation = [
-  { name: t("navigation.home"), href: localizeUrl("/", effectiveLocale), external: false },
+  {
+    name: t("navigation.home"),
+    href: localizeUrl("/", effectiveLocale),
+    external: false,
+  },
   {
     name: t("navigation.docs"),
     href: `https://docs.onetimesecret.com/${getDocsLocale(effectiveLocale)}`,
@@ -79,7 +84,7 @@ const navigation = [
     external: false,
   },
   {
-    name: t("navigation.whats-new"),
+    name: `${t("navigation.whats-new")} 🤾`,
     href: localizeUrl("/changelog", effectiveLocale),
     external: false,
   },
@@ -91,14 +96,14 @@ const currentPath = Astro.url.pathname;
 
 <BrandBar />
 <header
-  class="sticky top-0 z-50 bg-surface-0/70 shadow-sm backdrop-blur-xl backdrop-saturate-150">
+  class="bg-surface-0/70 sticky top-0 z-50 shadow-sm backdrop-blur-xl backdrop-saturate-150">
   <nav
     class="mx-auto flex max-w-7xl items-center justify-between p-4 sm:p-6 lg:px-8"
     aria-label="Global">
     <div class="flex flex-1">
       <a
         href="/"
-        class="-m-1.5 p-1.5 flex items-center">
+        class="-m-1.5 flex items-center p-1.5">
         <span class="sr-only">{t("onetime-secret-literal")}</span>
         <img
           class:list={[
@@ -142,7 +147,8 @@ const currentPath = Astro.url.pathname;
     </div>
 
     <!-- Desktop navigation -->
-    <div class="hidden md:ml-8 lg:ml-12 md:flex md:gap-x-6 lg:gap-x-8 md:pr-2 lg:pr-4">
+    <div
+      class="hidden md:ml-8 md:flex md:gap-x-6 md:pr-2 lg:ml-12 lg:gap-x-8 lg:pr-4">
       {
         navigation.map((item) => (
           <a
@@ -176,8 +182,8 @@ const currentPath = Astro.url.pathname;
       <a
         href="/signup"
         class:list={[
-          "bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 rounded-md font-brand font-semibold text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
-          large ? "text-lg/6 px-5 py-2.5" : "text-base/6 px-4 py-2",
+          "bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 font-brand rounded-md font-semibold text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+          large ? "px-5 py-2.5 text-lg/6" : "px-4 py-2 text-base/6",
         ]}>
         {t("auth.sign-up")}
         <span aria-hidden="true">&rarr;</span>

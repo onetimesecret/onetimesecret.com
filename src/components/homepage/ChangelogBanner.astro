@@ -1,9 +1,12 @@
 ---
+// src/components/homepage/ChangelogBanner.astro
+
 /**
- * Option B: "What's new" pill for the homepage.
+ * Homepage changelog banner.
  * Server-rendered banner with the single latest changelog entry,
  * dismissible via tiny inline script that persists state in localStorage.
- * Keyed by entry slug so a new release re-shows the pill to returning visitors.
+ * Keyed by entry slug so a new release re-shows the banner to returning visitors.
+ * The `newLabel` prop holds the localized stylization shown to users ("New", "Nouveau", …).
  */
 import { getCollection } from "astro:content";
 
@@ -13,11 +16,7 @@ export interface Props {
   dismissLabel?: string;
 }
 
-const {
-  locale,
-  newLabel = "New",
-  dismissLabel = "Dismiss",
-} = Astro.props;
+const { locale, newLabel = "New", dismissLabel = "Dismiss" } = Astro.props;
 
 function entrySlug(id: string): string {
   return id.replace(/\/index$/, "");
@@ -29,36 +28,36 @@ const latest = entries
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())[0];
 
 const slug = latest ? entrySlug(latest.id) : null;
-const storageKey = slug ? `whatsNewDismissed:${slug}` : null;
+const storageKey = slug ? `changelogBannerDismissed:${slug}` : null;
 ---
 
 {
   latest && (
     <div
-      data-whats-new-pill
+      data-changelog-banner
       data-storage-key={storageKey}
-      class="hidden border-b border-surface-3 bg-surface-1">
+      class="border-surface-3 bg-surface-1 hidden border-b">
       <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2 sm:px-6">
         <a
           href={`/${locale}/changelog/${slug}`}
-          class="flex min-w-0 items-center gap-2 text-sm text-text-secondary transition-colors hover:text-text-primary">
-          <span class="inline-flex shrink-0 items-center rounded-full bg-brand-100 px-2 py-0.5 text-xs font-semibold text-brand-800 ring-1 ring-inset ring-brand-700/20 dark:bg-brand-950 dark:text-brand-300 dark:ring-brand-800/30">
+          class="text-text-secondary hover:text-text-primary flex min-w-0 items-center gap-2 text-sm transition-colors">
+          <span class="bg-brand-100 text-brand-800 ring-brand-700/20 dark:bg-brand-950 dark:text-brand-300 dark:ring-brand-800/30 inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset">
             {newLabel}
           </span>
-          <span class="truncate font-medium text-text-primary">
+          <span class="text-text-primary truncate font-medium">
             {latest.data.title}
           </span>
-          <span class="hidden truncate text-text-tertiary sm:inline">
+          <span class="text-text-tertiary hidden truncate sm:inline">
             &mdash; {latest.data.description}
           </span>
-          <span class="shrink-0 text-brand-600 dark:text-brand-400">
+          <span class="text-brand-600 dark:text-brand-400 shrink-0">
             &rarr;
           </span>
         </a>
         <button
           type="button"
-          data-whats-new-dismiss
-          class="-m-1 shrink-0 rounded p-1 text-text-tertiary transition-colors hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+          data-changelog-banner-dismiss
+          class="text-text-tertiary hover:text-text-primary focus-visible:outline-brand-500 -m-1 shrink-0 rounded p-1 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
           aria-label={dismissLabel}>
           <svg
             class="size-4"
@@ -74,18 +73,18 @@ const storageKey = slug ? `whatsNewDismissed:${slug}` : null;
 }
 
 <script>
-  const pill = document.querySelector<HTMLElement>("[data-whats-new-pill]");
-  if (pill) {
-    const key = pill.dataset.storageKey;
+  const banner = document.querySelector<HTMLElement>("[data-changelog-banner]");
+  if (banner) {
+    const key = banner.dataset.storageKey;
     const dismissed = key && localStorage.getItem(key) === "1";
     if (!dismissed) {
-      pill.classList.remove("hidden");
+      banner.classList.remove("hidden");
     }
-    pill
-      .querySelector<HTMLButtonElement>("[data-whats-new-dismiss]")
+    banner
+      .querySelector<HTMLButtonElement>("[data-changelog-banner-dismiss]")
       ?.addEventListener("click", () => {
         if (key) localStorage.setItem(key, "1");
-        pill.remove();
+        banner.remove();
       });
   }
 </script>

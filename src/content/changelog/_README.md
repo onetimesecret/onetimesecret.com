@@ -20,6 +20,41 @@ chronologically in the directory:
 
 `slug`/id is derived from the file path.
 
+## Shipped vs pending content
+
+Three states an entry can live in. The `_` filename prefix and the `planned`
+frontmatter flag are independent — they answer different questions
+("is this even in the build?" vs "has this gone out yet?").
+
+| State   | How to mark                              | In collection? | Where it shows |
+|---------|------------------------------------------|----------------|----------------|
+| Draft   | filename starts with `_`                 | no             | nowhere; loader excludes it |
+| Planned | `planned: true` in frontmatter           | yes            | `/<lang>/changelog` "Planned" tab only |
+| Shipped | `planned: false` (default) and no `_`    | yes            | everywhere: homepage banner, `/<lang>/changelog` "Shipped" tab, `/<lang>/changelog/<slug>` page, RSS feed |
+
+Concrete consumers of `planned`:
+
+- `src/components/homepage/ChangelogBanner.astro` — filters out planned, shows latest shipped
+- `src/pages/[lang]/changelog/index.astro` — splits into two tabs via `ShippedPlannedToggle`; shipped sorted date-desc, planned sorted date-asc (soonest first)
+- `src/pages/[lang]/changelog/[slug].astro` — `getStaticPaths` only emits pages for shipped entries
+- `src/pages/changelog/rss.xml.ts` — feed includes shipped only
+
+Workflow: draft an entry as `_YYYY-MM-DD-slug.mdx`. When the work is queued
+but unreleased, rename to `YYYY-MM-DD-slug.mdx` and set `planned: true` —
+it appears on the roadmap. On ship day, flip `planned` to `false` (or remove
+the field) and update the `date` if it shifted.
+
+## Homepage banner
+
+`src/components/homepage/ChangelogBanner.astro` runs at build time, calls
+`getCollection("changelog")`, drops `planned: true` entries, sorts by `date`
+descending, and renders the first result as a dismissible banner above the
+hero. The banner links to `/<lang>/changelog/<slug>`, where `<slug>` is the
+file id with a trailing `/index` stripped (so dir-layout entries resolve
+correctly). Dismissal is keyed by slug in `localStorage`
+(`changelogBannerDismissed:<slug>`), so publishing a newer entry re-shows the
+banner to returning visitors.
+
 ## Entry shape
 
 Literal superset — every frontmatter field, every body component, every accepted value:
