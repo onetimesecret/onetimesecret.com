@@ -58,8 +58,8 @@ image: "./hero.png"                    # optional; relative path, resolved via A
 imageAlt: "Required iff image is set"  # non-empty when image present
 featured: false                        # default false
 planned: false                         # default false; future/roadmap entry
-highlightedLinkUrl: "https://github.com/onetimesecret/onetimesecret/releases/tag/v0.19.0"  # optional CTA link
-highlightedLinkText: "GitHub release notes"                                                 # label for the CTA link
+highlightedLinkUrl: "https://github.com/onetimesecret/onetimesecret/releases/tag/v0.9000.0"  # optional CTA link
+highlightedLinkText: "GitHub release notes"                                                  # label for the CTA link
 highlights:                            # optional; max 6 items; string OR {icon, text}
   - "Plain string highlight"
   - { icon: check, text: "icon is one of: check | info | warn | ask" }

@@ -20,6 +20,7 @@ export interface Props {
   highlightedLinkText?: string;
   locale: string;
   highlights?: HighlightItem[];
+  planned?: boolean;
 }
 
 const {
@@ -33,12 +34,13 @@ const {
   highlightedLinkText,
   locale,
   highlights,
+  planned = false,
 } = Astro.props;
 
 const formattedDate = date.toLocaleDateString(locale, {
   year: "numeric",
   month: "long",
-  day: "numeric",
+  ...(planned ? {} : { day: "numeric" }),
 });
 
 const entryUrl = `/${locale}/changelog/${slug}`;

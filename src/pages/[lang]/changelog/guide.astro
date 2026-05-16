@@ -22,6 +22,7 @@
 import Layout from "@/layouts/Layout.astro";
 import Prose from "@/components/vue/Prose.astro";
 import CategoryBadge from "@/components/changelog/CategoryBadge.astro";
+import EntryHighlights from "@/components/changelog/EntryHighlights.astro";
 import ScreenshotFrame from "@/components/changelog/ScreenshotFrame.astro";
 import BeforeAfter from "@/components/changelog/BeforeAfter.astro";
 import VideoEmbed from "@/components/changelog/VideoEmbed.astro";
@@ -194,7 +195,7 @@ const { initialMessages } = Astro.props;
             >image</code
           >, <code>featured</code>, <code>highlightedLinkUrl</code>, <code
             >highlightedLinkText</code
-          >, and <code>planned</code> fields are optional.
+          >, <code>planned</code>, and <code>highlights</code> fields are optional.
         </p>
       </Prose>
       <div
@@ -215,6 +216,11 @@ featured: false            # true → richer treatment on index
 highlightedLinkUrl: "https://github.com/onetimesecret/onetimesecret/releases/tag/v1.0"
 highlightedLinkText: "GitHub release notes"
 planned: false             # true → appears in Planned tab only
+highlights:                # optional bullet list shown on the index card
+  - { icon: check, text: "Something done, shipped, or fixed" }
+  - { icon: info,  text: "Neutral supporting detail" }
+  - { icon: warn,  text: "Caution or behaviour change" }
+  - { icon: ask,   text: "Open question or planned / pending work" }
 ---
 
 import Callout from "@/components/changelog/Callout.astro";
@@ -275,6 +281,87 @@ Your markdown content starts here.`}</code></pre>
             vulnerability disclosures, and protective measures worth their own visibility.
           </p>
         </div>
+      </div>
+    </section>
+
+    {
+      /* ═══════════════════════════════════════════════════════════
+        4b. Highlight bullets
+        ═══════════════════════════════════════════════════════════ */
+    }
+    <section class="mt-14">
+      <Prose>
+        <h2>Highlight bullets</h2>
+        <p>
+          The optional <code>highlights</code> field renders a short bullet list
+          on the index card. Each item picks one of four icons. Stick to the
+          legend &mdash; the colour is canonical, don't re-tint.
+        </p>
+      </Prose>
+      <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="border-surface-3 bg-surface-1 rounded-lg border p-5">
+          <p class="text-text-primary mb-1 text-sm font-semibold">
+            <code>check</code> &mdash; green
+          </p>
+          <p class="text-text-secondary text-sm">
+            Something done, verified, shipped, or fixed.
+          </p>
+        </div>
+        <div class="border-surface-3 bg-surface-1 rounded-lg border p-5">
+          <p class="text-text-primary mb-1 text-sm font-semibold">
+            <code>info</code> &mdash; sky
+          </p>
+          <p class="text-text-secondary text-sm">
+            Neutral supporting detail. The "for instance" bullet.
+          </p>
+        </div>
+        <div class="border-surface-3 bg-surface-1 rounded-lg border p-5">
+          <p class="text-text-primary mb-1 text-sm font-semibold">
+            <code>warn</code> &mdash; amber
+          </p>
+          <p class="text-text-secondary text-sm">
+            Caution, constraint, or behaviour change worth flagging.
+          </p>
+        </div>
+        <div class="border-surface-3 bg-surface-1 rounded-lg border p-5">
+          <p class="text-text-primary mb-1 text-sm font-semibold">
+            <code>ask</code> &mdash; violet
+          </p>
+          <p class="text-text-secondary text-sm">
+            Open question or planned / pending work. Pair with <code
+              >planned: true</code
+            >.
+          </p>
+        </div>
+      </div>
+
+      {/* Live example */}
+      <div
+        class="border-surface-4 bg-surface-0 mt-6 rounded-xl border border-dashed p-4 sm:p-6">
+        <p class="section-label mb-4">Live preview</p>
+        <EntryHighlights
+          highlights={[
+            { icon: "check", text: "Passphrase hint shipped behind feature flag" },
+            { icon: "info", text: "Defaults to off for self-hosted instances" },
+            { icon: "warn", text: "Old API field renamed; clients must update" },
+            { icon: "ask", text: "Localized hint strings still pending translation" },
+          ]}
+        />
+      </div>
+
+      {/* Code */}
+      <div
+        class="code-block group border-surface-3 relative mt-4 overflow-x-auto rounded-lg border bg-slate-900 p-4 text-sm leading-relaxed text-slate-300">
+        <button
+          class="copy-btn absolute top-2.5 right-2.5 rounded-md bg-slate-700/60 px-2 py-1 text-xs text-slate-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-slate-600/80 hover:text-slate-200 focus:opacity-100"
+          aria-label="Copy to clipboard">
+          Copy
+        </button>
+        <pre><code>{`highlights:
+  - { icon: check, text: "Passphrase hint shipped behind feature flag" }
+  - { icon: info,  text: "Defaults to off for self-hosted instances" }
+  - { icon: warn,  text: "Old API field renamed; clients must update" }
+  - { icon: ask,   text: "Localized hint strings still pending translation" }`}</code></pre>
       </div>
     </section>
 
