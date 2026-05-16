@@ -69,6 +69,11 @@ const t = pageI18n.global.t;
 const navigation = [
   { name: t("navigation.home"), href: localizeUrl("/", effectiveLocale), external: false },
   {
+    name: t("navigation.docs"),
+    href: `https://docs.onetimesecret.com/${getDocsLocale(effectiveLocale)}`,
+    external: true,
+  },
+  {
     name: t("navigation.pricing"),
     href: localizeUrl("/pricing", effectiveLocale),
     external: false,
@@ -77,11 +82,6 @@ const navigation = [
     name: t("navigation.whats-new"),
     href: localizeUrl("/changelog", effectiveLocale),
     external: false,
-  },
-  {
-    name: t("navigation.docs"),
-    href: `https://docs.onetimesecret.com/${getDocsLocale(effectiveLocale)}`,
-    external: true,
   },
 ];
 
