@@ -192,9 +192,9 @@ const { initialMessages } = Astro.props;
         <p>
           Copy this into your <code>index.mdx</code> and fill in the fields. The <code
             >image</code
-          >, <code>featured</code>, <code>githubRelease</code>, and <code
-            >planned</code
-          > fields are optional.
+          >, <code>featured</code>, <code>highlightedLinkUrl</code>, <code
+            >highlightedLinkText</code
+          >, and <code>planned</code> fields are optional.
         </p>
       </Prose>
       <div
@@ -212,7 +212,8 @@ category: "release"        # release | news | operations | security
 image: "./hero.png"        # optional — relative to this directory
 imageAlt: "Descriptive alt text for the hero image"
 featured: false            # true → richer treatment on index
-githubRelease: "https://github.com/onetimesecret/onetimesecret/releases/tag/v1.0"
+highlightedLinkUrl: "https://github.com/onetimesecret/onetimesecret/releases/tag/v1.0"
+highlightedLinkText: "GitHub release notes"
 planned: false             # true → appears in Planned tab only
 ---
 
@@ -621,7 +622,8 @@ category: "release"
 image: "./hero.png"
 imageAlt: "The new expiration picker showing time presets"
 featured: false
-githubRelease: "https://github.com/onetimesecret/onetimesecret/releases/tag/v1.0"
+highlightedLinkUrl: "https://github.com/onetimesecret/onetimesecret/releases/tag/v1.0"
+highlightedLinkText: "GitHub release notes"
 ---
 
 import ScreenshotFrame from "@/components/changelog/ScreenshotFrame.astro";

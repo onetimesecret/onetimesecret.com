@@ -16,7 +16,8 @@ export interface Props {
   description: string;
   category: "release" | "news" | "operations" | "security";
   categoryLabel?: string;
-  githubRelease?: string;
+  highlightedLinkUrl?: string;
+  highlightedLinkText?: string;
   locale: string;
   highlights?: HighlightItem[];
 }
@@ -28,7 +29,8 @@ const {
   description,
   category,
   categoryLabel,
-  githubRelease,
+  highlightedLinkUrl,
+  highlightedLinkText,
   locale,
   highlights,
 } = Astro.props;
@@ -78,15 +80,13 @@ const entryUrl = `/${locale}/changelog/${slug}`;
     </p>
     <EntryHighlights highlights={highlights} />
     {
-      githubRelease && (
+      highlightedLinkUrl && (
         <a
-          href={githubRelease}
-          class="mt-3 inline-flex items-center gap-1 text-sm font-medium
-                 text-text-tertiary transition-colors hover:text-brand-500
-                 dark:hover:text-brand-400"
+          href={highlightedLinkUrl}
+          class="text-text-tertiary hover:text-brand-500 dark:hover:text-brand-400 mt-3 inline-flex items-center gap-1 text-sm font-medium transition-colors"
           target="_blank"
           rel="noopener noreferrer">
-          <span>&rarr;</span> GitHub release notes
+          <span>&rarr;</span> {highlightedLinkText ?? "Read more"}
         </a>
       )
     }

@@ -84,7 +84,8 @@ const changelogCollection = defineCollection({
         image: image().optional(),
         imageAlt: z.string().optional(),
         featured: z.boolean().default(false),
-        githubRelease: z.string().url().optional(),
+        highlightedLinkUrl: z.string().url().optional(),
+        highlightedLinkText: z.string().optional(),
         planned: z.boolean().default(false),
         highlights: z
           .array(
