@@ -61,7 +61,6 @@ const isDismissedOnLoad = (() => {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed?.dismissed === true) {
-          if (EXPIRATION_DAYS === 0) return true;
           const timestamp = parsed.timestamp
             ? new Date(parsed.timestamp).getTime()
             : 0;
