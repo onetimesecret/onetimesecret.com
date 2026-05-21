@@ -9,6 +9,7 @@
  * collections. Place videos in `public/` and use absolute paths:
  *   <VideoEmbed src="/videos/changelog/walkthrough.mp4" />
  */
+import { createLocaleI18n, type SupportedLanguage } from "@/i18n";
 
 export interface Props {
   src?: string;
@@ -26,11 +27,16 @@ const {
   aspectRatio = "16/9",
 } = Astro.props;
 
+const locale = (Astro.currentLocale ?? "en") as SupportedLanguage;
+const pageI18n = await createLocaleI18n(locale);
+const t = pageI18n.global.t;
+
 const youtubeEmbedUrl = youtube
   ? `https://www.youtube-nocookie.com/embed/${youtube}`
   : null;
-const iframeTitle = title || caption || "YouTube video player";
+const iframeTitle = title || caption || t("changelog.video-title-default");
 const isYoutube = !!youtubeEmbedUrl;
+const privacyNotice = t("changelog.video-privacy-notice");
 ---
 
 <figure class="not-prose my-8">
@@ -66,16 +72,12 @@ const isYoutube = !!youtubeEmbedUrl;
         {caption && isYoutube ? (
           <>
             <span>{caption} &mdash; </span>
-            <span class="italic">
-              Embedded via youtube-nocookie.com for privacy
-            </span>
+            <span class="italic">{privacyNotice}</span>
           </>
         ) : caption ? (
           <span>{caption}</span>
         ) : (
-          <span class="italic">
-            Embedded via youtube-nocookie.com for privacy
-          </span>
+          <span class="italic">{privacyNotice}</span>
         )}
       </figcaption>
     )

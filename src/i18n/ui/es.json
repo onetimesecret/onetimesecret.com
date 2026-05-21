@@ -454,6 +454,8 @@
     "stats-update-plural": "actualizaciones publicadas",
     "stats-latest": "Última",
     "filter-aria-label": "Filtro por estado de la actualización",
-    "read-more": "Leer más"
+    "read-more": "Leer más",
+    "video-title-default": "Reproductor de vídeo de YouTube",
+    "video-privacy-notice": "Insertado a través de youtube-nocookie.com por privacidad"
   }
 }
