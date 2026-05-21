@@ -454,6 +454,8 @@
     "stats-update-plural": "updates shipped",
     "stats-latest": "Latest",
     "filter-aria-label": "Update status filter",
-    "read-more": "Read more"
+    "read-more": "Read more",
+    "video-title-default": "YouTube video player",
+    "video-privacy-notice": "Embedded via youtube-nocookie.com for privacy"
   }
 }

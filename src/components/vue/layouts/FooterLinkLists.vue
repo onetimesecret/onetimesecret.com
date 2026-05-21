@@ -6,7 +6,7 @@ import {
   SupportedLanguage,
   type MessageSchema,
 } from "@/i18n";
-import { localizeUrl } from "@/i18n/utils";
+import { getDocsLocale, localizeUrl } from "@/i18n/utils";
 import { onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -29,16 +29,7 @@ if (props.initialMessages && props.locale) {
 
 // The locale to be used for translations and link generation
 const currentLocale = props.locale;
-
-// docs.onetimesecret.com currently only ships English. Fall back to 'en'
-// for any non-supported locale so links don't 404. Mirror this list with
-// DOCS_SUPPORTED_LOCALES in src/components/layout/LayoutHeader.astro.
-const DOCS_SUPPORTED_LOCALES = ["en"] as const;
-const docsLocale = (DOCS_SUPPORTED_LOCALES as readonly string[]).includes(
-  currentLocale,
-)
-  ? currentLocale
-  : "en";
+const docsLocale = getDocsLocale(currentLocale);
 </script>
 
 <template>

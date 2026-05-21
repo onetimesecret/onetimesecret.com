@@ -454,6 +454,8 @@
     "stats-update-plural": "mises à jour livrées",
     "stats-latest": "Dernière",
     "filter-aria-label": "Filtre par statut de mise à jour",
-    "read-more": "En savoir plus"
+    "read-more": "En savoir plus",
+    "video-title-default": "Lecteur vidéo YouTube",
+    "video-privacy-notice": "Intégré via youtube-nocookie.com pour la confidentialité"
   }
 }
