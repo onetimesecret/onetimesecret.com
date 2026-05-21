@@ -1,0 +1,79 @@
+---
+import { colorByIcon, type HighlightIcon, type HighlightItem } from "./highlights";
+
+export interface Props {
+  highlights?: HighlightItem[];
+}
+
+const { highlights } = Astro.props;
+
+const items = highlights?.map((h) =>
+  typeof h === "string"
+    ? { icon: "check" as HighlightIcon, text: h }
+    : h,
+);
+---
+
+{
+  items && items.length > 0 && (
+    <ul class="mt-4 space-y-1.5 text-sm leading-snug text-text-secondary">
+      {items.map(({ icon, text }) => (
+        <li class="flex gap-2.5">
+          <svg
+            class={`mt-0.5 h-4 w-4 shrink-0 ${colorByIcon[icon]}`}
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true">
+            {icon === "check" && (
+              <path d="M5 10.5 L8.5 14 L15 6" />
+            )}
+            {icon === "info" && (
+              <Fragment>
+                <circle cx="10" cy="10" r="7.5" />
+                <line x1="10" y1="9" x2="10" y2="14" />
+                <circle
+                  cx="10"
+                  cy="6.5"
+                  r="0.5"
+                  fill="currentColor"
+                  stroke="none"
+                />
+              </Fragment>
+            )}
+            {icon === "warn" && (
+              <Fragment>
+                <path d="M10 3 L17.5 16.5 L2.5 16.5 Z" />
+                <line x1="10" y1="8" x2="10" y2="12" />
+                <circle
+                  cx="10"
+                  cy="14.25"
+                  r="0.5"
+                  fill="currentColor"
+                  stroke="none"
+                />
+              </Fragment>
+            )}
+            {icon === "ask" && (
+              <Fragment>
+                <circle cx="10" cy="10" r="7.5" />
+                <path d="M7.8 7.8 a2.2 2.2 0 114 1.2 c-.8.6-1.3 1-1.3 2" />
+                <circle
+                  cx="10"
+                  cy="14"
+                  r="0.5"
+                  fill="currentColor"
+                  stroke="none"
+                />
+              </Fragment>
+            )}
+          </svg>
+          <span>{text}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}

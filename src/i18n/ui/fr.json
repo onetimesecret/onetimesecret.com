@@ -7,6 +7,8 @@
   "learn-about-our-company": "En savoir plus sur notre entreprise",
   "check-our-service-status": "Vérifiez l'état de notre service",
   "explore-our-api-documentation": "Explorez notre documentation API",
+  "read-our-product-guides": "Consultez nos guides produit",
+  "learn-about-self-hosting": "Découvrez l'auto-hébergement",
   "learn-about-our-security-measures": "En savoir plus sur nos mesures de sécurité",
   "access-our-documentation": "Accédez à notre documentation",
   "view-our-source-code-on-github": "Voir notre code source sur GitHub",
@@ -39,6 +41,7 @@
     "regions": "Régions",
     "about": "À propos",
     "pricing": "Tarifs",
+    "whats-new": "Nouveautés",
     "docs": "Docs"
   },
   "auth": {
@@ -308,7 +311,9 @@
         "changelog": "Changelog",
         "github": "GitHub",
         "contact": "Contact",
-        "dpa": "DPA"
+        "dpa": "DPA",
+        "guides": "Guides",
+        "selfHosting": "Auto-hébergement"
       }
     },
     "homepage": {
@@ -316,7 +321,7 @@
       "description": "Partagez des informations sensibles en toute sécurité avec des liens auto-destructibles. Collez votre secret, générez un lien et partagez-le. Une fois consulté, il disparaît à jamais.",
       "a-trusted-way-to-share-sensitive-information-etc": "Une méthode fiable pour partager des informations confidentielles qui s'autodétruisent après consultation.",
       "hero": {
-        "badge": "Architecture axée sur la vie privée",
+        "badge": "Conception axée sur la vie privée",
         "title": {
           "line1": "Onetime Secret",
           "line2_w1": "Signed.",
@@ -427,5 +432,30 @@
         "also": "Également disponible :"
       }
     }
+  },
+  "changelog": {
+    "label": "Journal des modifications",
+    "description": "Versions, mises à jour de service et annonces de Onetime Secret.",
+    "empty": "Aucune mise à jour pour le moment. Revenez bientôt !",
+    "shipped": "Livrées",
+    "planned": "Prévues",
+    "planned-empty": "Aucun élément prévu pour le moment.",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "back": "Retour à toutes les mises à jour",
+    "nav-label": "Navigation du journal des modifications",
+    "category-release": "Version",
+    "category-news": "Actualités",
+    "category-operations": "Opérations",
+    "category-security": "Sécurité",
+    "before": "Avant",
+    "after": "Après",
+    "stats-update-singular": "mise à jour livrée",
+    "stats-update-plural": "mises à jour livrées",
+    "stats-latest": "Dernière",
+    "filter-aria-label": "Filtre par statut de mise à jour",
+    "read-more": "En savoir plus",
+    "video-title-default": "Lecteur vidéo YouTube",
+    "video-privacy-notice": "Intégré via youtube-nocookie.com pour la confidentialité"
   }
 }

@@ -1,0 +1,85 @@
+---
+/**
+ * src/components/changelog/VideoEmbed.astro
+ * Responsive video player for changelog entries.
+ * Supports local mp4 files or privacy-respecting YouTube embeds
+ * via youtube-nocookie.com.
+ *
+ * IMPORTANT: Astro does not serve co-located video files from content
+ * collections. Place videos in `public/` and use absolute paths:
+ *   <VideoEmbed src="/videos/changelog/walkthrough.mp4" />
+ */
+import { createLocaleI18n, type SupportedLanguage } from "@/i18n";
+
+export interface Props {
+  src?: string;
+  youtube?: string;
+  title?: string;
+  caption?: string;
+  aspectRatio?: string;
+}
+
+const {
+  src,
+  youtube,
+  title,
+  caption,
+  aspectRatio = "16/9",
+} = Astro.props;
+
+const locale = (Astro.currentLocale ?? "en") as SupportedLanguage;
+const pageI18n = await createLocaleI18n(locale);
+const t = pageI18n.global.t;
+
+const youtubeEmbedUrl = youtube
+  ? `https://www.youtube-nocookie.com/embed/${youtube}`
+  : null;
+const iframeTitle = title || caption || t("changelog.video-title-default");
+const isYoutube = !!youtubeEmbedUrl;
+const privacyNotice = t("changelog.video-privacy-notice");
+---
+
+<figure class="not-prose my-8">
+  <div
+    class="relative w-full overflow-hidden rounded-lg border border-surface-3 bg-surface-2 shadow-md"
+    style={`aspect-ratio: ${aspectRatio}`}>
+    {
+      youtubeEmbedUrl ? (
+        <iframe
+          src={youtubeEmbedUrl}
+          title={iframeTitle}
+          class="absolute inset-0 h-full w-full border-0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+          loading="lazy"
+        />
+      ) : src ? (
+        <video
+          controls
+          preload="metadata"
+          class="absolute inset-0 h-full w-full object-contain"
+          playsinline>
+          <source src={src} type="video/mp4" />
+          Your browser does not support the video element.
+        </video>
+      ) : null
+    }
+  </div>
+  {
+    (caption || isYoutube) && (
+      <figcaption class="mt-3 text-center text-sm text-text-tertiary">
+        {caption && isYoutube ? (
+          <>
+            <span>{caption} &mdash; </span>
+            <span class="italic">{privacyNotice}</span>
+          </>
+        ) : caption ? (
+          <span>{caption}</span>
+        ) : (
+          <span class="italic">{privacyNotice}</span>
+        )}
+      </figcaption>
+    )
+  }
+</figure>

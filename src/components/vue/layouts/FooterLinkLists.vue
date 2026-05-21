@@ -6,7 +6,7 @@ import {
   SupportedLanguage,
   type MessageSchema,
 } from "@/i18n";
-import { localizeUrl } from "@/i18n/utils";
+import { getDocsLocale, localizeUrl } from "@/i18n/utils";
 import { onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -29,6 +29,7 @@ if (props.initialMessages && props.locale) {
 
 // The locale to be used for translations and link generation
 const currentLocale = props.locale;
+const docsLocale = getDocsLocale(currentLocale);
 </script>
 
 <template>
@@ -44,20 +45,40 @@ const currentLocale = props.locale;
         class="space-y-3">
         <li>
           <a
-            :href="localizeUrl('/pricing', currentLocale)"
-            class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-            :aria-label="t('view-our-subscription-pricing')">
-            {{ t("LABELS.pricing") }}
-          </a>
-        </li>
-        <li>
-          <a
-            :href="`https://docs.onetimesecret.com/${currentLocale}/rest-api`"
+            :href="`https://docs.onetimesecret.com/${docsLocale}/rest-api`"
             class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
             :aria-label="t('explore-our-api-documentation')"
             target="_blank"
             rel="noopener noreferrer">
             {{ t("web.footer.links.api") }}
+          </a>
+        </li>
+        <li>
+          <a
+            :href="`https://docs.onetimesecret.com/${docsLocale}/introduction/guides/`"
+            class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+            :aria-label="t('read-our-product-guides')"
+            target="_blank"
+            rel="noopener noreferrer">
+            {{ t("web.footer.links.guides") }}
+          </a>
+        </li>
+        <li>
+          <a
+            :href="`https://docs.onetimesecret.com/${docsLocale}/self-hosting/`"
+            class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+            :aria-label="t('learn-about-self-hosting')"
+            target="_blank"
+            rel="noopener noreferrer">
+            {{ t("web.footer.links.selfHosting") }}
+          </a>
+        </li>
+        <li>
+          <a
+            :href="localizeUrl('/pricing', currentLocale)"
+            class="text-sm leading-6 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+            :aria-label="t('view-our-subscription-pricing')">
+            {{ t("LABELS.pricing") }}
           </a>
         </li>
         <li>

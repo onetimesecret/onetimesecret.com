@@ -1,0 +1,126 @@
+---
+// src/components/homepage/ChangelogBanner.astro
+
+/**
+ * Homepage changelog banner.
+ * Server-rendered banner with the single latest changelog entry,
+ * dismissible via tiny inline script that persists state in localStorage.
+ * Keyed by entry slug so a new release re-shows the banner to returning visitors.
+ * Renders the entry's actual category badge ("Release", "News", "Operations", …),
+ * not a hardcoded label.
+ */
+import { getCollection } from "astro:content";
+import CategoryBadge from "@/components/changelog/CategoryBadge.astro";
+import { createLocaleI18n, type SupportedLanguage } from "@/i18n";
+
+export interface Props {
+  locale: string;
+}
+
+const { locale } = Astro.props;
+
+function entrySlug(id: string): string {
+  return id.replace(/\/index$/, "");
+}
+
+const entries = await getCollection("changelog");
+const latest = entries
+  .filter((e) => !e.data.planned)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())[0];
+
+const slug = latest ? entrySlug(latest.id) : null;
+const storageKey = slug ? `changelogBannerDismissed:${slug}` : null;
+
+const bannerI18n = await createLocaleI18n(locale as SupportedLanguage);
+const t = bannerI18n.global.t;
+const categoryLabel = latest
+  ? t(`changelog.category-${latest.data.category}`)
+  : null;
+const dismissLabel = t("banner.dismiss");
+const formattedDate = latest
+  ? latest.data.date.toLocaleDateString(locale, {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      timeZone: "UTC",
+    })
+  : null;
+---
+
+{
+  latest && (
+    <>
+      <script is:inline define:vars={{ storageKey }}>
+        try {
+          if (storageKey && localStorage.getItem(storageKey) === "1") {
+            var s = document.createElement("style");
+            s.textContent =
+              "[data-changelog-banner]{display:none}";
+            document.head.appendChild(s);
+          }
+        } catch (e) {
+          // localStorage may be unavailable (private mode, etc.)
+        }
+      </script>
+      <div
+        data-changelog-banner
+        data-storage-key={storageKey}
+        class="border-surface-3 bg-surface-1 border-b">
+        <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2 sm:px-6">
+          <a
+            href={`/${locale}/changelog/${slug}`}
+            class="text-text-secondary hover:text-text-primary flex min-w-0 items-center gap-2 text-sm transition-colors">
+            <CategoryBadge
+              category={latest.data.category}
+              label={categoryLabel ?? undefined}
+            />
+            <time
+              datetime={latest.data.date.toISOString()}
+              class="text-text-tertiary shrink-0 text-sm">
+              {formattedDate}
+            </time>
+            <span class="text-text-primary truncate font-medium">
+              {latest.data.title}
+            </span>
+            <span class="text-text-tertiary hidden truncate sm:inline">
+              &mdash; {latest.data.description}
+            </span>
+            <span class="text-brand-600 dark:text-brand-400 shrink-0">
+              &rarr;
+            </span>
+          </a>
+          <button
+            type="button"
+            data-changelog-banner-dismiss
+            class="text-text-tertiary hover:text-text-primary focus-visible:outline-brand-500 -m-1 shrink-0 rounded p-1 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+            aria-label={dismissLabel}>
+            <svg
+              class="size-4"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true">
+              <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </>
+  )
+}
+
+<script>
+  const banner = document.querySelector<HTMLElement>("[data-changelog-banner]");
+  if (banner) {
+    const key = banner.dataset.storageKey;
+    banner
+      .querySelector<HTMLButtonElement>("[data-changelog-banner-dismiss]")
+      ?.addEventListener("click", () => {
+        try {
+          if (key) localStorage.setItem(key, "1");
+        } catch (e) {
+          // localStorage may be unavailable
+        }
+        banner.remove();
+      });
+  }
+</script>

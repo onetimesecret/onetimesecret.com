@@ -148,6 +148,22 @@ export function isLocalizedUrlActive(
 // }
 
 /**
+ * Locales supported by docs.onetimesecret.com. Any unsupported main-site
+ * locale falls back to 'en' so docs links don't 404.
+ */
+export const DOCS_SUPPORTED_LOCALES = ["en"] as const;
+
+/**
+ * Resolve a main-site locale to a docs-site locale, falling back to 'en'
+ * when the docs site doesn't yet ship that language.
+ */
+export function getDocsLocale(locale: string): string {
+  return (DOCS_SUPPORTED_LOCALES as readonly string[]).includes(locale)
+    ? locale
+    : "en";
+}
+
+/**
  * Default export for convenience
  */
 export default {
@@ -156,4 +172,5 @@ export default {
   localizeUrl,
   createLanguageSwitcherUrl,
   isLocalizedUrlActive,
+  getDocsLocale,
 };

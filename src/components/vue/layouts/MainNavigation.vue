@@ -37,8 +37,8 @@ const navigation = computed(() => {
 
   return [
     { name: t("navigation.home"), href: localizeUrl("/", props.locale) },
-    { name: t("navigation.about"), href: localizeUrl("/about", props.locale) },
     { name: t("navigation.pricing"), href: localizeUrl("/pricing", props.locale) },
+    { name: t("navigation.whats-new"), href: localizeUrl("/changelog", props.locale) },
   ];
 });
 
