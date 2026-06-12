@@ -138,7 +138,7 @@
             "0": "One custom domain (e.g. secrets.example.com)",
             "1": "Automatic destruction after viewing",
             "2": "Configurable expiration options up to 14 days",
-            "3": "Email links to recipients",
+            "3": "Email links directly to recipients",
             "4": "REST API"
           }
         },
@@ -152,11 +152,11 @@
             "annually": "$356"
           },
           "features": {
-            "0": "Everything in Basic",
-            "1": "Unlimited custom domains",
-            "2": "Custom branding with your logo",
-            "3": "Expiration up to 30 days",
-            "4": "Homepage access control (decide who can create secrets at your domain)"
+            "0": "Everything in Basic, with unlimited domains",
+            "1": "Custom branding with your logo",
+            "2": "Expiration up to 30 days",
+            "3": "Invite unlimited members",
+            "4": "Homepage access controls, Incoming Secrets"
           }
         }
       },
