@@ -8,7 +8,7 @@
  * - Language fallback (preferred language -> default language)
  * - Consistent styling and layout
  */
-import { getCollection, type CollectionEntry } from "astro:content";
+import { getCollection, render, type CollectionEntry } from "astro:content";
 import ContentPageLayout from "@/layouts/ContentPageLayout.astro";
 import { getLanguagePaths, type SupportedLanguage } from "@/i18n";
 import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
@@ -89,7 +89,7 @@ await createLocaleI18n(lang, initialMessages);
 const isFallback = entryLang !== lang;
 
 // Render the content
-const renderedContent = await entry.render();
+const renderedContent = await render(entry);
 ---
 
 <ContentPageLayout
