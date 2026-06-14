@@ -105,7 +105,7 @@
       "features": "Funktionen",
       "elevate-your-secure-sharing-with-custom-domains-": "Verbessern Sie Ihr sicheres Teilen mit benutzerdefinierten Domains, unbegrenzter Kapazität und Funktionen auf Unternehmensniveau.",
       "payment-frequency": "Zahlungsfrequenz",
-      "region-selector-label": "Zahlungsregion:",
+      "region-selector-label": "Datenregion:",
       "region": "Region",
       "change": "Ändern",
       "secure-your-brand-and-build-customer-trust-with-": "Sichern Sie Ihre Marke und bauen Sie Kundenvertrauen mit Links von Ihrer Domain auf. Perfekt für Unternehmen, die Wert auf Datenschutz und Professionalität legen.",
@@ -152,11 +152,11 @@
             "annually": "356 €"
           },
           "features": {
-            "0": "Alles aus Basis",
-            "1": "Unbegrenzte benutzerdefinierte Domains",
-            "2": "Benutzerdefiniertes Branding mit Ihrem Logo",
-            "3": "Ablaufzeit bis zu 30 Tage",
-            "4": "Startseiten-Zugriffskontrolle (bestimmen Sie, wer Geheimnisse auf Ihrer Domain erstellen kann)"
+            "0": "Alles aus Basis, mit unbegrenzten Domains",
+            "1": "Benutzerdefiniertes Branding mit Ihrem Logo",
+            "2": "Ablaufzeit bis zu 30 Tage",
+            "3": "Unbegrenzt viele Mitglieder einladen",
+            "4": "Startseiten-Zugriffskontrollen, Eingehende Geheimnisse"
           }
         }
       },
@@ -185,8 +185,8 @@
     "errors": {
       "errorTitle": "Nicht erfolgreich",
       "passphraseRequired": "Passphrase ist erforderlich, wenn diese Option ausgewählt ist.",
-      "apiGenericErrorHomepage": "Something went wrong. Please try again.",
-      "apiGenericError": "Something went wrong. Please try again."
+      "apiGenericErrorHomepage": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+      "apiGenericError": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
     },
     "secrets": {
       "keepSensitiveInfo": "Halten Sie sensible Informationen aus Ihren E-Mails und Chat-Protokollen heraus.",
@@ -251,11 +251,11 @@
       "privacyNote": "Ihre Geheimnisse werden verschlüsselt, nie in Protokollen gespeichert und nach dem Anzeigen automatisch gelöscht.",
       "itdevops": {
         "title": "IT & DevOps",
-        "description": "Securely rotate production credentials, share API keys during onboarding, and keep sensitive config out of Slack and email threads."
+        "description": "Rotieren Sie Produktions-Zugangsdaten sicher, teilen Sie API-Schlüssel beim Onboarding und halten Sie sensible Konfigurationen aus Slack- und E-Mail-Verläufen heraus."
       },
       "consultants": {
-        "title": "Consultants & Agencies",
-        "description": "Share client credentials, project access, and sensitive deliverables without leaving traces in email threads or shared drives."
+        "title": "Berater & Agenturen",
+        "description": "Teilen Sie Kundenzugangsdaten, Projektzugriffe und vertrauliche Arbeitsergebnisse, ohne Spuren in E-Mail-Verläufen oder gemeinsamen Laufwerken zu hinterlassen."
       },
       "it": {
         "title": "IT-Fachkraft",
@@ -280,8 +280,8 @@
         "cta": "Sichern Sie Ihre API-Schlüssel"
       },
       "hr": {
-        "title": "HR-Manager",
-        "description": "Teilen Sie sensible Mitarbeiterinformationen und Anmeldedaten sicher",
+        "title": "HR & People Ops",
+        "description": "Teilen Sie Onboarding-Zugangsdaten, temporäre Systemzugriffe und vertrauliche HR-Kommunikation, ohne Spuren in E-Mails oder Ticketsystemen zu hinterlassen.",
         "benefits": {
           "1": "Übermitteln Sie Onboarding-Anmeldedaten sicher an neue Mitarbeiter",
           "2": "Teilen Sie vertrauliche Informationen mit einmaligem Zugriff",
@@ -291,8 +291,8 @@
         "cta": "Sichere HR-Kommunikation"
       },
       "legal": {
-        "title": "Rechtsteam",
-        "description": "Teilen Sie vertrauliche Rechtsdokumente und Informationen sicher",
+        "title": "Recht & Finanzen",
+        "description": "Übermitteln Sie Vergleichsbedingungen, Kontozugangsdaten und vertrauliche Fallinformationen mit Einmalzugriffskontrollen, die das Anwaltsgeheimnis und die Vertraulichkeit schützen.",
         "benefits": {
           "1": "Wahren Sie das Anwaltsgeheimnis in der digitalen Kommunikation",
           "2": "Teilen Sie fallsensible Informationen sicher mit Mandanten",
@@ -304,13 +304,13 @@
     },
     "footer": {
       "columns": {
-        "product": "Product"
+        "product": "Produkt"
       },
       "links": {
         "api": "API",
         "changelog": "Changelog",
         "github": "GitHub",
-        "contact": "Contact",
+        "contact": "Kontakt",
         "dpa": "DPA",
         "guides": "Anleitungen",
         "selfHosting": "Self-Hosting"
@@ -324,9 +324,9 @@
         "badge": "Datenschutzorientiertes Design",
         "title": {
           "line1": "Onetime Secret",
-          "line2_w1": "Signed.",
-          "line2_w2": "Sealed.",
-          "line2_w3": "Delivered."
+          "line2_w1": "Signiert.",
+          "line2_w2": "Versiegelt.",
+          "line2_w3": "Zugestellt."
         },
         "subtitle": "Senden Sie Passwörter, Zugangsdaten und sensible Informationen über Links, die nur einmal funktionieren.",
         "compliance": {
@@ -338,19 +338,19 @@
         }
       },
       "features": {
-        "label": "Security architecture",
-        "heading": "Built to forget.",
-        "description": "Every design decision serves one purpose: make sure secrets are readable exactly once, then gone."
+        "label": "Sicherheitsarchitektur",
+        "heading": "Gebaut, um zu vergessen.",
+        "description": "Jede Designentscheidung dient einem einzigen Zweck: dafür zu sorgen, dass Geheimnisse genau einmal lesbar sind und dann verschwinden."
       },
       "useCases": {
-        "label": "Use cases",
-        "heading": "How teams use Onetime Secret",
-        "description": "From onboarding a new hire to rotating production credentials, sensitive data moves through organizations every day."
+        "label": "Anwendungsfälle",
+        "heading": "Wie Teams Onetime Secret nutzen",
+        "description": "Vom Onboarding neuer Mitarbeiter bis zum Rotieren von Produktions-Zugangsdaten — sensible Daten bewegen sich täglich durch Unternehmen."
       },
       "infrastructure": {
-        "label": "Global infrastructure",
-        "heading": "Your data, your jurisdiction.",
-        "description": "Choose where your secrets are stored and processed. Regional instances ensure your data never leaves the geography you choose.",
+        "label": "Globale Infrastruktur",
+        "heading": "Ihre Daten, Ihr Rechtsraum.",
+        "description": "Wählen Sie, wo Ihre Geheimnisse gespeichert und verarbeitet werden. Regionale Instanzen stellen sicher, dass Ihre Daten die von Ihnen gewählte Region niemals verlassen.",
         "regions": {
           "ca": "Toronto, Kanada",
           "eu": "Nürnberg, Deutschland",
@@ -358,24 +358,24 @@
           "uk": "London, Vereinigtes Königreich",
           "us": "Hillsboro, Vereinigte Staaten"
         },
-        "capabilitiesLabel": "Available regions",
+        "capabilitiesLabel": "Verfügbare Regionen",
         "features": {
-          "customDomain": "Custom Domain",
+          "customDomain": "Benutzerdefinierte Domain",
           "customBranding": "Benutzerdefiniertes Branding",
           "sso": "SSO / SAML",
           "incomingSecrets": "Eingehende Geheimnisse",
           "accessControls": "Zugriffskontrollen",
-          "auditLogs": "Audit Logs"
+          "auditLogs": "Audit-Logs"
         }
       },
       "cta": {
         "heading": {
-          "line1": "Start sharing secrets",
-          "line2": "the right way."
+          "line1": "Teilen Sie Geheimnisse",
+          "line2": "auf die richtige Weise."
         },
         "description": "Kostenlos für Einzelpersonen und Teams. Pläne für individuelles Branding, erweiterte Steuerung und mehr.",
-        "primaryButton": "Try it free",
-        "secondaryButton": "View pricing"
+        "primaryButton": "Kostenlos testen",
+        "secondaryButton": "Preise anzeigen"
       },
       "howItWorks": {
         "label": "So funktioniert es",
@@ -444,8 +444,8 @@
     "next": "Nächster",
     "back": "Zurück zu allen Updates",
     "nav-label": "Änderungsprotokoll-Navigation",
-    "category-release": "Release",
-    "category-news": "News",
+    "category-release": "Veröffentlichung",
+    "category-news": "Neuigkeiten",
     "category-operations": "Betrieb",
     "category-security": "Sicherheit",
     "before": "Vorher",

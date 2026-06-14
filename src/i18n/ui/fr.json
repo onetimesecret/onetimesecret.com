@@ -98,14 +98,14 @@
     "pricing": {
       "title": "Plans tarifaires | Onetime Secret",
       "description": "Choisissez le plan parfait pour vos besoins de partage d'informations sécurisées. Des plans gratuits de base aux options premium avec domaines personnalisés et infrastructure dédiée.",
-      "includes-all-features-and-unlimited-sharing-capa": "Comprend toutes les fonctionnalités et une capacité de partage illimitée",
-      "includes-all-data-locality-options": "Tous les forfaits incluent le choix de localité des données : régions {0}",
+      "includes-all-features-and-unlimited-sharing-capa": "Tous les forfaits incluent des fonctionnalités de confidentialité et une capacité de partage illimitée",
+      "includes-all-data-locality-options": "Tous les forfaits incluent le choix de localité des données : {0} régions",
       "get-started": "Commencer",
-      "frequency-value-annually-annual-monthly-subscrip": "{0} souscription",
+      "frequency-value-annually-annual-monthly-subscrip": "Abonnement {0}",
       "features": "Caractéristiques",
       "elevate-your-secure-sharing-with-custom-domains-": "Améliorez votre partage sécurisé avec des domaines personnalisés, une capacité illimitée et des fonctionnalités de niveau entreprise.",
       "payment-frequency": "Fréquence des paiements",
-      "region-selector-label": "Région de paiement :",
+      "region-selector-label": "Région des données :",
       "region": "Région",
       "change": "Changer",
       "secure-your-brand-and-build-customer-trust-with-": "Protégez votre marque et renforcez la confiance de vos clients grâce à des liens provenant de votre domaine. Parfait pour les entreprises qui accordent de l'importance à la confidentialité et au professionnalisme.",
@@ -152,11 +152,11 @@
             "annually": "356 €"
           },
           "features": {
-            "0": "Tout ce qui est inclus dans Basique",
-            "1": "Domaines personnalisés illimités",
-            "2": "Image de marque personnalisée avec votre logo",
-            "3": "Expiration jusqu'à 30 jours",
-            "4": "Contrôle d'accès à la page d'accueil (décidez qui peut créer des secrets sur votre domaine)"
+            "0": "Tout ce qui est inclus dans Basique, avec des domaines illimités",
+            "1": "Image de marque personnalisée avec votre logo",
+            "2": "Expiration jusqu'à 30 jours",
+            "3": "Invitez un nombre illimité de membres",
+            "4": "Contrôles d'accès à la page d'accueil, Secrets entrants"
           }
         }
       },
@@ -185,8 +185,8 @@
     "errors": {
       "errorTitle": "Échec",
       "passphraseRequired": "Une phrase de passe est requise lorsque l'option est sélectionnée.",
-      "apiGenericErrorHomepage": "Something went wrong. Please try again.",
-      "apiGenericError": "Something went wrong. Please try again."
+      "apiGenericErrorHomepage": "Une erreur s'est produite. Veuillez réessayer.",
+      "apiGenericError": "Une erreur s'est produite. Veuillez réessayer."
     },
     "secrets": {
       "keepSensitiveInfo": "Gardez les informations sensibles hors de vos e-mails et de vos journaux de discussion.",
@@ -251,11 +251,11 @@
       "privacyNote": "Vos secrets sont chiffrés, jamais stockés dans les journaux et automatiquement supprimés après consultation.",
       "itdevops": {
         "title": "IT & DevOps",
-        "description": "Securely rotate production credentials, share API keys during onboarding, and keep sensitive config out of Slack and email threads."
+        "description": "Renouvelez les identifiants de production en toute sécurité, partagez les clés d'API lors de l'intégration et gardez les configurations sensibles hors de Slack et des fils d'e-mails."
       },
       "consultants": {
-        "title": "Consultants & Agencies",
-        "description": "Share client credentials, project access, and sensitive deliverables without leaving traces in email threads or shared drives."
+        "title": "Consultants et agences",
+        "description": "Partagez les identifiants des clients, les accès aux projets et les livrables sensibles sans laisser de traces dans les fils d'e-mails ou les lecteurs partagés."
       },
       "it": {
         "title": "Professionnel de l'informatique",
@@ -280,8 +280,8 @@
         "cta": "Sécurisez vos clés API"
       },
       "hr": {
-        "title": "Responsable RH",
-        "description": "Partagez en toute sécurité les informations sensibles des employés et les informations d'identification.",
+        "title": "RH et People Ops",
+        "description": "Partagez les identifiants d'intégration, les accès temporaires aux systèmes et les communications RH confidentielles sans laisser de trace dans les e-mails ou les systèmes de tickets.",
         "benefits": {
           "1": "Transmettez en toute sécurité les informations d'identification d'intégration aux nouveaux employés.",
           "2": "Partagez des informations confidentielles avec un accès unique.",
@@ -291,8 +291,8 @@
         "cta": "Sécurisez les communications RH"
       },
       "legal": {
-        "title": "Équipe juridique",
-        "description": "Partagez des documents juridiques confidentiels et des informations en toute sécurité.",
+        "title": "Juridique et Finance",
+        "description": "Transmettez les conditions de règlement, les identifiants de compte et les informations confidentielles relatives aux affaires grâce à des contrôles d'accès à usage unique qui protègent le secret professionnel et la confidentialité.",
         "benefits": {
           "1": "Maintenez le secret professionnel dans les communications numériques.",
           "2": "Partagez en toute sécurité des informations sensibles relatives aux affaires avec les clients.",
@@ -304,7 +304,7 @@
     },
     "footer": {
       "columns": {
-        "product": "Product"
+        "product": "Produit"
       },
       "links": {
         "api": "API",
@@ -324,9 +324,9 @@
         "badge": "Conception axée sur la vie privée",
         "title": {
           "line1": "Onetime Secret",
-          "line2_w1": "Signed.",
-          "line2_w2": "Sealed.",
-          "line2_w3": "Delivered."
+          "line2_w1": "Signé.",
+          "line2_w2": "Scellé.",
+          "line2_w3": "Livré."
         },
         "subtitle": "Envoyez des mots de passe, des identifiants et des données sensibles avec des liens à usage unique.",
         "compliance": {
@@ -338,19 +338,19 @@
         }
       },
       "features": {
-        "label": "Security architecture",
-        "heading": "Built to forget.",
-        "description": "Every design decision serves one purpose: make sure secrets are readable exactly once, then gone."
+        "label": "Architecture de sécurité",
+        "heading": "Conçu pour oublier.",
+        "description": "Chaque décision de conception sert un seul objectif : garantir que les secrets sont lisibles exactement une fois, puis disparaissent."
       },
       "useCases": {
-        "label": "Use cases",
-        "heading": "How teams use Onetime Secret",
-        "description": "From onboarding a new hire to rotating production credentials, sensitive data moves through organizations every day."
+        "label": "Cas d'usage",
+        "heading": "Comment les équipes utilisent Onetime Secret",
+        "description": "De l'intégration d'un nouvel employé à la rotation des identifiants de production, les données sensibles circulent chaque jour dans les organisations."
       },
       "infrastructure": {
-        "label": "Global infrastructure",
-        "heading": "Your data, your jurisdiction.",
-        "description": "Choose where your secrets are stored and processed. Regional instances ensure your data never leaves the geography you choose.",
+        "label": "Infrastructure mondiale",
+        "heading": "Vos données, votre juridiction.",
+        "description": "Choisissez où vos secrets sont stockés et traités. Les instances régionales garantissent que vos données ne quittent jamais la zone géographique que vous avez choisie.",
         "regions": {
           "ca": "Toronto, Canada",
           "eu": "Nuremberg, Allemagne",
@@ -358,24 +358,24 @@
           "uk": "Londres, Royaume-Uni",
           "us": "Hillsboro, États-Unis"
         },
-        "capabilitiesLabel": "Available regions",
+        "capabilitiesLabel": "Régions disponibles",
         "features": {
-          "customDomain": "Custom Domain",
+          "customDomain": "Domaine personnalisé",
           "customBranding": "Image de marque personnalisée",
           "sso": "SSO / SAML",
           "incomingSecrets": "Secrets entrants",
           "accessControls": "Contrôles d'accès",
-          "auditLogs": "Audit Logs"
+          "auditLogs": "Journaux d'audit"
         }
       },
       "cta": {
         "heading": {
-          "line1": "Start sharing secrets",
-          "line2": "the right way."
+          "line1": "Partagez des secrets",
+          "line2": "de la bonne manière."
         },
         "description": "Gratuit pour les particuliers et les équipes. Des forfaits pour la personnalisation de marque, les contrôles avancés et plus encore.",
-        "primaryButton": "Try it free",
-        "secondaryButton": "View pricing"
+        "primaryButton": "Essayer gratuitement",
+        "secondaryButton": "Voir les tarifs"
       },
       "howItWorks": {
         "label": "Comment ça marche",
