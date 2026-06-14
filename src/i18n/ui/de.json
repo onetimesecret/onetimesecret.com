@@ -128,35 +128,40 @@
         "basic": {
           "name": "Basis",
           "badge": null,
-          "description": "Alles, was Sie brauchen, um Geheimnisse sicher zu teilen — inklusive eigener Domain, kostenlos.",
+          "description": "Einfaches sicheres Teilen für Einzelpersonen und kleine Teams.",
           "cta": "Loslegen",
           "price": {
             "monthly": "0 €",
             "annually": "0 €"
           },
           "features": {
-            "0": "Eine benutzerdefinierte Domain (z. B. secrets.beispiel.com)",
+            "0": "Anonyme Links und kostenlose Konten",
             "1": "Automatische Zerstörung nach dem Ansehen",
             "2": "Konfigurierbare Ablaufoptionen bis zu 14 Tage",
-            "3": "Links per E-Mail an Empfänger senden",
-            "4": "REST-API"
+            "3": "REST-API-Zugriff",
+            "4": "E-Mail-Zustellung über Onetime-Secret-Domains"
           }
         },
         "identity": {
           "name": "Identity Plus",
           "badge": "Vorgestellt",
-          "description": "Volle Kontrolle über Ihr gebrandetes Geheimnis-Sharing-Erlebnis.",
+          "description": "Gebrandete Geheimniszustellung für Teams, die Vertrauen, Kontrolle und regionale Auswahl brauchen.",
           "cta": "Heute starten",
           "price": {
             "monthly": "35 €",
             "annually": "356 €"
           },
           "features": {
-            "0": "Alles aus Basis, mit unbegrenzten Domains",
-            "1": "Benutzerdefiniertes Branding mit Ihrem Logo",
-            "2": "Ablaufzeit bis zu 30 Tage",
-            "3": "Unbegrenzt viele Mitglieder einladen",
-            "4": "Startseiten-Zugriffskontrollen, Eingehende Geheimnisse"
+            "0": "Unbegrenzte benutzerdefinierte Domains",
+            "1": "Individuelles Branding mit Ihrem Logo",
+            "2": "E-Mail-Zustellung von Ihrer Domain",
+            "3": "Verlängerte Ablaufzeit bis zu 30 Tagen",
+            "4": "Startseiten-Zugriffskontrollen und eingehende Geheimnisse"
+          },
+          "featureGroups": {
+            "brand": "Markenpräsenz",
+            "delivery": "Zustellungs-Workflows",
+            "controls": "Kontrolle und Aufbewahrung"
           }
         }
       },

@@ -50,8 +50,6 @@ const {
   cleanup,
 } = useJurisdiction();
 
-const isClient = ref(false);
-
 const frequency = ref(frequencies[0]);
 
 const handleRegionChange = (region: Region) => {
@@ -95,10 +93,6 @@ const getIdentityHref = computed(() => {
 
 const feedbackHref = getRegionalHref("/feedback");
 
-onMounted(() => {
-  isClient.value = true;
-});
-
 onUnmounted(() => {
   cleanup();
 });
@@ -111,26 +105,7 @@ onUnmounted(() => {
     <main class="flex-grow">
       <section aria-labelledby="pricing-heading">
         <!-- Hero -->
-        <div class="relative overflow-hidden bg-surface-0">
-          <div
-            class="pointer-events-none absolute inset-0
-              -z-10 overflow-hidden"
-            aria-hidden="true">
-            <div
-              class="absolute left-1/4 top-1/4 h-[600px]
-                w-[600px] -translate-x-1/2 -translate-y-1/2
-                rounded-full bg-brand-500 opacity-[0.06]
-                blur-[120px]">
-            </div>
-            <div
-              class="absolute right-1/4 bottom-1/4
-                h-[500px] w-[500px] translate-x-1/2
-                translate-y-1/2 rounded-full
-                bg-brandcomp-500 opacity-[0.05]
-                blur-[120px]">
-            </div>
-          </div>
-
+        <div class="bg-surface-0">
           <div
             class="mx-auto max-w-7xl px-4 pb-16 pt-24
               text-center sm:px-6 sm:pt-32 lg:px-8">
@@ -143,7 +118,7 @@ onUnmounted(() => {
                 id="pricing-heading"
                 class="mt-2 font-brand text-4xl font-extrabold
                   tracking-tight text-text-primary
-                  gradient-text sm:text-5xl md:text-6xl">
+                  sm:text-5xl md:text-6xl">
                 {{ t("web.pricing.secure-links-stronger-connections") }}
               </h2>
             </div>
@@ -162,19 +137,27 @@ onUnmounted(() => {
         </div>
 
         <!-- Controls row: frequency toggle + region selector -->
-        <div class="bg-surface-0 pb-12">
+        <div class="bg-surface-0 pb-16">
           <div
             class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div
-              class="mx-auto max-w-6xl flex flex-col
-                sm:flex-row items-center justify-center
-                gap-6">
-              <fieldset aria-label="Payment frequency">
+              class="mx-auto grid max-w-6xl gap-4
+                lg:grid-cols-[minmax(0,1fr)_minmax(320px,360px)]">
+              <fieldset
+                aria-label="Payment frequency"
+                class="rounded-2xl border border-surface-3
+                  bg-surface-1 p-4 sm:p-5">
+                <p
+                  class="mb-3 text-xs font-semibold
+                    uppercase tracking-widest
+                    text-text-tertiary">
+                  {{ t("web.pricing.payment-frequency") }}
+                </p>
                 <RadioGroup
                   v-model="frequency"
-                  class="grid grid-cols-2 gap-x-1
-                    rounded-full border border-surface-3
-                    bg-surface-1 p-1 text-center text-sm
+                  class="grid grid-cols-2 gap-2 rounded-2xl
+                    border border-surface-3 bg-surface-2
+                    p-1.5 text-center text-sm
                     font-semibold leading-5">
                   <RadioGroupOption
                     v-for="option in frequencies"
@@ -187,7 +170,7 @@ onUnmounted(() => {
                         checked
                           ? 'bg-brand-600 text-white'
                           : 'text-text-secondary hover:text-text-primary',
-                        'cursor-pointer rounded-full px-4 py-2 transition-colors duration-200',
+                        'cursor-pointer rounded-xl px-4 py-2.5 transition-colors duration-200',
                       ]"
                       role="radio"
                       :aria-checked="checked"
@@ -198,7 +181,7 @@ onUnmounted(() => {
                 </RadioGroup>
               </fieldset>
 
-              <div v-if="isClient">
+              <div>
                 <PricingRegionSelector
                   :current-region="currentRegion"
                   :available-regions="availableRegions"
@@ -219,10 +202,10 @@ onUnmounted(() => {
                 :key="tiers[0].id"
                 class="flex flex-col justify-between
                   rounded-2xl bg-surface-1
-                  border border-surface-3 p-10
+                  border border-surface-3 p-8
                   hover:border-surface-4
                   transition-colors duration-200
-                  sm:p-12">
+                  sm:p-10">
                 <div>
                   <div
                     class="flex items-center
@@ -260,7 +243,7 @@ onUnmounted(() => {
                   </p>
                   <ul
                     role="list"
-                    class="mt-10 space-y-4 text-base
+                    class="mt-8 space-y-3 text-sm
                       leading-7 text-text-secondary">
                     <li
                       v-for="featureKey in tiers[0].featuresKeys"
@@ -280,9 +263,9 @@ onUnmounted(() => {
                 <a
                   :href="basicPlanHref"
                   :aria-describedby="tiers[0].id"
-                  class="mt-8 block rounded-lg
+                  class="mt-8 block rounded-2xl
                     border border-surface-3 bg-surface-1
-                    hover:bg-surface-2 px-6 py-3
+                    hover:border-surface-4 px-6 py-3
                     text-center text-base font-semibold
                     text-text-primary transition-colors
                     focus-visible:outline
@@ -347,29 +330,43 @@ onUnmounted(() => {
                       text-text-secondary">
                     {{ t(tiers[1].descriptionKey) }}
                   </p>
-                  <ul
-                    role="list"
-                    class="mt-10 space-y-4 text-base
-                      leading-7 text-text-secondary">
-                    <li
-                      v-for="featureKey in tiers[1].featuresKeys"
-                      :key="featureKey"
-                      class="flex gap-x-3">
-                      <OIcon
-                        collection="heroicons"
-                        name="check-circle-20-solid"
-                        class="h-6 w-6 flex-none
-                          text-brand-500"
-                        aria-hidden="true" />
-                      {{ t(featureKey) }}
-                    </li>
-                  </ul>
+                  <div class="mt-10 space-y-4">
+                    <div
+                      v-for="group in tiers[1].featureGroups"
+                      :key="group.labelKey"
+                      class="rounded-2xl border
+                        border-surface-3 bg-surface-2 p-5">
+                      <h4
+                        class="text-xs font-semibold
+                          uppercase tracking-widest
+                          text-text-tertiary">
+                        {{ t(group.labelKey) }}
+                      </h4>
+                      <ul
+                        role="list"
+                        class="mt-4 space-y-3 text-sm
+                          leading-6 text-text-secondary">
+                        <li
+                          v-for="featureKey in group.featuresKeys"
+                          :key="featureKey"
+                          class="flex gap-x-3">
+                          <OIcon
+                            collection="heroicons"
+                            name="check-circle-20-solid"
+                            class="h-5 w-5 flex-none
+                              text-brand-500"
+                            aria-hidden="true" />
+                          {{ t(featureKey) }}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
 
                 <a
                   :href="getIdentityHref"
                   :aria-describedby="tiers[1].id"
-                  class="mt-8 block rounded-lg
+                  class="mt-8 block rounded-2xl
                     bg-brand-600 hover:bg-brand-700
                     px-6 py-3 text-center text-base
                     font-semibold text-white
@@ -391,15 +388,36 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <!-- TODO: Redo compare plans content before re-enabling -->
             <!-- Feature Comparison: Bento-style grouped cards -->
-            <div v-if="false" class="mt-20 mx-auto max-w-6xl">
-              <h3
-                class="text-center text-3xl font-bold
-                  tracking-tight text-text-primary mb-8
-                  sm:text-4xl">
-                {{ t("web.pricing.compare-plans") }}
-              </h3>
+            <div class="mt-20 mx-auto max-w-6xl">
+              <div class="mb-10 sm:mb-14">
+                <p class="section-label mb-3">
+                  {{ t("web.pricing.features") }}
+                </p>
+                <h3
+                  id="pricing-comparison-heading"
+                  class="text-3xl font-bold
+                    tracking-tight text-text-primary
+                    sm:text-4xl">
+                  {{ t("web.pricing.compare-plans") }}
+                </h3>
+                <div
+                  class="mt-4 flex flex-wrap gap-2
+                    text-sm">
+                  <span
+                    class="rounded-full border
+                      border-surface-3 bg-surface-1 px-3
+                      py-1 text-text-secondary">
+                    {{ t(tiers[0].nameKey) }}
+                  </span>
+                  <span
+                    class="rounded-full border
+                      border-brand-500/30 bg-brand-500/10
+                      px-3 py-1 text-brand-700">
+                    {{ t(tiers[1].nameKey) }}
+                  </span>
+                </div>
+              </div>
               <div
                 class="grid grid-cols-1 md:grid-cols-3
                   gap-4">
@@ -411,27 +429,26 @@ onUnmounted(() => {
                     hover:border-surface-4
                     transition-colors duration-200">
                   <h4
-                    class="font-brand text-lg
-                      text-text-primary mb-4">
+                    class="font-brand text-xl
+                      text-text-primary mb-5">
                     {{ t(group.labelKey) }}
                   </h4>
                   <div class="space-y-3">
                     <div
-                      class="flex items-center
-                        justify-between border-b
-                        border-surface-3 pb-2 mb-1">
-                      <span class="text-xs
-                        text-text-tertiary">
+                      class="grid grid-cols-[minmax(0,1fr)_4rem_4rem]
+                        items-center border-b border-surface-3
+                        pb-3">
+                      <span class="text-xs text-text-tertiary">
                       </span>
-                      <div class="flex gap-8">
+                      <div class="text-center">
                         <span
-                          class="text-text-tertiary
-                            text-xs w-16 text-center">
+                          class="text-text-tertiary text-xs">
                           {{ t(tiers[0].nameKey) }}
                         </span>
+                      </div>
+                      <div class="text-center">
                         <span
-                          class="text-text-tertiary
-                            text-xs w-16 text-center">
+                          class="text-text-tertiary text-xs">
                           {{ t(tiers[1].nameKey) }}
                         </span>
                       </div>
@@ -439,18 +456,18 @@ onUnmounted(() => {
                     <div
                       v-for="feature in group.features"
                       :key="feature.labelKey"
-                      class="flex items-center
-                        justify-between py-1">
+                      class="grid grid-cols-[minmax(0,1fr)_4rem_4rem]
+                        items-center gap-3 rounded-xl
+                        border border-surface-3 bg-surface-2
+                        px-4 py-3">
                       <span
-                        class="text-text-secondary
-                          text-sm">
+                        class="text-sm text-text-secondary">
                         {{ t(feature.labelKey) }}
                       </span>
-                      <div class="flex gap-8">
-                        <span class="w-16 text-center">
+                      <span class="text-center">
                           <OIcon
-                            v-if="feature.free"
-                            collection="heroicons"
+                           v-if="feature.free"
+                           collection="heroicons"
                             name="check-solid"
                             class="h-6 w-6
                               text-brand-500 mx-auto"
@@ -459,11 +476,11 @@ onUnmounted(() => {
                             v-else
                             collection="heroicons"
                             name="x-mark-solid"
-                            class="h-6 w-6
-                              text-surface-4 mx-auto"
+                            class="h-6 w-6 mx-auto
+                              text-text-tertiary"
                             aria-hidden="true" />
-                        </span>
-                        <span class="w-16 text-center">
+                      </span>
+                      <span class="text-center">
                           <OIcon
                             v-if="feature.identity"
                             collection="heroicons"
@@ -475,11 +492,10 @@ onUnmounted(() => {
                             v-else
                             collection="heroicons"
                             name="x-mark-solid"
-                            class="h-6 w-6
-                              text-surface-4 mx-auto"
+                            class="h-6 w-6 mx-auto
+                              text-text-tertiary"
                             aria-hidden="true" />
-                        </span>
-                      </div>
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -518,7 +534,7 @@ onUnmounted(() => {
               <a
                 :href="feedbackHref"
                 aria-describedby="discounted-tier"
-                class="rounded-lg bg-brandcompdim-600
+                class="rounded-2xl bg-brandcompdim-600
                   hover:bg-brandcompdim-700 px-6 py-3
                   text-base font-semibold text-white
                   transition-colors

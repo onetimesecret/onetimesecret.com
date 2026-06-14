@@ -128,35 +128,40 @@
         "basic": {
           "name": "Basique",
           "badge": null,
-          "description": "Tout ce qu'il vous faut pour partager des secrets en toute sécurité, y compris votre propre domaine personnalisé, gratuitement.",
+          "description": "Partage sécurisé simple pour les particuliers et les petites équipes.",
           "cta": "Commencer",
           "price": {
             "monthly": "0 €",
             "annually": "0 €"
           },
           "features": {
-            "0": "Un domaine personnalisé (ex. secrets.exemple.com)",
+            "0": "Liens anonymes et comptes gratuits",
             "1": "Destruction automatique après consultation",
             "2": "Options d'expiration configurables jusqu'à 14 jours",
-            "3": "Envoyer des liens par e-mail aux destinataires",
-            "4": "API REST"
+            "3": "Accès à l'API REST",
+            "4": "Envoi par e-mail depuis les domaines Onetime Secret"
           }
         },
         "identity": {
           "name": "Identity Plus",
           "badge": "En vedette",
-          "description": "Contrôle total sur votre expérience de partage de secrets à votre image.",
+          "description": "Distribution de secrets à votre marque pour les équipes qui ont besoin de confiance, de contrôle et de choix régional.",
           "cta": "Commencer aujourd'hui",
           "price": {
             "monthly": "35 €",
             "annually": "356 €"
           },
           "features": {
-            "0": "Tout ce qui est inclus dans Basique, avec des domaines illimités",
+            "0": "Domaines personnalisés illimités",
             "1": "Image de marque personnalisée avec votre logo",
-            "2": "Expiration jusqu'à 30 jours",
-            "3": "Invitez un nombre illimité de membres",
-            "4": "Contrôles d'accès à la page d'accueil, Secrets entrants"
+            "2": "Envoi par e-mail depuis votre domaine",
+            "3": "Expiration prolongée jusqu'à 30 jours",
+            "4": "Contrôles d'accès à la page d'accueil et Secrets entrants"
+          },
+          "featureGroups": {
+            "brand": "Présence de marque",
+            "delivery": "Flux de livraison",
+            "controls": "Contrôle et rétention"
           }
         }
       },

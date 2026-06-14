@@ -7,6 +7,11 @@ export interface FeatureGroup {
   }>;
 }
 
+export interface TierFeatureGroup {
+  labelKey: string;
+  featuresKeys: string[];
+}
+
 export interface PaymentFrequency {
   value: string;
   // i18n translation keys (required - single source of truth)
@@ -33,6 +38,7 @@ export interface ProductTier {
   ctaKey: string;
   priceKeys: { [key: string]: string };
   featuresKeys: string[];
+  featureGroups?: TierFeatureGroup[];
   badgeKey?: string;
 }
 
@@ -96,6 +102,28 @@ export const productTiers: Array<ProductTier> = [
       "web.pricing.tiers.identity.features.2",
       "web.pricing.tiers.identity.features.3",
       "web.pricing.tiers.identity.features.4",
+    ],
+    featureGroups: [
+      {
+        labelKey: "web.pricing.tiers.identity.featureGroups.brand",
+        featuresKeys: [
+          "web.pricing.tiers.identity.features.0",
+          "web.pricing.tiers.identity.features.1",
+        ],
+      },
+      {
+        labelKey: "web.pricing.tiers.identity.featureGroups.delivery",
+        featuresKeys: [
+          "web.pricing.tiers.identity.features.2",
+          "web.pricing.tiers.identity.features.4",
+        ],
+      },
+      {
+        labelKey: "web.pricing.tiers.identity.featureGroups.controls",
+        featuresKeys: [
+          "web.pricing.tiers.identity.features.3",
+        ],
+      },
     ],
     badgeKey: "web.pricing.tiers.identity.badge",
     featured: true,

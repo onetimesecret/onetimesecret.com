@@ -128,35 +128,40 @@
         "basic": {
           "name": "Basic",
           "badge": null,
-          "description": "Everything you need to share secrets securely, including your own custom domain, free.",
+          "description": "Simple secure sharing for individuals and small teams.",
           "cta": "Get Started",
           "price": {
             "monthly": "$0",
             "annually": "$0"
           },
           "features": {
-            "0": "One custom domain (e.g. secrets.example.com)",
+            "0": "Anonymous links and free accounts",
             "1": "Automatic destruction after viewing",
             "2": "Configurable expiration options up to 14 days",
-            "3": "Email links directly to recipients",
-            "4": "REST API"
+            "3": "REST API access",
+            "4": "Email delivery from Onetime Secret domains"
           }
         },
         "identity": {
           "name": "Identity Plus",
           "badge": "Featured",
-          "description": "Full control over your branded secret-sharing experience.",
+          "description": "Branded secret delivery for teams that need trust, control, and regional choice.",
           "cta": "Start today",
           "price": {
             "monthly": "$35",
             "annually": "$356"
           },
           "features": {
-            "0": "Everything in Basic, with unlimited domains",
+            "0": "Unlimited custom domains",
             "1": "Custom branding with your logo",
-            "2": "Expiration up to 30 days",
-            "3": "Invite unlimited members",
-            "4": "Homepage access controls, Incoming Secrets"
+            "2": "Email delivery from your domain",
+            "3": "Extended expiration up to 30 days",
+            "4": "Homepage access controls and Incoming Secrets"
+          },
+          "featureGroups": {
+            "brand": "Brand presence",
+            "delivery": "Delivery workflows",
+            "controls": "Control and retention"
           }
         }
       },
