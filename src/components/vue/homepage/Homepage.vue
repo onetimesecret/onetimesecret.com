@@ -47,19 +47,6 @@ const apiCallResult = ref<ApiResult | null>(null); // State to hold result from 
 const apiCallError = ref<string | null>(null); // State to hold error from SecretFormLite
 
 // --- Methods for Homepage ---
-const switchRegion = (newRegion?: string | { identifier: string }) => {
-  // Handle both string identifier or Region object
-  const identifier =
-    typeof newRegion === "string" ? newRegion : newRegion?.identifier;
-
-  if (identifier) {
-    setJurisdiction(identifier);
-    if (secretFormRef.value) {
-      secretFormRef.value.resetForm();
-    }
-  }
-};
-
 // Handle region change from the SecretRegionExperience component
 const handleRegionChange = (region: Region) => {
   if (region && region.identifier) {
