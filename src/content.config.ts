@@ -8,7 +8,10 @@ import { glob } from "astro/loaders";
  * This provides strong typing and validation for all content collections
  */
 const pageCollection = defineCollection({
-  type: "content",
+  loader: glob({
+    pattern: ["**/*.{md,mdx}", "!**/_*", "!**/_*/**"],
+    base: "./src/content/pages",
+  }),
   schema: z.object({
     title: z.string(),
     description: z.string().optional(),
@@ -37,7 +40,10 @@ const pageCollection = defineCollection({
  * Define schema for use cases collection
  */
 const useCasesCollection = defineCollection({
-  type: "content",
+  loader: glob({
+    pattern: ["**/*.{md,mdx}", "!**/_*", "!**/_*/**"],
+    base: "./src/content/useCases",
+  }),
   schema: z.object({
     title: z.string(),
     description: z.string().optional(),
