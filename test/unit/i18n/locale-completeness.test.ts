@@ -31,7 +31,8 @@
  * NEW untranslated key may be added. The baseline may only shrink — once a key
  * is translated its entry becomes inert and should be deleted. Do not add to it;
  * translate the string or, if it is intentionally identical to English, add it
- * to `ALLOWED_IDENTICAL` instead.
+ * to the allow-list instead (`ALLOWED_COMMON` for all locales, or
+ * `ALLOWED_BY_LANG` for a single locale).
  */
 
 import { describe, it, expect } from "vitest";
@@ -263,8 +264,8 @@ describe("i18n — no new untranslated stubs", () => {
       expect(
         newStubs,
         `${lang}.json copies these keys verbatim from English. Translate them, ` +
-          `or if the value is intentionally identical add the key to ` +
-          `ALLOWED_IDENTICAL in this file.`,
+          `or if the value is intentionally identical add the key to the ` +
+          `allow-list (ALLOWED_COMMON or ALLOWED_BY_LANG) in this file.`,
       ).toEqual([]);
     });
   }
