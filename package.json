@@ -1,6 +1,9 @@
 {
   "version": "3.2.1",
   "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "astro": "astro",
     "build": "astro build",
