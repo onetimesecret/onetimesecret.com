@@ -2,7 +2,7 @@
  * src/utils/contentPage.ts
  * Utility for rendering content pages with i18n support and language fallbacks
  */
-import { getCollection } from "astro:content";
+import { getCollection, render } from "astro:content";
 import type { CollectionEntry } from "astro:content";
 import type { SupportedLanguage } from "@/i18n";
 import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
@@ -57,19 +57,19 @@ export async function getContentPageData(
   const allPages = await getCollection("pages");
 
   // Try to find language-specific page first, then fall back to default
-  let page = allPages.find((page: CollectionEntry<"pages">) => page.id === `${lang}/${slug}.md`);
+  let page = allPages.find((page: CollectionEntry<"pages">) => page.id === `${lang}/${slug}`);
 
   // If not found, try the root version
   if (!page) {
-    page = allPages.find((page: CollectionEntry<"pages">) => page.id === `${slug}.md`);
+    page = allPages.find((page: CollectionEntry<"pages">) => page.id === slug);
   }
 
   if (!page) {
-    throw new Error(`Page not found: ${lang}/${slug}.md`);
+    throw new Error(`Page not found: ${lang}/${slug}`);
   }
 
   // Render the content
-  const renderedContent = await page.render();
+  const renderedContent = await render(page);
 
   // Track if we're using a fallback - only true when:
   // 1. We're not viewing in the default language AND

@@ -1,6 +1,6 @@
 // onetimesecret.com/src/utils/content.ts
-import type { CollectionEntry, AnyEntryMap } from "astro:content";
-import { getCollection, getEntry } from "astro:content";
+import type { CollectionEntry, DataEntryMap } from "astro:content";
+import { getCollection, getEntry, render } from "astro:content";
 import type { SupportedLanguage } from "@config/astro/i18n";
 import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
 
@@ -21,7 +21,7 @@ export interface RenderedContent {
 /**
  * Type for a localized content entry
  */
-export interface LocalizedContent<T extends keyof AnyEntryMap> {
+export interface LocalizedContent<T extends keyof DataEntryMap> {
   entry: CollectionEntry<T>;
   renderedContent: RenderedContent;
   isFallback: boolean;
@@ -35,7 +35,7 @@ export interface LocalizedContent<T extends keyof AnyEntryMap> {
  * @param slug - The content slug
  * @returns The content entry, rendered content, and fallback status
  */
-export async function getLocalizedContent<T extends keyof AnyEntryMap>(
+export async function getLocalizedContent<T extends keyof DataEntryMap>(
   collection: T,
   lang: SupportedLanguage,
   slug: string
@@ -57,9 +57,8 @@ export async function getLocalizedContent<T extends keyof AnyEntryMap>(
     );
   }
 
-  // Render the content (type assertion needed for collection entries that have render method)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const renderedContent = await (entry as any).render();
+  // Render the content
+  const renderedContent = await render(entry);
 
   return {
     entry: entry as CollectionEntry<T>,
@@ -76,7 +75,7 @@ export async function getLocalizedContent<T extends keyof AnyEntryMap>(
  * @param lang - The desired language
  * @returns An array of collection entries
  */
-export async function getLocalizedCollection<T extends keyof AnyEntryMap>(
+export async function getLocalizedCollection<T extends keyof DataEntryMap>(
   collection: T,
   lang: SupportedLanguage
 ): Promise<Array<CollectionEntry<T>>> {
@@ -122,7 +121,7 @@ export async function getLocalizedCollection<T extends keyof AnyEntryMap>(
  * @param entry - The collection entry
  * @returns The slug portion of the ID (without language prefix)
  */
-export function getSlugFromEntry<T extends keyof AnyEntryMap>(entry: CollectionEntry<T>): string {
+export function getSlugFromEntry<T extends keyof DataEntryMap>(entry: CollectionEntry<T>): string {
   // Entry ID format is expected to be "[lang]/[slug]"
   const parts = (entry.id as string).split('/');
   return parts.slice(1).join('/');
