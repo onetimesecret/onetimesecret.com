@@ -3,7 +3,9 @@
 User-agent: *
 # Allow specific public pages first so they take precedence
 Allow: /about
+Allow: /features
 Allow: /pricing
+Allow: /feedback
 Allow: /info/
 Allow: /translations
 Allow: /
@@ -13,6 +15,9 @@ Disallow: /private/
 Disallow: /secret/
 Disallow: /receipt/
 Disallow: /account/
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /shared
 Disallow: /recent/
 Disallow: /forgot/
 Disallow: /domains/
@@ -44,4 +49,4 @@ User-agent: Claude-Web
 Allow: /
 
 # Sitemap declaration
-Sitemap: https://onetimesecret.com/sitemap-index.xml
+Sitemap: https://onetimesecret.com/sitemap.xml
