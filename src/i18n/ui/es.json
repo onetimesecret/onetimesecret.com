@@ -128,35 +128,40 @@
         "basic": {
           "name": "Básico",
           "badge": null,
-          "description": "Todo lo que necesita para compartir secretos de forma segura, incluido su propio dominio personalizado, gratis.",
+          "description": "Intercambio seguro y sencillo para personas y equipos pequeños.",
           "cta": "Comenzar",
           "price": {
             "monthly": "$0",
             "annually": "$0"
           },
           "features": {
-            "0": "Un dominio personalizado (ej. secrets.ejemplo.com)",
+            "0": "Enlaces anónimos y cuentas gratuitas",
             "1": "Destrucción automática tras la lectura",
-            "2": "Opciones de caducidad configurables hasta 14 días",
-            "3": "Enviar enlaces por correo electrónico a los destinatarios",
-            "4": "API REST"
+            "2": "Opciones de caducidad configurables de hasta 14 días",
+            "3": "Acceso a la API REST",
+            "4": "Entrega por correo desde dominios de Onetime Secret"
           }
         },
         "identity": {
           "name": "Identity Plus",
           "badge": "Destacado",
-          "description": "Control total sobre su experiencia de intercambio de secretos con marca propia.",
+          "description": "Entrega de secretos con marca para equipos que necesitan confianza, control y elección regional.",
           "cta": "Comience hoy",
           "price": {
             "monthly": "$35",
             "annually": "$356"
           },
           "features": {
-            "0": "Todo lo incluido en Básico, con dominios ilimitados",
+            "0": "Dominios personalizados ilimitados",
             "1": "Marca personalizada con su logotipo",
-            "2": "Caducidad hasta 30 días",
-            "3": "Invite a miembros ilimitados",
-            "4": "Controles de acceso a la página de inicio, Secretos entrantes"
+            "2": "Entrega por correo desde su dominio",
+            "3": "Caducidad ampliada de hasta 30 días",
+            "4": "Controles de acceso a la página de inicio y Secretos entrantes"
+          },
+          "featureGroups": {
+            "brand": "Presencia de marca",
+            "delivery": "Flujos de entrega",
+            "controls": "Control y retención"
           }
         }
       },

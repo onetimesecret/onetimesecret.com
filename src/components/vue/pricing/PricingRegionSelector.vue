@@ -91,15 +91,56 @@ onUnmounted(() => {
 <template>
   <div
     ref="selectorRef"
-    class="relative inline-flex items-center
-      gap-2 text-sm text-text-secondary">
+    class="relative w-full rounded-2xl border
+      border-surface-3 bg-surface-1 p-4
+      text-sm text-text-secondary sm:p-5">
+    <div
+      class="mb-3 flex items-center
+        justify-between gap-3">
+      <div>
+        <p
+          class="text-xs font-semibold uppercase
+            tracking-widest text-text-tertiary">
+          {{ t("web.pricing.region") }}
+        </p>
+        <p class="mt-1 text-sm text-text-secondary">
+          {{ t("web.secrets.regionExplanation") }}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="inline-flex rounded-2xl bg-surface-2
+          border border-surface-3 p-2 items-center
+          justify-center hover:border-surface-4
+          transition-colors
+          focus-visible:outline-2
+          focus-visible:outline-offset-2
+          focus-visible:outline-brand-600"
+        @click="toggleInfoPopover"
+        @keydown.escape="closeAll"
+        :aria-label="t('web.help.learn-more-about-data-sovereignty')">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          class="size-4 text-text-secondary">
+          <path
+            fill-rule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z"
+            clip-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
+
     <button
       type="button"
-      class="relative inline-flex items-center
-        rounded-lg bg-surface-1 px-4 py-2.5 text-sm
-        font-medium text-text-primary
-        border border-surface-3 cursor-pointer
-        hover:bg-surface-2 transition-colors
+      class="relative inline-flex w-full items-center
+        justify-between rounded-2xl bg-surface-2
+        px-4 py-3 text-sm font-medium
+        text-text-primary border border-surface-3
+        cursor-pointer hover:border-surface-4
+        transition-colors
         duration-200
         focus-visible:outline-2
         focus-visible:outline-offset-2
@@ -110,18 +151,29 @@ onUnmounted(() => {
       @keydown.escape="closeAll"
       :aria-haspopup="true"
       :aria-expanded="isOpen">
-      <OIcon
-        :collection="currentRegion.icon.collection"
-        :name="currentRegion.icon.name"
-        class="size-4 mr-2 text-text-secondary"
-        :aria-label="`${currentRegion.displayName} region`" />
-      <span>{{ currentRegion.displayName }}</span>
+      <div
+        class="flex min-w-0 items-center
+          gap-3">
+        <OIcon
+          :collection="currentRegion.icon.collection"
+          :name="currentRegion.icon.name"
+          class="size-4 text-text-secondary"
+          :aria-label="`${currentRegion.displayName} region`" />
+        <div class="min-w-0 text-left">
+          <p class="font-medium text-text-primary">
+            {{ currentRegion.displayName }}
+          </p>
+          <p class="truncate text-xs text-text-tertiary">
+            {{ currentRegion.domain }}
+          </p>
+        </div>
+      </div>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 20 20"
         fill="currentColor"
-        class="ml-2 size-4 text-text-tertiary
-          transition-transform"
+        class="ml-2 size-4 shrink-0
+          text-text-tertiary transition-transform"
         :class="{ 'rotate-180': isOpen }">
         <path
           fill-rule="evenodd"
@@ -130,34 +182,10 @@ onUnmounted(() => {
       </svg>
     </button>
 
-    <button
-      type="button"
-      class="rounded-full bg-surface-1
-        border border-surface-3 p-2 inline-flex
-        items-center justify-center hover:bg-surface-2
-        transition-colors
-        focus-visible:outline-2
-        focus-visible:outline-offset-2
-        focus-visible:outline-brand-600"
-      @click="toggleInfoPopover"
-      @keydown.escape="closeAll"
-      :aria-label="t('web.help.learn-more-about-data-sovereignty')">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        class="size-4 text-text-secondary">
-        <path
-          fill-rule="evenodd"
-          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z"
-          clip-rule="evenodd" />
-      </svg>
-    </button>
-
     <div
       v-if="isOpen"
-      class="absolute top-full left-0 mt-2
-        z-[9999] w-64 rounded-2xl bg-surface-1
+      class="absolute top-full left-0 right-0 mt-2
+        z-[9999] rounded-2xl bg-surface-1
         border border-surface-3
         divide-y divide-surface-3 overflow-hidden"
       role="listbox"
