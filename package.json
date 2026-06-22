@@ -87,7 +87,7 @@
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@playwright/test": "^1.60.0",
     "@sentry/astro": "^10.53.1",
-    "@sentry/browser": "^10.53.1",
+    "@sentry/browser": "^10.59.0",
     "@spotlightjs/astro": "^3.2.6",
     "@spotlightjs/sidecar": "^2.5.0",
     "@spotlightjs/spotlight": "^4.11.4",
