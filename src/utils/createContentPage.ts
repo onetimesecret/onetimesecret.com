@@ -2,10 +2,10 @@
  * src/utils/createContentPage.ts
  * Factory function for creating standardized content pages from collections
  */
-import type { SupportedLanguage } from "@/i18n";
-import { DEFAULT_LANGUAGE, getLanguagePaths } from "@/i18n";
-import { getContentPageData } from "@/utils/contentPage";
 import type { AstroGlobal } from "astro";
+import type { SupportedLanguage } from "../i18n";
+import { DEFAULT_LANGUAGE, getLanguagePaths } from "../i18n";
+import { getContentPageData } from "./contentPage";
 
 interface ContentPageFactoryOptions {
   /**
