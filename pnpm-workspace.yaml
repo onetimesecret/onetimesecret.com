@@ -28,3 +28,9 @@ auditConfig:
   ignoreGhsas:
     - GHSA-gv7w-rqvm-qjhr
     - GHSA-g7r4-m6w7-qqqr
+minimumReleaseAgeExclude:
+  - typescript
+  - typescript-eslint
+  - "@playwright/test"
+  - "@typescript-eslint/parser"
+  - "@typescript-eslint/eslint-plugin"
