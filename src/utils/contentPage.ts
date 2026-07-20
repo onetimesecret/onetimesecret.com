@@ -2,14 +2,13 @@
  * src/utils/contentPage.ts
  * Utility for rendering content pages with i18n support and language fallbacks
  */
-import { getCollection, render } from "astro:content";
-import type { CollectionEntry } from "astro:content";
-import type { SupportedLanguage } from "@/i18n";
-import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
-import { createLocaleI18n } from "@/i18n";
-import enMessages from "@/i18n/ui/en.json";
-import type { MessageSchema } from "@/i18n";
 import type { RenderedContent } from "@/utils/content";
+import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
+import type { CollectionEntry } from "astro:content";
+import { getCollection, render } from "astro:content";
+import type { MessageSchema, SupportedLanguage } from "../i18n";
+import { createLocaleI18n } from "../i18n";
+import enMessages from "../i18n/ui/en.json";
 
 export interface ContentPageData {
   page: CollectionEntry<"pages">;
@@ -30,7 +29,7 @@ export interface ContentPageData {
  */
 export async function getContentPageData(
   lang: SupportedLanguage = DEFAULT_LANGUAGE,
-  slug: string
+  slug: string,
 ): Promise<ContentPageData> {
   // Setup initial messages for i18n - include both English and target language
   const initialMessages: Record<string, MessageSchema> = {
@@ -40,12 +39,13 @@ export async function getContentPageData(
   // Load the target language messages if not English
   if (lang !== DEFAULT_LANGUAGE) {
     try {
-      const langMessagesModule = await import(`@/i18n/ui/${lang}.json`);
-      initialMessages[lang] = (langMessagesModule.default || langMessagesModule) as MessageSchema;
+      const langMessagesModule = await import(`../i18n/ui/${lang}.json`);
+      initialMessages[lang] = (langMessagesModule.default ||
+        langMessagesModule) as MessageSchema;
     } catch (error) {
       console.warn(
         `Failed to load messages for language "${lang}" in getContentPageData. English fallback will be used.`,
-        error
+        error,
       );
     }
   }
@@ -57,7 +57,9 @@ export async function getContentPageData(
   const allPages = await getCollection("pages");
 
   // Try to find language-specific page first, then fall back to default
-  let page = allPages.find((page: CollectionEntry<"pages">) => page.id === `${lang}/${slug}`);
+  let page = allPages.find(
+    (page: CollectionEntry<"pages">) => page.id === `${lang}/${slug}`,
+  );
 
   // If not found, try the root version
   if (!page) {
@@ -74,7 +76,8 @@ export async function getContentPageData(
   // Track if we're using a fallback - only true when:
   // 1. We're not viewing in the default language AND
   // 2. We had to use a non-language-specific version
-  const isFallback = lang !== DEFAULT_LANGUAGE && !page.id.startsWith(`${lang}/`);
+  const isFallback =
+    lang !== DEFAULT_LANGUAGE && !page.id.startsWith(`${lang}/`);
 
   return {
     page,

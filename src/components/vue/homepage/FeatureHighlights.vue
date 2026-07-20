@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type Feature, features } from "@/data/product/features";
-import { Clock, Code, Globe, Lock, ShieldCheck } from "lucide-vue-next";
+import { Clock, Code, Globe, Lock, ShieldCheck } from "@lucide/vue";
 import { type Component } from "vue";
 import { useI18n } from "vue-i18n";
 

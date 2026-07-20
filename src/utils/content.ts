@@ -1,8 +1,8 @@
 // onetimesecret.com/src/utils/content.ts
-import type { CollectionEntry, DataEntryMap } from "astro:content";
-import { getCollection, getEntry, render } from "astro:content";
 import type { SupportedLanguage } from "@config/astro/i18n";
 import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
+import type { CollectionEntry, DataEntryMap } from "astro:content";
+import { getCollection, getEntry, render } from "astro:content";
 
 /**
  * Type for rendered content from Astro collections
@@ -38,7 +38,7 @@ export interface LocalizedContent<T extends keyof DataEntryMap> {
 export async function getLocalizedContent<T extends keyof DataEntryMap>(
   collection: T,
   lang: SupportedLanguage,
-  slug: string
+  slug: string,
 ): Promise<LocalizedContent<T>> {
   // Try to get the content in the requested language
   let entry = await getEntry(collection, `${lang}/${slug}`);
@@ -53,7 +53,7 @@ export async function getLocalizedContent<T extends keyof DataEntryMap>(
   // If still not found, throw an error
   if (!entry) {
     throw new Error(
-      `Content not found: ${collection}/${lang}/${slug} or fallback ${collection}/${DEFAULT_LANGUAGE}/${slug}`
+      `Content not found: ${collection}/${lang}/${slug} or fallback ${collection}/${DEFAULT_LANGUAGE}/${slug}`,
     );
   }
 
@@ -77,14 +77,20 @@ export async function getLocalizedContent<T extends keyof DataEntryMap>(
  */
 export async function getLocalizedCollection<T extends keyof DataEntryMap>(
   collection: T,
-  lang: SupportedLanguage
+  lang: SupportedLanguage,
 ): Promise<Array<CollectionEntry<T>>> {
   // Get all entries from the collection
   const allEntries = await getCollection(collection);
 
+  // Filter out draft entries
+  const nonDraftEntries = allEntries.filter((entry: CollectionEntry<T>) => {
+    const data = entry.data as { draft?: boolean };
+    return !data || data.draft !== true;
+  });
+
   // Filter for the requested language
-  const langEntries = allEntries.filter(
-    (entry: CollectionEntry<T>) => entry.id.startsWith(`${lang}/`)
+  const langEntries = nonDraftEntries.filter((entry: CollectionEntry<T>) =>
+    entry.id.startsWith(`${lang}/`),
   );
 
   // If using the default language, just return those entries
@@ -93,7 +99,7 @@ export async function getLocalizedCollection<T extends keyof DataEntryMap>(
   }
 
   // For other languages, get default language entries that don't have a translation
-  const defaultEntries = allEntries.filter((entry: CollectionEntry<T>) => {
+  const defaultEntries = nonDraftEntries.filter((entry: CollectionEntry<T>) => {
     // Only include default language entries
     if (!entry.id.startsWith(`${DEFAULT_LANGUAGE}/`)) {
       return false;
@@ -104,7 +110,8 @@ export async function getLocalizedCollection<T extends keyof DataEntryMap>(
 
     // Check if we already have this entry in the requested language
     const hasTranslation = langEntries.some(
-      (langEntry: CollectionEntry<T>) => langEntry.id.substring(lang.length + 1) === slug
+      (langEntry: CollectionEntry<T>) =>
+        langEntry.id.substring(lang.length + 1) === slug,
     );
 
     // Include this entry if it doesn't have a translation
@@ -121,8 +128,10 @@ export async function getLocalizedCollection<T extends keyof DataEntryMap>(
  * @param entry - The collection entry
  * @returns The slug portion of the ID (without language prefix)
  */
-export function getSlugFromEntry<T extends keyof DataEntryMap>(entry: CollectionEntry<T>): string {
+export function getSlugFromEntry<T extends keyof DataEntryMap>(
+  entry: CollectionEntry<T>,
+): string {
   // Entry ID format is expected to be "[lang]/[slug]"
-  const parts = (entry.id as string).split('/');
-  return parts.slice(1).join('/');
+  const parts = (entry.id as string).split("/");
+  return parts.slice(1).join("/");
 }
