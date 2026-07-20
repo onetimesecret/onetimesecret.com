@@ -1,0 +1,26 @@
+---
+title: "All new Admin UI"
+date: 2026-07-08
+description: "A rebuilt Colonel operating console — every admin capability written once, served as an op call, the CLI, and the UI."
+category: release
+planned: false
+highlightedLinkUrl: "https://github.com/onetimesecret/onetimesecret/pull/3679"
+highlightedLinkText: "PR #3679"
+highlights:
+  - { icon: info, text: "Write-once operations: extract Operations::* so the CLI and admin API become thin adapters over the same shared verbs" }
+  - { icon: info, text: "New admin UI kit (DataTable, StatCard, FilterBar, DetailDrawer, ConfirmDialog, JsonViewer) on its own Rolldown-Vite entry, out of the customer bundle" }
+  - { icon: check, text: "AdminAuditEvent: every mutating operation records actor/verb/target/result" }
+  - { icon: check, text: "Support without SSH: filterable Customers list + detail page, plus Secrets, Domains, Organizations, System, BannedIPs, and Usage screens" }
+---
+
+The Colonel admin frontend has been rebuilt into a proper web console. The CLI and admin
+API now share the same core: `Operations::*` is extracted so every capability is written
+once and served three ways (op call, CLI, UI), instead of the old split where the CLI was
+full, and the UI lagged behind. The admin app also runs on its own Rolldown-Vite entry,
+out of the customer bundle.
+
+Every mutating operation is now recorded through `AdminAuditEvent` (actor, verb, target,
+result). The console covers Customers, Receipts, Domains, Organizations, System, BannedIPs,
+and Usage, and surfaces powers that were previously CLI-only, like Sessions, Broadcast banner,
+Queue DLQ, Domain toolbox, and Email/rate-limit tools. Also includes a new opt-in network
+isolation (`site.admin.allowed_cidrs`) and explicit operation logging.
