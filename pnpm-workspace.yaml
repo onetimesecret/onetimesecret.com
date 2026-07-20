@@ -1,9 +1,9 @@
 packages:
   - .
 allowBuilds:
-  '@sentry/cli': set this to true or false
+  '@sentry/cli': true
   esbuild: true
-  sharp: set this to true or false
+  sharp: true
   unrs-resolver: false
 onlyBuiltDependencies:
   - '@sentry/cli'
