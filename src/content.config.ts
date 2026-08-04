@@ -1,7 +1,7 @@
 // https://docs.astro.build/en/guides/content-collections/
 
-import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
+import { defineCollection, z } from "astro:content";
 
 /**
  * Define a comprehensive schema for page frontmatter
@@ -16,6 +16,7 @@ const pageCollection = defineCollection({
     title: z.string(),
     description: z.string().optional(),
     layout: z.string().optional().default("ContentPageLayout"),
+    draft: z.boolean().optional().default(false),
     heroTitle: z.string().optional(),
     heroDescription: z.string().optional(),
     heroType: z
@@ -50,6 +51,7 @@ const useCasesCollection = defineCollection({
     icon: z.string().optional(),
     order: z.number().optional(),
     layout: z.string().optional().default("ContentPageLayout"),
+    draft: z.boolean().optional().default(false),
     heroTitle: z.string().optional(),
     heroDescription: z.string().optional(),
     heroType: z
@@ -108,8 +110,7 @@ const changelogCollection = defineCollection({
       })
       .refine(
         (data) =>
-          !data.image ||
-          (data.imageAlt && data.imageAlt.trim().length > 0),
+          !data.image || (data.imageAlt && data.imageAlt.trim().length > 0),
         {
           message: "imageAlt is required when image is provided",
           path: ["imageAlt"],
