@@ -1,269 +1,174 @@
-# BunnyCDN Edge Middleware
+# BunnyCDN Edge Scripts
 
-This directory contains edge scripts for deployment to BunnyCDN's edge network.
+Two edge scripts run on the onetimesecret.com pull zones. Both decide which
+regional domain (`eu`, `uk`, `ca`, `nz`, `us`.onetimesecret.com) a visitor
+belongs to, using the same country tables as the client so the edge and the
+browser can never disagree.
 
-## Overview
+| File | Runs on | What it does |
+| --- | --- | --- |
+| `bunnycdn-auth-redirect.ts` | every request | 302s `/signin` and `/signup` to the visitor's regional domain |
+| `bunnycdn-country-injection.ts` | origin response, cache MISS only | appends `window.__USER_COUNTRY__` to `<head>` of HTML pages |
+| `country.ts` | — | shared, pure helpers used by both (not deployed on its own) |
 
-Edge middleware runs at the CDN edge (close to users) before responses reach the client. This enables:
-- Zero-latency personalization
-- No additional network requests
-- No CORS issues
-- Efficient caching per region/country
+## Country source
 
-## Scripts
+Bunny attaches **`CDN-RequestCountryCode`** to every request at the edge. Both
+scripts read it directly from the request object. **No edge rule is required**
+— there is no `O-Country-Code` header and nothing to configure beyond the
+Vary Cache setting below.
 
-### bunnycdn-country-injection.ts
+`edge/country.ts` normalizes the value once for both scripts:
 
-Automatically injects the user's country code into HTML responses for geolocation-based jurisdiction selection.
+- trimmed and uppercased, must match `/^[A-Z]{2}$/`
+- `EU` and `AP` are rejected — they are legacy GeoIP *continent* codes that
+  geo databases emit in a country field, not ISO 3166-1 countries
+- anything rejected is **no signal**
+- a real but unmapped country falls through the shared
+  `getJurisdictionForCountry()` `|| US` default, exactly as on the client
 
-**Features:**
-- ✅ Reads country code from `O-Country-Code` response header (set by edge rule)
-- ✅ Injects `window.__USER_COUNTRY__` into HTML before `</head>`
-- ✅ Uses streaming for memory-efficient HTML transformation
-- ✅ Caches responses per country using `Vary` header
-- ✅ Only processes HTML responses (skips static assets)
-- ✅ Falls back to 'US' if country code unavailable
+## bunnycdn-auth-redirect.ts
 
-**How it works:**
-1. BunnyCDN edge rule sets `O-Country-Code` response header based on user's IP
-2. Edge script reads the `O-Country-Code` header from the response
-3. Script injects country code into the HTML as `window.__USER_COUNTRY__`
-4. Client-side code can immediately access the country code
-5. Subsequent requests from the same country use the cached version
+Auth entry points live on the regional app domains, not on this marketing
+site. This script answers them at the edge.
 
-### bunnycdn-auth-redirect.ts
+- 302 at the edge — no origin fetch, no interstitial flash
+- preserves the full query string (`redirect`, `product`, `interval`, …)
+- `Cache-Control: no-store`, so one country's redirect is never served to
+  another
+- no signal, or a region that is still `comingSoon` → `eu.onetimesecret.com`
+- every other path passes through to the origin untouched
 
-Redirects `/signup` and `/signin` to the visitor's regional domain with a
-real HTTP 302, replacing the static meta-refresh interstitial that always
-pointed at eu.onetimesecret.com.
+The origin still ships `/signin` and `/signup` as client-side regional
+redirect pages (`src/pages/{signin,signup}.astro` → `AuthRedirect.astro`) for
+traffic that bypasses the CDN, with a no-JS meta-refresh fallback to EU.
 
-**Features:**
-- ✅ 302 at the edge — no origin fetch, no interstitial flash
-- ✅ Preserves the full query string (`redirect`, `product`, `interval`, …)
-- ✅ Same country → jurisdiction mapping as the client
-  (`src/utils/countryToJurisdiction.ts`), bundled at build time
-- ✅ `Cache-Control: no-store` so one country's redirect is never cached
-  for another
-- ✅ Falls back to `eu.onetimesecret.com` when no country is available
-  (matches previous behavior)
+## bunnycdn-country-injection.ts
 
-**Country source (in priority order):**
-1. `O-Country-Code` request header — set by an edge rule (see below).
-   Note this must be a **request** header rule (Set Request Header), not
-   the response-header rule used by the country injection script, because
-   the redirect happens before any origin response exists.
-2. `CDN-RequestCountryCode` — Bunny's built-in geo header, available when
-   country-code forwarding is enabled on the pull zone.
+An HTMLRewriter middleware built on the Bunny Edge Scripting SDK:
 
-**Build:**
+```ts
+BunnySDK.net.http.servePullZone().onOriginResponse((context) => { … });
+```
+
+- only `text/html` responses are touched; assets pass through
+- appends `<script data-user-country="XX">window.__USER_COUNTRY__="XX";</script>`
+  to `<head>`
+- **injects nothing when there is no valid country.** It never fabricates a
+  default. Client-side `detectUserCountry()` then returns `null` and the app
+  falls back to the EU region — the same place the auth redirect sends a
+  country-less visitor
+- sets no headers at all. HTMLRewriter streams the body and drops
+  `Content-Length` itself, and a response `Vary` header does **not** drive
+  Bunny's cache key, so setting one would be misleading
+
+### Cache semantics
+
+`onOriginResponse` runs **on cache MISS only**. The transformed HTML is what
+gets cached, so the country code is baked into the cached variant.
+
+That is only correct because the pull zone has **Caching → Vary Cache → "User
+Country Code" ENABLED**, which puts the country in Bunny's cache key and gives
+each country its own variant. Without it, the first visitor's country would be
+served to everyone.
+
+### CSP
+
+The injected tag is an inline script. It executes because the site's CSP meta
+tag (`src/components/layout/LayoutHead.astro`) includes `script-src
+'unsafe-inline'`. If that ever tightens, the inline script stops running — the
+`data-user-country` attribute carries the same value and stays readable from
+the DOM as a fallback.
+
+## Build
 
 ```bash
 pnpm edge:build
-# → edge/dist/bunnycdn-auth-redirect.js (single file, paste into Bunny)
+# → edge/dist/bunnycdn-auth-redirect.js
+# → edge/dist/bunnycdn-country-injection.js
 ```
 
-The origin keeps `/signup` and `/signin` as client-side regional redirect
-pages (`src/pages/{signup,signin}.astro`) so traffic that bypasses the CDN
-still lands in the right region via `window.__USER_COUNTRY__`, with a
-no-JS meta-refresh fallback to EU.
+Each script is bundled to a single self-contained ES module with the shared
+country tables inlined, ready to paste into the Bunny dashboard. The two
+builds are separate `vite build` invocations (`--mode auth-redirect`,
+`--mode country-injection`) so neither produces a shared chunk; an unknown
+mode is a hard error. Neither run empties `edge/dist` — each overwrites only
+its own file.
 
-## Prerequisites
+The injection bundle keeps its `import * as BunnySDK from
+"npm:@bunny.net/edgescript-sdk@0.12.1"` line intact: `npm:` specifiers are
+marked external in `edge/vite.config.ts` because the Deno runtime resolves
+them at deploy time.
 
-### BunnyCDN Edge Rule Configuration
+> `edge/**` is not in `tsconfig.json`'s `include`, so `pnpm type-check` and
+> `pnpm check` do not cover these files and `pnpm edge:build` does not
+> type-check. The vitest suite over `edge/country.ts`
+> (`test/unit/utils/edgeCountry.test.ts`) is the real verification.
 
-**IMPORTANT:** Before deploying the edge script, you must configure a BunnyCDN edge rule to set the `O-Country-Code` response header.
+## Deploy
 
-**Edge Rule Configuration:**
-1. Log in to BunnyCDN Dashboard → https://panel.bunny.net/
-2. Go to your Pull Zone → Edge Rules
-3. Create a new edge rule:
-   - **Trigger:** All Requests (or specific path pattern)
-   - **Action:** Set Response Header
-   - **Header Name:** `O-Country-Code`
-   - **Header Value:** `%geo_country_code%` (BunnyCDN variable for country code)
-   - **Priority:** High (run before edge script)
+Do this for **both** pull zones (apex and www).
 
-**Alternative using BunnyCDN Edge Rule syntax:**
-```javascript
-// Edge Rule: Set country code header
-if (true) {
-  setResponseHeader('O-Country-Code', %geo_country_code%);
-}
-```
+1. `pnpm edge:build`
+2. Bunny dashboard → Pull Zones → *your zone* → **Edge Scripting**
+3. Paste the contents of the matching `edge/dist/*.js` file, save, and enable
+   the script
+4. Pull Zone → **Caching → Vary Cache → User Country Code** must be **enabled**
+5. **Purge the zone.** HTML cached before the Vary setting or before the
+   script was enabled has no country variant and no injected tag; it will keep
+   being served until it is purged
 
-This edge rule must be enabled and have higher priority than the edge script so the header is available when the script runs.
-
-## Deployment Instructions
-
-### 1. Prepare the Script
-
-The TypeScript file needs to be transpiled to JavaScript before deployment:
+### Verify
 
 ```bash
-# Install dependencies if not already installed
-pnpm install
+curl -s https://onetimesecret.com/ | grep __USER_COUNTRY__
+# → <script data-user-country="GB">window.__USER_COUNTRY__="GB";</script>
+# (nothing at all is correct when Bunny has no country for the caller)
 
-# Build the edge script (you may need to set up a build script)
-# For now, you can manually convert or use an online TypeScript compiler
+curl -sI https://onetimesecret.com/signin | grep -i location
+# → location: https://uk.onetimesecret.com/signin
 ```
 
-### 2. Deploy to BunnyCDN
+Re-run from a VPN exit in another country and confirm the values change and
+that a repeat request from the first country still returns its own value —
+that last check is what proves Vary Cache is on.
 
-1. **Log in to BunnyCDN Dashboard**
-   - Navigate to: https://panel.bunny.net/
+## Country to jurisdiction mapping
 
-2. **Access Pull Zone Settings**
-   - Go to "Pull Zones" → Select your pull zone
-   - Navigate to "Edge Script" tab
+Defined once in `src/utils/countryToJurisdiction.ts` and bundled into both
+edge scripts:
 
-3. **Upload the Script**
-   - Copy the contents of `bunnycdn-country-injection.ts` (converted to JS)
-   - Paste into the Edge Script editor
-   - Click "Save & Deploy"
+- **EU** — Europe (excluding the UK), Eastern Europe, Russia, Turkey, the
+  Caucasus, Central Asia, the Middle East, Africa
+- **UK** — United Kingdom, Gibraltar, Guernsey, Isle of Man, Jersey
+- **CA** — Canada, Greenland
+- **NZ** — Asia-Pacific: Australia, New Zealand, the Pacific, South, East and
+  Southeast Asia
+- **US** — the Americas, and the default for any unmapped country
 
-4. **Enable the Edge Script**
-   - Toggle "Enable Edge Script" switch
-   - Save changes
-
-### 3. Verify Deployment
-
-Test the deployment by checking if the country code is injected:
-
-```bash
-# From different geographic locations or using a VPN
-curl -I https://your-domain.com/
-
-# Check the response contains the injection:
-curl https://your-domain.com/ | grep "__USER_COUNTRY__"
-```
-
-You should see something like:
-```html
-<script data-user-country="US">window.__USER_COUNTRY__='US';</script>
-```
-
-### 4. Monitor Performance
-
-- **BunnyCDN Analytics**: Check request counts and cache hit rates
-- **Browser DevTools**: Verify country code is available in console
-- **Sentry**: Monitor for any errors in jurisdiction detection
-
-## Client-Side Usage
-
-The injected country code is automatically used by the jurisdiction detection system:
-
-```typescript
-// In your Vue components (already implemented)
-import { useJurisdiction } from '@/composables/useJurisdiction';
-
-const { detectJurisdiction, autoSelectJurisdiction } = useJurisdiction();
-
-// Option 1: Detect and suggest (shows banner to user)
-await detectJurisdiction();
-
-// Option 2: Auto-select without prompting
-await autoSelectJurisdiction();
-```
-
-The country code is read from:
-```javascript
-const countryCode = window.__USER_COUNTRY__; // Injected by edge script
-```
-
-## Country to Jurisdiction Mapping
-
-The mapping is defined in `src/utils/countryToJurisdiction.ts` with comprehensive global coverage (200+ countries):
-
-- **EU** (~120 countries): Europe (all EU/EEA/EFTA + UK), Eastern Europe & Balkans, Russia, Turkey & Caucasus, Central Asia, Middle East, North Africa, Sub-Saharan Africa
-- **CA** (2 countries): Canada, Greenland
-- **NZ** (~50 countries): Asia-Pacific region including Australia, New Zealand, Pacific Islands, Southeast Asia, East Asia (China, Japan, Korea), South Asia (India, Pakistan)
-- **US** (~50 countries): All of the Americas - North America, Central America, South America, Caribbean (default fallback for unmapped countries)
-
-**Routing decisions based on:**
-- Geographic proximity for optimal latency
-- Data sovereignty and privacy regulations
-- Political and economic relationships
-- Network infrastructure and CDN performance
-
-See `src/utils/countryToJurisdiction.ts` for the complete mapping of all 200+ countries.
-
-## Caching Strategy
-
-The edge script uses the `Vary: CF-IPCountry` header to cache separate versions per country:
-
-- **First request from US**: Edge script runs, HTML modified, cached
-- **Subsequent US requests**: Served from cache (no script execution)
-- **First request from UK**: Edge script runs, HTML modified, cached separately
-- **Subsequent UK requests**: Served from cache
-
-This means:
-- ⚡ Low latency (cache hit rate ~99%+)
-- 💰 Low compute costs (script runs once per country per page)
-- 🔒 No CORS issues (same-origin)
+Regions marked `comingSoon` in `src/data/ops/jurisdictions.ts` (BR, AU, MX)
+are never redirect targets; their countries route to a live region.
 
 ## Troubleshooting
 
-### Country code not detected
-- Check if edge script is enabled in BunnyCDN dashboard
-- Verify script was deployed correctly
-- Check browser console for `window.__USER_COUNTRY__`
+**No country code on the page.** Confirm the script is enabled in the
+dashboard, then purge — `onOriginResponse` never runs for a cache HIT, so a
+page cached before deploy stays untransformed. If it is still missing, Bunny
+genuinely has no country for that IP; injecting nothing is the intended
+behavior and the client falls back to EU.
 
-### Wrong jurisdiction selected
-- Review country mapping in `src/utils/countryToJurisdiction.ts`
-- Test with different IP addresses/VPN locations
-- Check BunnyCDN's country detection accuracy
+**Everyone gets the same country.** Vary Cache → User Country Code is off, or
+was turned on without a purge afterwards.
 
-### Performance issues
-- Monitor cache hit rates in BunnyCDN analytics
-- Verify `Vary` header is set correctly
-- Check CDN edge server locations
-
-## Development
-
-### Local Testing
-
-Use the provided test utilities for local development:
-
-```typescript
-// Import test utilities
-import { mockCountryCode, testCountryCoverage } from './test-utils';
-
-// Mock a specific country
-mockCountryCode('GB'); // Test with UK
-mockCountryCode('JP'); // Test with Japan
-mockCountryCode('BR'); // Test with Brazil
-
-// Run comprehensive tests
-testCountryCoverage(); // Tests multiple countries
-```
-
-Or use browser console:
-
-```javascript
-// In browser console
-window.__USER_COUNTRY__ = 'GB'; // Test with UK
-// Then reload the page
-```
-
-### Testing
-
-For comprehensive testing documentation, see [TESTING.md](./TESTING.md):
-- Local development testing
-- Unit testing examples
-- Integration testing
-- Production testing checklist
-- Edge cases and error scenarios
+**Wrong region.** Check the mapping in `src/utils/countryToJurisdiction.ts`,
+and remember a persisted region choice in `localStorage`
+(`ots:selected-jurisdiction`) deliberately overrides geo on the client — see
+`src/utils/regionalAuth.ts`.
 
 ## References
 
-- [BunnyCDN Edge Script Documentation](https://docs.bunny.net/docs/edge-script-documentation)
-- [BunnyCDN Edge Rules](https://docs.bunny.net/docs/edge-rules) - Configure O-Country-Code header
-- [BunnyCDN Geo Variables](https://support.bunny.net/hc/en-us/articles/360017702840-Edge-Rules-Variable-Reference) - Using %geo_country_code%
-- [HTTP Vary Header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary)
-
-## Support
-
-For issues or questions:
-1. Check BunnyCDN support documentation
-2. Review application logs and Sentry
-3. Contact BunnyCDN support for edge-specific issues
+- [Bunny Edge Scripting](https://docs.bunny.net/docs/edge-scripting)
+- [Bunny Edge Scripting SDK](https://www.npmjs.com/package/@bunny.net/edgescript-sdk)
+- [HTMLRewriter API](https://developers.cloudflare.com/workers/runtime-apis/html-rewriter/)
+  — Bunny implements the same interface
+- [TESTING.md](./TESTING.md) — how to exercise this locally and in production
