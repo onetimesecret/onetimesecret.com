@@ -5,14 +5,17 @@ set -eu
 # Exit 0 = all checks passed. Exit 1 = at least one host failed its assertion.
 #
 # Hosts are split by where their A record ultimately lives:
-#   STRICT_HOSTS    - terminal A in the signed onetimesecret.com zone.
+#   STRICT_HOSTS    - apex and catch, plain A records directly in the signed
+#                     onetimesecret.com zone.
 #                     Require full DNSSEC validation (Status=NOERROR, AD=true, CD=false, answer).
 #                     A SERVFAIL or AD=false here is a real DNSSEC break -> alert.
-#   REACHABLE_HOSTS - CNAME into an unsigned third-party zone (CDN / load balancer) by design.
-#                     AD is legitimately false, so only require NOERROR + an answer.
-#                     A genuine signature break still returns SERVFAIL and still fails here.
-STRICT_HOSTS="onetimesecret.com eu.onetimesecret.com ca.onetimesecret.com nz.onetimesecret.com us.onetimesecret.com"
-REACHABLE_HOSTS="www.onetimesecret.com uk.onetimesecret.com"
+#   REACHABLE_HOSTS - the regional endpoints (eu ca uk nz us), all fronted by
+#                     Bunny Shield, and www, which CNAMEs into Bunny CDN's
+#                     unsigned b-cdn.net zone. AD may legitimately be false, so
+#                     only require NOERROR + an answer. A genuine signature
+#                     break still returns SERVFAIL and still fails here.
+STRICT_HOSTS="catch.onetimesecret.com onetimesecret.com"
+REACHABLE_HOSTS="eu.onetimesecret.com ca.onetimesecret.com uk.onetimesecret.com nz.onetimesecret.com us.onetimesecret.com www.onetimesecret.com"
 
 RESOLVERS="https://cloudflare-dns.com/dns-query https://dns.google/resolve"
 
