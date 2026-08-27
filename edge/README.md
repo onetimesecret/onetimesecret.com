@@ -11,6 +11,10 @@ browser can never disagree.
 | `bunnycdn-country-injection.ts` | origin response, cache MISS only | appends `window.__USER_COUNTRY__` to `<head>` of HTML pages |
 | `country.ts` | — | shared, pure helpers used by both (not deployed on its own) |
 
+The auth paths themselves come from `src/utils/authPaths.ts`, shared with the
+client-side link rewriter, so the edge and the browser cannot disagree about
+which paths are auth entry points.
+
 ## Country source
 
 Bunny attaches **`CDN-RequestCountryCode`** to every request at the edge. Both
@@ -42,6 +46,22 @@ site. This script answers them at the edge.
   `comingSoon` domains are never redirect targets, and nothing routes to
   `eu.onetimesecret.com` on account of a `comingSoon` region
 - every other path passes through to the origin untouched
+
+### Blast radius
+
+To serve two paths, this script sits in front of **every** request on the pull
+zone: each non-auth request costs an edge-script invocation plus a
+`fetch(request)` re-issue, and it is unverified whether a passthrough `fetch`
+stays inside the zone's normal cache handling or bypasses it. A regression
+here is therefore site-wide, not auth-only.
+
+Scope it at deploy time if the dashboard offers it: Bunny's Edge Scripting
+attaches a script to a zone, and where a **path / route trigger** is available
+this one should be limited to `/signin*` and `/signup*` rather than `/*`. If
+no such trigger exists on the zone, the passthrough is the only option — in
+which case the static-asset check in **Verify** is not optional, because it is
+the only thing that will tell you the script is not eating the rest of the
+site.
 
 The origin still ships `/signin` and `/signup` as client-side regional
 redirect pages (`src/pages/{signin,signup}.astro` → `AuthRedirect.astro`) for
@@ -150,7 +170,8 @@ Do this for **both** pull zones (apex and www).
    exports nothing. Paste, save, enable.
 4. **`bunnycdn-auth-redirect.js`** — same screen. This one is a **standalone
    fetch handler**: `export default { fetch }`, no SDK import. Paste, save,
-   enable.
+   enable. If the zone offers a path or route trigger, limit it to `/signin*`
+   and `/signup*` — see **Blast radius** above.
 5. **Purge the zone.** HTML cached before the Vary setting or before the
    script was enabled has no country variant and no injected tag; it will keep
    being served until it is purged
@@ -177,6 +198,17 @@ curl -sI https://onetimesecret.com/signin | grep -i location
 curl -s https://onetimesecret.com/ | grep __USER_COUNTRY__
 # → <script data-user-country="GB">window.__USER_COUNTRY__="GB";</script>
 # (nothing at all is correct when Bunny has no country for the caller)
+```
+
+Then confirm the rest of the zone still behaves — the auth-redirect script
+passes every other request through, so this is the check that catches a
+passthrough that broke caching or content:
+
+```bash
+curl -sI https://onetimesecret.com/etc/img/onetime-logo-md.png \
+  | grep -iE 'http/|cdn-cache|content-type|content-length'
+# → HTTP/2 200, image/png, a plausible length, and cdn-cache: HIT on a repeat
+# A MISS on every repeat means the passthrough is bypassing the zone cache.
 ```
 
 Re-run from a VPN exit in another country and confirm the values change and
@@ -209,6 +241,12 @@ behavior and the client falls back to EU.
 
 **Everyone gets the same country.** Vary Cache → User Country Code is off, or
 was turned on without a purge afterwards.
+
+**Assets got slower, or `cdn-cache` never says HIT.** The auth-redirect
+script's passthrough `fetch(request)` is in front of them. Scope the script to
+`/signin*` and `/signup*` if the zone supports a path trigger; otherwise
+disable it and fall back to the origin interstitial, which is correct but
+slower for auth entry points.
 
 **Wrong region.** Check the mapping in `src/utils/countryToJurisdiction.ts`,
 and remember a persisted region choice in `localStorage`

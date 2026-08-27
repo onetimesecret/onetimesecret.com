@@ -6,18 +6,27 @@ scripts do and how they deploy.
 
 ## What is actually testable where
 
-The Bunny runtime (`servePullZone`, `HTMLRewriter`, `npm:` specifiers) does
-not exist in Node, so the edge scripts themselves are never executed in the
-test suite. Every decision they make lives in `edge/country.ts`, which is
-pure and has no Bunny dependencies — that is what the unit tests cover.
+Most of the Bunny runtime (`servePullZone`, `HTMLRewriter`, `npm:` specifiers)
+does not exist in Node, but the auth-redirect script needs none of it: its
+`fetch` handler takes a `Request` and calls the global `fetch`, both of which
+Node has. It is executed directly in the suite.
+
+The injection script imports `npm:@bunny.net/edgescript-sdk@0.12.1`, which
+vite's import analysis rejects at transform time — before `vi.mock` gets a
+chance. The vitest config aliases that specifier to a small SDK stub, and the
+test supplies a fake `HTMLRewriter`, so the registered origin-response handler
+can also be executed directly.
 
 | Layer | Where | How |
 | --- | --- | --- |
 | Country normalization, region mapping | `edge/country.ts` | vitest, `test/unit/utils/edgeCountry.test.ts` |
+| Auth-redirect entry point | `edge/bunnycdn-auth-redirect.ts` | vitest, `test/unit/edge/authRedirect.test.ts` |
+| Auth path list | `src/utils/authPaths.ts` | shared with the client; covered from both sides |
 | Client link rewriting | `src/utils/regionalAuth.ts` | vitest, `test/unit/utils/regionalAuth.test.ts` |
 | Client region resolution | `src/stores/jurisdictionStore.ts` | vitest, `test/unit/stores/` |
+| Injection entry point | `edge/bunnycdn-country-injection.ts` | vitest, `test/unit/edge/countryInjection.test.ts` |
 | Bundling | `pnpm edge:build` | inspect `edge/dist/*.js` |
-| Injection and 302 | production | `curl` from a VPN exit |
+| Injection on a real response | production | `curl` from a VPN exit |
 
 ## Local development
 
@@ -44,14 +53,27 @@ Checklist worth walking once:
 - [ ] With no country and no stored choice, those links stay **relative**
       (`/signin`) and the interstitial page redirects to EU
 - [ ] A stored choice overrides the injected country everywhere
-- [ ] `data-auth-redirect` links carry a root-relative `redirect` parameter
+- [ ] Changing the region in the pricing selector moves the header and mobile
+      menu links too, in the same page load
+- [ ] `data-auth-redirect` links carry a root-relative `redirect` parameter,
+      unless the server already rendered one (pages passing `authRedirect`)
 
 ## Unit tests
 
 ```bash
 pnpm test                                              # everything
 pnpm test -- test/unit/utils/edgeCountry.test.ts       # edge helpers only
+pnpm test -- test/unit/edge/                           # edge entry points
 ```
+
+`test/unit/edge/authRedirect.test.ts` drives the `fetch` handler itself: which
+paths it claims, how it builds the `Location`, that the 302 is `no-store`, and
+that a throw falls back to the origin rather than breaking `/signin`. The
+origin seam is a spy on `globalThis.fetch`.
+
+`test/unit/edge/countryInjection.test.ts` captures the registered
+origin-response handler through the SDK stub and verifies passthrough and
+country-tag injection with a fake `HTMLRewriter`.
 
 `test/unit/utils/edgeCountry.test.ts` is table-driven and asserts the property
 that matters: for every input, the domain the edge redirects to equals the
