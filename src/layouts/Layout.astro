@@ -22,12 +22,13 @@ export interface Props {
   langDir?: string;
   initialMessages?: Record<string, MessageSchema>;
   // Layout specific props
+  authRedirect?: string;
   header?: boolean;
   large?: boolean;
 }
 
 // Pass all props to the LayoutBase component
-const { header = true, large = false, ...props } = Astro.props;
+const { authRedirect, header = true, large = false, ...props } = Astro.props;
 
 // Determine if the header should be shown based on the path
 // Homepage has its own navigation, so we may want to hide the default header
@@ -36,6 +37,7 @@ const showHeader = header;
 
 <LayoutBase
   {...props}
+  authRedirect={authRedirect}
   header={showHeader}
   large={large}>
   {

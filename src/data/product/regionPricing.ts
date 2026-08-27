@@ -24,6 +24,7 @@ export const regionPricing: Record<string, RegionCurrencyConfig> = {
     prices: {
       'tier-free': { monthly: 0, annually: 0 },
       'tier-identity': { monthly: 35, annually: 356 },
+      'tier-team': { monthly: 125, annually: 1200 },
     },
   },
   US: {
@@ -31,6 +32,7 @@ export const regionPricing: Record<string, RegionCurrencyConfig> = {
     prices: {
       'tier-free': { monthly: 0, annually: 0 },
       'tier-identity': { monthly: 35, annually: 356 },
+      'tier-team': { monthly: 125, annually: 1200 },
     },
   },
   CA: {
@@ -38,6 +40,7 @@ export const regionPricing: Record<string, RegionCurrencyConfig> = {
     prices: {
       'tier-free': { monthly: 0, annually: 0 },
       'tier-identity': { monthly: 35, annually: 356 },
+      'tier-team': { monthly: 125, annually: 1200 },
     },
   },
   UK: {
@@ -45,6 +48,7 @@ export const regionPricing: Record<string, RegionCurrencyConfig> = {
     prices: {
       'tier-free': { monthly: 0, annually: 0 },
       'tier-identity': { monthly: 35, annually: 356 },
+      'tier-team': { monthly: 125, annually: 1200 },
     },
   },
   NZ: {
@@ -52,6 +56,7 @@ export const regionPricing: Record<string, RegionCurrencyConfig> = {
     prices: {
       'tier-free': { monthly: 0, annually: 0 },
       'tier-identity': { monthly: 35, annually: 356 },
+      'tier-team': { monthly: 125, annually: 1200 },
     },
   },
   BR: {
@@ -59,6 +64,7 @@ export const regionPricing: Record<string, RegionCurrencyConfig> = {
     prices: {
       'tier-free': { monthly: 0, annually: 0 },
       'tier-identity': { monthly: 35, annually: 356 },
+      'tier-team': { monthly: 125, annually: 1200 },
     },
   },
   AU: {
@@ -66,6 +72,7 @@ export const regionPricing: Record<string, RegionCurrencyConfig> = {
     prices: {
       'tier-free': { monthly: 0, annually: 0 },
       'tier-identity': { monthly: 35, annually: 356 },
+      'tier-team': { monthly: 125, annually: 1200 },
     },
   },
   MX: {
@@ -73,6 +80,7 @@ export const regionPricing: Record<string, RegionCurrencyConfig> = {
     prices: {
       'tier-free': { monthly: 0, annually: 0 },
       'tier-identity': { monthly: 35, annually: 356 },
+      'tier-team': { monthly: 125, annually: 1200 },
     },
   },
 };

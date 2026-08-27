@@ -1,5 +1,5 @@
 // vite-ssr-globals.ts
-import type { Plugin } from 'vite';
+import type { Plugin } from "vite";
 
 /**
  * Vite plugin to ensure global variables are defined in SSR context
@@ -48,11 +48,13 @@ export default function viteSSRGlobals(): Plugin {
       // Define globals in SSR context
       if (typeof global !== "undefined") {
         // This defines the variable in Node.js context where SSR happens
-        (global as typeof globalThis & { __VUE_PROD_DEVTOOLS__?: boolean }).__VUE_PROD_DEVTOOLS__ = false;
+        (
+          global as typeof globalThis & { __VUE_PROD_DEVTOOLS__?: boolean }
+        ).__VUE_PROD_DEVTOOLS__ = false;
 
-        // Mock localStorage for Vue devtools during SSR
-        // This prevents errors when @vue/devtools-kit tries to access localStorage
-        if (typeof global.localStorage === 'undefined') {
+        // Mock localStorage for Vue devtools during SSR without reading Node's
+        // experimental localStorage accessor, which emits a warning when read.
+        if (!Object.hasOwn(global, "localStorage")) {
           const mockStorage: Storage = {
             length: 0,
             clear: () => {},
@@ -62,7 +64,7 @@ export default function viteSSRGlobals(): Plugin {
             setItem: () => {},
           };
 
-          Object.defineProperty(global, 'localStorage', {
+          Object.defineProperty(global, "localStorage", {
             value: mockStorage,
             writable: true,
             configurable: true,

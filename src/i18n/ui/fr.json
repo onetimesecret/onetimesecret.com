@@ -108,6 +108,7 @@
       "region-selector-label": "Région des données :",
       "region": "Région",
       "change": "Changer",
+      "region-hint": "Inscription sur {domain}",
       "secure-your-brand-and-build-customer-trust-with-": "Protégez votre marque et renforcez la confiance de vos clients grâce à des liens provenant de votre domaine. Parfait pour les entreprises qui accordent de l'importance à la confidentialité et au professionnalisme.",
       "secure-links-stronger-connections": "Des liens sécurisés, des connexions plus fortes",
       "identity-tier-not-found-in-product-tiers": "Le niveau d'identité n'est pas trouvé dans les niveaux de produits",
@@ -157,6 +158,23 @@
             "2": "Expiration jusqu'à 30 jours",
             "3": "Invitez un nombre illimité de membres",
             "4": "Contrôles d'accès à la page d'accueil, Secrets entrants"
+          }
+        },
+        "team": {
+          "name": "Team Plus",
+          "badge": null,
+          "description": "Partage de secrets gouverné avec SSO, contrôles d'accès et visibilité organisationnelle.",
+          "cta": "Commencer",
+          "price": {
+            "monthly": "125 €",
+            "annually": "1200 €"
+          },
+          "features": {
+            "0": "Tout ce qui est inclus dans Identity Plus, avec contrôle d’accès basé sur les rôles (RBAC)",
+            "1": "Authentification unique (SSO)",
+            "2": "Organisations avec équipes et gestion des membres",
+            "3": "Envoi d'e-mails depuis le domaine de votre choix (ex. support{'@'}exemple.com)",
+            "4": "Image de marque de l’espace de travail et contrôles d’inscription personnalisés"
           }
         }
       },

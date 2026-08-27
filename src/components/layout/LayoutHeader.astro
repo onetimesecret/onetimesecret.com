@@ -13,11 +13,13 @@ import BrandBar from "./BrandBar.astro";
 export interface Props {
   effectiveLocale?: string;
   initialMessages?: Record<string, MessageSchema>;
+  authRedirect?: string;
   large?: boolean;
 }
 
 const {
   initialMessages = {},
+  authRedirect,
   large = false,
   effectiveLocale: propsLocale,
 } = Astro.props;
@@ -79,6 +81,9 @@ const navigation = [
 
 // Get current path for highlighting active link
 const currentPath = Astro.url.pathname;
+const signInHref = authRedirect
+  ? `/signin?${new URLSearchParams({ redirect: authRedirect }).toString()}`
+  : "/signin";
 ---
 
 <BrandBar />
@@ -159,7 +164,8 @@ const currentPath = Astro.url.pathname;
     <div
       class="hidden md:flex md:flex-1 md:items-center md:justify-end md:space-x-3 lg:space-x-5">
       <a
-        href="/signin"
+        href={signInHref}
+        data-auth-redirect={authRedirect ? "" : undefined}
         class:list={[
           "hover:text-brand-600 dark:hover:text-brand-400 focus-visible:outline-brand-500 font-brand font-semibold text-gray-900 transition-colors focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-gray-100",
           large ? "text-lg/6" : "text-base/6",
@@ -243,7 +249,8 @@ const currentPath = Astro.url.pathname;
         </div>
         <div class="space-y-2 py-6">
           <a
-            href="/signin"
+            href={signInHref}
+            data-auth-redirect={authRedirect ? "" : undefined}
             class="focus-visible:outline-brand-500 -mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-gray-100 dark:hover:bg-gray-800">
             {t("auth.sign-in")}
           </a>
@@ -262,6 +269,16 @@ const currentPath = Astro.url.pathname;
 <script>
   // Mobile menu functionality
   document.addEventListener("DOMContentLoaded", () => {
+    document
+      .querySelectorAll<HTMLAnchorElement>("[data-auth-redirect]")
+      .forEach((link) => {
+        const signInUrl = new URL("/signin", window.location.origin);
+        const authRedirect =
+          `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        signInUrl.searchParams.set("redirect", authRedirect);
+        link.href = `${signInUrl.pathname}${signInUrl.search}`;
+      });
+
     const mobileMenuButton = document.getElementById("mobile-menu-button");
     const mobileMenu = document.getElementById("mobile-navigation-menu");
     const mobileMenuPanel = document.getElementById("mobile-menu-panel");
