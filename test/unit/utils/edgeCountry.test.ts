@@ -131,4 +131,21 @@ describe('buildCountryScriptTag', () => {
       '<script data-user-country="GB">window.__USER_COUNTRY__="GB";</script>',
     );
   });
+
+  it('is readable from the attribute alone when CSP blocks the script', async () => {
+    // What a tightened script-src leaves behind: the tag is in the DOM but its
+    // assignment never ran, so there is no window.__USER_COUNTRY__.
+    document.head.insertAdjacentHTML(
+      'beforeend',
+      buildCountryScriptTag('GB').replace(
+        'window.__USER_COUNTRY__="GB";',
+        '',
+      ),
+    );
+    setCountry(undefined);
+    vi.resetModules();
+    const { detectUserCountry } = await import('@/utils/countryToJurisdiction');
+
+    expect(detectUserCountry()).toBe('GB');
+  });
 });

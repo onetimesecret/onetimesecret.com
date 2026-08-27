@@ -178,6 +178,28 @@ export function normalizeCountryCode(
 }
 
 /**
+ * Read the country code off the injected tag's `data-user-country` attribute.
+ *
+ * The edge injects `<script data-user-country="XX">…</script>`. The attribute
+ * is the CSP-safe half of that tag: if `script-src` ever drops
+ * 'unsafe-inline' the assignment stops executing but the attribute is still
+ * in the DOM. See edge/bunnycdn-country-injection.ts.
+ */
+function readInjectedCountryAttribute(): string | null {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  try {
+    return document
+      .querySelector('script[data-user-country]')
+      ?.getAttribute('data-user-country') ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Detect user's country code from BunnyCDN edge injection
  * @returns Country code or null if not available or invalid
  */
@@ -186,13 +208,21 @@ export function detectUserCountry(): string | null {
     return null;
   }
 
-  // Get from injected global variable. The edge injects nothing when it has
-  // no country signal, so an absent value is the normal no-geo case.
+  // Prefer the injected global. The edge injects nothing when it has no
+  // country signal, so an absent value is the normal no-geo case.
   const countryCode = (window as Window & { __USER_COUNTRY__?: string }).__USER_COUNTRY__;
   const normalized = normalizeCountryCode(countryCode);
 
   if (normalized) {
     return normalized;
+  }
+
+  // Fall back to the tag's attribute, which survives a CSP that blocks the
+  // inline assignment.
+  const fromAttribute = normalizeCountryCode(readInjectedCountryAttribute());
+
+  if (fromAttribute) {
+    return fromAttribute;
   }
 
   // Malformed values are worth surfacing; recognized continent codes are not.
