@@ -13,6 +13,8 @@ import { useI18n } from "vue-i18n";
 import { useJurisdiction } from "@/composables/useJurisdiction";
 import PricingRegionSelector
   from "@/components/vue/pricing/PricingRegionSelector.vue";
+import RegionCtaHint
+  from "@/components/vue/pricing/RegionCtaHint.vue";
 import type { Region } from "@/types/jurisdiction";
 
 import {
@@ -302,6 +304,12 @@ onUnmounted(() => {
                     {{ t(tier.ctaKey) }}
                   </div>
                 </a>
+
+                <RegionCtaHint
+                  v-if="isClient"
+                  :current-region="currentRegion"
+                  :available-regions="availableRegions"
+                  @region-change="handleRegionChange" />
               </div>
             </div>
 
