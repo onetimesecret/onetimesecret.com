@@ -88,10 +88,7 @@ const currentReturnUrl = () => {
 };
 
 const signupHref = (parameters: Record<string, string>) => {
-  const searchParams = new URLSearchParams({
-    ...parameters,
-    redirect: currentReturnUrl(),
-  });
+  const searchParams = new URLSearchParams(parameters);
   return regionalUrl(`/signup?${searchParams.toString()}`);
 };
 
