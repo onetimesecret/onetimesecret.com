@@ -29,7 +29,6 @@ const props = defineProps<{
   htmlLang?: string;
   langDir?: string;
   initialMessages?: Record<string, MessageSchema>;
-  returnUrl: string;
 }>();
 
 if (props.initialMessages && props.locale) {
@@ -79,17 +78,9 @@ const getPrice = (tier: ProductTier) => {
   );
 };
 
-const currentReturnUrl = () => {
-  if (typeof window === "undefined") {
-    return props.returnUrl;
-  }
-
-  return window.location.href;
-};
-
 const signupHref = (parameters: Record<string, string>) => {
-  const searchParams = new URLSearchParams(parameters);
-  return regionalUrl(`/signup?${searchParams.toString()}`);
+  const query = new URLSearchParams(parameters).toString();
+  return regionalUrl(query ? `/signup?${query}` : "/signup");
 };
 
 const tierHref = (tier: ProductTier) => {
