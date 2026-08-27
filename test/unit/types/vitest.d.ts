@@ -32,6 +32,14 @@ declare module 'vitest' {
     spyOn<O extends object, K extends keyof O>(obj: O, method: K): MockInstance;
     clearAllMocks(): void;
     resetAllMocks(): void;
+    restoreAllMocks(): void;
+    /** Clears the module registry so the next import re-evaluates a module. */
+    resetModules(): void;
+    /** Retries the callback until it stops throwing or the timeout elapses. */
+    waitFor<T>(
+      fn: () => T | Promise<T>,
+      options?: number | { timeout?: number; interval?: number }
+    ): Promise<T>;
   }
 
   const vi: Vi;
@@ -49,6 +57,8 @@ declare module 'vitest' {
     toHaveProperty(key: string, value?: unknown): void;
     toBeDefined(): void;
     toBeUndefined(): void;
+    toBeNull(): void;
+    toThrow(expected?: RegExp | string | Error): void;
     toBeTruthy(): void;
     toBeFalsy(): void;
     toBeGreaterThan(n: number): void;
