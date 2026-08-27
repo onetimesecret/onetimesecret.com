@@ -52,22 +52,24 @@ export default function viteSSRGlobals(): Plugin {
           global as typeof globalThis & { __VUE_PROD_DEVTOOLS__?: boolean }
         ).__VUE_PROD_DEVTOOLS__ = false;
 
-        // Mock localStorage for Vue devtools during SSR. Do not read Node's
-        // experimental localStorage accessor: even `typeof` emits a warning.
-        const mockStorage: Storage = {
-          length: 0,
-          clear: () => {},
-          getItem: () => null,
-          key: () => null,
-          removeItem: () => {},
-          setItem: () => {},
-        };
+        // Mock localStorage for Vue devtools during SSR without reading Node's
+        // experimental localStorage accessor, which emits a warning when read.
+        if (!Object.hasOwn(global, "localStorage")) {
+          const mockStorage: Storage = {
+            length: 0,
+            clear: () => {},
+            getItem: () => null,
+            key: () => null,
+            removeItem: () => {},
+            setItem: () => {},
+          };
 
-        Object.defineProperty(global, "localStorage", {
-          value: mockStorage,
-          writable: true,
-          configurable: true,
-        });
+          Object.defineProperty(global, "localStorage", {
+            value: mockStorage,
+            writable: true,
+            configurable: true,
+          });
+        }
       }
     },
     /**
