@@ -163,15 +163,15 @@
         "team": {
           "name": "Team Plus",
           "badge": null,
-          "description": "Governed secret sharing with SSO, access controls, and organizational visibility.",
+          "description": "Governed secret sharing with SSO, access controls, and team visibility.",
           "cta": "Get started",
           "price": {
             "monthly": "$125",
             "annually": "$1200"
           },
           "features": {
-            "0": "Everything in Identity Plus",
-            "1": "Single sign-on (SSO) with unlimited members and RBAC",
+            "0": "Everything in Identity Plus, with RBAC",
+            "1": "Single sign-on (SSO)",
             "2": "Organizations with teams and member management",
             "3": "Email delivery from a domain you choose (e.g. support{'@'}example.com)",
             "4": "Workspace branding and custom signup controls"
