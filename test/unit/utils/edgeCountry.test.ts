@@ -9,7 +9,7 @@
  * but every decision they make lives in these helpers.
  */
 
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   COUNTRY_HEADER,
   DEFAULT_DOMAIN,
@@ -17,27 +17,35 @@ import {
   resolveCountry,
   resolveRegionalDomain,
 } from '../../../edge/country';
-import { jurisdictions } from '@/data/ops/jurisdictions';
-import {
-  getJurisdictionForCountry,
-  normalizeCountryCode,
-} from '@/utils/countryToJurisdiction';
+import { installStorage, setCountry } from '../helpers/jurisdictionTestEnv';
 
-/** Domain the client would use for a resolved country code. */
-function clientDomain(headerValue: string | null | undefined): string {
-  const countryCode = normalizeCountryCode(headerValue);
+/**
+ * The domain the real client picks for a country code, with no persisted
+ * choice: `getRegionalAuthDomain()` from src/utils/regionalAuth.ts.
+ *
+ * `?? DEFAULT_DOMAIN` is not a shortcut — it spells out the contract. A null
+ * there means the client leaves auth links relative, the visitor reaches the
+ * /signin interstitial, and the interstitial's own no-signal branch sends them
+ * to DEFAULT_DOMAIN.
+ */
+async function clientDomain(
+  headerValue: string | null | undefined,
+): Promise<string> {
+  installStorage();
+  setCountry(headerValue ?? undefined);
+  vi.resetModules();
+  const { getRegionalAuthDomain } = await import('@/utils/regionalAuth');
 
-  if (!countryCode) {
-    return DEFAULT_DOMAIN;
-  }
-
-  const identifier = getJurisdictionForCountry(countryCode);
-  const jurisdiction = jurisdictions.find(
-    (j) => j.identifier === identifier && !j.comingSoon,
-  );
-
-  return jurisdiction?.domain ?? DEFAULT_DOMAIN;
+  return getRegionalAuthDomain() ?? DEFAULT_DOMAIN;
 }
+
+beforeEach(() => {
+  installStorage();
+  setCountry(undefined);
+  document.head.querySelectorAll('script[data-user-country]').forEach((tag) => {
+    tag.remove();
+  });
+});
 
 describe('resolveCountry', () => {
   it('reads the header Bunny sets on every request', () => {
@@ -100,8 +108,14 @@ describe('resolveRegionalDomain', () => {
     'GB',
     'CA',
     'JP',
-  ])('agrees with the client for %s', (input) => {
-    expect(resolveRegionalDomain(input)).toBe(clientDomain(input));
+    // Live ISO codes absent from COUNTRY_ROUTING. They must ride the '|| US'
+    // catch-all everywhere; the /signin interstitial used to drop them to EU
+    // while the edge and the header link both said US.
+    'FO',
+    'CV',
+    'GU',
+  ])('agrees with the client for %s', async (input) => {
+    expect(resolveRegionalDomain(input)).toBe(await clientDomain(input));
   });
 
   it('never resolves to a comingSoon region', () => {
