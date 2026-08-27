@@ -136,18 +136,40 @@ function isValidCountryCode(code: string): boolean {
 }
 
 /**
- * Value the edge injects when it has no country signal.
+ * Continent codes that GeoIP databases emit in a country field.
  *
- * `edge/bunnycdn-country-injection.ts` falls back to the literal 'EU' when the
- * `O-Country-Code` header is missing. 'EU' is not an ISO 3166-1 alpha-2
- * country code, so it passes the format check but misses COUNTRY_TO_JURISDICTION
- * and would silently resolve to the 'US' default — while the auth-redirect edge
- * script sends the same header-less request to eu.onetimesecret.com.
- *
- * STOPGAP: remove this guard once the edge script injects nothing (or an empty
- * value) when the header is absent. See edge/bunnycdn-country-injection.ts.
+ * 'EU' (Europe) and 'AP' (Asia/Pacific) are legacy MaxMind continent values,
+ * not ISO 3166-1 alpha-2 countries: they pass the two-letter format check but
+ * miss COUNTRY_TO_JURISDICTION, so they would silently resolve to the 'US'
+ * catch-all. Treat them as "no signal" instead — every caller then falls back
+ * to the default (EU) region, matching the edge auth redirect.
  */
-const EDGE_NO_COUNTRY_SENTINEL = 'EU';
+const NO_SIGNAL_COUNTRY_CODES = new Set(['EU', 'AP']);
+
+/**
+ * Normalize a raw country code from any source (edge header, injected global)
+ * into a usable ISO 3166-1 alpha-2 code.
+ *
+ * Shared by the client and both BunnyCDN edge scripts so their notions of
+ * "no country signal" can never diverge.
+ * @param value - Raw country code, e.g. a CDN-RequestCountryCode header value
+ * @returns Uppercased two-letter code, or null when there is no usable signal
+ */
+export function normalizeCountryCode(
+  value: string | null | undefined
+): string | null {
+  if (!value || typeof value !== 'string') {
+    return null;
+  }
+
+  const normalized = value.trim().toUpperCase();
+
+  if (!isValidCountryCode(normalized) || NO_SIGNAL_COUNTRY_CODES.has(normalized)) {
+    return null;
+  }
+
+  return normalized;
+}
 
 /**
  * Detect user's country code from BunnyCDN edge injection
@@ -158,25 +180,21 @@ export function detectUserCountry(): string | null {
     return null;
   }
 
-  // Get from injected global variable
+  // Get from injected global variable. The edge injects nothing when it has
+  // no country signal, so an absent value is the normal no-geo case.
   const countryCode = (window as Window & { __USER_COUNTRY__?: string }).__USER_COUNTRY__;
+  const normalized = normalizeCountryCode(countryCode);
 
-  if (countryCode && typeof countryCode === 'string') {
-    // Normalize to uppercase for consistency
-    const normalized = countryCode.toUpperCase();
+  if (normalized) {
+    return normalized;
+  }
 
-    // Treat the edge's no-country sentinel as no signal, so callers fall back
-    // to the default jurisdiction instead of the 'US' catch-all.
-    if (normalized === EDGE_NO_COUNTRY_SENTINEL) {
-      return null;
-    }
-
-    // Validate ISO 3166-1 alpha-2 format
-    if (isValidCountryCode(normalized)) {
-      return normalized;
-    }
-
-    // Log warning for debugging
+  // Malformed values are worth surfacing; recognized continent codes are not.
+  if (
+    countryCode &&
+    typeof countryCode === 'string' &&
+    !NO_SIGNAL_COUNTRY_CODES.has(countryCode.trim().toUpperCase())
+  ) {
     console.warn(`Invalid country code format detected: ${countryCode}`);
   }
 
