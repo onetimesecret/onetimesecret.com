@@ -13,10 +13,11 @@ import { useI18n } from "vue-i18n";
 import { useJurisdiction } from "@/composables/useJurisdiction";
 import PricingRegionSelector
   from "@/components/vue/pricing/PricingRegionSelector.vue";
+import RegionCtaHint
+  from "@/components/vue/pricing/RegionCtaHint.vue";
 import type { Region } from "@/types/jurisdiction";
 
 import {
-  featureGroups,
   paymentFrequencies as frequencies,
   ProductTier,
   productTiers as tiers,
@@ -60,14 +61,12 @@ const handleRegionChange = (region: Region) => {
   }
 };
 
-const getRegionalHref = (basePath: string) => {
-  return computed(() => {
-    const protocol =
-      typeof window !== "undefined"
-        ? window.location.protocol
-        : "https:";
-    return `${protocol}//${currentRegion.value.domain}${basePath}`;
-  });
+const regionalUrl = (basePath: string) => {
+  const protocol =
+    typeof window !== "undefined"
+      ? window.location.protocol
+      : "https:";
+  return `${protocol}//${currentRegion.value.domain}${basePath}`;
 };
 
 const getPrice = (tier: ProductTier) => {
@@ -79,21 +78,25 @@ const getPrice = (tier: ProductTier) => {
   );
 };
 
-const basicPlanHref = getRegionalHref("/plans/free");
-const identityMonthHref = getRegionalHref(
-  "/billing/plans/identity_plus_v1/monthly",
-);
-const identityYearHref = getRegionalHref(
-  "/billing/plans/identity_plus_v1/yearly",
-);
+const signupHref = (parameters: Record<string, string>) => {
+  const query = new URLSearchParams(parameters).toString();
+  return regionalUrl(query ? `/signup?${query}` : "/signup");
+};
 
-const getIdentityHref = computed(() => {
-  return frequency.value.value === "monthly"
-    ? identityMonthHref.value
-    : identityYearHref.value;
-});
+const tierHref = (tier: ProductTier) => {
+  if (!tier.billingPlanId) {
+    return signupHref({});
+  }
 
-const feedbackHref = getRegionalHref("/feedback");
+  const interval =
+    frequency.value.value === "monthly" ? "monthly" : "yearly";
+  return signupHref({
+    product: tier.billingPlanId,
+    interval,
+  });
+};
+
+const feedbackHref = computed(() => regionalUrl("/feedback"));
 
 onMounted(() => {
   isClient.value = true;
@@ -213,276 +216,120 @@ onUnmounted(() => {
           <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div
               class="mx-auto grid max-w-6xl
-                grid-cols-1 gap-6 lg:grid-cols-2">
-              <!-- Free Tier -->
+                grid-cols-1 gap-6 lg:grid-cols-3">
               <div
-                :key="tiers[0].id"
+                v-for="tier in tiers"
+                :key="tier.id"
                 class="flex flex-col justify-between
                   rounded-2xl bg-surface-1
                   border border-surface-3 p-10
                   hover:border-surface-4
                   transition-colors duration-200
-                  sm:p-12">
+                  sm:p-12"
+                :class="{
+                  'border-t-2 border-t-brand-500 hover:border-t-brand-500':
+                    tier.featured,
+                }">
                 <div>
                   <div
                     class="flex items-center
                       justify-between">
-                    <h3
-                      :id="tiers[0].id"
-                      class="text-xl font-bold leading-8
-                        text-text-primary">
-                      {{ t(tiers[0].nameKey) }}
-                    </h3>
-                    <OIcon
-                      :collection="tiers[0].icon.collection"
-                      :name="tiers[0].icon.name"
-                      class="size-6 text-brand-500"
-                      aria-hidden="true" />
-                  </div>
-                  <div
-                    class="mt-6 flex items-baseline
-                      gap-x-2">
-                    <span
-                      class="font-brand text-6xl
-                        font-bold tracking-tight
-                        text-text-primary"
-                    >{{ getPrice(tiers[0]) }}</span>
-                    <span
-                      class="font-brand text-lg
-                        font-semibold leading-8
-                        text-text-tertiary"
-                    >{{ t(frequency.priceSuffixKey) }}</span>
-                  </div>
-                  <p
-                    class="mt-6 text-lg leading-7
-                      text-text-secondary">
-                    {{ t(tiers[0].descriptionKey) }}
-                  </p>
-                  <ul
-                    role="list"
-                    class="mt-10 space-y-4 text-base
-                      leading-7 text-text-secondary">
-                    <li
-                      v-for="featureKey in tiers[0].featuresKeys"
-                      :key="featureKey"
-                      class="flex gap-x-3">
-                      <OIcon
-                        collection="heroicons"
-                        name="check-circle-20-solid"
-                        class="h-6 w-6 flex-none
-                          text-brand-500"
-                        aria-hidden="true" />
-                      {{ t(featureKey) }}
-                    </li>
-                  </ul>
-                </div>
-
-                <a
-                  :href="basicPlanHref"
-                  :aria-describedby="tiers[0].id"
-                  class="mt-8 block rounded-lg
-                    border border-surface-3 bg-surface-1
-                    hover:bg-surface-2 px-6 py-3
-                    text-center text-base font-semibold
-                    text-text-primary transition-colors
-                    focus-visible:outline
-                    focus-visible:outline-2
-                    focus-visible:outline-offset-2
-                    focus-visible:outline-brand-600">
-                  <div
-                    class="flex items-center
-                      justify-center gap-x-2">
-                    <OIcon
-                      :collection="tiers[0].icon.collection"
-                      :name="tiers[0].icon.name"
-                      size="5" />
-                    {{ t(tiers[0].ctaKey) }}
-                  </div>
-                </a>
-              </div>
-
-              <!-- Identity Plus Tier -->
-              <div
-                :key="tiers[1].id"
-                class="flex flex-col justify-between
-                  rounded-2xl bg-surface-1
-                  border border-surface-3
-                  border-t-2 border-t-brand-500
-                  p-12 hover:border-surface-4
-                  hover:border-t-brand-500
-                  transition-colors duration-200
-                  sm:p-14">
-                <div>
-                  <div
-                    class="flex items-center
-                      justify-between">
-                    <h3
-                      :id="tiers[1].id"
-                      class="text-xl font-bold leading-8
-                        text-text-primary">
-                      {{ t(tiers[1].nameKey) }}
-                    </h3>
-                    <OIcon
-                      :collection="tiers[1].icon.collection"
-                      :name="tiers[1].icon.name"
-                      class="size-6 text-brandcomp-500"
-                      aria-hidden="true" />
-                  </div>
-                  <div
-                    class="mt-6 flex items-baseline
-                      gap-x-2">
-                    <span
-                      class="font-brand text-6xl
-                        font-bold tracking-tight
-                        text-text-primary"
-                    >{{ getPrice(tiers[1]) }}</span>
-                    <span
-                      class="font-brand text-lg
-                        font-semibold leading-8
-                        text-text-tertiary"
-                    >{{ t(frequency.priceSuffixKey) }}</span>
-                  </div>
-                  <p
-                    class="mt-6 text-lg leading-7
-                      text-text-secondary">
-                    {{ t(tiers[1].descriptionKey) }}
-                  </p>
-                  <ul
-                    role="list"
-                    class="mt-10 space-y-4 text-base
-                      leading-7 text-text-secondary">
-                    <li
-                      v-for="featureKey in tiers[1].featuresKeys"
-                      :key="featureKey"
-                      class="flex gap-x-3">
-                      <OIcon
-                        collection="heroicons"
-                        name="check-circle-20-solid"
-                        class="h-6 w-6 flex-none
-                          text-brand-500"
-                        aria-hidden="true" />
-                      {{ t(featureKey) }}
-                    </li>
-                  </ul>
-                </div>
-
-                <a
-                  :href="getIdentityHref"
-                  :aria-describedby="tiers[1].id"
-                  class="mt-8 block rounded-lg
-                    bg-brand-600 hover:bg-brand-700
-                    px-6 py-3 text-center text-base
-                    font-semibold text-white
-                    transition-colors
-                    focus-visible:outline
-                    focus-visible:outline-2
-                    focus-visible:outline-offset-2
-                    focus-visible:outline-brand-600">
-                  <div
-                    class="flex items-center
-                      justify-center gap-x-2">
-                    <OIcon
-                      :collection="tiers[1].icon.collection"
-                      :name="tiers[1].icon.name"
-                      size="5" />
-                    {{ t(tiers[1].ctaKey) }}
-                  </div>
-                </a>
-              </div>
-            </div>
-
-            <!-- TODO: Redo compare plans content before re-enabling -->
-            <!-- Feature Comparison: Bento-style grouped cards -->
-            <div v-if="false" class="mt-20 mx-auto max-w-6xl">
-              <h3
-                class="text-center text-3xl font-bold
-                  tracking-tight text-text-primary mb-8
-                  sm:text-4xl">
-                {{ t("web.pricing.compare-plans") }}
-              </h3>
-              <div
-                class="grid grid-cols-1 md:grid-cols-3
-                  gap-4">
-                <div
-                  v-for="group in featureGroups"
-                  :key="group.labelKey"
-                  class="bg-surface-1 rounded-2xl
-                    border border-surface-3 p-6 sm:p-8
-                    hover:border-surface-4
-                    transition-colors duration-200">
-                  <h4
-                    class="font-brand text-lg
-                      text-text-primary mb-4">
-                    {{ t(group.labelKey) }}
-                  </h4>
-                  <div class="space-y-3">
                     <div
-                      class="flex items-center
-                        justify-between border-b
-                        border-surface-3 pb-2 mb-1">
-                      <span class="text-xs
-                        text-text-tertiary">
-                      </span>
-                      <div class="flex gap-8">
-                        <span
-                          class="text-text-tertiary
-                            text-xs w-16 text-center">
-                          {{ t(tiers[0].nameKey) }}
-                        </span>
-                        <span
-                          class="text-text-tertiary
-                            text-xs w-16 text-center">
-                          {{ t(tiers[1].nameKey) }}
-                        </span>
-                      </div>
-                    </div>
-                    <div
-                      v-for="feature in group.features"
-                      :key="feature.labelKey"
-                      class="flex items-center
-                        justify-between py-1">
+                      class="flex items-center gap-x-3">
+                      <h3
+                        :id="tier.id"
+                        class="text-xl font-bold leading-8
+                          text-text-primary">
+                        {{ t(tier.nameKey) }}
+                      </h3>
                       <span
-                        class="text-text-secondary
-                          text-sm">
-                        {{ t(feature.labelKey) }}
+                        v-if="tier.featured && tier.badgeKey"
+                        class="rounded-full bg-brand-500/10
+                          px-2.5 py-0.5 text-xs
+                          font-semibold text-brand-500">
+                        {{ t(tier.badgeKey) }}
                       </span>
-                      <div class="flex gap-8">
-                        <span class="w-16 text-center">
-                          <OIcon
-                            v-if="feature.free"
-                            collection="heroicons"
-                            name="check-solid"
-                            class="h-6 w-6
-                              text-brand-500 mx-auto"
-                            aria-hidden="true" />
-                          <OIcon
-                            v-else
-                            collection="heroicons"
-                            name="x-mark-solid"
-                            class="h-6 w-6
-                              text-surface-4 mx-auto"
-                            aria-hidden="true" />
-                        </span>
-                        <span class="w-16 text-center">
-                          <OIcon
-                            v-if="feature.identity"
-                            collection="heroicons"
-                            name="check-solid"
-                            class="h-6 w-6
-                              text-brand-500 mx-auto"
-                            aria-hidden="true" />
-                          <OIcon
-                            v-else
-                            collection="heroicons"
-                            name="x-mark-solid"
-                            class="h-6 w-6
-                              text-surface-4 mx-auto"
-                            aria-hidden="true" />
-                        </span>
-                      </div>
                     </div>
+                    <span
+                      class="flex size-10 shrink-0
+                        items-center justify-center
+                        rounded-full bg-brand-500/10
+                        text-brand-500"
+                      aria-hidden="true">
+                      <OIcon
+                        :collection="tier.icon.collection"
+                        :name="tier.icon.name"
+                        size="5" />
+                    </span>
                   </div>
+                  <div
+                    class="mt-6 flex items-baseline
+                      gap-x-2">
+                    <span
+                      class="font-brand text-6xl
+                        font-bold tracking-tight
+                        text-text-primary"
+                    >{{ getPrice(tier) }}</span>
+                    <span
+                      class="font-brand text-lg
+                        font-semibold leading-8
+                        text-text-tertiary"
+                    >{{ t(frequency.priceSuffixKey) }}</span>
+                  </div>
+                  <p
+                    class="mt-6 text-lg leading-7
+                      text-text-secondary">
+                    {{ t(tier.descriptionKey) }}
+                  </p>
+                  <ul
+                    role="list"
+                    class="mt-10 space-y-4 text-base
+                      leading-7 text-text-secondary">
+                    <li
+                      v-for="featureKey in tier.featuresKeys"
+                      :key="featureKey"
+                      class="flex gap-x-3">
+                      <OIcon
+                        collection="heroicons"
+                        name="check-circle-20-solid"
+                        class="h-6 w-6 flex-none
+                          text-brand-500"
+                        aria-hidden="true" />
+                      {{ t(featureKey) }}
+                    </li>
+                  </ul>
                 </div>
+
+                <a
+                  :href="tierHref(tier)"
+                  :aria-describedby="tier.id"
+                  class="mt-8 block rounded-lg
+                    px-6 py-3 text-center text-base
+                    font-semibold transition-colors
+                    focus-visible:outline
+                    focus-visible:outline-2
+                    focus-visible:outline-offset-2
+                    focus-visible:outline-brand-600"
+                  :class="tier.featured
+                    ? 'bg-brand-600 hover:bg-brand-700 text-white'
+                    : `border border-surface-3 bg-surface-1
+                      hover:bg-surface-2 text-text-primary`">
+                  <div
+                    class="flex items-center
+                      justify-center gap-x-2">
+                    <OIcon
+                      :collection="tier.icon.collection"
+                      :name="tier.icon.name"
+                      size="5" />
+                    {{ t(tier.ctaKey) }}
+                  </div>
+                </a>
+
+                <RegionCtaHint
+                  v-if="isClient"
+                  :current-region="currentRegion"
+                  :available-regions="availableRegions"
+                  @region-change="handleRegionChange" />
               </div>
             </div>
 

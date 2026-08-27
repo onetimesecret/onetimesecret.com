@@ -53,7 +53,8 @@ const pageDescription = t("web.pricing.description");
   description={pageDescription}
   htmlLang={currentLang}
   langDir={currentLangMeta.dir}
-  initialMessages={pageScopedInitialMessages}>
+  initialMessages={pageScopedInitialMessages}
+  authRedirect={`${Astro.url.pathname}${Astro.url.search}`}>
   <PricingComponent
     client:load
     locale={currentLang}

@@ -108,6 +108,7 @@
       "region-selector-label": "Data region:",
       "region": "Region",
       "change": "Change",
+      "region-hint": "Signs up on {domain}",
       "secure-your-brand-and-build-customer-trust-with-": "Secure your brand and build customer trust with links from your domain. Perfect for businesses that value privacy and professionalism.",
       "secure-links-stronger-connections": "Secure Links, Stronger Connections",
       "identity-tier-not-found-in-product-tiers": "Identity tier not found in product tiers",
@@ -157,6 +158,23 @@
             "2": "Expiration up to 30 days",
             "3": "Invite unlimited members",
             "4": "Homepage access controls, Incoming Secrets"
+          }
+        },
+        "team": {
+          "name": "Team Plus",
+          "badge": null,
+          "description": "Governed secret sharing with SSO, access controls, and team visibility.",
+          "cta": "Get started",
+          "price": {
+            "monthly": "$125",
+            "annually": "$1200"
+          },
+          "features": {
+            "0": "Everything in Identity Plus, with RBAC",
+            "1": "Single sign-on (SSO)",
+            "2": "Organizations with teams and member management",
+            "3": "Email delivery from a domain you choose (e.g. support{'@'}example.com)",
+            "4": "Workspace branding and custom signup controls"
           }
         }
       },

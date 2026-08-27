@@ -108,6 +108,7 @@
       "region-selector-label": "Datenregion:",
       "region": "Region",
       "change": "Ändern",
+      "region-hint": "Registrierung auf {domain}",
       "secure-your-brand-and-build-customer-trust-with-": "Sichern Sie Ihre Marke und bauen Sie Kundenvertrauen mit Links von Ihrer Domain auf. Perfekt für Unternehmen, die Wert auf Datenschutz und Professionalität legen.",
       "secure-links-stronger-connections": "Sichere Links, stärkere Verbindungen",
       "identity-tier-not-found-in-product-tiers": "Identity-Stufe in Produktstufen nicht gefunden",
@@ -144,7 +145,7 @@
         },
         "identity": {
           "name": "Identity Plus",
-          "badge": "Vorgestellt",
+          "badge": "Empfohlen",
           "description": "Volle Kontrolle über Ihr gebrandetes Geheimnis-Sharing-Erlebnis.",
           "cta": "Heute starten",
           "price": {
@@ -157,6 +158,23 @@
             "2": "Ablaufzeit bis zu 30 Tage",
             "3": "Unbegrenzt viele Mitglieder einladen",
             "4": "Startseiten-Zugriffskontrollen, Eingehende Geheimnisse"
+          }
+        },
+        "team": {
+          "name": "Team Plus",
+          "badge": null,
+          "description": "Kontrolliertes Teilen von Geheimnissen mit SSO, Zugriffskontrollen und organisatorischer Übersicht.",
+          "cta": "Jetzt starten",
+          "price": {
+            "monthly": "125 €",
+            "annually": "1200 €"
+          },
+          "features": {
+            "0": "Alles aus Identity Plus, mit rollenbasierter Zugriffskontrolle (RBAC)",
+            "1": "Single Sign-On (SSO)",
+            "2": "Organisationen mit Teams und Mitgliederverwaltung",
+            "3": "E-Mail-Versand von einer Domain Ihrer Wahl (z. B. support{'@'}beispiel.com)",
+            "4": "Arbeitsbereich-Branding und benutzerdefinierte Registrierungsregeln"
           }
         }
       },
