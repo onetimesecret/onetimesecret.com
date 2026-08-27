@@ -39,19 +39,19 @@ check_dnssec() {
       -H "Accept: application/dns-json"
   ) || return 2
 
-  status=$(echo "$response" | jq -r '.Status')
-  ad=$(echo "$response" | jq -r '.AD')
-  answers=$(echo "$response" | jq -r '[.Answer[]? | select(.type == 1)] | length')
+  status=$(printf '%s\n' "$response" | jq -r '.Status')
+  ad=$(printf '%s\n' "$response" | jq -r '.AD')
+  answers=$(printf '%s\n' "$response" | jq -r '[.Answer[]? | select(.type == 1)] | length')
 
   printf '  %-24s Status=%s AD=%-5s answers=%s\n' "$(basename "$resolver")" "$status" "$ad" "$answers"
 
   if [ "$mode" = strict ]; then
-    echo "$response" | jq --exit-status '
+    printf '%s\n' "$response" | jq --exit-status '
       .Status == 0 and .AD == true and .CD == false and
       ([.Answer[]? | select(.type == 1)] | length > 0)
     ' >/dev/null
   else
-    echo "$response" | jq --exit-status '
+    printf '%s\n' "$response" | jq --exit-status '
       .Status == 0 and .CD == false and
       ([.Answer[]? | select(.type == 1)] | length > 0)
     ' >/dev/null
