@@ -32,8 +32,9 @@ Cloudflare and did not experience these DNSSEC validation failures.
 Mitigation is now in place: Bunny's ZSK (18608) was added to Cloudflare's DNSKEY set, stale
 Hetzner nameserver records were removed, and the Cloudflare zone was deleted. Cloudflare can
 continue to serve the deleted zone until it is purged. We still need to remove Cloudflare's
-nameservers and DS record (2371) from the parent delegation at Porkbun. We will not consider
-this incident resolved until that work is complete and DNSSEC validation has been verified from
+nameservers and DS record (2371) from the parent delegation at Porkbun (we're not able to
+remove CF's nameservers without also deleting the DS records). We will not consider this
+incident resolved until that work is complete and DNSSEC validation has been verified from
 independent resolvers.
 
 We are adding validating DNS checks to our monitoring so DNS changes cannot fail silently
