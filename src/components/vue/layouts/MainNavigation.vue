@@ -108,7 +108,7 @@ const mobileMenuOpen = ref(false);
             class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700 dark:text-gray-300 focus-visible:outline-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2"
             @click="mobileMenuOpen = !mobileMenuOpen"
             :aria-expanded="mobileMenuOpen"
-            aria-controls="mobile-navigation-menu">
+            aria-controls="nav-mobile-menu">
             <span class="sr-only">{{
               mobileMenuOpen ? t("banner.close-menu", "Close menu") : t("banner.open-menu", "Open main menu")
             }}</span>
@@ -155,7 +155,7 @@ const mobileMenuOpen = ref(false);
         :open="mobileMenuOpen">
         <div class="fixed inset-0 z-50"></div>
         <DialogPanel
-          id="mobile-navigation-menu"
+          id="nav-mobile-menu"
           class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white dark:bg-gray-900 px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 dark:sm:ring-gray-700/30 transition-transform duration-300"
           :class="[mobileMenuOpen ? 'translate-x-0' : 'translate-x-full']">
           <div class="flex items-center justify-between">

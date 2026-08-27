@@ -1,5 +1,8 @@
 // src/stores/jurisdictionStore.ts
-import { jurisdictions as initialJurisdictions } from "@/data/ops/jurisdictions";
+import {
+  defaultJurisdiction,
+  jurisdictions as initialJurisdictions,
+} from "@/data/ops/jurisdictions";
 import { JURISDICTION_STORAGE_KEY } from "@/stores/jurisdictionStorage";
 import type { Jurisdiction } from "@/types/jurisdiction";
 import { atom, computed } from "nanostores";
@@ -14,7 +17,7 @@ export const availableJurisdictions =
   atom<Jurisdiction[]>(initialJurisdictions);
 
 // Store the currently selected jurisdiction
-export const currentJurisdiction = atom<Jurisdiction>(initialJurisdictions[0]);
+export const currentJurisdiction = atom<Jurisdiction>(defaultJurisdiction);
 
 // Computed store for the API base URL based on the current jurisdiction
 export const apiBaseUrl = computed(currentJurisdiction, (jurisdiction) => {
@@ -30,11 +33,30 @@ export const apiBaseUrl = computed(currentJurisdiction, (jurisdiction) => {
 let explicitSelection = false;
 
 /**
+ * True once anything has actually decided the region this page load — an
+ * explicit choice, geo, or an automatic `{ persist: false }` pick.
+ *
+ * `currentJurisdiction` starts at `defaultJurisdiction` rather than empty, so
+ * its value alone cannot distinguish "resolved to EU" from "nobody has looked
+ * yet". Auth-link resolution needs that distinction: until something resolves,
+ * links must stay relative so the interstitial decides.
+ */
+let resolvedSelection = false;
+
+/**
  * Whether the current jurisdiction came from an explicit user choice
  * (restored from storage or selected in this session).
  */
 export function hasExplicitJurisdiction(): boolean {
   return explicitSelection;
+}
+
+/**
+ * Whether `currentJurisdiction` holds a resolved region rather than the
+ * untouched default. See `resolvedSelection`.
+ */
+export function hasResolvedJurisdiction(): boolean {
+  return resolvedSelection;
 }
 
 /** Finds a jurisdiction by identifier, including ones marked coming soon. */
@@ -115,14 +137,15 @@ export function setJurisdictionByIdentifier(
     return undefined;
   }
 
-  // Persist before notifying. Subscribers (LayoutHeader's auth-link rewrite)
-  // re-read localStorage, so setting the atom first would hand them the
-  // previous choice.
+  // Both flags and the persisted value are written before notifying.
+  // Subscribers (LayoutHeader's auth-link rewrite) re-resolve the region from
+  // the store, so setting the atom first would hand them the previous state.
   if (persist) {
     explicitSelection = true;
     writeStoredIdentifier(jurisdiction.identifier);
   }
 
+  resolvedSelection = true;
   currentJurisdiction.set(jurisdiction);
 
   return jurisdiction;
@@ -148,6 +171,7 @@ export function applyPersistedJurisdiction(): Jurisdiction | undefined {
   }
 
   explicitSelection = true;
+  resolvedSelection = true;
   currentJurisdiction.set(jurisdiction);
   return jurisdiction;
 }
@@ -181,17 +205,22 @@ export async function detectGeoJurisdiction(): Promise<
  * @returns The detected jurisdiction or the default (first) jurisdiction
  */
 export async function detectUserJurisdiction(): Promise<Jurisdiction> {
-  return (await detectGeoJurisdiction()) ?? availableJurisdictions.get()[0];
+  return (await detectGeoJurisdiction()) ?? defaultJurisdiction;
 }
 
 /**
  * Resolves the jurisdiction to use on the client, in priority order:
  *   1. a persisted explicit user choice
  *   2. geo detection from the edge-injected country code
- *   3. the existing default (first jurisdiction)
+ *   3. the untouched default
  *
  * Call this from `onMounted` so the first client render still matches the
  * prerendered markup. Geo-seeded results are deliberately not persisted.
+ *
+ * The return value cannot tell case 2 from case 3 — both can be EU. Callers
+ * that need to know whether anything was actually resolved (auth-link
+ * resolution, and any caller with a fallback of its own) must ask
+ * `hasResolvedJurisdiction()`.
  * @returns The jurisdiction now held by the store
  */
 export async function initClientJurisdiction(): Promise<Jurisdiction> {
@@ -208,6 +237,7 @@ export async function initClientJurisdiction(): Promise<Jurisdiction> {
     return currentJurisdiction.get();
   }
 
+  resolvedSelection = true;
   currentJurisdiction.set(detected);
   return detected;
 }

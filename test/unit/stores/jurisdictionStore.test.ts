@@ -71,11 +71,12 @@ describe('resolution order', () => {
     expect((await store.initClientJurisdiction()).identifier).toBe('UK');
   });
 
-  it('ignores the edge no-country sentinel and keeps the default', async () => {
-    // edge/bunnycdn-country-injection.ts injects the literal 'EU' when the
-    // O-Country-Code header is missing. It is not a country code, and the
-    // auth-redirect edge script sends the same request to eu.onetimesecret.com,
-    // so the app must land on EU rather than the 'US' catch-all.
+  it('ignores a legacy continent code and keeps the default', async () => {
+    // 'EU' is a GeoIP continent code, not a country. Historic injectors and
+    // some upstreams still emit it; treating it as a country would send the
+    // visitor to the 'US' catch-all. It means "no signal", and the
+    // auth-redirect edge script sends a no-signal request to the default
+    // region, so the app must land there too.
     setCountry('EU');
     const store = await loadStore();
 

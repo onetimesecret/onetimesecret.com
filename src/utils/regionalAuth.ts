@@ -7,19 +7,35 @@
  * not on this marketing site. These helpers turn root-relative auth paths
  * into absolute URLs on the visitor's regional domain.
  *
- * Region resolution mirrors `jurisdictionStore.initClientJurisdiction()`:
- *   1. a persisted explicit user choice (localStorage), if still selectable
- *   2. geo from the country code injected by the edge (window.__USER_COUNTRY__)
- *   3. no domain at all — links stay relative and the /signin and /signup
+ * Region resolution:
+ *   1. whatever `currentJurisdiction` holds, once something has resolved it
+ *   2. a persisted explicit user choice (localStorage), if still selectable
+ *   3. geo from the country code injected by the edge (window.__USER_COUNTRY__)
+ *   4. no domain at all — links stay relative and the /signin and /signup
  *      interstitial pages do the final redirect
  *
- * Leaving links relative in case 3 matters: rewriting them to a guessed
+ * Step 1 is what makes the "subscribe to the store, re-resolve" pattern in
+ * LayoutHeader/MainNavigation/UseCaseSelector sound rather than coincidental.
+ * Those consumers re-resolve on every store change, but not every store change
+ * is a persisted one: `{ persist: false }` selections (see
+ * `useJurisdiction.autoSelectJurisdiction`) move the atom without touching
+ * storage. Resolving from storage alone would leave the header pointing
+ * somewhere else than the form on the same page. Steps 2 and 3 still matter:
+ * they are what a page with no mounted island (or a store nobody has
+ * initialized yet) resolves from.
+ *
+ * Leaving links relative in case 4 matters: rewriting them to a guessed
  * domain would override the interstitial, which resolves the region itself.
- * Server-side (SSR/SSG) there is no window, so case 3 always applies.
+ * Server-side (SSR/SSG) there is no window, so case 4 always applies.
  */
 
 import { jurisdictions } from "@/data/ops/jurisdictions";
 import { JURISDICTION_STORAGE_KEY } from "@/stores/jurisdictionStorage";
+import {
+  currentJurisdiction,
+  hasResolvedJurisdiction,
+} from "@/stores/jurisdictionStore";
+import { isAuthPath, normalizeAuthPath } from "@/utils/authPaths";
 import {
   detectUserCountry,
   getJurisdictionForCountry,
@@ -35,6 +51,21 @@ const REGION_DOMAINS: Record<string, string> = jurisdictions
     },
     {} as Record<string, string>,
   );
+
+/**
+ * Reads the region the store has settled on, if anything has settled it yet.
+ *
+ * Looks the domain up by identifier rather than reading `.domain` off the
+ * atom: an automatic `{ persist: false }` selection can hold a `comingSoon`
+ * jurisdiction, and those domains must never become auth targets.
+ */
+function getStoreAuthDomain(): string | null {
+  if (typeof window === "undefined" || !hasResolvedJurisdiction()) {
+    return null;
+  }
+
+  return REGION_DOMAINS[currentJurisdiction.get().identifier] ?? null;
+}
 
 /**
  * Reads the persisted explicit choice. Safe during SSR and when storage is
@@ -72,7 +103,7 @@ function getGeoAuthDomain(): string | null {
  *   signal — callers should then leave auth links relative.
  */
 export function getRegionalAuthDomain(): string | null {
-  return getPersistedAuthDomain() ?? getGeoAuthDomain();
+  return getStoreAuthDomain() ?? getPersistedAuthDomain() ?? getGeoAuthDomain();
 }
 
 /**
@@ -95,7 +126,10 @@ function currentRelativeLocation(): string {
 /**
  * Rewrite static anchors pointing at /signin or /signup to the visitor's
  * regional domain, preserving each link's query string. Anchors marked
- * `data-auth-redirect` also get a `redirect` parameter for the current page.
+ * `data-auth-redirect` get a `redirect` parameter for the current page, unless
+ * the markup already carries one — LayoutHeader's `authRedirect` prop can name
+ * a destination other than the current page, and that is the caller's call to
+ * make, not ours to overwrite.
  *
  * When the region is unknown the hrefs stay relative (only the `redirect`
  * parameter is added) so the interstitial pages can resolve the region.
@@ -119,11 +153,28 @@ export function upgradeAuthLinks(root: ParentNode = document): void {
       const authPath = link.dataset.authPath ?? link.getAttribute("href");
       if (!authPath) return;
 
-      link.dataset.authPath = authPath;
-
       const url = new URL(authPath, base);
 
-      if (link.hasAttribute("data-auth-redirect")) {
+      // The `^=` selector above also matches /signinfoo. Confirm the parsed
+      // path against the same list the edge script uses, so a future
+      // /signup-beta page is not silently sent to a regional domain — and is
+      // not stamped with data-auth-path either, which would keep it in the
+      // selector forever.
+      if (!isAuthPath(url.pathname)) {
+        return;
+      }
+
+      link.dataset.authPath = authPath;
+
+      // Emit the normalized path, as the edge 302 does. Matching on the
+      // normalized form but emitting `/signin/` would have the two layers
+      // sending the same visitor to two different URLs.
+      url.pathname = normalizeAuthPath(url.pathname);
+
+      if (
+        link.hasAttribute("data-auth-redirect") &&
+        !url.searchParams.has("redirect")
+      ) {
         url.searchParams.set("redirect", currentRelativeLocation());
       }
 

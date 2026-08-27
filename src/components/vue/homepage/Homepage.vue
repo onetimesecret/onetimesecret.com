@@ -36,11 +36,8 @@ const {
   availableRegions,
   currentRegion,
   apiBaseUrl,
-  detectedJurisdiction,
   setJurisdiction,
-  applyStoredJurisdiction,
-  hasExplicitJurisdiction,
-  detectJurisdiction,
+  initJurisdiction,
   cleanup,
 } = useJurisdiction();
 
@@ -76,24 +73,17 @@ const isClient = ref(false);
 onMounted(async () => {
   isClient.value = true;
 
-  // Restore a previously chosen region before detection runs, so the
-  // suggestion below is compared against the visitor's own choice
-  applyStoredJurisdiction();
-
-  // Detect appropriate jurisdiction for the user first
-  await detectJurisdiction();
-
-  // If no jurisdiction was detected (no geo-detection result) and the visitor
-  // has no explicit choice, select a random active region so we don't always
-  // default to the first
-  if (!detectedJurisdiction.value && !hasExplicitJurisdiction()) {
-    const activeRegions = availableRegions.value.filter(r => !r.comingSoon);
-    if (activeRegions.length > 0) {
-      const random = activeRegions[Math.floor(Math.random() * activeRegions.length)];
-      // Automatic pick, not a user choice: do not persist it
-      setJurisdiction(random.identifier, { persist: false });
-    }
-  }
+  // Same resolution order as /pricing and the header: a persisted choice
+  // first, then the country code injected at the edge. Detecting without
+  // applying would leave the hero form on the default region while the header
+  // CTAs directly above it followed geo — the divergence this branch closes.
+  //
+  // With neither signal the store keeps the default region. This used to pick
+  // a random active one instead, so the page would not always show EU. That
+  // cannot stay now that auth links follow the store: it would hand the same
+  // visitor a different regional signup domain on every load, and an account
+  // created in one region does not exist in another.
+  await initJurisdiction();
 });
 
 // Clean up store subscriptions when component is unmounted

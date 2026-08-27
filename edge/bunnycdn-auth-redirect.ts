@@ -32,10 +32,8 @@
  * @see edge/README.md for deployment steps
  */
 
+import { isAuthPath, normalizeAuthPath } from "../src/utils/authPaths";
 import { COUNTRY_HEADER, resolveRegionalDomain } from "./country";
-
-/** Paths handled by this script (trailing slash normalized away) */
-const AUTH_PATHS = ["/signup", "/signin"];
 
 export { resolveRegionalDomain };
 
@@ -49,9 +47,9 @@ export default {
   async fetch(request: Request): Promise<Response> {
     try {
       const url = new URL(request.url);
-      const path = url.pathname.replace(/\/+$/, "") || "/";
+      const path = normalizeAuthPath(url.pathname);
 
-      if (!AUTH_PATHS.includes(path)) {
+      if (!isAuthPath(path)) {
         return fetch(request);
       }
 

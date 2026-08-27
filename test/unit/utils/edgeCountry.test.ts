@@ -118,6 +118,25 @@ describe('resolveRegionalDomain', () => {
     expect(resolveRegionalDomain(input)).toBe(await clientDomain(input));
   });
 
+  it('shares one default with the client store and the interstitial', async () => {
+    // Four layers need a no-signal fallback and they must name the same one.
+    // Spelling it out per layer let a reorder of `jurisdictions` split them
+    // silently, and the parity rows above would not notice: `clientDomain()`
+    // substitutes DEFAULT_DOMAIN itself when the client returns null.
+    // Pristine graph: the store's flags and atom are module state, and a
+    // preceding test may have moved them.
+    vi.resetModules();
+    const { defaultJurisdiction, DEFAULT_JURISDICTION_IDENTIFIER } =
+      await import('@/data/ops/jurisdictions');
+    const { currentJurisdiction } = await import('@/stores/jurisdictionStore');
+
+    expect(DEFAULT_DOMAIN).toBe(defaultJurisdiction.domain);
+    expect(currentJurisdiction.get().identifier).toBe(
+      DEFAULT_JURISDICTION_IDENTIFIER,
+    );
+    expect(defaultJurisdiction.comingSoon).toBeFalsy();
+  });
+
   it('never resolves to a comingSoon region', () => {
     // BR and AU are comingSoon; their countries route to live regions.
     expect(resolveRegionalDomain('BR')).toBe('us.onetimesecret.com');

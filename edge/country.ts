@@ -9,7 +9,10 @@
  * unit-testable from vitest (see test/unit/utils/edgeCountry.test.ts).
  */
 
-import { jurisdictions } from "../src/data/ops/jurisdictions";
+import {
+  defaultJurisdiction,
+  jurisdictions,
+} from "../src/data/ops/jurisdictions";
 import {
   getJurisdictionForCountry,
   normalizeCountryCode,
@@ -25,13 +28,16 @@ export const COUNTRY_HEADER = "CDN-RequestCountryCode";
 /**
  * Fallback when there is no usable country signal.
  *
+ * Taken from `defaultJurisdiction` rather than spelled out, so the edge, the
+ * client store and the auth interstitial cannot drift apart.
+ *
  * It is also the `??` arm in `resolveRegionalDomain`, but that arm is
  * unreachable by construction: `getJurisdictionForCountry` only ever returns
  * EU/CA/NZ/UK/US and all five are live. A country whose region is marked
  * `comingSoon` routes to its live region instead (BR → us, AU → nz);
  * `comingSoon` domains are never redirect targets.
  */
-export const DEFAULT_DOMAIN = "eu.onetimesecret.com";
+export const DEFAULT_DOMAIN = defaultJurisdiction.domain;
 
 /** Jurisdiction identifier → live regional domain (comingSoon excluded) */
 export const REGION_DOMAINS: Record<string, string> = jurisdictions

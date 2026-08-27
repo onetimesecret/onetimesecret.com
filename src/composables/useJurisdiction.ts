@@ -1,10 +1,11 @@
 // src/composables/useJurisdiction.ts
-import { ref, computed, watchEffect } from 'vue';
+import { ref, computed, onScopeDispose } from 'vue';
 import {
   applyPersistedJurisdiction,
   availableJurisdictions,
   currentJurisdiction,
   hasExplicitJurisdiction,
+  hasResolvedJurisdiction,
   initClientJurisdiction,
   apiBaseUrl as storeApiBaseUrl,
   setJurisdictionByIdentifier,
@@ -26,14 +27,8 @@ export function useJurisdiction() {
   const suggestedDomain = ref<string>('');
   const isDetecting = ref(false);
 
-  // Create a watcher to keep local refs in sync with the store
-  watchEffect(() => {
-    jurisdictions.value = availableJurisdictions.get();
-    current.value = currentJurisdiction.get();
-    apiBaseUrl.value = storeApiBaseUrl.get();
-  });
-
-  // Subscribe to store changes
+  // Subscribe to store changes. nanostores invokes each listener immediately,
+  // which is what seeds the refs above with the store's current value.
   const unsubscribeAvailable = availableJurisdictions.subscribe(
     (value) => { jurisdictions.value = [...value]; }
   );
@@ -177,13 +172,24 @@ export function useJurisdiction() {
   };
 
   /**
-   * Cleanup function to unsubscribe from stores
+   * Cleanup function to unsubscribe from stores.
+   *
+   * Idempotent, because it runs automatically on scope disposal and callers
+   * may also invoke it from their own `onUnmounted`.
    */
+  let unsubscribed = false;
   const cleanup = () => {
+    if (unsubscribed) return;
+    unsubscribed = true;
     unsubscribeAvailable();
     unsubscribeCurrent();
     unsubscribeApiBaseUrl();
   };
+
+  // Unsubscribe with the owning component rather than relying on every caller
+  // remembering `onUnmounted(cleanup)`. Silent outside a scope, so the
+  // composable stays usable from plain unit tests.
+  onScopeDispose(cleanup, true);
 
   // Type compatibility with legacy Region type
   const availableRegions = computed((): Region[] => jurisdictions.value);
@@ -210,6 +216,7 @@ export function useJurisdiction() {
     applyStoredJurisdiction,
     initJurisdiction,
     hasExplicitJurisdiction,
+    hasResolvedJurisdiction,
     detectJurisdiction,
     autoSelectJurisdiction,
     getCurrentJurisdictionUrl,
