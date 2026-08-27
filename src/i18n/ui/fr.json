@@ -75,6 +75,10 @@
     "loading": "Chargement"
   },
   "web": {
+    "authRedirect": {
+      "message": "Redirection vers le portail de compte de votre région…",
+      "continue": "Continuer vers votre région"
+    },
     "aria": {
       "light_mode": "Mode clair",
       "dark_mode": "Mode sombre",
@@ -164,7 +168,7 @@
           "name": "Team Plus",
           "badge": null,
           "description": "Partage de secrets gouverné avec SSO, contrôles d'accès et visibilité organisationnelle.",
-          "cta": "Commencer",
+          "cta": "Commencer aujourd'hui",
           "price": {
             "monthly": "125 €",
             "annually": "1200 €"

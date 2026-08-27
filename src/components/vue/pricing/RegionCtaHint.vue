@@ -1,7 +1,6 @@
 <!-- src/components/vue/pricing/RegionCtaHint.vue -->
 
 <script setup lang="ts">
-import OIcon from "@/components/vue/icons/OIcon.vue";
 import RegionListPanel
   from "@/components/vue/pricing/RegionListPanel.vue";
 import { onMounted, onUnmounted, ref } from "vue";
@@ -66,14 +65,8 @@ onUnmounted(() => {
 <template>
   <div
     ref="hintRef"
-    class="relative mt-3 flex items-center
-      justify-center gap-x-1.5 text-xs
-      text-text-tertiary">
-    <OIcon
-      :collection="currentRegion.icon.collection"
-      :name="currentRegion.icon.name"
-      class="size-3.5"
-      :aria-label="`${currentRegion.displayName} region`" />
+    class="relative mt-3 text-center text-xs
+      leading-5 text-text-tertiary">
     <span>
       {{
         t("web.pricing.region-hint", {
@@ -81,7 +74,7 @@ onUnmounted(() => {
         })
       }}
     </span>
-    <span aria-hidden="true">&middot;</span>
+    <span aria-hidden="true"> &middot; </span>
     <button
       type="button"
       class="font-medium text-text-secondary
@@ -91,10 +84,10 @@ onUnmounted(() => {
         focus-visible:outline-2
         focus-visible:outline-offset-2
         focus-visible:outline-brand-600"
-      @click="toggleDropdown"
-      @keydown.escape="close"
       :aria-haspopup="true"
-      :aria-expanded="isOpen">
+      :aria-expanded="isOpen"
+      @click="toggleDropdown"
+      @keydown.escape="close">
       {{ t("web.pricing.change") }}
     </button>
 

@@ -1,0 +1,12 @@
+---
+/**
+ * src/pages/signin.astro
+ *
+ * Fallback interstitial that forwards to the visitor's regional signin,
+ * preserving query params. The BunnyCDN edge script normally 302s this
+ * path before the page is served (see edge/bunnycdn-auth-redirect.ts).
+ */
+import AuthRedirect from "@/components/AuthRedirect.astro";
+---
+
+<AuthRedirect path="/signin" />

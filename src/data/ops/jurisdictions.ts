@@ -83,3 +83,31 @@ export const jurisdictions: Jurisdiction[] = [
     comingSoon: true,
   },
 ];
+
+/**
+ * The region a visitor lands in with no explicit choice and no geo signal.
+ *
+ * Four layers need this fallback — the client store, `src/utils/regionalAuth`,
+ * the edge scripts (`edge/country.ts`) and the auth interstitial
+ * (`src/components/AuthRedirect.astro`) — and they must agree, or the same
+ * visitor gets different regions depending on which layer answers first.
+ * Naming it here rather than reaching for `jurisdictions[0]` means reordering
+ * the array above cannot silently break that agreement.
+ */
+export const DEFAULT_JURISDICTION_IDENTIFIER = "EU";
+
+/** The `DEFAULT_JURISDICTION_IDENTIFIER` record. Fails at import time if absent. */
+export const defaultJurisdiction: Jurisdiction = (() => {
+  const jurisdiction = jurisdictions.find(
+    (j) => j.identifier === DEFAULT_JURISDICTION_IDENTIFIER,
+  );
+
+  if (!jurisdiction || jurisdiction.comingSoon) {
+    throw new Error(
+      `DEFAULT_JURISDICTION_IDENTIFIER '${DEFAULT_JURISDICTION_IDENTIFIER}' ` +
+        "must name a live (not comingSoon) entry in `jurisdictions`",
+    );
+  }
+
+  return jurisdiction;
+})();

@@ -1,392 +1,170 @@
-# Testing Guide for Country-Based Jurisdiction Detection
+# Testing the edge scripts
 
-This guide covers testing strategies for the BunnyCDN edge middleware and country-based jurisdiction detection system.
+How to exercise country detection and regional auth redirects locally, in
+unit tests, and against production. See [README.md](./README.md) for what the
+scripts do and how they deploy.
 
-## Table of Contents
+## What is actually testable where
 
-1. [Local Development Testing](#local-development-testing)
-2. [Unit Testing](#unit-testing)
-3. [Integration Testing](#integration-testing)
-4. [Production Testing](#production-testing)
-5. [Edge Cases & Error Scenarios](#edge-cases--error-scenarios)
+Most of the Bunny runtime (`servePullZone`, `HTMLRewriter`, `npm:` specifiers)
+does not exist in Node, but the auth-redirect script needs none of it: its
+`fetch` handler takes a `Request` and calls the global `fetch`, both of which
+Node has. It is executed directly in the suite.
 
----
+The injection script imports `npm:@bunny.net/edgescript-sdk@0.12.1`, which
+vite's import analysis rejects at transform time — before `vi.mock` gets a
+chance. The vitest config aliases that specifier to a small SDK stub, and the
+test supplies a fake `HTMLRewriter`, so the registered origin-response handler
+can also be executed directly.
 
-## Local Development Testing
+| Layer | Where | How |
+| --- | --- | --- |
+| Country normalization, region mapping | `edge/country.ts` | vitest, `test/unit/utils/edgeCountry.test.ts` |
+| Auth-redirect entry point | `edge/bunnycdn-auth-redirect.ts` | vitest, `test/unit/edge/authRedirect.test.ts` |
+| Auth path list | `src/utils/authPaths.ts` | shared with the client; covered from both sides |
+| Client link rewriting | `src/utils/regionalAuth.ts` | vitest, `test/unit/utils/regionalAuth.test.ts` |
+| Client region resolution | `src/stores/jurisdictionStore.ts` | vitest, `test/unit/stores/` |
+| Injection entry point | `edge/bunnycdn-country-injection.ts` | vitest, `test/unit/edge/countryInjection.test.ts` |
+| Bundling | `pnpm edge:build` | inspect `edge/dist/*.js` |
+| Injection on a real response | production | `curl` from a VPN exit |
 
-### Browser Console Testing
+## Local development
 
-The easiest way to test jurisdiction detection locally is using the browser console:
+The dev server is not behind Bunny, so no country is ever injected. Set the
+global by hand in the browser console and reload:
 
 ```javascript
-// 1. Mock a country code
-mockCountryCode('GB'); // Test UK → EU jurisdiction
-
-// 2. Reload the page to see the detection in action
-
-// 3. Check detected jurisdiction
-console.log(window.__USER_COUNTRY__); // Should show 'GB'
-
-// 4. Test different countries
-mockCountryCode('JP'); // Japan → NZ
-mockCountryCode('BR'); // Brazil → US
-mockCountryCode('CA'); // Canada → CA
+window.__USER_COUNTRY__ = 'GB';   // → UK region
+window.__USER_COUNTRY__ = 'JP';   // → NZ region
+window.__USER_COUNTRY__ = 'BR';   // → US region
+delete window.__USER_COUNTRY__;   // → no signal, falls back to EU
 ```
 
-### Testing Utilities
+A persisted region choice beats the injected country, so clear it when
+testing geo:
 
-Import and use the test utilities in your code:
-
-```typescript
-import { mockCountryCode, testCountryCoverage } from '@/edge/test-utils';
-
-// Mock a specific country
-mockCountryCode('DE'); // Germany → EU
-
-// Run comprehensive coverage tests
-testCountryCoverage(); // Tests 10+ countries
+```javascript
+localStorage.removeItem('ots:selected-jurisdiction');
 ```
 
-### Manual Testing Checklist
+Checklist worth walking once:
 
-- [ ] **US jurisdiction**: Mock 'US', verify US server selected
-- [ ] **EU jurisdiction**: Mock 'GB', 'DE', 'FR' - verify EU server
-- [ ] **CA jurisdiction**: Mock 'CA', 'GL' - verify CA server
-- [ ] **NZ jurisdiction**: Mock 'AU', 'JP', 'SG' - verify NZ server
-- [ ] **Unknown country**: Mock 'XX' - verify fallback to US
-- [ ] **Invalid format**: Mock '123' - verify rejection and fallback
+- [ ] Header and mobile-menu Sign in / Sign up point at the expected domain
+- [ ] With no country and no stored choice, those links stay **relative**
+      (`/signin`) and the interstitial page redirects to EU
+- [ ] A stored choice overrides the injected country everywhere
+- [ ] Changing the region in the pricing selector moves the header and mobile
+      menu links too, in the same page load
+- [ ] `data-auth-redirect` links carry a root-relative `redirect` parameter,
+      unless the server already rendered one (pages passing `authRedirect`)
 
----
-
-## Unit Testing
-
-### Country Mapping Tests
-
-Create tests for the country-to-jurisdiction mapping:
-
-```typescript
-// tests/utils/countryToJurisdiction.test.ts
-import { describe, expect, test } from 'vitest';
-import { getJurisdictionForCountry } from '@/utils/countryToJurisdiction';
-
-describe('countryToJurisdiction', () => {
-  describe('EU jurisdiction', () => {
-    test('maps EU member states correctly', () => {
-      expect(getJurisdictionForCountry('DE')).toBe('EU');
-      expect(getJurisdictionForCountry('FR')).toBe('EU');
-      expect(getJurisdictionForCountry('GB')).toBe('EU');
-    });
-
-    test('maps Middle East countries to EU', () => {
-      expect(getJurisdictionForCountry('AE')).toBe('EU');
-      expect(getJurisdictionForCountry('SA')).toBe('EU');
-      expect(getJurisdictionForCountry('IL')).toBe('EU');
-    });
-
-    test('maps African countries to EU', () => {
-      expect(getJurisdictionForCountry('ZA')).toBe('EU');
-      expect(getJurisdictionForCountry('NG')).toBe('EU');
-      expect(getJurisdictionForCountry('KE')).toBe('EU');
-    });
-  });
-
-  describe('NZ jurisdiction', () => {
-    test('maps Asia-Pacific countries correctly', () => {
-      expect(getJurisdictionForCountry('AU')).toBe('NZ');
-      expect(getJurisdictionForCountry('NZ')).toBe('NZ');
-      expect(getJurisdictionForCountry('SG')).toBe('NZ');
-    });
-
-    test('maps East Asian countries to NZ', () => {
-      expect(getJurisdictionForCountry('JP')).toBe('NZ');
-      expect(getJurisdictionForCountry('KR')).toBe('NZ');
-      expect(getJurisdictionForCountry('CN')).toBe('NZ');
-    });
-
-    test('maps South Asian countries to NZ', () => {
-      expect(getJurisdictionForCountry('IN')).toBe('NZ');
-      expect(getJurisdictionForCountry('PK')).toBe('NZ');
-    });
-  });
-
-  describe('US jurisdiction', () => {
-    test('maps Americas countries correctly', () => {
-      expect(getJurisdictionForCountry('US')).toBe('US');
-      expect(getJurisdictionForCountry('MX')).toBe('US');
-      expect(getJurisdictionForCountry('BR')).toBe('US');
-    });
-  });
-
-  describe('CA jurisdiction', () => {
-    test('maps Canada and Greenland', () => {
-      expect(getJurisdictionForCountry('CA')).toBe('CA');
-      expect(getJurisdictionForCountry('GL')).toBe('CA');
-    });
-  });
-
-  describe('edge cases', () => {
-    test('handles unknown country codes', () => {
-      expect(getJurisdictionForCountry('XX')).toBe('US');
-      expect(getJurisdictionForCountry('ZZ')).toBe('US');
-    });
-
-    test('handles lowercase input', () => {
-      expect(getJurisdictionForCountry('us')).toBe('US');
-      expect(getJurisdictionForCountry('gb')).toBe('EU');
-    });
-
-    test('handles invalid input', () => {
-      expect(getJurisdictionForCountry('')).toBe('US');
-      expect(getJurisdictionForCountry('123')).toBe('US');
-    });
-  });
-});
-```
-
-### Country Detection Tests
-
-```typescript
-// tests/utils/detectUserCountry.test.ts
-import { describe, expect, test, beforeEach, afterEach } from 'vitest';
-import { detectUserCountry } from '@/utils/countryToJurisdiction';
-
-describe('detectUserCountry', () => {
-  beforeEach(() => {
-    // Clean up any existing country code
-    delete (window as any).__USER_COUNTRY__;
-    document.querySelector('script[data-user-country]')?.remove();
-  });
-
-  afterEach(() => {
-    // Clean up after tests
-    delete (window as any).__USER_COUNTRY__;
-    document.querySelector('script[data-user-country]')?.remove();
-  });
-
-  test('detects country from window global', () => {
-    (window as any).__USER_COUNTRY__ = 'US';
-    expect(detectUserCountry()).toBe('US');
-  });
-
-  test('detects country from data attribute', () => {
-    const script = document.createElement('script');
-    script.setAttribute('data-user-country', 'GB');
-    document.head.appendChild(script);
-
-    expect(detectUserCountry()).toBe('GB');
-  });
-
-  test('normalizes lowercase to uppercase', () => {
-    (window as any).__USER_COUNTRY__ = 'us';
-    expect(detectUserCountry()).toBe('US');
-  });
-
-  test('validates country code format', () => {
-    (window as any).__USER_COUNTRY__ = '123';
-    expect(detectUserCountry()).toBeNull();
-  });
-
-  test('returns null when not available', () => {
-    expect(detectUserCountry()).toBeNull();
-  });
-});
-```
-
----
-
-## Integration Testing
-
-### Component Testing
-
-Test that Vue components properly use jurisdiction detection:
-
-```typescript
-// tests/components/Homepage.test.ts
-import { describe, expect, test, beforeEach } from 'vitest';
-import { mount } from '@vue/test-utils';
-import Homepage from '@/components/vue/homepage/Homepage.vue';
-
-describe('Homepage jurisdiction detection', () => {
-  beforeEach(() => {
-    // Mock country code
-    (window as any).__USER_COUNTRY__ = 'GB';
-  });
-
-  test('detects jurisdiction on mount', async () => {
-    const wrapper = mount(Homepage, {
-      props: {
-        locale: 'en',
-        initialMessages: {},
-      },
-    });
-
-    // Wait for async detection
-    await wrapper.vm.$nextTick();
-
-    // Verify jurisdiction was detected
-    // (Implementation depends on your component structure)
-  });
-});
-```
-
----
-
-## Production Testing
-
-### Pre-Deployment Checklist
-
-Before deploying to BunnyCDN:
-
-1. **Verify Edge Script**
-   - [ ] Edge script compiles without TypeScript errors
-   - [ ] Error handling is in place
-   - [ ] Country code validation works
-   - [ ] Sanitization prevents XSS
-
-2. **Verify Client Code**
-   - [ ] Country detection works in all browsers
-   - [ ] Fallback to US works when country unavailable
-   - [ ] No console errors on page load
-   - [ ] Works with JavaScript disabled (graceful degradation)
-
-3. **Performance**
-   - [ ] No significant page load impact
-   - [ ] CDN caching working (check Vary header)
-   - [ ] No memory leaks
-
-### Post-Deployment Testing
-
-After deploying to BunnyCDN:
+## Unit tests
 
 ```bash
-# 1. Test from different geographic locations (use VPN or proxies)
-curl -I https://onetimesecret.com/
-
-# 2. Verify country code injection
-curl https://onetimesecret.com/ | grep "__USER_COUNTRY__"
-
-# Expected output:
-# <script data-user-country="US">window.__USER_COUNTRY__='US';</script>
-
-# 3. Test cache headers
-curl -I https://onetimesecret.com/ | grep "Vary"
-# Expected: Vary: CF-IPCountry
-
-# 4. Test from different countries
-# Use a VPN or proxy service:
-curl -x uk-proxy.example.com https://onetimesecret.com/ | grep "__USER_COUNTRY__"
-# Expected: GB, DE, FR, etc.
+pnpm test                                              # everything
+pnpm test -- test/unit/utils/edgeCountry.test.ts       # edge helpers only
+pnpm test -- test/unit/edge/                           # edge entry points
 ```
 
-### Monitoring
+`test/unit/edge/authRedirect.test.ts` drives the `fetch` handler itself: which
+paths it claims, how it builds the `Location`, that the 302 is `no-store`, and
+that a throw falls back to the origin rather than breaking `/signin`. The
+origin seam is a spy on `globalThis.fetch`.
 
-Set up monitoring for:
+`test/unit/edge/countryInjection.test.ts` captures the registered
+origin-response handler through the SDK stub and verifies passthrough and
+country-tag injection with a fake `HTMLRewriter`.
 
-1. **Edge Script Errors**
-   - Check BunnyCDN logs for edge script failures
-   - Set up alerts for high error rates
+`test/unit/utils/edgeCountry.test.ts` is table-driven and asserts the property
+that matters: for every input, the domain the edge redirects to equals the
+domain the client resolves. Add a row there rather than a new assertion pair
+when the mapping changes.
 
-2. **Jurisdiction Distribution**
-   - Monitor which jurisdictions users are being routed to
-   - Verify distribution matches expected geographic traffic
+Cases the table pins down:
 
-3. **Performance Metrics**
-   - Track page load times across jurisdictions
-   - Monitor cache hit rates per country
+| Header value | Domain | Why |
+| --- | --- | --- |
+| absent, `''`, `'U'`, `'USA'` | `eu.` | no signal → default region |
+| `'EU'`, `'AP'` (any case) | `eu.` | legacy GeoIP continent codes, not countries |
+| `'de'`, `'DE'` | `eu.` | normalization is case-insensitive |
+| `'GB'` | `uk.` | UK is its own region, not EU |
+| `'ZZ'` | `us.` | real-shaped but unmapped → shared `|| US` default |
+| `'BR'`, `'AU'` | `us.`, `nz.` | `comingSoon` regions are never targets |
 
----
+## Build verification
 
-## Edge Cases & Error Scenarios
+`pnpm edge:build` does not type-check and esbuild will happily emit a broken
+script, so check the output rather than the exit code:
 
-### Test Cases
+```bash
+pnpm edge:build
+head -1 edge/dist/bunnycdn-country-injection.js
+# → import * as BunnySDK from "npm:@bunny.net/edgescript-sdk@0.12.1";
 
-| Scenario | Expected Behavior |
-|----------|-------------------|
-| **No country code** | Falls back to US (default) |
-| **Invalid format (123)** | Rejects, falls back to US |
-| **Unknown country (XX)** | Falls back to US |
-| **Lowercase country (us)** | Normalizes to uppercase (US) |
-| **Edge script error** | Returns original response, site still works |
-| **HTML without `</head>`** | Injects at start of `<body>` |
-| **Non-HTML response** | Passes through unchanged |
-| **XSS attempt** | Sanitized, injection prevented |
-
-### Testing Error Scenarios
-
-```javascript
-// Test invalid country codes
-mockCountryCode('123'); // Should reject
-mockCountryCode('ABC'); // Should reject
-mockCountryCode('1A');  // Should reject
-
-// Test edge cases
-mockCountryCode('');    // Should fallback to US
-mockCountryCode('xx');  // Should fallback to US (unknown country)
-
-// Test normalization
-mockCountryCode('us');  // Should normalize to 'US'
-mockCountryCode('Gb');  // Should normalize to 'GB'
+grep -c "servePullZone" edge/dist/bunnycdn-country-injection.js   # → 1
+grep -c "CDN-RequestCountryCode" edge/dist/bunnycdn-auth-redirect.js  # → 1
 ```
 
-### Manual Browser Testing
+The injection entry's only top-level statement is a side-effect call, so
+confirming `servePullZone` survived tree-shaking is the check that matters.
 
-1. **Disable JavaScript**: Verify site still loads
-2. **Clear cache**: Test fresh page loads
-3. **Different browsers**: Test Chrome, Firefox, Safari, Edge
-4. **Mobile devices**: Test on iOS and Android
-5. **Slow connections**: Test with network throttling
+## Production
 
----
+After deploying (see README.md — paste into **both** pull zones, enable Vary
+Cache → User Country Code, then **purge**):
 
-## Continuous Testing
+```bash
+# 1. Injection
+curl -s https://onetimesecret.com/ | grep __USER_COUNTRY__
+# → <script data-user-country="GB">window.__USER_COUNTRY__="GB";</script>
 
-Add to your CI/CD pipeline:
+# 2. Auth redirect
+curl -sI https://onetimesecret.com/signin | grep -i "location\|cache-control"
+# → location: https://uk.onetimesecret.com/signin
+# → cache-control: no-store
 
-```yaml
-# .github/workflows/test.yml
-name: Test Country Detection
+# 3. Query string survives
+curl -sI "https://onetimesecret.com/signup?product=team&interval=year" \
+  | grep -i location
+# → location: https://uk.onetimesecret.com/signup?product=team&interval=year
 
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2
-      - run: pnpm install
-      - run: pnpm test:unit # Run unit tests
-      - run: pnpm type-check # TypeScript checks
-      - run: pnpm lint # Linting
+# 4. Passthrough
+curl -sI https://onetimesecret.com/pricing | head -1
+# → HTTP/2 200
 ```
 
----
+Then repeat 1 and 2 from a VPN exit in another country. Two things to confirm:
+
+- the values change with the exit location
+- a second request from the **first** country still returns the first
+  country's value
+
+That second point is the only real test of Vary Cache. If country A's page
+starts coming back for country B, Vary Cache is off or the zone was not purged
+after enabling it.
+
+## Edge cases
+
+| Scenario | Expected |
+| --- | --- |
+| Bunny has no country for the IP | nothing injected; client falls back to EU; `/signin` 302s to EU |
+| Country maps to a `comingSoon` region | live region (never `br.`/`au.`/`mx.`) |
+| Non-HTML response | passes through untouched |
+| Cache HIT | `onOriginResponse` does not run; cached HTML already carries its country |
+| CDN bypassed entirely | no injection; `/signin` and `/signup` interstitials resolve client-side |
+| JavaScript disabled | interstitial meta-refresh sends the visitor to EU |
+| `localStorage` unavailable | persisted choice is skipped, geo is used |
 
 ## Troubleshooting
 
-### Country code not detected
-1. Check browser console for warnings
-2. Verify edge script is deployed and enabled
-3. Check BunnyCDN logs for errors
-4. Try clearing browser cache
+**Country code not detected.** Check for a cache HIT first (purge, then
+retry). Then confirm the script is enabled on the zone. Then accept that Bunny
+may simply have no country for the caller — injecting nothing is correct.
 
-### Wrong jurisdiction selected
-1. Verify country mapping in `countryToJurisdiction.ts`
-2. Check if country code is correct: `console.log(window.__USER_COUNTRY__)`
-3. Test mapping: `testCountryMapping('XX')`
+**Wrong region.** Check `localStorage['ots:selected-jurisdiction']` before
+blaming geo; an explicit choice is meant to win. Otherwise check the mapping
+in `src/utils/countryToJurisdiction.ts`.
 
-### Performance issues
-1. Check CDN cache hit rates
-2. Verify Vary header is set
-3. Monitor edge script execution time
-4. Check for excessive re-renders
-
----
-
-## Summary
-
-✅ **Always test locally first** using browser console utilities
-✅ **Write unit tests** for country mapping logic
-✅ **Test edge cases** (invalid codes, unknown countries)
-✅ **Monitor in production** using BunnyCDN analytics
-✅ **Set up alerts** for errors and performance issues
+**Links are relative in production.** That means neither a stored choice nor a
+country was available. The interstitial handles it; if it happens for every
+visitor, the injection script is not running.

@@ -75,6 +75,10 @@
     "loading": "Wird geladen"
   },
   "web": {
+    "authRedirect": {
+      "message": "Sie werden zum Kontoportal Ihrer Region weitergeleitet …",
+      "continue": "Weiter zu Ihrer Region"
+    },
     "aria": {
       "light_mode": "Heller Modus",
       "dark_mode": "Dunkler Modus",
@@ -164,7 +168,7 @@
           "name": "Team Plus",
           "badge": null,
           "description": "Kontrolliertes Teilen von Geheimnissen mit SSO, Zugriffskontrollen und organisatorischer Übersicht.",
-          "cta": "Jetzt starten",
+          "cta": "Heute starten",
           "price": {
             "monthly": "125 €",
             "annually": "1200 €"

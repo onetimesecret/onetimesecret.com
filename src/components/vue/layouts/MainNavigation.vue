@@ -3,10 +3,12 @@
 <script setup lang="ts">
 import { Dialog, DialogPanel } from "@headlessui/vue";
 import { Bars3Icon, XMarkIcon } from "@heroicons/vue/24/outline";
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { localizeUrl } from '@/i18n/utils';
 import { setLanguage, setLanguageWithMessages, type MessageSchema, type SupportedLanguage } from "@/i18n";
+import { currentJurisdiction } from "@/stores/jurisdictionStore";
+import { getRegionalAuthUrl } from "@/utils/regionalAuth";
 
 const props = defineProps<{
   locale: SupportedLanguage;
@@ -28,6 +30,32 @@ if (props.initialMessages && props.locale) {
     await setLanguage(props.locale);
   });
 }
+
+// Auth links point at the visitor's regional domain (persisted choice, then
+// edge geo). Seeded relative and resolved on mount, both because it needs
+// localStorage and window.__USER_COUNTRY__ and to keep SSR markup
+// hydration-stable — a computed would render the relative path on the server
+// and the absolute one on the client. With no signal the helper returns the
+// path unchanged and the interstitial decides.
+//
+// Re-resolved whenever the store changes, so picking a region in the pricing
+// selector cannot leave the nav pointing at the previous one.
+const signinHref = ref("/signin");
+const signupHref = ref("/signup");
+
+function refreshAuthHrefs(): void {
+  signinHref.value = getRegionalAuthUrl("/signin");
+  signupHref.value = getRegionalAuthUrl("/signup");
+}
+
+let unsubscribeJurisdiction: (() => void) | undefined;
+
+onMounted(() => {
+  // nanostores invokes the listener immediately, covering the initial resolve.
+  unsubscribeJurisdiction = currentJurisdiction.subscribe(refreshAuthHrefs);
+});
+
+onUnmounted(() => unsubscribeJurisdiction?.());
 
 // Define navigation items using i18n keys or use custom items if provided
 const navigation = computed(() => {
@@ -80,7 +108,7 @@ const mobileMenuOpen = ref(false);
             class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700 dark:text-gray-300 focus-visible:outline-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2"
             @click="mobileMenuOpen = !mobileMenuOpen"
             :aria-expanded="mobileMenuOpen"
-            aria-controls="mobile-navigation-menu">
+            aria-controls="nav-mobile-menu">
             <span class="sr-only">{{
               mobileMenuOpen ? t("banner.close-menu", "Close menu") : t("banner.open-menu", "Open main menu")
             }}</span>
@@ -107,12 +135,12 @@ const mobileMenuOpen = ref(false);
         </div>
         <div v-if="showAuthButtons" class="hidden md:flex md:flex-1 md:justify-end md:space-x-4 items-center">
           <a
-            href="/signin"
+            :href="signinHref"
             class="text-sm/6 font-semibold text-gray-900 dark:text-gray-100 hover:text-brand-600 dark:hover:text-brand-400 transition-colors focus-visible:outline-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:rounded-sm">
             {{ t("auth.sign-in") }}
           </a>
           <a
-            href="/signup"
+            :href="signupHref"
             class="text-sm/6 font-semibold text-white bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 px-4 py-2 rounded-md transition-colors focus-visible:outline-white focus-visible:outline-2 focus-visible:outline-offset-2">
             {{ t("auth.sign-up", "Sign up") }} <span aria-hidden="true">&rarr;</span>
           </a>
@@ -127,7 +155,7 @@ const mobileMenuOpen = ref(false);
         :open="mobileMenuOpen">
         <div class="fixed inset-0 z-50"></div>
         <DialogPanel
-          id="mobile-navigation-menu"
+          id="nav-mobile-menu"
           class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white dark:bg-gray-900 px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 dark:sm:ring-gray-700/30 transition-transform duration-300"
           :class="[mobileMenuOpen ? 'translate-x-0' : 'translate-x-full']">
           <div class="flex items-center justify-between">
@@ -171,12 +199,12 @@ const mobileMenuOpen = ref(false);
               </div>
               <div v-if="showAuthButtons" class="py-6 space-y-2">
                 <a
-                  href="/signin"
+                  :href="signinHref"
                   class="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 focus-visible:outline-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2">
                   {{ t("auth.sign-in") }}
                 </a>
                 <a
-                  href="/signup"
+                  :href="signupHref"
                   class="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 focus-visible:outline-white focus-visible:outline-2 focus-visible:outline-offset-2">
                   {{ t("auth.sign-up", "Sign up") }} <span aria-hidden="true">&rarr;</span>
                 </a>

@@ -81,6 +81,7 @@ const ALLOWED_COMMON = [
   "navigation.docs",
   "LABELS.blog",
   "web.pricing.tiers.identity.name", // "Identity Plus" — product name
+  "web.pricing.tiers.team.name", // "Team Plus" — product name
   "web.footer.links.api",
   "web.footer.links.changelog",
   "web.footer.links.github",
@@ -106,6 +107,8 @@ const ALLOWED_BY_LANG: Record<Lang, string[]> = {
     "web.pricing.tiers.basic.price.annually",
     "web.pricing.tiers.identity.price.monthly",
     "web.pricing.tiers.identity.price.annually",
+    "web.pricing.tiers.team.price.monthly",
+    "web.pricing.tiers.team.price.annually",
   ],
   fr: [
     "LABELS.docs", // "Documentation"
