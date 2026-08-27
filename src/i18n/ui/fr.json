@@ -170,10 +170,10 @@
           },
           "features": {
             "0": "Tout ce qui est inclus dans Identity Plus",
-            "1": "Authentification unique (SSO)",
+            "1": "Authentification unique (SSO) avec un nombre illimité de membres et contrôle d’accès basé sur les rôles (RBAC)",
             "2": "Organisations avec équipes et gestion des membres",
             "3": "Domaine d'expédition flexible pour les e-mails",
-            "4": "Accès API pour l'automatisation"
+            "4": "Image de marque de l’espace de travail et contrôles d’inscription personnalisés"
           }
         }
       },

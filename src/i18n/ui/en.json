@@ -170,10 +170,10 @@
           },
           "features": {
             "0": "Everything in Identity Plus",
-            "1": "Single sign-on (SSO)",
+            "1": "Single sign-on (SSO) with unlimited members and RBAC",
             "2": "Organizations with teams and member management",
             "3": "Flexible from-domain for email delivery",
-            "4": "API access for automation"
+            "4": "Workspace branding and custom signup controls"
           }
         }
       },

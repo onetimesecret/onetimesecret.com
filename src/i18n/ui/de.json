@@ -170,10 +170,10 @@
           },
           "features": {
             "0": "Alles aus Identity Plus",
-            "1": "Single Sign-On (SSO)",
+            "1": "Single Sign-On (SSO) mit unbegrenzten Mitgliedern und rollenbasierter Zugriffskontrolle (RBAC)",
             "2": "Organisationen mit Teams und Mitgliederverwaltung",
             "3": "Flexible Absenderdomain für E-Mails",
-            "4": "API-Zugriff für Automatisierung"
+            "4": "Arbeitsbereich-Branding und benutzerdefinierte Registrierungsregeln"
           }
         }
       },
