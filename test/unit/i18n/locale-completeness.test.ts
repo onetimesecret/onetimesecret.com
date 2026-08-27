@@ -107,6 +107,8 @@ const ALLOWED_BY_LANG: Record<Lang, string[]> = {
     "web.pricing.tiers.basic.price.annually",
     "web.pricing.tiers.identity.price.monthly",
     "web.pricing.tiers.identity.price.annually",
+    "web.pricing.tiers.team.price.monthly",
+    "web.pricing.tiers.team.price.annually",
   ],
   fr: [
     "LABELS.docs", // "Documentation"
