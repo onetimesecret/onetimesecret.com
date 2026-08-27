@@ -173,7 +173,7 @@
             "0": "Alles aus Identity Plus",
             "1": "Single Sign-On (SSO) mit unbegrenzten Mitgliedern und rollenbasierter Zugriffskontrolle (RBAC)",
             "2": "Organisationen mit Teams und Mitgliederverwaltung",
-            "3": "Flexible Absenderdomain für E-Mails",
+            "3": "E-Mail-Versand von einer Domain Ihrer Wahl (z. B. support@beispiel.com)",
             "4": "Arbeitsbereich-Branding und benutzerdefinierte Registrierungsregeln"
           }
         }

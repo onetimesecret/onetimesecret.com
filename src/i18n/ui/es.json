@@ -173,7 +173,7 @@
             "0": "Todo lo incluido en Identity Plus",
             "1": "Inicio de sesión único (SSO) con miembros ilimitados y control de acceso basado en roles (RBAC)",
             "2": "Organizaciones con equipos y gestión de miembros",
-            "3": "Dominio de envío flexible para correos",
+            "3": "Envío de correos desde el dominio de su elección (ej. support@ejemplo.com)",
             "4": "Personalización del espacio de trabajo y controles de registro personalizados"
           }
         }
