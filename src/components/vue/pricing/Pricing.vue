@@ -263,10 +263,10 @@ onUnmounted(() => {
                       </span>
                     </div>
                     <span
-                      :class="tier.icon.badgeClass"
                       class="flex size-10 shrink-0
                         items-center justify-center
-                        rounded-full"
+                        rounded-full bg-brand-500/10
+                        text-brand-500"
                       aria-hidden="true">
                       <OIcon
                         :collection="tier.icon.collection"

@@ -23,8 +23,6 @@ export interface ProductTier {
   icon: {
     collection: string;
     name: string;
-    /** Tailwind classes for the circular icon badge on pricing cards */
-    badgeClass: string;
   };
 
   featured: boolean;
@@ -62,7 +60,6 @@ export const productTiers: Array<ProductTier> = [
     icon: {
       collection: "heroicons",
       name: "check-20-solid",
-      badgeClass: "bg-brand-500/10 text-brand-500",
     },
     priceKeys: {
       monthly: "web.pricing.tiers.basic.price.monthly",
@@ -90,7 +87,6 @@ export const productTiers: Array<ProductTier> = [
     icon: {
       collection: "mdi",
       name: "shield-lock",
-      badgeClass: "bg-blue-500/10 text-blue-500",
     },
     priceKeys: {
       monthly: "web.pricing.tiers.identity.price.monthly",
@@ -118,7 +114,6 @@ export const productTiers: Array<ProductTier> = [
     icon: {
       collection: "mdi",
       name: "account-multiple",
-      badgeClass: "bg-violet-500/10 text-violet-500",
     },
     priceKeys: {
       monthly: "web.pricing.tiers.team.price.monthly",
