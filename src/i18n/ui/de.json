@@ -170,10 +170,10 @@
             "annually": "1200 €"
           },
           "features": {
-            "0": "Alles aus Identity Plus",
-            "1": "Single Sign-On (SSO) mit unbegrenzten Mitgliedern und rollenbasierter Zugriffskontrolle (RBAC)",
+            "0": "Alles aus Identity Plus, mit rollenbasierter Zugriffskontrolle (RBAC)",
+            "1": "Single Sign-On (SSO)",
             "2": "Organisationen mit Teams und Mitgliederverwaltung",
-            "3": "E-Mail-Versand von einer Domain Ihrer Wahl (z. B. support@beispiel.com)",
+            "3": "E-Mail-Versand von einer Domain Ihrer Wahl (z. B. support{'@'}beispiel.com)",
             "4": "Arbeitsbereich-Branding und benutzerdefinierte Registrierungsregeln"
           }
         }
