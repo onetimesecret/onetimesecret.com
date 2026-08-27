@@ -96,9 +96,29 @@ declare module 'vitest' {
   // Test lifecycle
   // -------------------------------------------------------------------------
 
+  /**
+   * `it.each` / `test.each`. Rows that are themselves arrays are spread into
+   * the callback's parameters; scalar rows arrive as a single argument.
+   */
+  interface EachFn {
+    <T extends readonly unknown[]>(
+      cases: readonly T[]
+    ): (name: string, fn: (...args: T) => void | Promise<void>) => void;
+    <T>(
+      cases: readonly T[]
+    ): (name: string, fn: (testCase: T) => void | Promise<void>) => void;
+  }
+
+  interface TestFn {
+    (name: string, fn: () => void | Promise<void>): void;
+    each: EachFn;
+    skip(name: string, fn: () => void | Promise<void>): void;
+    only(name: string, fn: () => void | Promise<void>): void;
+  }
+
   function describe(name: string, fn: () => void): void;
-  function it(name: string, fn: () => void | Promise<void>): void;
-  function test(name: string, fn: () => void | Promise<void>): void;
+  const it: TestFn;
+  const test: TestFn;
   function beforeEach(fn: () => void | Promise<void>): void;
   function afterEach(fn: () => void | Promise<void>): void;
   function beforeAll(fn: () => void | Promise<void>): void;
