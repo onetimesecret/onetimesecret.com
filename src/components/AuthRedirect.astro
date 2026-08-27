@@ -14,12 +14,23 @@
  * 2. Maps the country to a jurisdiction domain client-side and redirects,
  *    preserving the full query string (redirect, product, interval, …)
  * 3. Without JS or country data, falls back to eu.onetimesecret.com
+ *
+ * The mapping below must stay identical to `edge/country.ts`
+ * `resolveRegionalDomain()` and `src/utils/regionalAuth.ts`
+ * `getRegionalAuthDomain()`, or the same visitor gets different regions
+ * depending on which layer answers. The inline script cannot import those
+ * helpers, so the three steps are reproduced literally — normalize, reject the
+ * continent codes, then the '|| US' catch-all — and pinned by the parity table
+ * in test/unit/utils/edgeCountry.test.ts (see the 'FO' row).
  */
 import { createLocaleI18n, type MessageSchema } from "@/i18n";
 import enMessages from "@/i18n/ui/en.json";
 import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
 import { jurisdictions } from "@/data/ops/jurisdictions";
-import { COUNTRY_TO_JURISDICTION } from "@/utils/countryToJurisdiction";
+import {
+  COUNTRY_TO_JURISDICTION,
+  NO_SIGNAL_COUNTRY_CODES,
+} from "@/utils/countryToJurisdiction";
 
 interface Props {
   /** Auth path on the regional domain, e.g. "/signin" */
@@ -39,6 +50,12 @@ const t = pageI18n.global.t;
 
 const defaultDomain = "eu.onetimesecret.com";
 const defaultTarget = `https://${defaultDomain}${path}`;
+
+/** Catch-all for a real but unmapped country, shared with the edge scripts. */
+const defaultJurisdiction = "US";
+
+/** Legacy GeoIP continent codes, as a plain array so define:vars can serialize it. */
+const noSignalCodes = [...NO_SIGNAL_COUNTRY_CODES];
 
 const regionDomains = jurisdictions
   .filter((j) => !j.comingSoon)
@@ -107,19 +124,29 @@ const pageTitle =
         countryMap: COUNTRY_TO_JURISDICTION,
         regionDomains,
         defaultDomain,
+        defaultJurisdiction,
+        noSignalCodes,
         path,
       }}
     >
       (function () {
         var target = "https://" + defaultDomain + path;
         try {
-          var cc = window.__USER_COUNTRY__;
+          var raw = window.__USER_COUNTRY__;
+          if (!raw) {
+            var tag = document.querySelector("script[data-user-country]");
+            raw = tag && tag.getAttribute("data-user-country");
+          }
           var domain = defaultDomain;
-          if (cc && /^[A-Za-z]{2}$/.test(cc)) {
-            var region = countryMap[cc.toUpperCase()];
-            if (region && regionDomains[region]) {
-              domain = regionDomains[region];
-            }
+          // Same three steps as normalizeCountryCode + resolveRegionalDomain.
+          var cc = typeof raw === "string" ? raw.trim().toUpperCase() : "";
+          if (
+            /^[A-Z]{2}$/.test(cc) &&
+            noSignalCodes.indexOf(cc) === -1
+          ) {
+            domain =
+              regionDomains[countryMap[cc] || defaultJurisdiction] ||
+              defaultDomain;
           }
           target =
             "https://" +

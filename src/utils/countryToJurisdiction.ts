@@ -143,8 +143,14 @@ function isValidCountryCode(code: string): boolean {
  * miss COUNTRY_TO_JURISDICTION, so they would silently resolve to the 'US'
  * catch-all. Treat them as "no signal" instead — every caller then falls back
  * to the default (EU) region, matching the edge auth redirect.
+ *
+ * Exported as an array, not a Set: `AuthRedirect.astro` passes it to an inline
+ * script through Astro's `define:vars`, which JSON-serializes its values and
+ * would hand the browser an empty `{}` for a Set.
  */
-const NO_SIGNAL_COUNTRY_CODES = new Set(['EU', 'AP']);
+export const NO_SIGNAL_COUNTRY_CODES: readonly string[] = ['EU', 'AP'];
+
+const NO_SIGNAL_COUNTRY_CODE_SET = new Set(NO_SIGNAL_COUNTRY_CODES);
 
 /**
  * Normalize a raw country code from any source (edge header, injected global)
@@ -164,7 +170,7 @@ export function normalizeCountryCode(
 
   const normalized = value.trim().toUpperCase();
 
-  if (!isValidCountryCode(normalized) || NO_SIGNAL_COUNTRY_CODES.has(normalized)) {
+  if (!isValidCountryCode(normalized) || NO_SIGNAL_COUNTRY_CODE_SET.has(normalized)) {
     return null;
   }
 
@@ -193,7 +199,7 @@ export function detectUserCountry(): string | null {
   if (
     countryCode &&
     typeof countryCode === 'string' &&
-    !NO_SIGNAL_COUNTRY_CODES.has(countryCode.trim().toUpperCase())
+    !NO_SIGNAL_COUNTRY_CODE_SET.has(countryCode.trim().toUpperCase())
   ) {
     console.warn(`Invalid country code format detected: ${countryCode}`);
   }
