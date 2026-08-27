@@ -1,0 +1,6 @@
+# Screenshots for PR #185
+
+Generated on: 2026-08-27T06:03:27.771Z
+
+## Screenshots
+- pricing-desktop (chromium)
