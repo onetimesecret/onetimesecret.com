@@ -75,6 +75,10 @@
     "loading": "Chargement"
   },
   "web": {
+    "authRedirect": {
+      "message": "Redirection vers le portail de compte de votre région…",
+      "continue": "Continuer vers votre région"
+    },
     "aria": {
       "light_mode": "Mode clair",
       "dark_mode": "Mode sombre",

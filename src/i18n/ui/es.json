@@ -75,6 +75,10 @@
     "loading": "Cargando"
   },
   "web": {
+    "authRedirect": {
+      "message": "Redirigiendo al portal de cuentas de su región…",
+      "continue": "Continuar a su región"
+    },
     "aria": {
       "light_mode": "Modo claro",
       "dark_mode": "Modo oscuro",
