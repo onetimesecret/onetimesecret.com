@@ -269,17 +269,20 @@ onUnmounted(() => {
                     </span>
                   </div>
                   <div
-                    class="mt-6 flex items-baseline
-                      gap-x-2">
+                    class="mt-6 flex flex-wrap
+                      items-baseline gap-x-2">
                     <span
-                      class="font-brand text-6xl
-                        font-bold tracking-tight
-                        text-text-primary"
+                      class="font-brand font-bold
+                        tracking-tight text-text-primary"
+                      :class="getPrice(tier).length > 6
+                        ? 'text-5xl'
+                        : 'text-6xl'"
                     >{{ getPrice(tier) }}</span>
                     <span
                       class="font-brand text-lg
                         font-semibold leading-8
-                        text-text-tertiary"
+                        text-text-tertiary
+                        whitespace-nowrap"
                     >{{ t(frequency.priceSuffixKey) }}</span>
                   </div>
                   <p
