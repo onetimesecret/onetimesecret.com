@@ -1,0 +1,170 @@
+---
+/**
+ * src/components/AuthRedirect.astro
+ *
+ * Regional redirect interstitial for auth entry points (/signup, /signin).
+ *
+ * Primary handling is a BunnyCDN edge script that 302s these paths to the
+ * visitor's regional domain before this page is ever served (see
+ * edge/bunnycdn-auth-redirect.ts). This page is the fallback for traffic
+ * that bypasses the CDN or reaches the origin directly:
+ *
+ * 1. Reads window.__USER_COUNTRY__ (injected by the BunnyCDN country
+ *    injection edge script when served via CDN)
+ * 2. Maps the country to a jurisdiction domain client-side and redirects,
+ *    preserving the full query string (redirect, product, interval, …)
+ * 3. Without JS or country data, falls back to the default region. Note this
+ *    covers the JS-disabled visitor whose country IS known: the noscript
+ *    refresh and the visible link are server-rendered, so they can only carry
+ *    the default. Resolving them per-country would need a `Vary`-correct
+ *    cached variant per country, which this page deliberately does not have.
+ *
+ * The mapping below must stay identical to `edge/country.ts`
+ * `resolveRegionalDomain()` and `src/utils/regionalAuth.ts`
+ * `getRegionalAuthDomain()`, or the same visitor gets different regions
+ * depending on which layer answers. The inline script cannot import those
+ * helpers, so the three steps are reproduced literally — normalize, reject the
+ * continent codes, then the '|| US' catch-all — and pinned by the parity table
+ * in test/unit/utils/edgeCountry.test.ts (see the 'FO' row).
+ */
+import { createLocaleI18n, type MessageSchema } from "@/i18n";
+import enMessages from "@/i18n/ui/en.json";
+import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
+import { defaultJurisdiction, jurisdictions } from "@/data/ops/jurisdictions";
+import {
+  COUNTRY_TO_JURISDICTION,
+  NO_SIGNAL_COUNTRY_CODES,
+} from "@/utils/countryToJurisdiction";
+
+interface Props {
+  /** Auth path on the regional domain, e.g. "/signin" */
+  path: "/signin" | "/signup";
+}
+
+const { path } = Astro.props;
+
+const pageScopedInitialMessages: { [key: string]: MessageSchema } = {
+  [DEFAULT_LANGUAGE]: enMessages,
+};
+const pageI18n = await createLocaleI18n(
+  DEFAULT_LANGUAGE,
+  pageScopedInitialMessages,
+);
+const t = pageI18n.global.t;
+
+/** Shared with the edge scripts and the client store via `defaultJurisdiction`. */
+const defaultDomain = defaultJurisdiction.domain;
+const defaultTarget = `https://${defaultDomain}${path}`;
+
+/** Catch-all for a real but unmapped country, shared with the edge scripts. */
+const catchAllJurisdiction = "US";
+
+/** Legacy GeoIP continent codes, as a plain array so define:vars can serialize it. */
+const noSignalCodes = [...NO_SIGNAL_COUNTRY_CODES];
+
+const regionDomains = jurisdictions
+  .filter((j) => !j.comingSoon)
+  .reduce(
+    (map, j) => {
+      map[j.identifier] = j.domain;
+      return map;
+    },
+    {} as Record<string, string>,
+  );
+
+const pageTitle =
+  path === "/signin" ? t("auth.sign-in") : t("auth.sign-up");
+---
+
+<html lang={DEFAULT_LANGUAGE}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>{pageTitle} · Onetime Secret</title>
+    <noscript>
+      <meta http-equiv="refresh" content={`0;url=${defaultTarget}`} />
+    </noscript>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      body {
+        margin: 0;
+        display: grid;
+        min-height: 100vh;
+        place-items: center;
+        font-family:
+          ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+          sans-serif;
+        background: #fff;
+        color: #1f2937;
+      }
+      main {
+        text-align: center;
+        padding: 1.5rem;
+      }
+      a {
+        color: #dc4a22;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: #111827;
+          color: #e5e7eb;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p>{t("web.authRedirect.message")}</p>
+      <p>
+        <a id="auth-redirect-link" href={defaultTarget}
+          >{t("web.authRedirect.continue")}</a>
+      </p>
+    </main>
+    <script
+      is:inline
+      define:vars={{
+        countryMap: COUNTRY_TO_JURISDICTION,
+        regionDomains,
+        defaultDomain,
+        catchAllJurisdiction,
+        noSignalCodes,
+        path,
+      }}
+    >
+      (function () {
+        var target = "https://" + defaultDomain + path;
+        try {
+          var raw = window.__USER_COUNTRY__;
+          if (!raw) {
+            var tag = document.querySelector("script[data-user-country]");
+            raw = tag && tag.getAttribute("data-user-country");
+          }
+          var domain = defaultDomain;
+          // Same three steps as normalizeCountryCode + resolveRegionalDomain.
+          var cc = typeof raw === "string" ? raw.trim().toUpperCase() : "";
+          if (
+            /^[A-Z]{2}$/.test(cc) &&
+            noSignalCodes.indexOf(cc) === -1
+          ) {
+            domain =
+              regionDomains[countryMap[cc] || catchAllJurisdiction] ||
+              defaultDomain;
+          }
+          target =
+            "https://" +
+            domain +
+            path +
+            window.location.search +
+            window.location.hash;
+          document.getElementById("auth-redirect-link").href = target;
+        } catch (e) {
+          /* fall through to default target */
+        }
+        window.location.replace(target);
+      })();
+    </script>
+  </body>
+</html>

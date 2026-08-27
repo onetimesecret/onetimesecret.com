@@ -48,6 +48,7 @@ const {
   availableRegions,
   currentRegion,
   setJurisdiction,
+  initJurisdiction,
   cleanup,
 } = useJurisdiction();
 
@@ -98,8 +99,13 @@ const tierHref = (tier: ProductTier) => {
 
 const feedbackHref = computed(() => regionalUrl("/feedback"));
 
-onMounted(() => {
+onMounted(async () => {
   isClient.value = true;
+
+  // Resolve the region for CTA links: persisted choice, then geo, then
+  // default. Runs after the first render so hydration still matches the
+  // prerendered markup.
+  await initJurisdiction();
 });
 
 onUnmounted(() => {
@@ -220,7 +226,7 @@ onUnmounted(() => {
               <div
                 v-for="tier in tiers"
                 :key="tier.id"
-                class="flex flex-col justify-between
+                class="flex flex-col
                   rounded-2xl bg-surface-1
                   border border-surface-3 p-10
                   hover:border-surface-4
@@ -230,7 +236,7 @@ onUnmounted(() => {
                   'border-t-2 border-t-brand-500 hover:border-t-brand-500':
                     tier.featured,
                 }">
-                <div>
+                <div class="flex-1">
                   <div
                     class="flex items-center
                       justify-between">
@@ -263,17 +269,20 @@ onUnmounted(() => {
                     </span>
                   </div>
                   <div
-                    class="mt-6 flex items-baseline
-                      gap-x-2">
+                    class="mt-6 flex flex-wrap
+                      items-baseline gap-x-2">
                     <span
-                      class="font-brand text-6xl
-                        font-bold tracking-tight
-                        text-text-primary"
+                      class="font-brand font-bold
+                        tracking-tight text-text-primary"
+                      :class="getPrice(tier).length > 6
+                        ? 'text-5xl'
+                        : 'text-6xl'"
                     >{{ getPrice(tier) }}</span>
                     <span
                       class="font-brand text-lg
                         font-semibold leading-8
-                        text-text-tertiary"
+                        text-text-tertiary
+                        whitespace-nowrap"
                     >{{ t(frequency.priceSuffixKey) }}</span>
                   </div>
                   <p
@@ -312,16 +321,21 @@ onUnmounted(() => {
                     focus-visible:outline-brand-600"
                   :class="tier.featured
                     ? 'bg-brand-600 hover:bg-brand-700 text-white'
-                    : `border border-surface-3 bg-surface-1
-                      hover:bg-surface-2 text-text-primary`">
+                    : tier.billingPlanId
+                      ? `border border-brand-500/50 bg-brand-500/10
+                        hover:bg-brand-500/20 text-brand-600
+                        dark:text-brand-400`
+                      : `border border-surface-3 bg-surface-1
+                        hover:bg-surface-2 text-text-primary`">
                   <div
                     class="flex items-center
                       justify-center gap-x-2">
-                    <OIcon
-                      :collection="tier.icon.collection"
-                      :name="tier.icon.name"
-                      size="5" />
                     {{ t(tier.ctaKey) }}
+                    <OIcon
+                      collection="heroicons"
+                      name="arrow-right"
+                      size="5"
+                      aria-hidden="true" />
                   </div>
                 </a>
 

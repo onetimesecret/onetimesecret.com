@@ -19,6 +19,14 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, '../../src'),
       '@config': resolve(__dirname, '../../config'),
+      // Deno-only specifier used by edge/bunnycdn-country-injection.ts. Vite's
+      // import analysis cannot resolve it and fails before vi.mock can
+      // intercept, so the edge script is unimportable without this alias. The
+      // real SDK exists only inside Bunny's runtime.
+      'npm:@bunny.net/edgescript-sdk@0.12.1': resolve(
+        __dirname,
+        'helpers/bunnyEdgeSdkStub.ts'
+      ),
     },
   },
 });

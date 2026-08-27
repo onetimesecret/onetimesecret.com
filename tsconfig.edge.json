@@ -1,0 +1,14 @@
+// Type-checks the BunnyCDN edge scripts, which the root tsconfig's `include`
+// deliberately leaves out (they target Deno, not the Astro app).
+//
+// This is what turns edge/bunny-edgescript.d.ts from editor-only decoration
+// into an actual check on `context.request` and `element.append(tag, {…})`.
+{
+  "extends": "./tsconfig.json",
+  "include": ["edge/**/*.ts"],
+  "exclude": ["edge/dist"],
+  "compilerOptions": {
+    "noEmit": true,
+    "types": []
+  }
+}

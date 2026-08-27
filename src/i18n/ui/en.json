@@ -75,6 +75,10 @@
     "loading": "Loading"
   },
   "web": {
+    "authRedirect": {
+      "message": "Taking you to your region’s account portal…",
+      "continue": "Continue to your region"
+    },
     "aria": {
       "light_mode": "Light Mode",
       "dark_mode": "Dark Mode",
@@ -147,7 +151,7 @@
           "name": "Identity Plus",
           "badge": "Featured",
           "description": "Full control over your branded secret-sharing experience.",
-          "cta": "Start today",
+          "cta": "Start Today",
           "price": {
             "monthly": "$35",
             "annually": "$356"
@@ -164,7 +168,7 @@
           "name": "Team Plus",
           "badge": null,
           "description": "Governed secret sharing with SSO, access controls, and team visibility.",
-          "cta": "Get started",
+          "cta": "Start Today",
           "price": {
             "monthly": "$125",
             "annually": "$1200"

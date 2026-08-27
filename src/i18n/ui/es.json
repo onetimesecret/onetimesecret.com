@@ -75,6 +75,10 @@
     "loading": "Cargando"
   },
   "web": {
+    "authRedirect": {
+      "message": "Redirigiendo al portal de cuentas de su región…",
+      "continue": "Continuar a su región"
+    },
     "aria": {
       "light_mode": "Modo claro",
       "dark_mode": "Modo oscuro",
@@ -164,7 +168,7 @@
           "name": "Team Plus",
           "badge": null,
           "description": "Compartición de secretos gobernada con SSO, controles de acceso y visibilidad organizacional.",
-          "cta": "Comenzar",
+          "cta": "Comience hoy",
           "price": {
             "monthly": "$125",
             "annually": "$1200"

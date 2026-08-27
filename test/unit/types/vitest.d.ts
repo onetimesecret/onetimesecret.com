@@ -32,6 +32,14 @@ declare module 'vitest' {
     spyOn<O extends object, K extends keyof O>(obj: O, method: K): MockInstance;
     clearAllMocks(): void;
     resetAllMocks(): void;
+    restoreAllMocks(): void;
+    /** Clears the module registry so the next import re-evaluates a module. */
+    resetModules(): void;
+    /** Retries the callback until it stops throwing or the timeout elapses. */
+    waitFor<T>(
+      fn: () => T | Promise<T>,
+      options?: number | { timeout?: number; interval?: number }
+    ): Promise<T>;
   }
 
   const vi: Vi;
@@ -49,12 +57,15 @@ declare module 'vitest' {
     toHaveProperty(key: string, value?: unknown): void;
     toBeDefined(): void;
     toBeUndefined(): void;
+    toBeNull(): void;
+    toThrow(expected?: RegExp | string | Error): void;
     toBeTruthy(): void;
     toBeFalsy(): void;
     toBeGreaterThan(n: number): void;
     toBeGreaterThanOrEqual(n: number): void;
     toBeLessThanOrEqual(n: number): void;
     toHaveBeenCalled(): void;
+    toHaveBeenCalledTimes(times: number): void;
     toHaveBeenCalledWith(...args: unknown[]): void;
     toHaveCount(n: number): void;
     toBeAttached(): void;
@@ -86,9 +97,29 @@ declare module 'vitest' {
   // Test lifecycle
   // -------------------------------------------------------------------------
 
+  /**
+   * `it.each` / `test.each`. Rows that are themselves arrays are spread into
+   * the callback's parameters; scalar rows arrive as a single argument.
+   */
+  interface EachFn {
+    <T extends readonly unknown[]>(
+      cases: readonly T[]
+    ): (name: string, fn: (...args: T) => void | Promise<void>) => void;
+    <T>(
+      cases: readonly T[]
+    ): (name: string, fn: (testCase: T) => void | Promise<void>) => void;
+  }
+
+  interface TestFn {
+    (name: string, fn: () => void | Promise<void>): void;
+    each: EachFn;
+    skip(name: string, fn: () => void | Promise<void>): void;
+    only(name: string, fn: () => void | Promise<void>): void;
+  }
+
   function describe(name: string, fn: () => void): void;
-  function it(name: string, fn: () => void | Promise<void>): void;
-  function test(name: string, fn: () => void | Promise<void>): void;
+  const it: TestFn;
+  const test: TestFn;
   function beforeEach(fn: () => void | Promise<void>): void;
   function afterEach(fn: () => void | Promise<void>): void;
   function beforeAll(fn: () => void | Promise<void>): void;

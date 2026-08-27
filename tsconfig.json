@@ -1,7 +1,10 @@
 // https://docs.astro.build/en/guides/imports/#aliases
 {
   "extends": "astro/tsconfigs/strict",
-  "include": [".astro/types.d.ts", "config/**/*", "src/**/*", "tests/**/*"],
+  // `test/unit/**` only: `test/e2e` ships its own ambient shim for
+  // @playwright/test that collides with the real package's types here, and it
+  // is already covered by test/e2e/tsconfig.json.
+  "include": [".astro/types.d.ts", "config/**/*", "src/**/*", "test/unit/**/*"],
   "exclude": ["dist", "tmp"],
   "compilerOptions": {
     "baseUrl": ".",
@@ -12,7 +15,7 @@
       "@/*": ["./src/*"],
       "@root/*": ["./*"],
       "@config/*": ["./config/*"],
-      "@tests/*": ["./tests/*"]
+      "@tests/*": ["./test/*"]
     }
   }
 }
