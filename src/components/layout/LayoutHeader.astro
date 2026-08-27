@@ -267,6 +267,7 @@ const signInHref = authRedirect
 </div>
 
 <script>
+  import { currentJurisdiction } from "@/stores/jurisdictionStore";
   import { upgradeAuthLinks } from "@/utils/regionalAuth";
 
   // Mobile menu functionality
@@ -274,7 +275,12 @@ const signInHref = authRedirect
     // Point auth links at the visitor's region: their persisted choice first,
     // then the country code injected at the CDN edge. With neither signal the
     // links stay relative and the interstitial pages handle the redirect.
-    upgradeAuthLinks();
+    //
+    // Re-run on every store change: the pricing region selector persists a new
+    // choice mid-page, and without this the header would keep pointing at the
+    // old region while the pricing CTAs point at the new one. nanostores calls
+    // the listener immediately, so this covers the initial pass too.
+    currentJurisdiction.subscribe(() => upgradeAuthLinks());
 
     const mobileMenuButton = document.getElementById("mobile-menu-button");
     const mobileMenu = document.getElementById("mobile-navigation-menu");

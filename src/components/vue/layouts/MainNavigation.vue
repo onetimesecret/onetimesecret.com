@@ -3,10 +3,11 @@
 <script setup lang="ts">
 import { Dialog, DialogPanel } from "@headlessui/vue";
 import { Bars3Icon, XMarkIcon } from "@heroicons/vue/24/outline";
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { localizeUrl } from '@/i18n/utils';
 import { setLanguage, setLanguageWithMessages, type MessageSchema, type SupportedLanguage } from "@/i18n";
+import { currentJurisdiction } from "@/stores/jurisdictionStore";
 import { getRegionalAuthUrl } from "@/utils/regionalAuth";
 
 const props = defineProps<{
@@ -31,15 +32,30 @@ if (props.initialMessages && props.locale) {
 }
 
 // Auth links point at the visitor's regional domain (persisted choice, then
-// edge geo). Resolved on mount, both because it needs localStorage and
-// window.__USER_COUNTRY__ and to keep SSR markup hydration-stable. With no
-// signal the helper returns the path unchanged and the interstitial decides.
+// edge geo). Seeded relative and resolved on mount, both because it needs
+// localStorage and window.__USER_COUNTRY__ and to keep SSR markup
+// hydration-stable — a computed would render the relative path on the server
+// and the absolute one on the client. With no signal the helper returns the
+// path unchanged and the interstitial decides.
+//
+// Re-resolved whenever the store changes, so picking a region in the pricing
+// selector cannot leave the nav pointing at the previous one.
 const signinHref = ref("/signin");
 const signupHref = ref("/signup");
-onMounted(() => {
+
+function refreshAuthHrefs(): void {
   signinHref.value = getRegionalAuthUrl("/signin");
   signupHref.value = getRegionalAuthUrl("/signup");
+}
+
+let unsubscribeJurisdiction: (() => void) | undefined;
+
+onMounted(() => {
+  // nanostores invokes the listener immediately, covering the initial resolve.
+  unsubscribeJurisdiction = currentJurisdiction.subscribe(refreshAuthHrefs);
 });
+
+onUnmounted(() => unsubscribeJurisdiction?.());
 
 // Define navigation items using i18n keys or use custom items if provided
 const navigation = computed(() => {

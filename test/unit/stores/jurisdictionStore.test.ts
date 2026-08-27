@@ -154,6 +154,25 @@ describe('persistence of explicit choices', () => {
     expect(store.hasExplicitJurisdiction()).toBe(true);
   });
 
+  it('has persisted the choice before subscribers are notified', async () => {
+    // LayoutHeader re-runs upgradeAuthLinks from this subscription, and that
+    // helper reads the region back out of localStorage. Notifying first would
+    // hand it the previous choice and leave the header a region behind the
+    // pricing CTAs.
+    const store = await loadStore();
+    const seen: (string | null)[] = [];
+    const unsubscribe = store.currentJurisdiction.subscribe(() => {
+      seen.push(storedValue());
+    });
+
+    store.setJurisdictionByIdentifier('UK');
+    unsubscribe();
+
+    // nanostores calls the listener once on subscribe; the second entry is the
+    // one triggered by the selection.
+    expect(seen).toEqual([null, 'UK']);
+  });
+
   it('does not persist an automatic selection', async () => {
     const store = await loadStore();
 

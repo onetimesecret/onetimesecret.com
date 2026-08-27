@@ -115,12 +115,15 @@ export function setJurisdictionByIdentifier(
     return undefined;
   }
 
-  currentJurisdiction.set(jurisdiction);
-
+  // Persist before notifying. Subscribers (LayoutHeader's auth-link rewrite)
+  // re-read localStorage, so setting the atom first would hand them the
+  // previous choice.
   if (persist) {
     explicitSelection = true;
     writeStoredIdentifier(jurisdiction.identifier);
   }
+
+  currentJurisdiction.set(jurisdiction);
 
   return jurisdiction;
 }

@@ -100,6 +100,12 @@ function currentRelativeLocation(): string {
  * When the region is unknown the hrefs stay relative (only the `redirect`
  * parameter is added) so the interstitial pages can resolve the region.
  * Intended for Astro-rendered markup; Vue islands compute their own hrefs.
+ *
+ * Safe to call repeatedly — the region can change mid-page when the visitor
+ * uses the pricing region selector. The first run stashes the original
+ * root-relative path in `data-auth-path`, because once an href is absolute it
+ * no longer matches the `/signin` and `/signup` selectors and every later run
+ * would silently skip it.
  */
 export function upgradeAuthLinks(root: ParentNode = document): void {
   const domain = getRegionalAuthDomain();
@@ -107,13 +113,15 @@ export function upgradeAuthLinks(root: ParentNode = document): void {
 
   root
     .querySelectorAll<HTMLAnchorElement>(
-      'a[href^="/signin"], a[href^="/signup"]',
+      'a[data-auth-path], a[href^="/signin"], a[href^="/signup"]',
     )
     .forEach((link) => {
-      const href = link.getAttribute("href");
-      if (!href) return;
+      const authPath = link.dataset.authPath ?? link.getAttribute("href");
+      if (!authPath) return;
 
-      const url = new URL(href, base);
+      link.dataset.authPath = authPath;
+
+      const url = new URL(authPath, base);
 
       if (link.hasAttribute("data-auth-redirect")) {
         url.searchParams.set("redirect", currentRelativeLocation());

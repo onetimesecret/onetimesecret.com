@@ -6,9 +6,10 @@ import {
   ListboxOptions,
 } from "@headlessui/vue";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { getUseCases } from "@/data/product/usecases/index";
+import { currentJurisdiction } from "@/stores/jurisdictionStore";
 import { getRegionalAuthUrl } from "@/utils/regionalAuth";
 import type { UseCase } from "@/types/useCase";
 
@@ -23,11 +24,25 @@ const selectedUseCase = ref(useCases[0]);
 // Auth CTAs point at the visitor's regional domain (persisted choice, then
 // edge geo). Resolved on mount, both because it needs localStorage and
 // window.__USER_COUNTRY__ and to keep SSR markup hydration-stable.
+//
+// `regionRevision` makes the computed depend on the store, so a region chosen
+// elsewhere on the page re-resolves these CTAs instead of leaving them on the
+// region that was current at mount.
 const isMounted = ref(false);
+const regionRevision = ref(0);
+let unsubscribeJurisdiction: (() => void) | undefined;
+
 onMounted(() => {
   isMounted.value = true;
+  unsubscribeJurisdiction = currentJurisdiction.subscribe(() => {
+    regionRevision.value += 1;
+  });
 });
+
+onUnmounted(() => unsubscribeJurisdiction?.());
+
 const ctaHref = computed(() => {
+  void regionRevision.value;
   const link = selectedUseCase.value.ctaLink;
   return isMounted.value && link.startsWith("/sign")
     ? getRegionalAuthUrl(link)

@@ -150,6 +150,27 @@ describe('upgradeAuthLinks', () => {
     expect(url.searchParams.get('redirect')).toBe(window.location.pathname);
   });
 
+  it('re-resolves on a later run after the region changes', async () => {
+    // The pricing region selector persists a new choice mid-page. The second
+    // run only sees the link because the first stashed data-auth-path — the
+    // href is absolute by then and no longer matches the /signin selector.
+    persistChoice('CA');
+    document.body.innerHTML = '<a id="in" href="/signin?product=team">in</a>';
+    const { upgradeAuthLinks } = await loadModule();
+
+    upgradeAuthLinks();
+    expect(document.getElementById('in')?.getAttribute('href')).toBe(
+      'https://ca.onetimesecret.com/signin?product=team',
+    );
+
+    persistChoice('US');
+    upgradeAuthLinks();
+
+    expect(document.getElementById('in')?.getAttribute('href')).toBe(
+      'https://us.onetimesecret.com/signin?product=team',
+    );
+  });
+
   it('leaves anchors relative when the region is unknown', async () => {
     document.body.innerHTML =
       '<a id="in" href="/signin" data-auth-redirect></a><a id="up" href="/signup"></a>';
