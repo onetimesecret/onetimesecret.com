@@ -65,6 +65,7 @@ declare module 'vitest' {
     toBeGreaterThanOrEqual(n: number): void;
     toBeLessThanOrEqual(n: number): void;
     toHaveBeenCalled(): void;
+    toHaveBeenCalledTimes(times: number): void;
     toHaveBeenCalledWith(...args: unknown[]): void;
     toHaveCount(n: number): void;
     toBeAttached(): void;

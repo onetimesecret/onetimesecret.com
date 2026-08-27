@@ -1,5 +1,3 @@
-/// <reference path="./bunny-edgescript.d.ts" />
-
 /**
  * BunnyCDN Edge Script - Country Code Injection
  *
@@ -34,6 +32,10 @@
  *
  * Build for deployment (bundles the shared country tables):
  *   pnpm edge:build   →  edge/dist/bunnycdn-country-injection.js
+ *
+ * The `HTMLRewriter` global and the SDK's context shape come from
+ * `edge/bunny-edgescript.d.ts`, which `tsconfig.edge.json` picks up through
+ * its `edge/**\/*.ts` include — no triple-slash reference needed.
  *
  * @see edge/README.md for deployment steps
  * @see https://docs.bunny.net/docs/edge-scripting
