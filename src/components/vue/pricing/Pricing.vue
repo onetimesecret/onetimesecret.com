@@ -227,19 +227,26 @@ onUnmounted(() => {
                   <div
                     class="flex items-center
                       justify-between">
-                    <h3
-                      :id="tier.id"
-                      class="text-xl font-bold leading-8
-                        text-text-primary">
-                      {{ t(tier.nameKey) }}
-                    </h3>
+                    <div
+                      class="flex items-center gap-x-3">
+                      <h3
+                        :id="tier.id"
+                        class="text-xl font-bold leading-8
+                          text-text-primary">
+                        {{ t(tier.nameKey) }}
+                      </h3>
+                      <span
+                        v-if="tier.featured && tier.badgeKey"
+                        class="rounded-full bg-brand-500/10
+                          px-2.5 py-0.5 text-xs
+                          font-semibold text-brand-500">
+                        {{ t(tier.badgeKey) }}
+                      </span>
+                    </div>
                     <OIcon
                       :collection="tier.icon.collection"
                       :name="tier.icon.name"
-                      class="size-6"
-                      :class="tier.featured
-                        ? 'text-brandcomp-500'
-                        : 'text-brand-500'"
+                      class="size-6 text-brand-500"
                       aria-hidden="true" />
                   </div>
                   <div
