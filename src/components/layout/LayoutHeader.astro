@@ -273,7 +273,9 @@ const signInHref = authRedirect
       .querySelectorAll<HTMLAnchorElement>("[data-auth-redirect]")
       .forEach((link) => {
         const signInUrl = new URL("/signin", window.location.origin);
-        signInUrl.searchParams.set("redirect", window.location.href);
+        const authRedirect =
+          `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        signInUrl.searchParams.set("redirect", authRedirect);
         link.href = `${signInUrl.pathname}${signInUrl.search}`;
       });
 
