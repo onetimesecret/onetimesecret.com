@@ -60,14 +60,12 @@ const handleRegionChange = (region: Region) => {
   }
 };
 
-const getRegionalHref = (basePath: string) => {
-  return computed(() => {
-    const protocol =
-      typeof window !== "undefined"
-        ? window.location.protocol
-        : "https:";
-    return `${protocol}//${currentRegion.value.domain}${basePath}`;
-  });
+const regionalUrl = (basePath: string) => {
+  const protocol =
+    typeof window !== "undefined"
+      ? window.location.protocol
+      : "https:";
+  return `${protocol}//${currentRegion.value.domain}${basePath}`;
 };
 
 const getPrice = (tier: ProductTier) => {
@@ -79,21 +77,18 @@ const getPrice = (tier: ProductTier) => {
   );
 };
 
-const basicPlanHref = getRegionalHref("/plans/free");
-const identityMonthHref = getRegionalHref(
-  "/billing/plans/identity_plus_v1/monthly",
-);
-const identityYearHref = getRegionalHref(
-  "/billing/plans/identity_plus_v1/yearly",
-);
+const tierHref = (tier: ProductTier) => {
+  if (!tier.billingPlanId) {
+    return regionalUrl("/plans/free");
+  }
+  const interval =
+    frequency.value.value === "monthly" ? "monthly" : "yearly";
+  return regionalUrl(
+    `/billing/plans/${tier.billingPlanId}/${interval}`,
+  );
+};
 
-const getIdentityHref = computed(() => {
-  return frequency.value.value === "monthly"
-    ? identityMonthHref.value
-    : identityYearHref.value;
-});
-
-const feedbackHref = getRegionalHref("/feedback");
+const feedbackHref = computed(() => regionalUrl("/feedback"));
 
 onMounted(() => {
   isClient.value = true;
@@ -214,29 +209,36 @@ onUnmounted(() => {
             <div
               class="mx-auto grid max-w-6xl
                 grid-cols-1 gap-6 lg:grid-cols-2">
-              <!-- Free Tier -->
               <div
-                :key="tiers[0].id"
+                v-for="tier in tiers"
+                :key="tier.id"
                 class="flex flex-col justify-between
                   rounded-2xl bg-surface-1
                   border border-surface-3 p-10
                   hover:border-surface-4
                   transition-colors duration-200
-                  sm:p-12">
+                  sm:p-12"
+                :class="{
+                  'border-t-2 border-t-brand-500 hover:border-t-brand-500':
+                    tier.featured,
+                }">
                 <div>
                   <div
                     class="flex items-center
                       justify-between">
                     <h3
-                      :id="tiers[0].id"
+                      :id="tier.id"
                       class="text-xl font-bold leading-8
                         text-text-primary">
-                      {{ t(tiers[0].nameKey) }}
+                      {{ t(tier.nameKey) }}
                     </h3>
                     <OIcon
-                      :collection="tiers[0].icon.collection"
-                      :name="tiers[0].icon.name"
-                      class="size-6 text-brand-500"
+                      :collection="tier.icon.collection"
+                      :name="tier.icon.name"
+                      class="size-6"
+                      :class="tier.featured
+                        ? 'text-brandcomp-500'
+                        : 'text-brand-500'"
                       aria-hidden="true" />
                   </div>
                   <div
@@ -246,7 +248,7 @@ onUnmounted(() => {
                       class="font-brand text-6xl
                         font-bold tracking-tight
                         text-text-primary"
-                    >{{ getPrice(tiers[0]) }}</span>
+                    >{{ getPrice(tier) }}</span>
                     <span
                       class="font-brand text-lg
                         font-semibold leading-8
@@ -256,14 +258,14 @@ onUnmounted(() => {
                   <p
                     class="mt-6 text-lg leading-7
                       text-text-secondary">
-                    {{ t(tiers[0].descriptionKey) }}
+                    {{ t(tier.descriptionKey) }}
                   </p>
                   <ul
                     role="list"
                     class="mt-10 space-y-4 text-base
                       leading-7 text-text-secondary">
                     <li
-                      v-for="featureKey in tiers[0].featuresKeys"
+                      v-for="featureKey in tier.featuresKeys"
                       :key="featureKey"
                       class="flex gap-x-3">
                       <OIcon
@@ -278,114 +280,27 @@ onUnmounted(() => {
                 </div>
 
                 <a
-                  :href="basicPlanHref"
-                  :aria-describedby="tiers[0].id"
+                  :href="tierHref(tier)"
+                  :aria-describedby="tier.id"
                   class="mt-8 block rounded-lg
-                    border border-surface-3 bg-surface-1
-                    hover:bg-surface-2 px-6 py-3
-                    text-center text-base font-semibold
-                    text-text-primary transition-colors
-                    focus-visible:outline
-                    focus-visible:outline-2
-                    focus-visible:outline-offset-2
-                    focus-visible:outline-brand-600">
-                  <div
-                    class="flex items-center
-                      justify-center gap-x-2">
-                    <OIcon
-                      :collection="tiers[0].icon.collection"
-                      :name="tiers[0].icon.name"
-                      size="5" />
-                    {{ t(tiers[0].ctaKey) }}
-                  </div>
-                </a>
-              </div>
-
-              <!-- Identity Plus Tier -->
-              <div
-                :key="tiers[1].id"
-                class="flex flex-col justify-between
-                  rounded-2xl bg-surface-1
-                  border border-surface-3
-                  border-t-2 border-t-brand-500
-                  p-12 hover:border-surface-4
-                  hover:border-t-brand-500
-                  transition-colors duration-200
-                  sm:p-14">
-                <div>
-                  <div
-                    class="flex items-center
-                      justify-between">
-                    <h3
-                      :id="tiers[1].id"
-                      class="text-xl font-bold leading-8
-                        text-text-primary">
-                      {{ t(tiers[1].nameKey) }}
-                    </h3>
-                    <OIcon
-                      :collection="tiers[1].icon.collection"
-                      :name="tiers[1].icon.name"
-                      class="size-6 text-brandcomp-500"
-                      aria-hidden="true" />
-                  </div>
-                  <div
-                    class="mt-6 flex items-baseline
-                      gap-x-2">
-                    <span
-                      class="font-brand text-6xl
-                        font-bold tracking-tight
-                        text-text-primary"
-                    >{{ getPrice(tiers[1]) }}</span>
-                    <span
-                      class="font-brand text-lg
-                        font-semibold leading-8
-                        text-text-tertiary"
-                    >{{ t(frequency.priceSuffixKey) }}</span>
-                  </div>
-                  <p
-                    class="mt-6 text-lg leading-7
-                      text-text-secondary">
-                    {{ t(tiers[1].descriptionKey) }}
-                  </p>
-                  <ul
-                    role="list"
-                    class="mt-10 space-y-4 text-base
-                      leading-7 text-text-secondary">
-                    <li
-                      v-for="featureKey in tiers[1].featuresKeys"
-                      :key="featureKey"
-                      class="flex gap-x-3">
-                      <OIcon
-                        collection="heroicons"
-                        name="check-circle-20-solid"
-                        class="h-6 w-6 flex-none
-                          text-brand-500"
-                        aria-hidden="true" />
-                      {{ t(featureKey) }}
-                    </li>
-                  </ul>
-                </div>
-
-                <a
-                  :href="getIdentityHref"
-                  :aria-describedby="tiers[1].id"
-                  class="mt-8 block rounded-lg
-                    bg-brand-600 hover:bg-brand-700
                     px-6 py-3 text-center text-base
-                    font-semibold text-white
-                    transition-colors
+                    font-semibold transition-colors
                     focus-visible:outline
                     focus-visible:outline-2
                     focus-visible:outline-offset-2
-                    focus-visible:outline-brand-600">
+                    focus-visible:outline-brand-600"
+                  :class="tier.featured
+                    ? 'bg-brand-600 hover:bg-brand-700 text-white'
+                    : `border border-surface-3 bg-surface-1
+                      hover:bg-surface-2 text-text-primary`">
                   <div
                     class="flex items-center
                       justify-center gap-x-2">
                     <OIcon
-                      :collection="tiers[1].icon.collection"
-                      :name="tiers[1].icon.name"
+                      :collection="tier.icon.collection"
+                      :name="tier.icon.name"
                       size="5" />
-                    {{ t(tiers[1].ctaKey) }}
+                    {{ t(tier.ctaKey) }}
                   </div>
                 </a>
               </div>

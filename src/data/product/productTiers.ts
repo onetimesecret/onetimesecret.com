@@ -17,6 +17,8 @@ export interface PaymentFrequency {
 export interface ProductTier {
   id: string;
   href: string;
+  /** Billing plan identifier used in checkout URLs (paid tiers only) */
+  billingPlanId?: string;
 
   icon: {
     collection: string;
@@ -80,6 +82,7 @@ export const productTiers: Array<ProductTier> = [
     id: "tier-identity",
     nameKey: "web.pricing.tiers.identity.name",
     href: "/plans/identity",
+    billingPlanId: "identity_plus_v1",
     ctaKey: "web.pricing.tiers.identity.cta",
     icon: {
       collection: "mdi",
