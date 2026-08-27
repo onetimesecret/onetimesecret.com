@@ -48,6 +48,7 @@ const {
   availableRegions,
   currentRegion,
   setJurisdiction,
+  initJurisdiction,
   cleanup,
 } = useJurisdiction();
 
@@ -98,8 +99,13 @@ const tierHref = (tier: ProductTier) => {
 
 const feedbackHref = computed(() => regionalUrl("/feedback"));
 
-onMounted(() => {
+onMounted(async () => {
   isClient.value = true;
+
+  // Resolve the region for CTA links: persisted choice, then geo, then
+  // default. Runs after the first render so hydration still matches the
+  // prerendered markup.
+  await initJurisdiction();
 });
 
 onUnmounted(() => {

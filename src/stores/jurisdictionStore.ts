@@ -1,23 +1,16 @@
 // src/stores/jurisdictionStore.ts
 import { jurisdictions as initialJurisdictions } from "@/data/ops/jurisdictions";
+import type { Jurisdiction } from "@/types/jurisdiction";
 import { atom, computed } from "nanostores";
 
+export type { Jurisdiction };
+
 /**
- * Jurisdiction interface representing a regional deployment option with data sovereignty
+ * localStorage key holding the visitor's explicit jurisdiction choice.
+ * Only explicit selections are stored: geo-seeded values stay in memory so an
+ * improved country mapping is never shadowed by a stale automatic value.
  */
-export interface Jurisdiction {
-  /** Unique identifier for the jurisdiction (e.g., "EU", "US") */
-  identifier: string;
-  /** Human-readable name for display purposes */
-  displayName: string;
-  /** Domain where the jurisdiction's server is hosted */
-  domain: string;
-  /** Icon information for visual representation */
-  icon: {
-    collection: string;
-    name: string;
-  };
-}
+export const JURISDICTION_STORAGE_KEY = "ots:selected-jurisdiction";
 
 // Store the available jurisdictions
 export const availableJurisdictions =
@@ -33,23 +26,153 @@ export const apiBaseUrl = computed(currentJurisdiction, (jurisdiction) => {
 });
 
 /**
+ * True once an explicit choice has been applied during this page load, either
+ * restored from storage or made by the user. Async geo detection checks this
+ * before writing, so a selection made while detection is in flight wins.
+ */
+let explicitSelection = false;
+
+/**
+ * Whether the current jurisdiction came from an explicit user choice
+ * (restored from storage or selected in this session).
+ */
+export function hasExplicitJurisdiction(): boolean {
+  return explicitSelection;
+}
+
+/** Finds a jurisdiction by identifier, including ones marked coming soon. */
+function findJurisdiction(identifier: string): Jurisdiction | undefined {
+  return availableJurisdictions
+    .get()
+    .find((j) => j.identifier === identifier);
+}
+
+/** Finds a jurisdiction that is actually selectable (not coming soon). */
+function findSelectableJurisdiction(
+  identifier: string,
+): Jurisdiction | undefined {
+  const jurisdiction = findJurisdiction(identifier);
+  return jurisdiction && !jurisdiction.comingSoon ? jurisdiction : undefined;
+}
+
+/**
+ * Reads the persisted identifier. Safe during SSR and when storage is
+ * unavailable (private mode, blocked cookies, security errors).
+ */
+function readStoredIdentifier(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    return window.localStorage?.getItem(JURISDICTION_STORAGE_KEY) ?? null;
+  } catch (error) {
+    console.warn("Failed to read stored jurisdiction:", error);
+    return null;
+  }
+}
+
+/** Persists the identifier, ignoring storage failures. */
+function writeStoredIdentifier(identifier: string): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage?.setItem(JURISDICTION_STORAGE_KEY, identifier);
+  } catch (error) {
+    console.warn("Failed to persist jurisdiction:", error);
+  }
+}
+
+export interface SetJurisdictionOptions {
+  /**
+   * Treat this as an explicit user choice: persist it and block later geo
+   * detection from overriding it. Defaults to true.
+   */
+  persist?: boolean;
+}
+
+/**
  * Sets the current jurisdiction by identifier
+ *
+ * An explicit choice is rejected outright when the jurisdiction is not yet
+ * available: storing it is impossible (the reader would reject it), so
+ * applying it would leave the visitor on a non-existent domain that silently
+ * reverts on the next navigation.
  * @param identifier The jurisdiction identifier to set as current
- * @returns The newly set jurisdiction or undefined if not found
+ * @param options Set `persist: false` for automatic (non-user) selections
+ * @returns The newly set jurisdiction or undefined if not found or not
+ *   selectable
  */
 export function setJurisdictionByIdentifier(
   identifier: string,
+  options: SetJurisdictionOptions = {},
 ): Jurisdiction | undefined {
-  const jurisdiction = availableJurisdictions
-    .get()
-    .find((j) => j.identifier === identifier);
+  const { persist = true } = options;
+  const jurisdiction = persist
+    ? findSelectableJurisdiction(identifier)
+    : findJurisdiction(identifier);
 
-  if (jurisdiction) {
-    currentJurisdiction.set(jurisdiction);
-    return jurisdiction;
+  if (!jurisdiction) {
+    return undefined;
   }
 
-  return undefined;
+  currentJurisdiction.set(jurisdiction);
+
+  if (persist) {
+    explicitSelection = true;
+    writeStoredIdentifier(jurisdiction.identifier);
+  }
+
+  return jurisdiction;
+}
+
+/**
+ * Applies a previously persisted explicit choice, if there is a valid one.
+ * Values that are unknown or not yet available are ignored.
+ * @returns The restored jurisdiction, or undefined if there was nothing to
+ *   restore
+ */
+export function applyPersistedJurisdiction(): Jurisdiction | undefined {
+  const stored = readStoredIdentifier();
+
+  if (!stored) {
+    return undefined;
+  }
+
+  const jurisdiction = findSelectableJurisdiction(stored);
+
+  if (!jurisdiction) {
+    return undefined;
+  }
+
+  explicitSelection = true;
+  currentJurisdiction.set(jurisdiction);
+  return jurisdiction;
+}
+
+/**
+ * Resolves the jurisdiction implied by the country code injected by the
+ * BunnyCDN edge middleware.
+ * @returns The matching jurisdiction, or undefined when there is no usable
+ *   country signal
+ */
+export async function detectGeoJurisdiction(): Promise<
+  Jurisdiction | undefined
+> {
+  // Dynamic import to avoid SSR issues
+  const { detectUserCountry, getJurisdictionForCountry } = await import(
+    "@/utils/countryToJurisdiction"
+  );
+
+  const countryCode = detectUserCountry();
+
+  if (!countryCode) {
+    return undefined;
+  }
+
+  return findSelectableJurisdiction(getJurisdictionForCountry(countryCode));
 }
 
 /**
@@ -58,26 +181,35 @@ export function setJurisdictionByIdentifier(
  * @returns The detected jurisdiction or the default (first) jurisdiction
  */
 export async function detectUserJurisdiction(): Promise<Jurisdiction> {
-  // Dynamic import to avoid SSR issues
-  const { detectUserCountry, getJurisdictionForCountry } = await import(
-    "@/utils/countryToJurisdiction"
-  );
+  return (await detectGeoJurisdiction()) ?? availableJurisdictions.get()[0];
+}
 
-  const countryCode = detectUserCountry();
+/**
+ * Resolves the jurisdiction to use on the client, in priority order:
+ *   1. a persisted explicit user choice
+ *   2. geo detection from the edge-injected country code
+ *   3. the existing default (first jurisdiction)
+ *
+ * Call this from `onMounted` so the first client render still matches the
+ * prerendered markup. Geo-seeded results are deliberately not persisted.
+ * @returns The jurisdiction now held by the store
+ */
+export async function initClientJurisdiction(): Promise<Jurisdiction> {
+  const persisted = applyPersistedJurisdiction();
 
-  if (countryCode) {
-    const jurisdictionId = getJurisdictionForCountry(countryCode);
-    const jurisdiction = availableJurisdictions
-      .get()
-      .find((j) => j.identifier === jurisdictionId);
-
-    if (jurisdiction) {
-      return jurisdiction;
-    }
+  if (persisted) {
+    return persisted;
   }
 
-  // Fallback to default (first) jurisdiction
-  return availableJurisdictions.get()[0];
+  const detected = await detectGeoJurisdiction();
+
+  // A choice made while detection was in flight always wins.
+  if (!detected || explicitSelection) {
+    return currentJurisdiction.get();
+  }
+
+  currentJurisdiction.set(detected);
+  return detected;
 }
 
 /**

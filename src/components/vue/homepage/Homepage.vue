@@ -38,6 +38,8 @@ const {
   apiBaseUrl,
   detectedJurisdiction,
   setJurisdiction,
+  applyStoredJurisdiction,
+  hasExplicitJurisdiction,
   detectJurisdiction,
   cleanup,
 } = useJurisdiction();
@@ -74,16 +76,22 @@ const isClient = ref(false);
 onMounted(async () => {
   isClient.value = true;
 
+  // Restore a previously chosen region before detection runs, so the
+  // suggestion below is compared against the visitor's own choice
+  applyStoredJurisdiction();
+
   // Detect appropriate jurisdiction for the user first
   await detectJurisdiction();
 
-  // If no jurisdiction was detected (no geo-detection result),
-  // select a random active region so we don't always default to the first
-  if (!detectedJurisdiction.value) {
+  // If no jurisdiction was detected (no geo-detection result) and the visitor
+  // has no explicit choice, select a random active region so we don't always
+  // default to the first
+  if (!detectedJurisdiction.value && !hasExplicitJurisdiction()) {
     const activeRegions = availableRegions.value.filter(r => !r.comingSoon);
     if (activeRegions.length > 0) {
       const random = activeRegions[Math.floor(Math.random() * activeRegions.length)];
-      setJurisdiction(random.identifier);
+      // Automatic pick, not a user choice: do not persist it
+      setJurisdiction(random.identifier, { persist: false });
     }
   }
 });

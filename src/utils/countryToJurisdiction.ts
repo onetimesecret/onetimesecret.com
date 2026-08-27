@@ -136,6 +136,20 @@ function isValidCountryCode(code: string): boolean {
 }
 
 /**
+ * Value the edge injects when it has no country signal.
+ *
+ * `edge/bunnycdn-country-injection.ts` falls back to the literal 'EU' when the
+ * `O-Country-Code` header is missing. 'EU' is not an ISO 3166-1 alpha-2
+ * country code, so it passes the format check but misses COUNTRY_TO_JURISDICTION
+ * and would silently resolve to the 'US' default — while the auth-redirect edge
+ * script sends the same header-less request to eu.onetimesecret.com.
+ *
+ * STOPGAP: remove this guard once the edge script injects nothing (or an empty
+ * value) when the header is absent. See edge/bunnycdn-country-injection.ts.
+ */
+const EDGE_NO_COUNTRY_SENTINEL = 'EU';
+
+/**
  * Detect user's country code from BunnyCDN edge injection
  * @returns Country code or null if not available or invalid
  */
@@ -150,6 +164,12 @@ export function detectUserCountry(): string | null {
   if (countryCode && typeof countryCode === 'string') {
     // Normalize to uppercase for consistency
     const normalized = countryCode.toUpperCase();
+
+    // Treat the edge's no-country sentinel as no signal, so callers fall back
+    // to the default jurisdiction instead of the 'US' catch-all.
+    if (normalized === EDGE_NO_COUNTRY_SENTINEL) {
+      return null;
+    }
 
     // Validate ISO 3166-1 alpha-2 format
     if (isValidCountryCode(normalized)) {

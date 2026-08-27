@@ -1,10 +1,14 @@
 // src/composables/useJurisdiction.ts
 import { ref, computed, watchEffect } from 'vue';
 import {
+  applyPersistedJurisdiction,
   availableJurisdictions,
   currentJurisdiction,
+  hasExplicitJurisdiction,
+  initClientJurisdiction,
   apiBaseUrl as storeApiBaseUrl,
-  setJurisdictionByIdentifier
+  setJurisdictionByIdentifier,
+  type SetJurisdictionOptions
 } from '@/stores/jurisdictionStore';
 import type { Region } from '@/types/jurisdiction';
 
@@ -44,11 +48,26 @@ export function useJurisdiction() {
 
   /**
    * Set the current jurisdiction by its identifier
+   * Treated as an explicit user choice (persisted) unless told otherwise
    */
-  const setJurisdiction = (identifier: string) => {
-    const jurisdiction = setJurisdictionByIdentifier(identifier);
+  const setJurisdiction = (
+    identifier: string,
+    options?: SetJurisdictionOptions
+  ) => {
+    const jurisdiction = setJurisdictionByIdentifier(identifier, options);
     return jurisdiction;
   };
+
+  /**
+   * Restore a previously persisted explicit choice, if any.
+   * Call from onMounted so the first client render matches prerendered markup.
+   */
+  const applyStoredJurisdiction = () => applyPersistedJurisdiction();
+
+  /**
+   * Resolve the client jurisdiction: persisted choice, then geo, then default
+   */
+  const initJurisdiction = () => initClientJurisdiction();
 
   /**
    * Detect the appropriate jurisdiction based on the user's country code
@@ -56,6 +75,12 @@ export function useJurisdiction() {
    * Falls back to browser geolocation API if country code is not available
    */
   const detectJurisdiction = async () => {
+    // Never nudge a visitor away from a region they chose themselves, whether
+    // restored from storage or picked in this session.
+    if (hasExplicitJurisdiction()) {
+      return null;
+    }
+
     isDetecting.value = true;
     try {
       // Dynamic import to avoid SSR issues
@@ -111,8 +136,8 @@ export function useJurisdiction() {
         const detected = jurisdictions.value.find((j) => j.identifier === jurisdictionId);
 
         if (detected && detected.identifier !== current.value.identifier) {
-          // Automatically set the detected jurisdiction
-          setJurisdiction(detected.identifier);
+          // Automatic selection: apply it but do not persist it as a choice
+          setJurisdiction(detected.identifier, { persist: false });
           return detected;
         }
       }
@@ -182,6 +207,9 @@ export function useJurisdiction() {
 
     // Methods
     setJurisdiction,
+    applyStoredJurisdiction,
+    initJurisdiction,
+    hasExplicitJurisdiction,
     detectJurisdiction,
     autoSelectJurisdiction,
     getCurrentJurisdictionUrl,
