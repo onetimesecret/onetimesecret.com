@@ -25,7 +25,7 @@ can also be executed directly.
 | Client link rewriting | `src/utils/regionalAuth.ts` | vitest, `test/unit/utils/regionalAuth.test.ts` |
 | Client region resolution | `src/stores/jurisdictionStore.ts` | vitest, `test/unit/stores/` |
 | Injection entry point | `edge/bunnycdn-country-injection.ts` | vitest, `test/unit/edge/countryInjection.test.ts` |
-| Bundling | `pnpm edge:build` | inspect `edge/dist/*.js` |
+| Bundling | `pnpm edge:build` | `pnpm edge:verify` (automatic, gates the build) |
 | Injection on a real response | production | `curl` from a VPN exit |
 
 ## Local development
@@ -93,16 +93,30 @@ Cases the table pins down:
 
 ## Build verification
 
-`pnpm edge:build` does not type-check and esbuild will happily emit a broken
-script, so check the output rather than the exit code:
+`pnpm edge:build` does not type-check and the bundler will happily emit a
+broken script, so the build ends in `pnpm edge:verify`
+(`edge/verify-bundles.mjs`). It asserts what these commands used to check by
+hand, and its exit code is now meaningful:
+
+- no import specifier other than `npm:` survived into either bundle — an
+  unresolvable specifier is what Bunny turns into a zone-wide 400
+- `servePullZone` appears exactly once in the injection bundle (its only
+  top-level statement is a side-effect call, so surviving tree-shaking is the
+  check that matters)
+- `CDN-RequestCountryCode` appears exactly once in each bundle
 
 ```bash
-pnpm edge:build
-head -1 edge/dist/bunnycdn-country-injection.js
-# → import * as BunnySDK from "npm:@bunny.net/edgescript-sdk@0.12.1";
+pnpm edge:build     # bundles, then verifies
+pnpm edge:verify    # re-check a bundle you did not just build, before pasting
+```
 
-grep -c "servePullZone" edge/dist/bunnycdn-country-injection.js   # → 1
-grep -c "CDN-RequestCountryCode" edge/dist/bunnycdn-auth-redirect.js  # → 1
+To see it catch the real failure, point it at a source file:
+
+```bash
+cp edge/bunnycdn-country-injection.ts edge/dist/bunnycdn-country-injection.js
+pnpm edge:verify
+# ✗ unresolvable specifier "./country" — exit 1
+pnpm edge:build     # restore
 ```
 
 The injection entry's only top-level statement is a side-effect call, so

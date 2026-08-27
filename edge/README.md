@@ -117,8 +117,16 @@ pnpm edge:build
 # → edge/dist/bunnycdn-country-injection.js
 ```
 
+`edge/dist` holds exactly these two files and nothing else (`publicDir` is
+disabled — left on, Vite copies all of `public/` in beside them, and a paste
+box is a bad place to be hunting for the right file).
+
 Each script is bundled to a single self-contained ES module with the shared
-country tables inlined, ready to paste into the Bunny dashboard. The two
+country tables inlined, ready to paste into the Bunny dashboard. The build
+ends in `pnpm edge:verify` (`edge/verify-bundles.mjs`), which fails if any
+import specifier other than `npm:` survived, or if the load-bearing strings
+(`servePullZone`, `CDN-RequestCountryCode`) are missing — a bundle that cannot
+register is the one failure the runtime turns into a zone-wide outage. The two
 builds are separate `vite build` invocations (`--mode auth-redirect`,
 `--mode country-injection`) so neither produces a shared chunk; an unknown
 mode is a hard error. Neither run empties `edge/dist` — each overwrites only
@@ -159,9 +167,16 @@ runs `onOriginResponse`.
 
 ## Deploy
 
+> **Paste `edge/dist/*.js`. Never paste a `.ts` file.**
+> The sources import `./country` and `../src/utils/authPaths`. Bunny deploys a
+> single module with no filesystem beside it, so those specifiers cannot
+> resolve, the script dies at load, and **every request on the zone gets a bare
+> 400** — see [Deploying the source file](#deploying-the-source-file).
+
 Do this for **both** pull zones (apex and www).
 
-1. `pnpm edge:build`
+1. `pnpm edge:build` — bundles both scripts and runs `edge:verify`, which fails
+   the build if any specifier other than `npm:` survived into the output
 2. Pull Zone → **Caching → Vary Cache → User Country Code** must be
    **enabled** before either script goes on
 3. **`bunnycdn-country-injection.js`** — Bunny dashboard → Pull Zones → *your
@@ -232,6 +247,43 @@ Regions marked `comingSoon` in `src/data/ops/jurisdictions.ts` (BR, AU, MX)
 are never redirect targets; their countries route to a live region.
 
 ## Troubleshooting
+
+### Deploying the source file
+
+**Symptom:** every request on the zone returns `400` with a zero-length body,
+in 0ms, uniformly across all paths and both hostnames, while `PullSuccess` is
+still `True`. The edge script log shows, once per request:
+
+```
+Unknown: disallowed module reference; specifier=./country, referrer=file:///mod.ts
+```
+
+**Cause:** a `.ts` source was pasted into the dashboard instead of the built
+bundle. `file:///mod.ts` is the single module Bunny deploys; `./country` has
+nothing to resolve against. The script fails at load, before it handles a
+request, so the 400 is not something the script code can be responsible for.
+
+This happened on 2026-08-27 and took the `.dev` zone down for hours. The
+dashboard editor uploads exactly one file and will never resolve a relative
+import — pasting source can only ever fail this way.
+
+**Recovery:**
+
+1. Detach the script from the zone (`MiddlewareScriptId: -1`) — the site comes
+   back immediately
+2. `pnpm edge:build`
+3. Paste `edge/dist/<name>.js`, save, enable
+4. **Purge the zone.** `CacheErrorResponses: true` plus a 12-hour max-age
+   override means cached 400s outlive the fix
+
+**Prevention:** `pnpm edge:build` now ends in `pnpm edge:verify`, which rejects
+any output containing a specifier that is not `npm:`. Run `pnpm edge:verify`
+before pasting if you are deploying a bundle you did not just build.
+
+**Enable zone logging.** These zones ship with `EnableLogging: false` and no
+log forwarding, which is why the failure above was found by symptom hours
+later instead of from the error at the moment it happened.
+
 
 **No country code on the page.** Confirm the script is enabled in the
 dashboard, then purge — `onOriginResponse` never runs for a cache HIT, so a
