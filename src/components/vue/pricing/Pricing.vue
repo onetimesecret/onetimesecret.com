@@ -16,7 +16,6 @@ import PricingRegionSelector
 import type { Region } from "@/types/jurisdiction";
 
 import {
-  featureGroups,
   paymentFrequencies as frequencies,
   ProductTier,
   productTiers as tiers,
