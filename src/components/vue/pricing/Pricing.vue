@@ -323,11 +323,12 @@ onUnmounted(() => {
                   <div
                     class="flex items-center
                       justify-center gap-x-2">
-                    <OIcon
-                      :collection="tier.icon.collection"
-                      :name="tier.icon.name"
-                      size="5" />
                     {{ t(tier.ctaKey) }}
+                    <OIcon
+                      collection="heroicons"
+                      name="arrow-right"
+                      size="5"
+                      aria-hidden="true" />
                   </div>
                 </a>
 
