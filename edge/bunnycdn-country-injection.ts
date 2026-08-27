@@ -1,191 +1,71 @@
+/// <reference path="./bunny-edgescript.d.ts" />
+
 /**
  * BunnyCDN Edge Script - Country Code Injection
  *
- * This edge middleware injects the user's country code into the HTML response
- * before it reaches the client. This enables immediate geolocation-based
- * jurisdiction selection without additional network requests or CORS issues.
+ * Publishes the visitor's country code into every HTML page as
+ * `window.__USER_COUNTRY__`, so the client can pick a jurisdiction on first
+ * paint without an extra request.
  *
  * How it works:
- * 1. BunnyCDN edge rule sets the O-Country-Code response header based on user's IP
- * 2. This script reads the O-Country-Code header from the response
- * 3. Injects the country code into HTML as window.__USER_COUNTRY__
- * 4. Client-side code can immediately access the country code
+ * 1. Bunny attaches `CDN-RequestCountryCode` to every edge request — no edge
+ *    rule is required; this script reads it straight off `context.request`
+ * 2. On a cache MISS the origin HTML is streamed through HTMLRewriter and a
+ *    small inline script is appended to <head>
+ * 3. The transformed HTML is what Bunny caches
  *
- * Features:
- * - Reads country code from O-Country-Code response header (set by edge rule)
- * - Uses streaming for memory-efficient HTML transformation
- * - Caches responses per country using Vary header
- * - Only processes HTML responses (skips CSS, JS, images, etc.)
- * - Falls back to 'US' if country code is unavailable
+ * Caching:
+ * `onOriginResponse` runs on cache MISS only. The pull zone must have
+ * Caching → Vary Cache → "User Country Code" ENABLED so each country gets its
+ * own cached variant. That setting drives Bunny's cache key; a response
+ * `Vary` header does not, so this script never sets one.
  *
- * Prerequisites:
- * - BunnyCDN edge rule must be configured to set O-Country-Code header
+ * No-signal contract:
+ * When there is no usable country code the script injects NOTHING. It never
+ * fabricates a default. Client-side `detectUserCountry()` then returns null
+ * and the app falls back to the EU region, which is the same place the
+ * auth-redirect edge script sends a country-less visitor.
  *
- * Usage:
- * Deploy this script to your BunnyCDN pull zone's edge script settings.
- * The script will automatically inject window.__USER_COUNTRY__ into all HTML pages.
+ * CSP:
+ * The injected tag is an inline script. It runs because the site's CSP meta
+ * tag (src/components/layout/LayoutHead.astro) includes `script-src
+ * 'unsafe-inline'`. The `data-user-country` attribute carries the same value
+ * as a fallback that is readable from the DOM without script execution.
  *
- * Client-side usage:
- * const countryCode = window.__USER_COUNTRY__;
+ * Build for deployment (bundles the shared country tables):
+ *   pnpm edge:build   →  edge/dist/bunnycdn-country-injection.js
  *
- * @see https://docs.bunny.net/docs/edge-script-documentation
+ * @see edge/README.md for deployment steps
+ * @see https://docs.bunny.net/docs/edge-scripting
  */
 
-/**
- * BunnyCDN Edge Script Environment
- * Minimal type definition for edge script context
- */
-interface EdgeScriptEnv {
-  // Add environment variables here as needed
-  [key: string]: unknown;
-}
+import * as BunnySDK from "npm:@bunny.net/edgescript-sdk@0.12.1";
 
-/**
- * BunnyCDN Edge Script Context
- * Minimal type definition for execution context
- */
-interface EdgeScriptContext {
-  // Add context properties here as needed
-  [key: string]: unknown;
-}
+import { COUNTRY_HEADER, buildCountryScriptTag, resolveCountry } from "./country";
 
-export default {
-  /**
-   * Fetch handler for BunnyCDN edge script
-   *
-   * Reads country code from the O-Country-Code response header which is set
-   * by a BunnyCDN edge rule, then injects it into the HTML for client-side access.
-   *
-   * @param request - The incoming HTTP request
-   * @param env - Environment variables (if configured)
-   * @param ctx - Execution context
-   * @returns Modified response with injected country code
-   */
-  async fetch(
-    request: Request,
-    env: EdgeScriptEnv,
-    ctx: EdgeScriptContext,
-  ): Promise<Response> {
-    try {
-      // Get the original response from origin
-      const response = await fetch(request);
+BunnySDK.net.http.servePullZone().onOriginResponse((context) => {
+  const { request, response } = context;
 
-      // Only modify HTML responses - skip other content types
-      const contentType = response.headers.get("content-type") || "";
-      if (!contentType.includes("text/html")) {
-        return response;
-      }
+  // Only HTML carries the app; assets pass through untouched.
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("text/html")) {
+    return;
+  }
 
-      // Get country code from BunnyCDN edge rule response header
-      // The O-Country-Code header is set by a BunnyCDN edge rule
-      // Falls back to 'EU' if not available
-      let countryCode = response.headers.get("O-Country-Code") || "EU";
+  const countryCode = resolveCountry(request.headers.get(COUNTRY_HEADER));
 
-      // Validate country code format (ISO 3166-1 alpha-2)
-      // Must be exactly 2 uppercase letters
-      if (!/^[A-Z]{2}$/.test(countryCode)) {
-        console.warn(
-          `Invalid country code detected: ${countryCode}, falling back to US`,
-        );
-        countryCode = "US";
-      }
+  // No signal: inject nothing rather than inventing a country.
+  if (!countryCode) {
+    return;
+  }
 
-      // Sanitize country code for safe HTML injection
-      // Escape any potential XSS characters (defense in depth)
-      const sanitizedCode = countryCode.replace(/['"<>&]/g, "");
-
-      // Create the injection script
-      const injection = `<script data-user-country="${sanitizedCode}">window.__USER_COUNTRY__='${sanitizedCode}';</script>`;
-
-      // Use streaming to transform HTML for better memory efficiency
-      // This avoids buffering the entire response in memory
-      const { readable, writable } = new TransformStream();
-      const writer = writable.getWriter();
-      const encoder = new TextEncoder();
-      const decoder = new TextDecoder();
-
-      let buffer = "";
-      let injected = false;
-
-      // Process the response stream
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error("Response body is null");
-      }
-
-      // Stream processing in background
-      (async () => {
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) {
-              // Flush remaining buffer
-              if (buffer && !injected) {
-                // Fallback: inject at start of <body> if no </head> found
-                buffer = buffer.replace(
-                  /<body([^>]*)>/i,
-                  `<body$1>${injection}`,
-                );
-              }
-              if (buffer) {
-                await writer.write(encoder.encode(buffer));
-              }
-              await writer.close();
-              break;
-            }
-
-            // Decode chunk and add to buffer
-            buffer += decoder.decode(value, { stream: true });
-
-            // Try to inject before </head>
-            if (!injected && buffer.includes("</head>")) {
-              buffer = buffer.replace(/<\/head>/i, `${injection}</head>`);
-              injected = true;
-            }
-
-            // Write complete buffer if we've injected or buffer is large enough
-            // Keep last 10 chars to handle tags split across chunks
-            if (injected || buffer.length > 1024) {
-              const writeContent = injected ? buffer : buffer.slice(0, -10);
-              if (writeContent) {
-                await writer.write(encoder.encode(writeContent));
-                buffer = injected ? "" : buffer.slice(-10);
-              }
-            }
-          }
-        } catch (streamError) {
-          console.error("Stream processing error:", streamError);
-          await writer.abort(streamError);
-        }
-      })();
-
-      // Create new response with streaming body
-      const newResponse = new Response(readable, {
-        status: response.status,
-        statusText: response.statusText,
-        headers: new Headers(response.headers),
-      });
-
-      // IMPORTANT: Vary header tells BunnyCDN to cache separate versions per country
-      // This means the edge script only runs once per country per page
-      // Subsequent requests from the same country will use the cached version
-      newResponse.headers.set("Vary", "CF-IPCountry");
-
-      return newResponse;
-    } catch (error) {
-      // Log error but don't break the site - return original response
-      console.error("Edge script error:", error);
-
-      // Attempt to return original response if available
-      try {
-        return await fetch(request);
-      } catch (fallbackError) {
-        // Last resort: return a basic error response
-        return new Response("Service temporarily unavailable", {
-          status: 503,
-          headers: { "Content-Type": "text/plain" },
-        });
-      }
-    }
-  },
-};
+  // HTMLRewriter streams the body and drops Content-Length itself, so no
+  // header bookkeeping is needed here.
+  return new HTMLRewriter()
+    .on("head", {
+      element(element) {
+        element.append(buildCountryScriptTag(countryCode), { html: true });
+      },
+    })
+    .transform(response);
+});

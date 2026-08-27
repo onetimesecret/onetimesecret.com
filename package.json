@@ -12,7 +12,7 @@
     "clean": "rm -rf dist/ .astro/ node_modules/.vite/",
     "reinstall": "pnpm clean && pnpm install",
     "dev": "NODE_OPTIONS='--max-old-space-size=8192 --trace-warnings' astro dev --host",
-    "edge:build": "vite build --config edge/vite.config.ts",
+    "edge:build": "vite build --config edge/vite.config.ts --mode auth-redirect && vite build --config edge/vite.config.ts --mode country-injection",
     "lint": "pnpm run lint:base --cache-location ./node_modules/.cache/eslint --cache 'src/**/*.{mjs,ts,d.ts,vue}' './*.{mjs,ts,js}'",
     "lint:base": "eslint --quiet --config eslint.config.ts",
     "lint:fix": "pnpm run lint:base --fix 'src/**/*.{mjs,ts,vue}' './*.{mjs,ts,d.ts,vue}'",
