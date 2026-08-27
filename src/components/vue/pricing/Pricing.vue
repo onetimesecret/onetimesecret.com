@@ -226,7 +226,7 @@ onUnmounted(() => {
               <div
                 v-for="tier in tiers"
                 :key="tier.id"
-                class="flex flex-col justify-between
+                class="flex flex-col
                   rounded-2xl bg-surface-1
                   border border-surface-3 p-10
                   hover:border-surface-4
@@ -236,7 +236,7 @@ onUnmounted(() => {
                   'border-t-2 border-t-brand-500 hover:border-t-brand-500':
                     tier.featured,
                 }">
-                <div>
+                <div class="flex-1">
                   <div
                     class="flex items-center
                       justify-between">
