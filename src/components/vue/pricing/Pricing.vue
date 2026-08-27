@@ -262,11 +262,17 @@ onUnmounted(() => {
                         {{ t(tier.badgeKey) }}
                       </span>
                     </div>
-                    <OIcon
-                      :collection="tier.icon.collection"
-                      :name="tier.icon.name"
-                      class="size-6 text-brand-500"
-                      aria-hidden="true" />
+                    <span
+                      :class="tier.icon.badgeClass"
+                      class="flex size-10 shrink-0
+                        items-center justify-center
+                        rounded-full"
+                      aria-hidden="true">
+                      <OIcon
+                        :collection="tier.icon.collection"
+                        :name="tier.icon.name"
+                        size="5" />
+                    </span>
                   </div>
                   <div
                     class="mt-6 flex items-baseline
