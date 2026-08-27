@@ -1,16 +1,13 @@
 // src/stores/jurisdictionStore.ts
 import { jurisdictions as initialJurisdictions } from "@/data/ops/jurisdictions";
+import { JURISDICTION_STORAGE_KEY } from "@/stores/jurisdictionStorage";
 import type { Jurisdiction } from "@/types/jurisdiction";
 import { atom, computed } from "nanostores";
 
 export type { Jurisdiction };
 
-/**
- * localStorage key holding the visitor's explicit jurisdiction choice.
- * Only explicit selections are stored: geo-seeded values stay in memory so an
- * improved country mapping is never shadowed by a stale automatic value.
- */
-export const JURISDICTION_STORAGE_KEY = "ots:selected-jurisdiction";
+/** Re-exported for existing importers; defined in `jurisdictionStorage.ts`. */
+export { JURISDICTION_STORAGE_KEY };
 
 // Store the available jurisdictions
 export const availableJurisdictions =

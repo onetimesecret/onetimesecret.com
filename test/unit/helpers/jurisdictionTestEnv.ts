@@ -10,8 +10,7 @@
  *    undefined), so spying on `Storage.prototype` does not work here
  */
 
-/** localStorage key holding the visitor's explicit jurisdiction choice. */
-export const JURISDICTION_STORAGE_KEY = 'ots:selected-jurisdiction';
+export { JURISDICTION_STORAGE_KEY } from '@/stores/jurisdictionStorage';
 
 /** Sets or clears the country code the edge injects into the page. */
 export function setCountry(code: string | undefined): void {
