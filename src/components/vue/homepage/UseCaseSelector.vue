@@ -20,8 +20,9 @@ const useCases: UseCase[] = getUseCases(t);
 // State for selected use case
 const selectedUseCase = ref(useCases[0]);
 
-// Auth CTAs point at the visitor's regional domain. Resolved on mount
-// (needs window.__USER_COUNTRY__) to keep SSR markup hydration-stable.
+// Auth CTAs point at the visitor's regional domain (persisted choice, then
+// edge geo). Resolved on mount, both because it needs localStorage and
+// window.__USER_COUNTRY__ and to keep SSR markup hydration-stable.
 const isMounted = ref(false);
 onMounted(() => {
   isMounted.value = true;

@@ -5,21 +5,25 @@
  *
  * Auth entry points (/signin, /signup) live on the regional app domains,
  * not on this marketing site. These helpers turn root-relative auth paths
- * into absolute URLs on the visitor's regional domain, using the country
- * code injected by the BunnyCDN edge script (window.__USER_COUNTRY__).
+ * into absolute URLs on the visitor's regional domain.
  *
- * Server-side (SSR/SSG) and without country data they fall back to the
- * EU domain, matching the /signin and /signup interstitial fallback.
+ * Region resolution mirrors `jurisdictionStore.initClientJurisdiction()`:
+ *   1. a persisted explicit user choice (localStorage), if still selectable
+ *   2. geo from the country code injected by the edge (window.__USER_COUNTRY__)
+ *   3. no domain at all — links stay relative and the /signin and /signup
+ *      interstitial pages do the final redirect
+ *
+ * Leaving links relative in case 3 matters: rewriting them to a guessed
+ * domain would override the interstitial, which resolves the region itself.
+ * Server-side (SSR/SSG) there is no window, so case 3 always applies.
  */
 
 import { jurisdictions } from "@/data/ops/jurisdictions";
+import { JURISDICTION_STORAGE_KEY } from "@/stores/jurisdictionStorage";
 import {
   detectUserCountry,
   getJurisdictionForCountry,
 } from "@/utils/countryToJurisdiction";
-
-/** Fallback when country is unknown or maps to an unavailable region */
-const DEFAULT_DOMAIN = "eu.onetimesecret.com";
 
 /** Jurisdiction identifier → live regional domain (comingSoon excluded) */
 const REGION_DOMAINS: Record<string, string> = jurisdictions
@@ -33,41 +37,91 @@ const REGION_DOMAINS: Record<string, string> = jurisdictions
   );
 
 /**
- * Resolve the regional app domain for the current visitor.
+ * Reads the persisted explicit choice. Safe during SSR and when storage is
+ * unavailable (private mode, blocked cookies, security errors). Identifiers
+ * that are unknown or not yet available resolve to null, matching the store.
  */
-export function getRegionalAuthDomain(): string {
-  const countryCode = detectUserCountry();
-  if (!countryCode) {
-    return DEFAULT_DOMAIN;
+function getPersistedAuthDomain(): string | null {
+  if (typeof window === "undefined") {
+    return null;
   }
 
-  const jurisdictionId = getJurisdictionForCountry(countryCode);
-  return REGION_DOMAINS[jurisdictionId] ?? DEFAULT_DOMAIN;
+  try {
+    const stored = window.localStorage?.getItem(JURISDICTION_STORAGE_KEY);
+    return stored ? (REGION_DOMAINS[stored] ?? null) : null;
+  } catch (error) {
+    console.warn("Failed to read stored jurisdiction:", error);
+    return null;
+  }
+}
+
+/** Resolves the domain implied by the edge-injected country code. */
+function getGeoAuthDomain(): string | null {
+  const countryCode = detectUserCountry();
+
+  if (!countryCode) {
+    return null;
+  }
+
+  return REGION_DOMAINS[getJurisdictionForCountry(countryCode)] ?? null;
 }
 
 /**
- * Build an absolute regional URL for a root-relative auth path.
+ * Resolve the regional app domain for the current visitor.
+ * @returns The domain, or null when there is no explicit choice and no geo
+ *   signal — callers should then leave auth links relative.
+ */
+export function getRegionalAuthDomain(): string | null {
+  return getPersistedAuthDomain() ?? getGeoAuthDomain();
+}
+
+/**
+ * Build a regional URL for a root-relative auth path.
  * The path may include a query string, e.g. "/signin?redirect=%2Fpricing".
+ * @returns An absolute URL on the regional domain, or `pathWithQuery`
+ *   unchanged when the region is unknown.
  */
 export function getRegionalAuthUrl(pathWithQuery: string): string {
-  return `https://${getRegionalAuthDomain()}${pathWithQuery}`;
+  const domain = getRegionalAuthDomain();
+  return domain ? `https://${domain}${pathWithQuery}` : pathWithQuery;
+}
+
+/** The current page as a root-relative path, for the `redirect` parameter. */
+function currentRelativeLocation(): string {
+  const { pathname, search, hash } = window.location;
+  return `${pathname}${search}${hash}`;
 }
 
 /**
- * Rewrite static anchors pointing at /signin or /signup to absolute URLs
- * on the visitor's regional domain, preserving each link's query string.
+ * Rewrite static anchors pointing at /signin or /signup to the visitor's
+ * regional domain, preserving each link's query string. Anchors marked
+ * `data-auth-redirect` also get a `redirect` parameter for the current page.
+ *
+ * When the region is unknown the hrefs stay relative (only the `redirect`
+ * parameter is added) so the interstitial pages can resolve the region.
  * Intended for Astro-rendered markup; Vue islands compute their own hrefs.
  */
 export function upgradeAuthLinks(root: ParentNode = document): void {
   const domain = getRegionalAuthDomain();
+  const base = domain ? `https://${domain}` : window.location.origin;
+
   root
     .querySelectorAll<HTMLAnchorElement>(
       'a[href^="/signin"], a[href^="/signup"]',
     )
     .forEach((link) => {
       const href = link.getAttribute("href");
-      if (href) {
-        link.href = `https://${domain}${href}`;
+      if (!href) return;
+
+      const url = new URL(href, base);
+
+      if (link.hasAttribute("data-auth-redirect")) {
+        url.searchParams.set("redirect", currentRelativeLocation());
       }
+
+      link.setAttribute(
+        "href",
+        domain ? url.toString() : `${url.pathname}${url.search}${url.hash}`,
+      );
     });
 }

@@ -30,8 +30,10 @@ if (props.initialMessages && props.locale) {
   });
 }
 
-// Auth links point at the visitor's regional domain. Resolved on mount
-// (needs window.__USER_COUNTRY__) to keep SSR markup hydration-stable.
+// Auth links point at the visitor's regional domain (persisted choice, then
+// edge geo). Resolved on mount, both because it needs localStorage and
+// window.__USER_COUNTRY__ and to keep SSR markup hydration-stable. With no
+// signal the helper returns the path unchanged and the interstitial decides.
 const signinHref = ref("/signin");
 const signupHref = ref("/signup");
 onMounted(() => {
