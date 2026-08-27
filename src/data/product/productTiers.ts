@@ -105,6 +105,32 @@ export const productTiers: Array<ProductTier> = [
     frequencySuffixEnabled: true,
     learn_more: "https://docs.onetimesecret.com/en/custom-domains/",
   },
+  {
+    id: "tier-team",
+    nameKey: "web.pricing.tiers.team.name",
+    href: "/plans/team",
+    billingPlanId: "team_plus_v1",
+    ctaKey: "web.pricing.tiers.team.cta",
+    icon: {
+      collection: "mdi",
+      name: "account-multiple",
+    },
+    priceKeys: {
+      monthly: "web.pricing.tiers.team.price.monthly",
+      annually: "web.pricing.tiers.team.price.annually",
+    },
+    descriptionKey: "web.pricing.tiers.team.description",
+    featuresKeys: [
+      "web.pricing.tiers.team.features.0",
+      "web.pricing.tiers.team.features.1",
+      "web.pricing.tiers.team.features.2",
+      "web.pricing.tiers.team.features.3",
+      "web.pricing.tiers.team.features.4",
+    ],
+    badgeKey: "web.pricing.tiers.team.badge",
+    featured: false,
+    frequencySuffixEnabled: true,
+  },
 ];
 
 export const featureGroups: FeatureGroup[] = [

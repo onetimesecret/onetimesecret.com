@@ -158,6 +158,23 @@
             "3": "Invite unlimited members",
             "4": "Homepage access controls, Incoming Secrets"
           }
+        },
+        "team": {
+          "name": "Team Plus",
+          "badge": null,
+          "description": "Governed secret sharing with SSO, access controls, and organizational visibility.",
+          "cta": "Get started",
+          "price": {
+            "monthly": "$125",
+            "annually": "$1200"
+          },
+          "features": {
+            "0": "Everything in Identity Plus",
+            "1": "Single sign-on (SSO)",
+            "2": "Organizations with teams and member management",
+            "3": "Flexible from-domain for email delivery",
+            "4": "API access for automation"
+          }
         }
       },
       "groups": {

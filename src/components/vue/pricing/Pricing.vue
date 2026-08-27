@@ -208,7 +208,7 @@ onUnmounted(() => {
           <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div
               class="mx-auto grid max-w-6xl
-                grid-cols-1 gap-6 lg:grid-cols-2">
+                grid-cols-1 gap-6 lg:grid-cols-3">
               <div
                 v-for="tier in tiers"
                 :key="tier.id"

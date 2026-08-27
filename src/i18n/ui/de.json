@@ -158,6 +158,23 @@
             "3": "Unbegrenzt viele Mitglieder einladen",
             "4": "Startseiten-Zugriffskontrollen, Eingehende Geheimnisse"
           }
+        },
+        "team": {
+          "name": "Team Plus",
+          "badge": null,
+          "description": "Kontrolliertes Teilen von Geheimnissen mit SSO, Zugriffskontrollen und organisatorischer Übersicht.",
+          "cta": "Jetzt starten",
+          "price": {
+            "monthly": "125 €",
+            "annually": "1200 €"
+          },
+          "features": {
+            "0": "Alles aus Identity Plus",
+            "1": "Single Sign-On (SSO)",
+            "2": "Organisationen mit Teams und Mitgliederverwaltung",
+            "3": "Flexible Absenderdomain für E-Mails",
+            "4": "API-Zugriff für Automatisierung"
+          }
         }
       },
       "groups": {
