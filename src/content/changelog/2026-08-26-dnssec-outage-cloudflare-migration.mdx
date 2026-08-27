@@ -11,7 +11,7 @@ highlights:
   - { icon: info, text: "Custom domains route through onetime.co, which never used Cloudflare, and were unaffected" }
   - { icon: check, text: "Mitigation is in place: Bunny's ZSK was added to Cloudflare's DNSKEY set, stale Hetzner records were removed, and the Cloudflare zone was deleted" }
   - { icon: ask, text: "Cloudflare nameserver and DS removal from the parent delegation remains pending; recovery will be verified from independent validating resolvers" }
-  - { icon: info, text: "Validating DNS checks are being added to monitoring for future DNS changes" }
+  - { icon: info, text: "A temporary DNS probe now monitors DNSSEC validation and hostname resolution while we work on a more robust solution" }
 ---
 
 Since roughly 19 August, some DNSSEC-validating resolvers have intermittently been unable to
@@ -37,5 +37,10 @@ remove CF's nameservers without also deleting the DS records). We will not consi
 incident resolved until that work is complete and DNSSEC validation has been verified from
 independent resolvers.
 
-We are adding validating DNS checks to our monitoring so DNS changes cannot fail silently
-again.
+A temporary [DNS probe](https://github.com/onetimesecret/onetimesecret.com/blob/main/scripts/dns-monitoring/doh-probe.sh)
+now monitors the remaining cleanup. It queries independent DNSSEC-validating resolvers over
+DNS-over-HTTPS. For `onetimesecret.com` and `catch.onetimesecret.com`, it requires successful
+DNSSEC validation and an A-record answer. For CDN-fronted hostnames, where the upstream CDN zone
+is unsigned, it verifies that an A-record answer is still reachable. This is temporary monitoring
+until a more robust solution is in place, but it will alert us if the remaining delegation work
+causes the same type of failure again.
