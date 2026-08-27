@@ -7,6 +7,7 @@ import { ref, onMounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { localizeUrl } from '@/i18n/utils';
 import { setLanguage, setLanguageWithMessages, type MessageSchema, type SupportedLanguage } from "@/i18n";
+import { getRegionalAuthUrl } from "@/utils/regionalAuth";
 
 const props = defineProps<{
   locale: SupportedLanguage;
@@ -28,6 +29,15 @@ if (props.initialMessages && props.locale) {
     await setLanguage(props.locale);
   });
 }
+
+// Auth links point at the visitor's regional domain. Resolved on mount
+// (needs window.__USER_COUNTRY__) to keep SSR markup hydration-stable.
+const signinHref = ref("/signin");
+const signupHref = ref("/signup");
+onMounted(() => {
+  signinHref.value = getRegionalAuthUrl("/signin");
+  signupHref.value = getRegionalAuthUrl("/signup");
+});
 
 // Define navigation items using i18n keys or use custom items if provided
 const navigation = computed(() => {
@@ -107,12 +117,12 @@ const mobileMenuOpen = ref(false);
         </div>
         <div v-if="showAuthButtons" class="hidden md:flex md:flex-1 md:justify-end md:space-x-4 items-center">
           <a
-            href="/signin"
+            :href="signinHref"
             class="text-sm/6 font-semibold text-gray-900 dark:text-gray-100 hover:text-brand-600 dark:hover:text-brand-400 transition-colors focus-visible:outline-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:rounded-sm">
             {{ t("auth.sign-in") }}
           </a>
           <a
-            href="/signup"
+            :href="signupHref"
             class="text-sm/6 font-semibold text-white bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 px-4 py-2 rounded-md transition-colors focus-visible:outline-white focus-visible:outline-2 focus-visible:outline-offset-2">
             {{ t("auth.sign-up", "Sign up") }} <span aria-hidden="true">&rarr;</span>
           </a>
@@ -171,12 +181,12 @@ const mobileMenuOpen = ref(false);
               </div>
               <div v-if="showAuthButtons" class="py-6 space-y-2">
                 <a
-                  href="/signin"
+                  :href="signinHref"
                   class="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 focus-visible:outline-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2">
                   {{ t("auth.sign-in") }}
                 </a>
                 <a
-                  href="/signup"
+                  :href="signupHref"
                   class="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 focus-visible:outline-white focus-visible:outline-2 focus-visible:outline-offset-2">
                   {{ t("auth.sign-up", "Sign up") }} <span aria-hidden="true">&rarr;</span>
                 </a>

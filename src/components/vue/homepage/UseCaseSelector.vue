@@ -6,9 +6,10 @@ import {
   ListboxOptions,
 } from "@headlessui/vue";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
-import { ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { getUseCases } from "@/data/product/usecases/index";
+import { getRegionalAuthUrl } from "@/utils/regionalAuth";
 import type { UseCase } from "@/types/useCase";
 
 const { t } = useI18n();
@@ -18,6 +19,19 @@ const useCases: UseCase[] = getUseCases(t);
 
 // State for selected use case
 const selectedUseCase = ref(useCases[0]);
+
+// Auth CTAs point at the visitor's regional domain. Resolved on mount
+// (needs window.__USER_COUNTRY__) to keep SSR markup hydration-stable.
+const isMounted = ref(false);
+onMounted(() => {
+  isMounted.value = true;
+});
+const ctaHref = computed(() => {
+  const link = selectedUseCase.value.ctaLink;
+  return isMounted.value && link.startsWith("/sign")
+    ? getRegionalAuthUrl(link)
+    : link;
+});
 </script>
 
 <template>
@@ -164,7 +178,7 @@ const selectedUseCase = ref(useCases[0]);
           <!-- CTA -->
           <div class="mt-auto">
             <a
-              :href="selectedUseCase.ctaLink"
+              :href="ctaHref"
               class="block w-full bg-gradient-to-r from-brandcompdim-600 to-brandcompdim-700 hover:from-brandcompdim-700 hover:to-brandcompdim-800 dark:from-brandcompdim-500 dark:to-brandcompdim-600 dark:hover:from-brandcompdim-400 dark:hover:to-brandcompdim-500 text-white dark:text-gray-900 font-semibold py-4 px-6 rounded-xl text-center transition-all duration-300 shadow-lg shadow-brandcompdim-600/20 dark:shadow-brandcompdim-400/30 hover:shadow-xl hover:shadow-brandcompdim-600/30 dark:hover:shadow-brandcompdim-400/40">
               {{ selectedUseCase.ctaText }}
             </a>
