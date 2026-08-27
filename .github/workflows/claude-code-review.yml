@@ -41,12 +41,11 @@ jobs:
 
       - name: Run Claude Code Review
         id: claude-review
-        uses: anthropics/claude-code-action@beta
+        uses: anthropics/claude-code-action@28f83620103c48a57093dcc2837eec89e036bb9f # beta (v0.0.63)
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-
-          # Optional: Specify model (defaults to Claude Sonnet 4, uncomment for Claude Opus 4)
-          # model: "claude-opus-4-20250514"
+          model: "${{ vars.ANTHROPIC_MODEL || 'claude-opus-5' }}"
+          fallback_model: "${{ vars.CLAUDE_FALLBACK_MODEL || 'claude-haiku-4-5-20251001' }}"
 
           # Direct prompt for automated review (no @claude mention needed)
           direct_prompt: |
@@ -59,7 +58,7 @@ jobs:
 
             Be constructive and helpful in your feedback.
 
-          # Optional: Use sticky comments to make Claude reuse the same comment on subsequent pushes to the same PR
+          # Update one review comment rather than posting one for every push.
           use_sticky_comment: true
 
           # Optional: Different prompts for different authors
