@@ -1,0 +1,138 @@
+---
+/**
+ * src/components/AuthRedirect.astro
+ *
+ * Regional redirect interstitial for auth entry points (/signup, /signin).
+ *
+ * Primary handling is a BunnyCDN edge script that 302s these paths to the
+ * visitor's regional domain before this page is ever served (see
+ * edge/bunnycdn-auth-redirect.ts). This page is the fallback for traffic
+ * that bypasses the CDN or reaches the origin directly:
+ *
+ * 1. Reads window.__USER_COUNTRY__ (injected by the BunnyCDN country
+ *    injection edge script when served via CDN)
+ * 2. Maps the country to a jurisdiction domain client-side and redirects,
+ *    preserving the full query string (redirect, product, interval, …)
+ * 3. Without JS or country data, falls back to eu.onetimesecret.com
+ */
+import { createLocaleI18n, type MessageSchema } from "@/i18n";
+import enMessages from "@/i18n/ui/en.json";
+import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
+import { jurisdictions } from "@/data/ops/jurisdictions";
+import { COUNTRY_TO_JURISDICTION } from "@/utils/countryToJurisdiction";
+
+interface Props {
+  /** Auth path on the regional domain, e.g. "/signin" */
+  path: "/signin" | "/signup";
+}
+
+const { path } = Astro.props;
+
+const pageScopedInitialMessages: { [key: string]: MessageSchema } = {
+  [DEFAULT_LANGUAGE]: enMessages,
+};
+const pageI18n = await createLocaleI18n(
+  DEFAULT_LANGUAGE,
+  pageScopedInitialMessages,
+);
+const t = pageI18n.global.t;
+
+const defaultDomain = "eu.onetimesecret.com";
+const defaultTarget = `https://${defaultDomain}${path}`;
+
+const regionDomains = jurisdictions
+  .filter((j) => !j.comingSoon)
+  .reduce(
+    (map, j) => {
+      map[j.identifier] = j.domain;
+      return map;
+    },
+    {} as Record<string, string>,
+  );
+
+const pageTitle =
+  path === "/signin" ? t("auth.sign-in") : t("auth.sign-up");
+---
+
+<html lang={DEFAULT_LANGUAGE}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>{pageTitle} · Onetime Secret</title>
+    <noscript>
+      <meta http-equiv="refresh" content={`0;url=${defaultTarget}`} />
+    </noscript>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      body {
+        margin: 0;
+        display: grid;
+        min-height: 100vh;
+        place-items: center;
+        font-family:
+          ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+          sans-serif;
+        background: #fff;
+        color: #1f2937;
+      }
+      main {
+        text-align: center;
+        padding: 1.5rem;
+      }
+      a {
+        color: #dc4a22;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: #111827;
+          color: #e5e7eb;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p>{t("web.authRedirect.message")}</p>
+      <p>
+        <a id="auth-redirect-link" href={defaultTarget}
+          >{t("web.authRedirect.continue")}</a>
+      </p>
+    </main>
+    <script
+      is:inline
+      define:vars={{
+        countryMap: COUNTRY_TO_JURISDICTION,
+        regionDomains,
+        defaultDomain,
+        path,
+      }}
+    >
+      (function () {
+        var target = "https://" + defaultDomain + path;
+        try {
+          var cc = window.__USER_COUNTRY__;
+          var domain = defaultDomain;
+          if (cc && /^[A-Za-z]{2}$/.test(cc)) {
+            var region = countryMap[cc.toUpperCase()];
+            if (region && regionDomains[region]) {
+              domain = regionDomains[region];
+            }
+          }
+          target =
+            "https://" +
+            domain +
+            path +
+            window.location.search +
+            window.location.hash;
+          document.getElementById("auth-redirect-link").href = target;
+        } catch (e) {
+          /* fall through to default target */
+        }
+        window.location.replace(target);
+      })();
+    </script>
+  </body>
+</html>

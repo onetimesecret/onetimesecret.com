@@ -65,13 +65,8 @@ export function createConfig(): AstroUserConfig["redirects"] {
       status: 302,
       destination: "https://eu.onetimesecret.com/plans/free",
     },
-    "/signup": {
-      status: 302,
-      destination: "https://eu.onetimesecret.com/signup",
-    },
-    "/signin": {
-      status: 302,
-      destination: "https://eu.onetimesecret.com/signin",
-    },
+    // NOTE: /signup and /signin are handled by src/pages/{signup,signin}.astro
+    // (regional redirect interstitials) and, ahead of that, by the BunnyCDN
+    // edge script in edge/bunnycdn-auth-redirect.ts.
   };
 }

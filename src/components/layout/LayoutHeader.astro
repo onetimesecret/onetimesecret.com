@@ -267,16 +267,27 @@ const signInHref = authRedirect
 </div>
 
 <script>
+  import { getRegionalAuthDomain } from "@/utils/regionalAuth";
+
   // Mobile menu functionality
   document.addEventListener("DOMContentLoaded", () => {
+    // Point auth links directly at the visitor's regional domain, using
+    // the country code injected at the CDN edge (window.__USER_COUNTRY__).
+    const authDomain = getRegionalAuthDomain();
     document
-      .querySelectorAll<HTMLAnchorElement>("[data-auth-redirect]")
+      .querySelectorAll<HTMLAnchorElement>(
+        'a[href^="/signin"], a[href^="/signup"]',
+      )
       .forEach((link) => {
-        const signInUrl = new URL("/signin", window.location.origin);
-        const authRedirect =
-          `${window.location.pathname}${window.location.search}${window.location.hash}`;
-        signInUrl.searchParams.set("redirect", authRedirect);
-        link.href = `${signInUrl.pathname}${signInUrl.search}`;
+        const href = link.getAttribute("href");
+        if (!href) return;
+        const url = new URL(href, `https://${authDomain}`);
+        if (link.hasAttribute("data-auth-redirect")) {
+          const authRedirect =
+            `${window.location.pathname}${window.location.search}${window.location.hash}`;
+          url.searchParams.set("redirect", authRedirect);
+        }
+        link.href = url.toString();
       });
 
     const mobileMenuButton = document.getElementById("mobile-menu-button");

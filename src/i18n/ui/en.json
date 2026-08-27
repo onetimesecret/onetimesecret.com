@@ -75,6 +75,10 @@
     "loading": "Loading"
   },
   "web": {
+    "authRedirect": {
+      "message": "Taking you to your region’s account portal…",
+      "continue": "Continue to your region"
+    },
     "aria": {
       "light_mode": "Light Mode",
       "dark_mode": "Dark Mode",
