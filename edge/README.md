@@ -36,12 +36,21 @@ site. This script answers them at the edge.
 - preserves the full query string (`redirect`, `product`, `interval`, …)
 - `Cache-Control: no-store`, so one country's redirect is never served to
   another
-- no signal, or a region that is still `comingSoon` → `eu.onetimesecret.com`
+- no signal → `eu.onetimesecret.com`
+- a country whose region is still `comingSoon` goes to its **live** region
+  (`BR` → `us.onetimesecret.com`, `AU` → `nz.onetimesecret.com`).
+  `comingSoon` domains are never redirect targets, and nothing routes to
+  `eu.onetimesecret.com` on account of a `comingSoon` region
 - every other path passes through to the origin untouched
 
 The origin still ships `/signin` and `/signup` as client-side regional
 redirect pages (`src/pages/{signin,signup}.astro` → `AuthRedirect.astro`) for
-traffic that bypasses the CDN, with a no-JS meta-refresh fallback to EU.
+traffic that bypasses the CDN, with a no-JS meta-refresh fallback to EU. That
+interstitial reproduces the same three steps inline (it cannot import the
+helpers through `define:vars`); the parity table in
+`test/unit/utils/edgeCountry.test.ts` is what keeps it honest — the `FO`,
+`CV` and `GU` rows exist because unmapped-but-real ISO codes are where the
+three layers previously disagreed.
 
 ## bunnycdn-country-injection.ts
 
@@ -100,33 +109,74 @@ The injection bundle keeps its `import * as BunnySDK from
 marked external in `edge/vite.config.ts` because the Deno runtime resolves
 them at deploy time.
 
-> `edge/**` is not in `tsconfig.json`'s `include`, so `pnpm type-check` and
-> `pnpm check` do not cover these files and `pnpm edge:build` does not
-> type-check. The vitest suite over `edge/country.ts`
-> (`test/unit/utils/edgeCountry.test.ts`) is the real verification.
+`edge/**` is outside `tsconfig.json`'s `include` (it targets Deno, not the
+Astro app), so `pnpm type-check:base` and `pnpm check` skip it.
+`tsconfig.edge.json` covers it instead and `pnpm type-check` runs both, which
+is what makes `edge/bunny-edgescript.d.ts` an actual check on
+`context.request` and `element.append(tag, { html: true })` rather than
+editor-only decoration. `pnpm edge:build` still does no type-checking of its
+own. The vitest suite over `edge/country.ts`
+(`test/unit/utils/edgeCountry.test.ts`) covers the behavior.
+
+## Not verified against a live deploy
+
+The ambient types describe what these scripts assume, not what Bunny
+documents. Two assumptions can only be confirmed by deploying:
+
+1. **`onOriginResponse`'s context shape** — assumed `{ request, response }`.
+2. **Which registration form each script needs.**
+   `bunnycdn-country-injection.ts` registers as SDK middleware
+   (`BunnySDK.net.http.servePullZone().onOriginResponse(…)`);
+   `bunnycdn-auth-redirect.ts` is a bare `export default { fetch }` with no
+   SDK import. At most one of those is the right shape for a
+   pull-zone-attached script, and neither `pnpm edge:build` nor the test suite
+   can tell you which. The smoke check in **Verify** below is what
+   distinguishes "script never registered" from "wrong region".
+
+Untested too: whether one pull zone can host both scripts, and how
+auth-redirect's passthrough `fetch(request)` interacts with a zone that also
+runs `onOriginResponse`.
 
 ## Deploy
 
 Do this for **both** pull zones (apex and www).
 
 1. `pnpm edge:build`
-2. Bunny dashboard → Pull Zones → *your zone* → **Edge Scripting**
-3. Paste the contents of the matching `edge/dist/*.js` file, save, and enable
-   the script
-4. Pull Zone → **Caching → Vary Cache → User Country Code** must be **enabled**
+2. Pull Zone → **Caching → Vary Cache → User Country Code** must be
+   **enabled** before either script goes on
+3. **`bunnycdn-country-injection.js`** — Bunny dashboard → Pull Zones → *your
+   zone* → **Edge Scripting**. This one is **SDK middleware**: it registers
+   itself by calling `servePullZone().onOriginResponse(…)` at module scope and
+   exports nothing. Paste, save, enable.
+4. **`bunnycdn-auth-redirect.js`** — same screen. This one is a **standalone
+   fetch handler**: `export default { fetch }`, no SDK import. Paste, save,
+   enable.
 5. **Purge the zone.** HTML cached before the Vary setting or before the
    script was enabled has no country variant and no injected tag; it will keep
    being served until it is purged
 
 ### Verify
 
+Start with the smoke check — it separates "the script never registered" from
+"the script picked the wrong region":
+
 ```bash
+curl -so /dev/null -w '%{http_code}\n' https://onetimesecret.com/signin
+# → 302   the auth-redirect script is live
+# → 200   it never registered; you are seeing the origin interstitial
+```
+
+A `200` here means step 4 did not take, most likely because the script's
+registration form is wrong for this zone (see **Not verified** above). Only
+once that returns `302` is the `location` value meaningful:
+
+```bash
+curl -sI https://onetimesecret.com/signin | grep -i location
+# → location: https://uk.onetimesecret.com/signin
+
 curl -s https://onetimesecret.com/ | grep __USER_COUNTRY__
 # → <script data-user-country="GB">window.__USER_COUNTRY__="GB";</script>
 # (nothing at all is correct when Bunny has no country for the caller)
-
-curl -sI https://onetimesecret.com/signin | grep -i location
-# → location: https://uk.onetimesecret.com/signin
 ```
 
 Re-run from a VPN exit in another country and confirm the values change and

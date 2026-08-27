@@ -18,7 +18,9 @@
  * - No country, a malformed code, or a legacy GeoIP continent code
  *   ('EU', 'AP') → eu.onetimesecret.com
  * - A real but unmapped country → the shared '|| US' mapping
- * - Country mapped to a comingSoon jurisdiction → eu.onetimesecret.com
+ * - A country whose region is still comingSoon → its live region
+ *   (BR → us.onetimesecret.com, AU → nz.onetimesecret.com); comingSoon
+ *   domains are never redirect targets
  *
  * The 302 is marked no-store so one country's redirect is never cached
  * and served to another. The origin still hosts /signup and /signin

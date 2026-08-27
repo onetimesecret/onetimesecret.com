@@ -22,7 +22,15 @@ import {
  */
 export const COUNTRY_HEADER = "CDN-RequestCountryCode";
 
-/** Fallback when country is unknown or maps to an unavailable region */
+/**
+ * Fallback when there is no usable country signal.
+ *
+ * It is also the `??` arm in `resolveRegionalDomain`, but that arm is
+ * unreachable by construction: `getJurisdictionForCountry` only ever returns
+ * EU/CA/NZ/UK/US and all five are live. A country whose region is marked
+ * `comingSoon` routes to its live region instead (BR → us, AU → nz);
+ * `comingSoon` domains are never redirect targets.
+ */
 export const DEFAULT_DOMAIN = "eu.onetimesecret.com";
 
 /** Jurisdiction identifier → live regional domain (comingSoon excluded) */
@@ -51,7 +59,7 @@ export function resolveCountry(headerValue: string | null | undefined): string |
  * No signal → DEFAULT_DOMAIN, which is exactly where the client lands when
  * `detectUserCountry()` returns null. A real but unmapped country keeps the
  * shared `getJurisdictionForCountry` '|| US' behavior, again matching the
- * client.
+ * client. The `?? DEFAULT_DOMAIN` below is defensive only — see DEFAULT_DOMAIN.
  */
 export function resolveRegionalDomain(
   headerValue: string | null | undefined,
