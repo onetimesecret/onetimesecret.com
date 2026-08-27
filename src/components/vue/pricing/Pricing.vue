@@ -318,8 +318,12 @@ onUnmounted(() => {
                     focus-visible:outline-brand-600"
                   :class="tier.featured
                     ? 'bg-brand-600 hover:bg-brand-700 text-white'
-                    : `border border-surface-3 bg-surface-1
-                      hover:bg-surface-2 text-text-primary`">
+                    : tier.billingPlanId
+                      ? `border border-brand-500/50 bg-brand-500/10
+                        hover:bg-brand-500/20 text-brand-600
+                        dark:text-brand-400`
+                      : `border border-surface-3 bg-surface-1
+                        hover:bg-surface-2 text-text-primary`">
                   <div
                     class="flex items-center
                       justify-center gap-x-2">
