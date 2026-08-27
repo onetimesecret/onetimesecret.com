@@ -1,0 +1,40 @@
+---
+title: "DNSSEC validation failures during our move off Cloudflare"
+date: 2026-08-26
+description: "Our DNS migration caused intermittent DNSSEC validation failures for onetimesecret.com; custom domains on onetime.co were unaffected."
+category: operations
+planned: false
+highlightedLinkUrl: "https://blog.onetimesecret.com/posts/2024-09-13-ddos-day-5"
+highlightedLinkText: "Why Cloudflare was added in 2024"
+highlights:
+  - { icon: warn, text: "Some DNSSEC-validating resolvers could not resolve onetimesecret.com and its subdomains intermittently from about 19–26 August" }
+  - { icon: info, text: "Custom domains route through onetime.co, which never used Cloudflare, and were unaffected" }
+  - { icon: check, text: "Mitigation is in place: Bunny's ZSK was added to Cloudflare's DNSKEY set, stale Hetzner records were removed, and the Cloudflare zone was deleted" }
+  - { icon: ask, text: "Cloudflare nameserver and DS removal from the parent delegation remains pending; recovery will be verified from independent validating resolvers" }
+  - { icon: info, text: "Validating DNS checks are being added to monitoring for future DNS changes" }
+---
+
+Since roughly 19 August, some DNSSEC-validating resolvers have intermittently been unable to
+resolve `onetimesecret.com` and its subdomains. The failure could return `SERVFAIL`, depending
+on which authoritative server a resolver had contacted. We did not announce this maintenance
+in advance, and we only learned the scope from an external report on 26 August. That is on us.
+
+The issue occurred during our migration of authoritative DNS from Cloudflare to Bunny. For a
+period, both providers were in the `.com` delegation and signing the zone with different keys
+without a shared DNSKEY record set. As a result, a resolver that had cached keys from one
+provider could fail to validate data signed by the other. Cloudflare was added reluctantly
+during the [September 2024 DDoS](https://blog.onetimesecret.com/posts/2024-09-13-ddos-day-5),
+and this migration is the long-planned removal of that dependency.
+
+Custom domains were unaffected. They are served through `onetime.co`, which never used
+Cloudflare and did not experience these DNSSEC validation failures.
+
+Mitigation is now in place: Bunny's ZSK (18608) was added to Cloudflare's DNSKEY set, stale
+Hetzner nameserver records were removed, and the Cloudflare zone was deleted. Cloudflare can
+continue to serve the deleted zone until it is purged. We still need to remove Cloudflare's
+nameservers and DS record (2371) from the parent delegation at Porkbun. We will not consider
+this incident resolved until that work is complete and DNSSEC validation has been verified from
+independent resolvers.
+
+We are adding validating DNS checks to our monitoring so DNS changes cannot fail silently
+again.
