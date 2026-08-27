@@ -53,12 +53,14 @@ const pageDescription = t("web.pricing.description");
   description={pageDescription}
   htmlLang={currentLang}
   langDir={currentLangMeta.dir}
-  initialMessages={pageScopedInitialMessages}>
+  initialMessages={pageScopedInitialMessages}
+  authRedirect={Astro.url.href}>
   <PricingComponent
     client:load
     locale={currentLang}
     htmlLang={currentLang}
     langDir={currentLangMeta.dir}
     initialMessages={pageScopedInitialMessages}
+    returnUrl={Astro.url.href}
   />
 </Layout>

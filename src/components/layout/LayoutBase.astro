@@ -73,6 +73,7 @@ export interface Props {
   langDir?: string;
   initialMessages?: Record<string, MessageSchema>;
   // Layout specific props
+  authRedirect?: string;
   header?: boolean; // Whether to show the default header (true) or custom header via slot (false)
   footer?: boolean; // Whether to show the footer (defaults to true)
   large?: boolean; // Whether to show the logo in large mode (defaults to false)
@@ -86,6 +87,7 @@ export interface Props {
 const {
   htmlLang = DEFAULT_LANGUAGE,
   initialMessages = { [DEFAULT_LANGUAGE]: enMessages as MessageSchema },
+  authRedirect,
   header = true,
   footer = true,
   large = false,
@@ -155,6 +157,7 @@ if (import.meta.env.DEV) {
       header ? (
         <LayoutHeader
           large={large}
+          authRedirect={authRedirect}
           effectiveLocale={effectiveLocale}
           initialMessages={initialMessages}>
           <slot name="header" />

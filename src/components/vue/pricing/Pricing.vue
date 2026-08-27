@@ -29,6 +29,7 @@ const props = defineProps<{
   htmlLang?: string;
   langDir?: string;
   initialMessages?: Record<string, MessageSchema>;
+  returnUrl: string;
 }>();
 
 if (props.initialMessages && props.locale) {
@@ -78,15 +79,33 @@ const getPrice = (tier: ProductTier) => {
   );
 };
 
+const currentReturnUrl = () => {
+  if (typeof window === "undefined") {
+    return props.returnUrl;
+  }
+
+  return window.location.href;
+};
+
+const signupHref = (parameters: Record<string, string>) => {
+  const searchParams = new URLSearchParams({
+    ...parameters,
+    redirect: currentReturnUrl(),
+  });
+  return regionalUrl(`/signup?${searchParams.toString()}`);
+};
+
 const tierHref = (tier: ProductTier) => {
   if (!tier.billingPlanId) {
-    return regionalUrl("/plans/free");
+    return signupHref({});
   }
+
   const interval =
     frequency.value.value === "monthly" ? "monthly" : "yearly";
-  return regionalUrl(
-    `/billing/plans/${tier.billingPlanId}/${interval}`,
-  );
+  return signupHref({
+    product: tier.billingPlanId,
+    interval,
+  });
 };
 
 const feedbackHref = computed(() => regionalUrl("/feedback"));
