@@ -31,6 +31,42 @@ Automatically injects the user's country code into HTML responses for geolocatio
 4. Client-side code can immediately access the country code
 5. Subsequent requests from the same country use the cached version
 
+### bunnycdn-auth-redirect.ts
+
+Redirects `/signup` and `/signin` to the visitor's regional domain with a
+real HTTP 302, replacing the static meta-refresh interstitial that always
+pointed at eu.onetimesecret.com.
+
+**Features:**
+- ✅ 302 at the edge — no origin fetch, no interstitial flash
+- ✅ Preserves the full query string (`redirect`, `product`, `interval`, …)
+- ✅ Same country → jurisdiction mapping as the client
+  (`src/utils/countryToJurisdiction.ts`), bundled at build time
+- ✅ `Cache-Control: no-store` so one country's redirect is never cached
+  for another
+- ✅ Falls back to `eu.onetimesecret.com` when no country is available
+  (matches previous behavior)
+
+**Country source (in priority order):**
+1. `O-Country-Code` request header — set by an edge rule (see below).
+   Note this must be a **request** header rule (Set Request Header), not
+   the response-header rule used by the country injection script, because
+   the redirect happens before any origin response exists.
+2. `CDN-RequestCountryCode` — Bunny's built-in geo header, available when
+   country-code forwarding is enabled on the pull zone.
+
+**Build:**
+
+```bash
+pnpm edge:build
+# → edge/dist/bunnycdn-auth-redirect.js (single file, paste into Bunny)
+```
+
+The origin keeps `/signup` and `/signin` as client-side regional redirect
+pages (`src/pages/{signup,signin}.astro`) so traffic that bypasses the CDN
+still lands in the right region via `window.__USER_COUNTRY__`, with a
+no-JS meta-refresh fallback to EU.
+
 ## Prerequisites
 
 ### BunnyCDN Edge Rule Configuration
