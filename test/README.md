@@ -17,7 +17,9 @@ test/
 |   |-- utils/
 |   |   |-- canonical-url.test.ts
 |   |-- components/
-|       |-- StagingBanner.test.ts
+|   |   |-- StagingBanner.test.ts
+|   |-- bimi/
+|       |-- logo.test.ts      # SVG Tiny P/S rules for public/bimi/logo.svg
 |
 |-- e2e/                 # End-to-end tests (Playwright)
 |   |-- playwright.config.ts

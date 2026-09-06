@@ -1,0 +1,202 @@
+/**
+ * @file logo.test.ts
+ * @description Guards the BIMI logo published at https://onetimesecret.com/bimi/logo.svg
+ *
+ * BIMI (Brand Indicators for Message Identification) requires the logo to be
+ * an "SVG Tiny Portable/Secure" (SVG P/S) document. Mailbox providers such as
+ * Gmail and Apple Mail silently refuse to display a logo that breaks any of
+ * the profile rules, and Gmail additionally caps the file at 32 KB.
+ *
+ * The rules below are the SVG P/S profile (draft-svg-tiny-ps-abrotman) plus
+ * the BIMI Group's hosting guidance. See docs/bimi.md for the full runbook.
+ *
+ * IMPORTANT: once a Verified Mark Certificate (VMC) has been issued, the
+ * certificate embeds a hash of this exact file. Changing a single byte breaks
+ * certificate validation until a new certificate is issued. The hash pin at
+ * the bottom of this file exists to make that consequence impossible to miss.
+ */
+
+import { createHash } from 'node:crypto';
+import { readFileSync, statSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { describe, expect, it } from 'vitest';
+
+const LOGO_PATH = resolve(__dirname, '../../../public/bimi/logo.svg');
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** Gmail rejects indicators larger than 32 KB. */
+const MAX_BYTES = 32 * 1024;
+
+/**
+ * Elements the SVG P/S profile removes from SVG Tiny 1.2: scripting,
+ * animation, interactivity, embedded/external media and fonts. `style` is
+ * listed too because SVG Tiny 1.2 has no CSS support at all.
+ */
+const FORBIDDEN_ELEMENTS = [
+  'a',
+  'animate',
+  'animateColor',
+  'animateMotion',
+  'animateTransform',
+  'audio',
+  'discard',
+  'font',
+  'font-face',
+  'font-face-src',
+  'font-face-uri',
+  'foreignObject',
+  'glyph',
+  'handler',
+  'hkern',
+  'image',
+  'listener',
+  'missing-glyph',
+  'mpath',
+  'prefetch',
+  'script',
+  'set',
+  'style',
+  'switch',
+  'video',
+];
+
+/**
+ * SHA-256 of public/bimi/logo.svg. If this assertion fails you have changed
+ * the BIMI logo. That is fine BEFORE a VMC is ordered. AFTER a VMC has been
+ * issued, the certificate must be re-issued against the new file before the
+ * change is deployed, otherwise every mailbox provider will drop the logo.
+ * Update the pin only as part of that deliberate process.
+ */
+const PINNED_SHA256 = '1d7469f756f93598823b027d83979ac87a08bc9b7a5b4d246690fc84ca502919';
+
+const raw = readFileSync(LOGO_PATH);
+const source = raw.toString('utf8');
+
+function parseSvg(text: string): Document {
+  const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
+  const error = doc.getElementsByTagName('parsererror')[0];
+  if (error) {
+    throw new Error(`public/bimi/logo.svg is not well-formed XML: ${error.textContent}`);
+  }
+  return doc;
+}
+
+describe('BIMI logo (public/bimi/logo.svg)', () => {
+  const doc = parseSvg(source);
+  const root = doc.documentElement;
+
+  describe('file', () => {
+    it('is under the 32 KB limit enforced by Gmail', () => {
+      expect(statSync(LOGO_PATH).size).toBeLessThanOrEqual(MAX_BYTES);
+    });
+
+    it('is UTF-8 without a byte order mark', () => {
+      expect(raw[0]).not.toBe(0xef);
+      expect(source.startsWith('<?xml')).toBe(true);
+    });
+
+    it('does not declare a DOCTYPE or XML entities', () => {
+      expect(source).not.toMatch(/<!DOCTYPE/i);
+      expect(source).not.toMatch(/<!ENTITY/i);
+    });
+  });
+
+  describe('root <svg> element', () => {
+    it('is an svg element in the SVG namespace', () => {
+      expect(root.localName).toBe('svg');
+      expect(root.namespaceURI).toBe(SVG_NS);
+    });
+
+    it('declares version="1.2" and baseProfile="tiny-ps"', () => {
+      expect(root.getAttribute('version')).toBe('1.2');
+      expect(root.getAttribute('baseProfile')).toBe('tiny-ps');
+    });
+
+    it('does not carry x or y attributes', () => {
+      expect(root.hasAttribute('x')).toBe(false);
+      expect(root.hasAttribute('y')).toBe(false);
+    });
+
+    it('has a square viewBox so mail clients can scale it', () => {
+      const viewBox = root.getAttribute('viewBox');
+      expect(viewBox).toBeTruthy();
+      const [minX, minY, width, height] = (viewBox as string)
+        .trim()
+        .split(/[\s,]+/)
+        .map(Number);
+      expect(minX).toBe(0);
+      expect(minY).toBe(0);
+      expect(width).toBeGreaterThan(0);
+      expect(width).toBe(height);
+    });
+
+    it('has matching square width and height when declared', () => {
+      const width = root.getAttribute('width');
+      const height = root.getAttribute('height');
+      if (width !== null || height !== null) {
+        expect(width).toBe(height);
+      }
+    });
+  });
+
+  describe('<title>', () => {
+    it('is present as a direct child with the brand name', () => {
+      const titles = Array.from(root.childNodes).filter(
+        (node): node is Element =>
+          node.nodeType === 1 && (node as Element).localName === 'title'
+      );
+      expect(titles).toHaveLength(1);
+      expect(titles[0].textContent?.trim()).toBe('Onetime Secret');
+    });
+  });
+
+  describe('content restrictions', () => {
+    const allElements = Array.from(doc.getElementsByTagName('*'));
+
+    it('uses no elements removed by the SVG P/S profile', () => {
+      const offenders = allElements
+        .map(element => element.localName)
+        .filter(name => FORBIDDEN_ELEMENTS.includes(name));
+      expect(offenders).toEqual([]);
+    });
+
+    it('keeps every element in the SVG namespace', () => {
+      const foreign = allElements.filter(element => element.namespaceURI !== SVG_NS);
+      expect(foreign.map(element => element.tagName)).toEqual([]);
+    });
+
+    it('does not reference external resources', () => {
+      for (const element of allElements) {
+        for (const attr of Array.from(element.attributes)) {
+          if (attr.localName === 'href') {
+            expect(attr.value, `${element.localName}@${attr.name}`).toMatch(/^#/);
+          }
+          expect(attr.value, `${element.localName}@${attr.name}`).not.toMatch(
+            /url\(\s*['"]?\s*(https?:|\/\/|data:)/i
+          );
+        }
+      }
+    });
+
+    it('does not use CSS (unsupported in SVG Tiny 1.2)', () => {
+      const styled = allElements.filter(element => element.hasAttribute('style'));
+      expect(styled.map(element => element.localName)).toEqual([]);
+    });
+
+    it('does not contain event handler attributes', () => {
+      for (const element of allElements) {
+        const handlers = Array.from(element.attributes)
+          .map(attr => attr.name)
+          .filter(name => /^on[a-z]/i.test(name));
+        expect(handlers, element.localName).toEqual([]);
+      }
+    });
+  });
+
+  describe('certificate binding', () => {
+    it('matches the pinned SHA-256 (see comment on PINNED_SHA256 before changing)', () => {
+      const digest = createHash('sha256').update(raw).digest('hex');
+      expect(digest).toBe(PINNED_SHA256);
+    });
+  });
+});
