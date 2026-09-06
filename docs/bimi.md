@@ -51,16 +51,23 @@ BunnyCDN already serves `.svg` files this way (verified on the existing
 
 ## Step 2: Obtain a certificate
 
-Gmail and Apple Mail require a certificate. Yahoo does not, but we want all
-three. Two certificate types exist, both issued by the same CAs (DigiCert,
-Entrust, GlobalSign, SSL.com):
+A record with an empty `a=` tag is a "self-asserted" logo. The BIMI Group
+lists Yahoo, Fastmail and La Poste as providers that display self-asserted
+logos; Gmail and Apple Mail require a certificate. Two certificate types exist.
+Both are issued by the Mark Verifying Authorities listed by the BIMI Group,
+currently DigiCert, Entrust, GlobalSign and SSL.com
+(`https://bimigroup.org/vmc-issuers/`):
 
 - **VMC (Verified Mark Certificate)**: requires a registered trademark for the
-  logo with an accepted trademark office (USPTO, EUIPO, UKIPO, CIPO, JPO and
-  others). Shows the logo and, in Gmail, the blue verified checkmark.
-- **CMC (Common Mark Certificate)**: no trademark needed, but the logo must
-  have been in continuous public use for at least 12 months (the CA checks
-  evidence such as the Wayback Machine). Shows the logo without the checkmark.
+  logo with an accepted trademark office (USPTO, EUIPO, UKIPO and others listed
+  in the BIMI Group's VMC guidelines). Gmail shows the logo with the blue
+  verified checkmark.
+- **CMC (Common Mark Certificate)**: no trademark needed. For a "Prior Use
+  Mark" the CA verifies that a matching logo is displayed on a website whose
+  domain we control, and that the same logo was displayed on that domain at
+  least 12 months earlier, checked through an approved web archive such as
+  the Wayback Machine. Gmail has supported CMCs since September 2024 and shows
+  the logo without the checkmark.
 
 When ordering:
 
@@ -72,8 +79,11 @@ When ordering:
    call). Expect a few business days.
 3. Generate the key pair and CSR on a machine you control. The CA never needs
    the private key and neither does this site.
-4. Download the certificate as a **PEM chain**: leaf certificate first, followed
-   by the intermediate(s). Most CAs offer this as a single file.
+4. Download the certificate as a **PEM chain**. The VMC fetch specification
+   (draft-fetch-validation-vmc) requires PEM encoding with the full issuance
+   chain present, ordered VMC first, then its issuer, then any further
+   intermediates, with the root optional. Out-of-order or duplicated
+   certificates may be rejected. Most CAs offer this as a single file.
 
 ## Step 3: Publish the certificate
 
@@ -87,11 +97,12 @@ When ordering:
    curl -s https://onetimesecret.com/bimi/vmc.pem | openssl x509 -noout -subject -dates
    ```
 
-   The response must be `200` without redirects. The BIMI VMC specification
-   expects the content type `application/pem-certificate-chain`. BunnyCDN picks
-   the content type from the file extension, so check the header above; if it
-   is not `application/pem-certificate-chain`, add a BunnyCDN Edge Rule on the
-   pull zone: *Override Response Header* for URL `https://onetimesecret.com/bimi/*.pem`
+   The response must be `200` over HTTPS with no redirect, and the body must
+   start with `-----BEGIN CERTIFICATE-----`. The specification requires the
+   `.pem` file extension in the URL but does not mandate a Content-Type.
+   BunnyCDN picks the content type from the extension; if a validator objects
+   to whatever it returns, add a BunnyCDN Edge Rule on the pull zone
+   (*Override Response Header* for `https://onetimesecret.com/bimi/*.pem`)
    setting `Content-Type` to `application/pem-certificate-chain`.
 
 ## Step 4: Update the DNS record
@@ -136,10 +147,24 @@ Finally send a message from `@onetimesecret.com` to a Gmail account. Gmail can
 take up to 48 hours after DNS changes to start displaying the logo, and it also
 requires a healthy sending reputation for the domain.
 
+## Sources
+
+- BIMI assertion record: `draft-brand-indicators-for-message-identification`
+  (section 4.2 for the `l=` and `a=` tags, section 7 for DMARC prerequisites).
+- Logo profile: `draft-svg-tiny-ps-abrotman` (section 2), enforced by
+  `test/unit/bimi/logo.test.ts`.
+- Certificate hosting: `draft-fetch-validation-vmc-wchuang` (section 3).
+- Certificate types and issuers: `https://bimigroup.org/vmc-issuers/` and the
+  BIMI Group's "Minimum Security Requirements for Issuance of Mark
+  Certificates" (sections 3.2.16 and 3.2.17).
+
 ## Ongoing maintenance
 
-- VMCs and CMCs are valid for one year. Put the expiry in the ops calendar; a
-  renewal with the same logo only needs the new PEM committed over the old one.
+- Mark certificates are valid for at most 398 days. Put the expiry in the ops
+  calendar. A renewal with the same
+  logo only needs the new PEM published. Receivers may cache the certificate
+  by URL, so publish the renewed chain under a new filename (for example
+  `vmc-2027.pem`) and update the `a=` tag, rather than overwriting in place.
 - Any brand refresh that changes `public/bimi/logo.svg` needs a re-issued
   certificate. Ship the new SVG, the new PEM and the updated hash pin in the test
   together, in a single deploy.

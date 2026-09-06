@@ -7,8 +7,8 @@
  * Gmail and Apple Mail silently refuse to display a logo that breaks any of
  * the profile rules, and Gmail additionally caps the file at 32 KB.
  *
- * The rules below are the SVG P/S profile (draft-svg-tiny-ps-abrotman) plus
- * the BIMI Group's hosting guidance. See docs/bimi.md for the full runbook.
+ * The rules below are the SVG P/S profile (draft-svg-tiny-ps-abrotman-12,
+ * section 2) plus the BIMI Group's published logo guidance. See docs/bimi.md for the full runbook.
  *
  * IMPORTANT: once a Verified Mark Certificate (VMC) has been issued, the
  * certificate embeds a hash of this exact file. Changing a single byte breaks
@@ -28,9 +28,11 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 const MAX_BYTES = 32 * 1024;
 
 /**
- * Elements the SVG P/S profile removes from SVG Tiny 1.2: scripting,
- * animation, interactivity, embedded/external media and fonts. `style` is
- * listed too because SVG Tiny 1.2 has no CSS support at all.
+ * Elements removed by the SVG P/S profile (draft-svg-tiny-ps-abrotman section
+ * 2.3): the image and switch elements, multimedia, interactivity, linking,
+ * scripting and animation. `foreignObject` and `style` are listed as well
+ * because they do not exist in SVG Tiny 1.2 at all, and the profile adds no
+ * elements beyond Tiny 1.2. Embedded fonts (section 17) remain permitted.
  */
 const FORBIDDEN_ELEMENTS = [
   'a',
@@ -40,25 +42,30 @@ const FORBIDDEN_ELEMENTS = [
   'animateTransform',
   'audio',
   'discard',
-  'font',
-  'font-face',
-  'font-face-src',
-  'font-face-uri',
   'foreignObject',
-  'glyph',
   'handler',
-  'hkern',
   'image',
   'listener',
-  'missing-glyph',
   'mpath',
-  'prefetch',
   'script',
   'set',
   'style',
   'switch',
   'video',
 ];
+
+/**
+ * Attributes the profile says SHOULD NOT be present and, if present, MUST
+ * hold exactly this value (section 2.3).
+ */
+const CONSTRAINED_ROOT_ATTRIBUTES: Record<string, string> = {
+  externalResourcesRequired: 'false',
+  focusable: 'false',
+  playbackOrder: 'all',
+  snapshotTime: 'none',
+  timelineBegin: 'onLoad',
+  zoomAndPan: 'disable',
+};
 
 /**
  * SHA-256 of public/bimi/logo.svg. If this assertion fails you have changed
@@ -117,6 +124,14 @@ describe('BIMI logo (public/bimi/logo.svg)', () => {
       expect(root.hasAttribute('y')).toBe(false);
     });
 
+    it('only uses the profile-mandated values for behavioural attributes', () => {
+      for (const [name, allowed] of Object.entries(CONSTRAINED_ROOT_ATTRIBUTES)) {
+        if (root.hasAttribute(name)) {
+          expect(root.getAttribute(name), name).toBe(allowed);
+        }
+      }
+    });
+
     it('has a square viewBox so mail clients can scale it', () => {
       const viewBox = root.getAttribute('viewBox');
       expect(viewBox).toBeTruthy();
@@ -147,6 +162,17 @@ describe('BIMI logo (public/bimi/logo.svg)', () => {
       );
       expect(titles).toHaveLength(1);
       expect(titles[0].textContent?.trim()).toBe('Onetime Secret');
+    });
+
+    it('stays within the recommended 64 characters', () => {
+      const title = doc.getElementsByTagName('title')[0];
+      expect(title.textContent?.trim().length).toBeLessThanOrEqual(64);
+    });
+
+    it('has a non-empty <desc> if one is present', () => {
+      for (const desc of Array.from(doc.getElementsByTagName('desc'))) {
+        expect(desc.textContent?.trim()).not.toBe('');
+      }
     });
   });
 
@@ -190,6 +216,19 @@ describe('BIMI logo (public/bimi/logo.svg)', () => {
           .filter(name => /^on[a-z]/i.test(name));
         expect(handlers, element.localName).toEqual([]);
       }
+    });
+
+    it('renders at least two colours', () => {
+      const colours = new Set<string>();
+      for (const element of allElements) {
+        for (const name of ['fill', 'stroke']) {
+          const value = element.getAttribute(name)?.trim().toLowerCase();
+          if (value && value !== 'none') {
+            colours.add(value);
+          }
+        }
+      }
+      expect(colours.size).toBeGreaterThanOrEqual(2);
     });
   });
 
