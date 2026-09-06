@@ -27,6 +27,10 @@ is issued and published.
 | `public/bimi/vmc.pem`       | The VMC certificate chain (not yet present, see step 2).       |
 | `test/unit/bimi/logo.test.ts` | Enforces the SVG P/S profile rules and pins the logo's hash.   |
 
+The logo file satisfies the SVG P/S profile and Gmail's additions: an absolute
+pixel size of at least 96 (it is 1445 x 1445), a solid background, a `title`,
+a `desc` for accessibility, and a size under 32 KB.
+
 `public/bimi/` is a dedicated, stable location. Do not move, rename or "optimise"
 files in it. A VMC embeds a SHA-256 hash of the exact SVG bytes; if the served
 file differs by one byte the certificate is invalid and providers drop the logo.
@@ -53,7 +57,9 @@ BunnyCDN already serves `.svg` files this way (verified on the existing
 
 A record with an empty `a=` tag is a "self-asserted" logo. The BIMI Group
 lists Yahoo, Fastmail and La Poste as providers that display self-asserted
-logos; Gmail and Apple Mail require a certificate. Two certificate types exist.
+logos. Gmail requires a VMC or CMC. Apple Mail (iOS 16, macOS Ventura 13 and
+later, and iCloud.com) requires a VMC or another BIMI Evidence Document. Two
+certificate types exist.
 Both are issued by the Mark Verifying Authorities listed by the BIMI Group,
 currently DigiCert, Entrust, GlobalSign and SSL.com
 (`https://bimigroup.org/vmc-issuers/`):
@@ -82,8 +88,10 @@ When ordering:
 4. Download the certificate as a **PEM chain**. The VMC fetch specification
    (draft-fetch-validation-vmc) requires PEM encoding with the full issuance
    chain present, ordered VMC first, then its issuer, then any further
-   intermediates, with the root optional. Out-of-order or duplicated
-   certificates may be rejected. Most CAs offer this as a single file.
+   intermediates, with the root optional. Gmail's guide says to append the
+   intermediate and root certificates in that order, so include the root.
+   Out-of-order or duplicated certificates may be rejected. Most CAs offer
+   the chain as a single file.
 
 ## Step 3: Publish the certificate
 
@@ -100,10 +108,12 @@ When ordering:
    The response must be `200` over HTTPS with no redirect, and the body must
    start with `-----BEGIN CERTIFICATE-----`. The specification requires the
    `.pem` file extension in the URL but does not mandate a Content-Type.
-   BunnyCDN picks the content type from the extension; if a validator objects
-   to whatever it returns, add a BunnyCDN Edge Rule on the pull zone
-   (*Override Response Header* for `https://onetimesecret.com/bimi/*.pem`)
-   setting `Content-Type` to `application/pem-certificate-chain`.
+   Bunny Storage records a Content-Type only if the uploader sends one, and
+   otherwise serves the file with a type derived from the extension. If a
+   validator objects to the header it returns, add an Edge Rule on the pull
+   zone with the *Set Response Header* action for
+   `https://onetimesecret.com/bimi/*.pem`, setting `Content-Type` to
+   `application/pem-certificate-chain`.
 
 ## Step 4: Update the DNS record
 
@@ -122,8 +132,11 @@ default._bimi.onetimesecret.com. TXT "v=BIMI1; l=https://onetimesecret.com/bimi/
 Notes:
 
 - The `l=` URL moves to `/bimi/logo.svg`. The old path keeps working, but the
-  new file carries a `viewBox` so clients scale it correctly, and it is the file
-  the certificate will be bound to.
+  new file carries a `viewBox` and a `desc`, and it is the file the certificate
+  will be bound to.
+- Gmail's own example record leaves `l=` empty when `a=` is set, because the
+  logo is embedded in the certificate. Keep `l=` populated anyway: providers
+  that accept self-asserted logos (Yahoo, Fastmail, La Poste) read it.
 - Both URLs must be `https://` and must serve the file directly (no redirects).
 - Keep the record on the `default` selector unless outbound mail is signed with
   a `BIMI-Selector` header.
@@ -143,9 +156,9 @@ Then run a third-party check, for example the BIMI Group inspector
 them re-run the same checks that produced the original "certificate location
 missing" report.
 
-Finally send a message from `@onetimesecret.com` to a Gmail account. Gmail can
-take up to 48 hours after DNS changes to start displaying the logo, and it also
-requires a healthy sending reputation for the domain.
+Finally send a message from `@onetimesecret.com` to a Gmail account. Google
+states it can take up to 48 hours after the DNS record is added for the logo
+to appear, and display also depends on the domain's sending reputation.
 
 ## Sources
 
@@ -154,6 +167,10 @@ requires a healthy sending reputation for the domain.
 - Logo profile: `draft-svg-tiny-ps-abrotman` (section 2), enforced by
   `test/unit/bimi/logo.test.ts`.
 - Certificate hosting: `draft-fetch-validation-vmc-wchuang` (section 3).
+- Gmail requirements: `https://knowledge.workspace.google.com/admin/security/set-up-bimi`.
+- Apple Mail support: `https://support.apple.com/en-us/HT213155`.
+- BunnyCDN storage uploads and Edge Rules: `https://bunny.net/docs/storage/http`
+  and `https://bunny.net/docs/cdn/edge-rules`.
 - Certificate types and issuers: `https://bimigroup.org/vmc-issuers/` and the
   BIMI Group's "Minimum Security Requirements for Issuance of Mark
   Certificates" (sections 3.2.16 and 3.2.17).

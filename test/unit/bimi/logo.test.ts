@@ -5,7 +5,8 @@
  * BIMI (Brand Indicators for Message Identification) requires the logo to be
  * an "SVG Tiny Portable/Secure" (SVG P/S) document. Mailbox providers such as
  * Gmail and Apple Mail silently refuse to display a logo that breaks any of
- * the profile rules, and Gmail additionally caps the file at 32 KB.
+ * the profile rules. Gmail additionally caps the file at 32 KB and requires an
+ * absolute pixel size of at least 96 pixels.
  *
  * The rules below are the SVG P/S profile (draft-svg-tiny-ps-abrotman-12,
  * section 2) plus the BIMI Group's published logo guidance. See docs/bimi.md for the full runbook.
@@ -74,7 +75,7 @@ const CONSTRAINED_ROOT_ATTRIBUTES: Record<string, string> = {
  * change is deployed, otherwise every mailbox provider will drop the logo.
  * Update the pin only as part of that deliberate process.
  */
-const PINNED_SHA256 = '1d7469f756f93598823b027d83979ac87a08bc9b7a5b4d246690fc84ca502919';
+const PINNED_SHA256 = '9e9cabeecc13458255b78055f00bfb0c897316d677ba52c0f16e7a667b3ba2e5';
 
 const raw = readFileSync(LOGO_PATH);
 const source = raw.toString('utf8');
@@ -145,12 +146,15 @@ describe('BIMI logo (public/bimi/logo.svg)', () => {
       expect(width).toBe(height);
     });
 
-    it('has matching square width and height when declared', () => {
+    it('declares a square size in absolute pixels of at least 96 (Gmail rule)', () => {
+      // Gmail: "The image size must be a minimum height and width of 96 pixels"
+      // and "must be specified in absolute pixels", never percentages.
       const width = root.getAttribute('width');
       const height = root.getAttribute('height');
-      if (width !== null || height !== null) {
-        expect(width).toBe(height);
-      }
+      expect(width).toMatch(/^\d+(px)?$/);
+      expect(height).toMatch(/^\d+(px)?$/);
+      expect(width).toBe(height);
+      expect(Number.parseInt(width as string, 10)).toBeGreaterThanOrEqual(96);
     });
   });
 
@@ -169,8 +173,10 @@ describe('BIMI logo (public/bimi/logo.svg)', () => {
       expect(title.textContent?.trim().length).toBeLessThanOrEqual(64);
     });
 
-    it('has a non-empty <desc> if one is present', () => {
-      for (const desc of Array.from(doc.getElementsByTagName('desc'))) {
+    it('has a non-empty <desc> for accessibility (recommended by Gmail)', () => {
+      const descs = Array.from(doc.getElementsByTagName('desc'));
+      expect(descs.length).toBeGreaterThanOrEqual(1);
+      for (const desc of descs) {
         expect(desc.textContent?.trim()).not.toBe('');
       }
     });
