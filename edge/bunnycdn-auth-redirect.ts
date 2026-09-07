@@ -1,3 +1,10 @@
+// !! DO NOT PASTE THIS FILE INTO THE BUNNY DASHBOARD !!
+// The deploy artifact is edge/dist/bunnycdn-auth-redirect.js — run `pnpm edge:build`.
+// Bunny deploys a single module with no filesystem beside it, so the
+// relative imports below cannot resolve there. The script then fails at
+// load and every request on the zone gets a bare 400 (see edge/README.md,
+// "Deploying the source file").
+
 /**
  * BunnyCDN Edge Script - Regional Auth Redirect
  *
