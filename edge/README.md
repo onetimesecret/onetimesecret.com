@@ -117,20 +117,22 @@ pnpm edge:build
 # → edge/dist/bunnycdn-country-injection.js
 ```
 
-`edge/dist` holds exactly these two files and nothing else (`publicDir` is
-disabled — left on, Vite copies all of `public/` in beside them, and a paste
-box is a bad place to be hunting for the right file).
+`edge/dist` holds exactly these two files and nothing else: the build removes
+the directory before it starts, `publicDir` is disabled (left on, Vite copies
+all of `public/` in beside them, and a paste box is a bad place to be hunting
+for the right file), and `edge:verify` fails on any other file it finds there.
 
 Each script is bundled to a single self-contained ES module with the shared
 country tables inlined, ready to paste into the Bunny dashboard. The build
-ends in `pnpm edge:verify` (`edge/verify-bundles.mjs`), which fails if any
-import specifier other than `npm:` survived, or if the load-bearing strings
-(`servePullZone`, `CDN-RequestCountryCode`) are missing — a bundle that cannot
-register is the one failure the runtime turns into a zone-wide outage. The two
-builds are separate `vite build` invocations (`--mode auth-redirect`,
+ends in `pnpm edge:verify` (`edge/verify-bundles.mjs`), which fails if
+`edge/dist` contains anything but the two bundles, if any import specifier
+other than `npm:` survived, or if the load-bearing strings (`servePullZone`,
+`CDN-RequestCountryCode`) are missing — a bundle that cannot register is the
+one failure the runtime turns into a zone-wide outage. The two builds are
+separate `vite build` invocations (`--mode auth-redirect`,
 `--mode country-injection`) so neither produces a shared chunk; an unknown
-mode is a hard error. Neither run empties `edge/dist` — each overwrites only
-its own file.
+mode is a hard error. Neither run empties `edge/dist` (each would delete the
+other's output), which is why the script removes the directory up front.
 
 The injection bundle keeps its `import * as BunnySDK from
 "npm:@bunny.net/edgescript-sdk@0.12.1"` line intact: `npm:` specifiers are

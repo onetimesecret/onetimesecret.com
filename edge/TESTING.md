@@ -98,6 +98,8 @@ broken script, so the build ends in `pnpm edge:verify`
 (`edge/verify-bundles.mjs`). It asserts what these commands used to check by
 hand, and its exit code is now meaningful:
 
+- `edge/dist` contains the two bundles and nothing else — a leftover from an
+  older build is one more wrong file to paste
 - no import specifier other than `npm:` survived into either bundle — an
   unresolvable specifier is what Bunny turns into a zone-wide 400
 - `servePullZone` appears exactly once in the injection bundle (its only

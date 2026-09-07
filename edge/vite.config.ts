@@ -47,8 +47,10 @@ export default defineConfig(({ mode }) => {
         fileName: () => `${name}.js`,
       },
       outDir: fileURLToPath(new URL("./dist", import.meta.url)),
-      // Each run overwrites its own deterministic file name. Never empty the
-      // directory: the two bundles are built by separate invocations.
+      // The two bundles come from separate invocations, so neither may empty
+      // the directory or it would delete the other. `pnpm edge:build` removes
+      // edge/dist once before the first build instead, and edge:verify fails
+      // if anything but the two bundles is left in it.
       emptyOutDir: false,
       minify: false,
       target: "es2022",

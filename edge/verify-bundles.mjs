@@ -15,7 +15,7 @@
 // inlined by the bundler. This script fails the build if anything else
 // survived, so a broken artifact never reaches the dashboard.
 
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 /** Bundle → substrings that must appear exactly once in a working artifact. */
@@ -28,10 +28,31 @@ const BUNDLES = {
 const SPECIFIER =
   /(?:^|\s)(?:import|export)\s[^;]*?from\s*["']([^"']+)["']|(?:^|\s)import\s*["']([^"']+)["']|\bimport\s*\(\s*["']([^"']+)["']/g;
 
+const DIST = fileURLToPath(new URL("./dist/", import.meta.url));
+
 const failures = [];
 
+// edge/dist is the paste box's source of truth and must hold the two bundles
+// and nothing else. Vite never empties it (each mode would delete the other's
+// output), so leftovers from an older build — a `public/` copy, a renamed
+// bundle — would otherwise sit beside the real files indefinitely.
+let present = [];
+try {
+  present = readdirSync(DIST);
+} catch {
+  failures.push("edge/dist: missing — run `pnpm edge:build`");
+}
+for (const entry of present) {
+  if (!Object.hasOwn(BUNDLES, entry)) {
+    failures.push(
+      `edge/dist/${entry}: unexpected file — edge/dist must contain only ` +
+        `${Object.keys(BUNDLES).join(", ")}; run \`pnpm edge:build\``,
+    );
+  }
+}
+
 for (const [file, required] of Object.entries(BUNDLES)) {
-  const path = fileURLToPath(new URL(`./dist/${file}`, import.meta.url));
+  const path = `${DIST}${file}`;
 
   let source;
   try {
