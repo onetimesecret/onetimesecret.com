@@ -24,6 +24,16 @@ const BUNDLES = {
   "bunnycdn-country-injection.js": ["servePullZone", "CDN-RequestCountryCode"],
 };
 
+/**
+ * Comments that start a line (block or `//`). The bundles are not minified, so
+ * JSDoc from the inlined sources survives, and the header comment of each
+ * entry mentions `CDN-RequestCountryCode` by name — prose must not count as a
+ * second occurrence, and a specifier quoted in a comment is not an import.
+ * Both alternatives are anchored to the line start so a `/*` or `//` inside a
+ * string literal (a URL, say) can never swallow real code.
+ */
+const COMMENT = /^[ \t]*\/\*[\s\S]*?\*\/|^[ \t]*\/\/.*$/gm;
+
 /** `import ... from "x"`, `import "x"`, `export ... from "x"`, `import("x")` */
 const SPECIFIER =
   /(?:^|\s)(?:import|export)\s[^;]*?from\s*["']([^"']+)["']|(?:^|\s)import\s*["']([^"']+)["']|\bimport\s*\(\s*["']([^"']+)["']/g;
@@ -61,6 +71,7 @@ for (const [file, required] of Object.entries(BUNDLES)) {
     failures.push(`${file}: missing — run \`pnpm edge:build\``);
     continue;
   }
+  source = source.replace(COMMENT, "");
 
   for (const match of source.matchAll(SPECIFIER)) {
     const specifier = match[1] ?? match[2] ?? match[3];
