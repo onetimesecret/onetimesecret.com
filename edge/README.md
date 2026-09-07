@@ -258,7 +258,7 @@ The page is built for the moment the regional origin is down:
 `edge/error-page/push.mjs` keeps the five zones from drifting:
 
 ```bash
-export BUNNY_API_KEY=…          # account API key, same as the deploy secret
+# BUNNY_API_KEY from the environment or .env (declared in .env.example)
 pnpm edge:error-page            # report: which zones differ (exit 1 if any)
 pnpm edge:error-page --apply    # push regional.html to every zone that differs
 pnpm edge:error-page eu uk      # limit to some regions, in either mode

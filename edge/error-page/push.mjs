@@ -10,8 +10,10 @@
 //   pnpm edge:error-page eu uk      # limit to some regions (either mode)
 //
 // Needs BUNNY_API_KEY (the account API key, same secret the deploy workflows
-// use to purge). Zones are found by hostname, not by ID, so nothing here has
-// to be updated when a zone is recreated.
+// use to purge), from the environment or from the repo-root .env, which is
+// loaded if present. It is declared in .env.example. Zones are found by
+// hostname, not by ID, so nothing here has to be updated when a zone is
+// recreated.
 //
 // Bunny API surface used (verified against docs.bunny.net, 2026-09):
 //   GET  /pullzone           → all zones, each with Hostnames[].Value
@@ -35,6 +37,21 @@ export const REGIONAL_HOSTS = Object.freeze({
 });
 
 const TEMPLATE_URL = new URL("./regional.html", import.meta.url);
+const DOTENV_URL = new URL("../../.env", import.meta.url);
+
+const USAGE = `Usage: pnpm edge:error-page [--apply] [region ...]
+
+Pushes edge/error-page/regional.html to the custom error page of the
+regional Bunny pull zones.
+
+  (no flags)   report which zones differ from the file; exit 1 if any do
+  --apply      push the file to every zone that differs, then verify
+  --help       show this text
+  region ...   limit to these regions: ${Object.keys(REGIONAL_HOSTS).join(", ")}
+
+Environment:
+  BUNNY_API_KEY   Bunny account API key. Read from the environment or from
+                  .env (see .env.example).`;
 
 /**
  * @typedef {object} PullZone
@@ -138,6 +155,19 @@ export function pickRegions(regions, hosts = REGIONAL_HOSTS) {
 }
 
 /**
+ * Loads the repo-root .env the way Astro does for the build, so one file
+ * serves both. Variables already in the environment win. A missing file is
+ * the normal case in CI and is silently fine.
+ */
+function loadDotenv() {
+  try {
+    process.loadEnvFile(DOTENV_URL);
+  } catch (err) {
+    if (err?.code !== "ENOENT") throw err;
+  }
+}
+
+/**
  * @param {string} apiKey
  * @param {string} path
  * @param {{ method?: string, body?: unknown }} [init]
@@ -203,12 +233,23 @@ function describe(plan) {
 
 /** @param {string[]} argv */
 export async function main(argv) {
+  if (argv.includes("--help") || argv.includes("-h")) {
+    console.log(USAGE);
+    return 0;
+  }
+  const unknownFlags = argv.filter((a) => a.startsWith("-") && a !== "--apply");
+  if (unknownFlags.length) {
+    throw new Error(`Unknown option(s): ${unknownFlags.join(", ")}\n\n${USAGE}`);
+  }
   const apply = argv.includes("--apply");
-  const regions = argv.filter((a) => !a.startsWith("--"));
+  const regions = argv.filter((a) => !a.startsWith("-"));
 
+  loadDotenv();
   const apiKey = process.env.BUNNY_API_KEY;
   if (!apiKey) {
-    throw new Error("BUNNY_API_KEY is not set");
+    throw new Error(
+      "BUNNY_API_KEY is not set. Export it or add it to .env (see .env.example).",
+    );
   }
 
   const html = normalize(await readFile(TEMPLATE_URL, "utf8"));
