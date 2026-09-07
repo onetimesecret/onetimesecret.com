@@ -187,7 +187,7 @@ test:
     - uses: pnpm/action-setup@v2
     - uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '26'
         cache: 'pnpm'
     - run: pnpm install
     - run: pnpm build
