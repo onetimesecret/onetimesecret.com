@@ -19,7 +19,7 @@ test/
 |   |-- components/
 |   |   |-- StagingBanner.test.ts
 |   |-- bimi/
-|       |-- logo.test.ts      # SVG Tiny P/S rules for public/bimi/logo.svg
+|   |   |-- logo.test.ts      # SVG Tiny P/S rules for public/bimi/logo.svg
 |
 |-- e2e/                 # End-to-end tests (Playwright)
 |   |-- playwright.config.ts

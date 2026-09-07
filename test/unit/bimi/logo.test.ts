@@ -9,7 +9,12 @@
  * absolute pixel size of at least 96 pixels.
  *
  * The rules below are the SVG P/S profile (draft-svg-tiny-ps-abrotman-12,
- * section 2) plus the BIMI Group's published logo guidance. See docs/bimi.md for the full runbook.
+ * section 2) plus the BIMI Group's published logo guidance. See docs/bimi.md
+ * for the full runbook.
+ *
+ * The same rules double as an XSS guard: the file is served same-origin as
+ * image/svg+xml, so "no script, no handlers, no external references" matters
+ * for the website as much as for mailbox providers.
  *
  * IMPORTANT: once a Verified Mark Certificate (VMC) has been issued, the
  * certificate embeds a hash of this exact file. Changing a single byte breaks
@@ -29,30 +34,59 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 const MAX_BYTES = 32 * 1024;
 
 /**
- * Elements removed by the SVG P/S profile (draft-svg-tiny-ps-abrotman section
- * 2.3): the image and switch elements, multimedia, interactivity, linking,
- * scripting and animation. `foreignObject` and `style` are listed as well
- * because they do not exist in SVG Tiny 1.2 at all, and the profile adds no
- * elements beyond Tiny 1.2. Embedded fonts (section 17) remain permitted.
+ * Every element SVG Tiny 1.2 defines, minus the ones the SVG P/S profile
+ * removes (draft-svg-tiny-ps-abrotman section 2.3: image, switch, multimedia,
+ * interactivity, linking, scripting and animation). An allowlist rather than a
+ * denylist so that anything a drawing tool sneaks in (filter, mask, clipPath,
+ * pattern, marker, symbol, style, foreignObject...) fails the same way.
+ * Embedded fonts (section 17) remain permitted.
  */
-const FORBIDDEN_ELEMENTS = [
-  'a',
-  'animate',
-  'animateColor',
-  'animateMotion',
-  'animateTransform',
-  'audio',
-  'discard',
-  'foreignObject',
-  'handler',
-  'image',
-  'listener',
-  'mpath',
-  'script',
-  'set',
+const ALLOWED_ELEMENTS = new Set([
+  'circle',
+  'defs',
+  'desc',
+  'ellipse',
+  'font',
+  'font-face',
+  'font-face-name',
+  'font-face-src',
+  'font-face-uri',
+  'g',
+  'glyph',
+  'hkern',
+  'line',
+  'linearGradient',
+  'metadata',
+  'missing-glyph',
+  'path',
+  'polygon',
+  'polyline',
+  'radialGradient',
+  'rect',
+  'solidColor',
+  'stop',
+  'svg',
+  'tbreak',
+  'text',
+  'textArea',
+  'title',
+  'tspan',
+  'use',
+]);
+
+/**
+ * Attributes that have no meaning in SVG Tiny 1.2 / SVG P/S. `style` and
+ * `class` need CSS, which Tiny 1.2 does not have. The conditional-processing
+ * attributes belong to `switch`, which the profile removes.
+ */
+const FORBIDDEN_ATTRIBUTES = [
+  'class',
+  'requiredExtensions',
+  'requiredFeatures',
+  'requiredFormats',
+  'requiredFonts',
   'style',
-  'switch',
-  'video',
+  'systemLanguage',
 ];
 
 /**
@@ -75,12 +109,18 @@ const CONSTRAINED_ROOT_ATTRIBUTES: Record<string, string> = {
  * change is deployed, otherwise every mailbox provider will drop the logo.
  * Update the pin only as part of that deliberate process.
  */
-const PINNED_SHA256 = '9e9cabeecc13458255b78055f00bfb0c897316d677ba52c0f16e7a667b3ba2e5';
+const PINNED_SHA256 = '8b10dad94195cf1a58f54c58b15b0383cd10337b03a71b98e3fd62a1c865ad1d';
 
 const raw = readFileSync(LOGO_PATH);
 const source = raw.toString('utf8');
 
 function parseSvg(text: string): Document {
+  // Refuse to hand a document with a DOCTYPE or entity declarations to the
+  // parser at all. The profile forbids them, and entity expansion is the
+  // classic way to make an XML parser misbehave.
+  if (/<!DOCTYPE/i.test(text) || /<!ENTITY/i.test(text)) {
+    throw new Error('public/bimi/logo.svg declares a DOCTYPE or XML entities');
+  }
   const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
   const error = doc.getElementsByTagName('parsererror')[0];
   if (error) {
@@ -92,15 +132,21 @@ function parseSvg(text: string): Document {
 describe('BIMI logo (public/bimi/logo.svg)', () => {
   const doc = parseSvg(source);
   const root = doc.documentElement;
+  const allElements = Array.from(doc.getElementsByTagName('*'));
 
   describe('file', () => {
     it('is under the 32 KB limit enforced by Gmail', () => {
       expect(statSync(LOGO_PATH).size).toBeLessThanOrEqual(MAX_BYTES);
     });
 
-    it('is UTF-8 without a byte order mark', () => {
-      expect(raw[0]).not.toBe(0xef);
+    it('is valid UTF-8 without a byte order mark', () => {
+      expect(() => new TextDecoder('utf-8', { fatal: true }).decode(raw)).not.toThrow();
+      expect(Array.from(raw.subarray(0, 3))).not.toEqual([0xef, 0xbb, 0xbf]);
       expect(source.startsWith('<?xml')).toBe(true);
+    });
+
+    it('uses LF line endings only', () => {
+      expect(source).not.toContain('\r');
     });
 
     it('does not declare a DOCTYPE or XML entities', () => {
@@ -159,11 +205,9 @@ describe('BIMI logo (public/bimi/logo.svg)', () => {
   });
 
   describe('<title>', () => {
-    it('is present as a direct child with the brand name', () => {
-      const titles = Array.from(root.childNodes).filter(
-        (node): node is Element =>
-          node.nodeType === 1 && (node as Element).localName === 'title'
-      );
+    it('is the first child element of <svg> and carries the brand name', () => {
+      expect(root.firstElementChild?.localName).toBe('title');
+      const titles = Array.from(root.children).filter(child => child.localName === 'title');
       expect(titles).toHaveLength(1);
       expect(titles[0].textContent?.trim()).toBe('Onetime Secret');
     });
@@ -183,12 +227,10 @@ describe('BIMI logo (public/bimi/logo.svg)', () => {
   });
 
   describe('content restrictions', () => {
-    const allElements = Array.from(doc.getElementsByTagName('*'));
-
-    it('uses no elements removed by the SVG P/S profile', () => {
+    it('uses only elements permitted by the SVG P/S profile', () => {
       const offenders = allElements
         .map(element => element.localName)
-        .filter(name => FORBIDDEN_ELEMENTS.includes(name));
+        .filter(name => !ALLOWED_ELEMENTS.has(name));
       expect(offenders).toEqual([]);
     });
 
@@ -210,9 +252,11 @@ describe('BIMI logo (public/bimi/logo.svg)', () => {
       }
     });
 
-    it('does not use CSS (unsupported in SVG Tiny 1.2)', () => {
-      const styled = allElements.filter(element => element.hasAttribute('style'));
-      expect(styled.map(element => element.localName)).toEqual([]);
+    it('does not use CSS or conditional-processing attributes', () => {
+      for (const element of allElements) {
+        const present = FORBIDDEN_ATTRIBUTES.filter(name => element.hasAttribute(name));
+        expect(present, element.localName).toEqual([]);
+      }
     });
 
     it('does not contain event handler attributes', () => {
@@ -235,6 +279,22 @@ describe('BIMI logo (public/bimi/logo.svg)', () => {
         }
       }
       expect(colours.size).toBeGreaterThanOrEqual(2);
+    });
+
+    it('paints a solid background covering the whole canvas (Gmail rule)', () => {
+      const [, , vbWidth, vbHeight] = (root.getAttribute('viewBox') as string)
+        .trim()
+        .split(/[\s,]+/)
+        .map(Number);
+      const background = Array.from(root.children).find(
+        child => !['title', 'desc', 'metadata', 'defs'].includes(child.localName)
+      );
+      expect(background?.localName).toBe('rect');
+      expect(Number(background?.getAttribute('x') ?? 0)).toBe(0);
+      expect(Number(background?.getAttribute('y') ?? 0)).toBe(0);
+      expect(Number(background?.getAttribute('width'))).toBe(vbWidth);
+      expect(Number(background?.getAttribute('height'))).toBe(vbHeight);
+      expect(background?.getAttribute('fill')).toMatch(/^#[0-9a-f]{6}$/i);
     });
   });
 

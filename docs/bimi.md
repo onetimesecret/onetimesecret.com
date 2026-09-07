@@ -1,7 +1,7 @@
 # BIMI Setup Guide
 
 BIMI (Brand Indicators for Message Identification) lets mailbox providers such as
-Gmail, Yahoo and Apple Mail show the Onetime Secret logo next to email we send
+Gmail, Yahoo and Apple Mail show the Onetime Secret logo next to emails we send
 from `@onetimesecret.com`. This static site's only job in BIMI is to host two
 files over HTTPS. Everything else lives in DNS and at a certificate authority.
 
@@ -11,13 +11,16 @@ files over HTTPS. Everything else lives in DNS and at a certificate authority.
 | --------------------------------------------- | ------------------------------------------ |
 | DMARC at enforcement (`p=reject`, `pct=100`)  | Done (`_dmarc.onetimesecret.com`)          |
 | SVG Tiny P/S logo hosted over HTTPS           | Done (`/bimi/logo.svg`, guarded by tests)  |
-| BIMI DNS record (`default._bimi`)             | Exists, but the `a=` tag is empty          |
+| BIMI DNS record (`default._bimi`)             | Exists; points at `/bimi/logo.svg` and `/bimi/vmc.pem` |
+| `/bimi/logo.svg` live in production           | **Not yet** – ships with the next `main` deploy |
 | Verified Mark Certificate (VMC) hosted        | **Missing** – must be purchased and added  |
 
-The checker output "BIMI certificate location missing" and "BIMI certificate not
-valid" both come from the empty `a=` tag. The site can be fully ready on its
-side; the logo will still not appear in Gmail or Apple Mail until a certificate
-is issued and published.
+The DNS record was published ahead of the site. Until `main` is deployed both
+URLs return 404, and a BIMI record whose `a=` URL is unreachable fails
+validation everywhere, including at providers that would otherwise accept a
+self-asserted logo. Deploy the logo first, then set `a=;` until the
+certificate exists (see step 4). The logo will still not appear in Gmail or
+Apple Mail until a certificate is issued and published.
 
 ## What lives in this repo
 
@@ -26,15 +29,23 @@ is issued and published.
 | `public/bimi/logo.svg`      | The BIMI indicator. Served at `https://onetimesecret.com/bimi/logo.svg`. |
 | `public/bimi/vmc.pem`       | The VMC certificate chain (not yet present, see step 2).       |
 | `test/unit/bimi/logo.test.ts` | Enforces the SVG P/S profile rules and pins the logo's hash.   |
+| `.gitattributes`            | Marks `public/bimi/*` as binary so git never rewrites line endings. |
+
+`public/bimi/logo.svg` is the same artwork as `public/v3/img/onetime-logo-v3-xl.svg`
+with a `viewBox`, a `desc` and a `rect` background. The duplication is
+deliberate. Do not point BIMI at the `/v3/` file or replace either with the
+other; the `/v3/` file is free to change with the site, the BIMI file is not.
 
 The logo file satisfies the SVG P/S profile and Gmail's additions: an absolute
-pixel size of at least 96 (it is 1445 x 1445), a solid background, a `title`,
-a `desc` for accessibility, and a size under 32 KB.
+pixel size of at least 96 (it is 1445 x 1445), a solid `rect` background, a
+`title` as the first child, a `desc` for accessibility, and a size under 32 KB.
 
 `public/bimi/` is a dedicated, stable location. Do not move, rename or "optimise"
 files in it. A VMC embeds a SHA-256 hash of the exact SVG bytes; if the served
 file differs by one byte the certificate is invalid and providers drop the logo.
-The unit test will fail if the logo changes, which is intentional.
+The unit test will fail if the logo changes, which is intentional. CI runs it
+on every pull request, and the build job checks that `dist/bimi/` is
+byte-identical to `public/bimi/`.
 
 The certificate PEM contains only public certificates. It is safe and expected
 to commit it. Never commit the private key or the CSR key used to order it.
@@ -95,9 +106,9 @@ When ordering:
 
 ## Step 3: Publish the certificate
 
-1. Save the PEM chain as `public/bimi/vmc.pem` and commit it to `main`.
-   The production deploy workflow uploads everything in `public/` to BunnyCDN
-   and purges the cache.
+1. Save the PEM chain as `public/bimi/vmc.pem`, commit it to `develop` and
+   promote to `main`. The production deploy workflow runs on pushes to `main`
+   only; it uploads everything in `public/` to BunnyCDN and purges the cache.
 2. Verify it is reachable:
 
    ```bash
@@ -117,23 +128,29 @@ When ordering:
 
 ## Step 4: Update the DNS record
 
-Current record:
+DNS for `onetimesecret.com` is hosted at Bunny DNS. The record currently reads:
 
 ```
-default._bimi.onetimesecret.com. TXT "v=BIMI1; l=https://onetimesecret.com/v3/img/onetime-logo-v3-xl.svg; a=;"
+default._bimi.onetimesecret.com. TXT "v=BIMI1; l=https://onetimesecret.com/bimi/logo.svg; a=https://onetimesecret.com/bimi/vmc.pem;"
 ```
 
-Replace it with:
+Until the certificate is live, use the self-asserted form so Yahoo, Fastmail
+and La Poste can show the logo as soon as it deploys:
 
 ```
-default._bimi.onetimesecret.com. TXT "v=BIMI1; l=https://onetimesecret.com/bimi/logo.svg; a=https://onetimesecret.com/bimi/vmc.pem"
+default._bimi.onetimesecret.com. TXT "v=BIMI1; l=https://onetimesecret.com/bimi/logo.svg; a=;"
+```
+
+Once `/bimi/vmc.pem` returns 200, restore the `a=` tag:
+
+```
+default._bimi.onetimesecret.com. TXT "v=BIMI1; l=https://onetimesecret.com/bimi/logo.svg; a=https://onetimesecret.com/bimi/vmc.pem;"
 ```
 
 Notes:
 
-- The `l=` URL moves to `/bimi/logo.svg`. The old path keeps working, but the
-  new file carries a `viewBox` and a `desc`, and it is the file the certificate
-  will be bound to.
+- The old `/v3/img/onetime-logo-v3-xl.svg` path keeps working for the site,
+  but `/bimi/logo.svg` is the file the certificate will be bound to.
 - Gmail's own example record leaves `l=` empty when `a=` is set, because the
   logo is embedded in the certificate. Keep `l=` populated anyway: providers
   that accept self-asserted logos (Yahoo, Fastmail, La Poste) read it.
