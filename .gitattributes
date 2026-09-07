@@ -1,0 +1,2 @@
+# BIMI assets are hashed into the Verified Mark Certificate. Never normalise them.
+public/bimi/* -text
