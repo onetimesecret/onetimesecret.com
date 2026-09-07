@@ -10,6 +10,7 @@ browser can never disagree.
 | `bunnycdn-auth-redirect.ts` | every request | 302s `/signin` and `/signup` to the visitor's regional domain |
 | `bunnycdn-country-injection.ts` | origin response, cache MISS only | appends `window.__USER_COUNTRY__` to `<head>` of HTML pages |
 | `country.ts` | — | shared, pure helpers used by both (not deployed on its own) |
+| `error-page/regional.html` | regional zones, on error | custom error page pushed by `error-page/push.mjs` |
 
 The auth paths themselves come from `src/utils/authPaths.ts`, shared with the
 client-side link rewriter, so the edge and the browser cannot disagree about
@@ -231,6 +232,50 @@ curl -sI https://onetimesecret.com/etc/img/onetime-logo-md.png \
 Re-run from a VPN exit in another country and confirm the values change and
 that a repeat request from the first country still returns its own value —
 that last check is what proves Vary Cache is on.
+
+## Regional error page
+
+`edge/error-page/regional.html` is the custom error page for the five regional
+pull zones (`eu`, `ca`, `nz`, `us`, `uk`). Bunny stores **one** custom error
+page per pull zone (`ErrorPageCustomCode`) and fills `{{status_code}}` and
+`{{status_title}}` at serve time, so a single template covers every status;
+the per-status files in `public/bunnycdn_errors/` stay where they are for the
+marketing storage zone, where `/bunnycdn_errors/404.html` is a storage-level
+feature.
+
+The page is built for the moment the regional origin is down:
+
+- `@font-face` URLs are absolute (`https://onetimesecret.com/fonts/…`). The
+  regional origins have no `/fonts/` path, and the marketing zone answers
+  those with `access-control-allow-origin: *`, which a cross-origin font load
+  requires.
+- Links go to `https://onetimesecret.com/` and `https://status.onetimesecret.com/`,
+  never to `/`, which on a regional domain is the app that just failed.
+- A three-line inline script hides a placeholder that comes through unfilled,
+  so a renamed placeholder degrades to a blank line rather than `{{…}}`.
+- English only. The regional apps are localized; this page is deliberately not.
+
+`edge/error-page/push.mjs` keeps the five zones from drifting:
+
+```bash
+export BUNNY_API_KEY=…          # account API key, same as the deploy secret
+pnpm edge:error-page            # report: which zones differ (exit 1 if any)
+pnpm edge:error-page --apply    # push regional.html to every zone that differs
+pnpm edge:error-page eu uk      # limit to some regions, in either mode
+```
+
+Zones are located by hostname from `GET /pullzone`, never by ID; a region with
+no zone, or a hostname on two zones, aborts before anything is written. Each
+push is `POST /pullzone/{id}` with `ErrorPageEnableCustomCode: true` and the
+file contents, followed by a `GET` read-back that must match. The planning
+half is covered by `test/unit/edge/errorPagePush.test.ts`.
+
+Not verified against a live zone: the exact set of statuses Bunny routes
+through the custom page (origin-unreachable 502/504 and Bunny's own errors
+are the documented case; a `500` the origin itself returns passes through
+untouched), and whether `{{status_title}}` is the placeholder Bunny's editor
+currently offers alongside `{{status_code}}`. The hide script above is the
+guard for the second.
 
 ## Country to jurisdiction mapping
 
