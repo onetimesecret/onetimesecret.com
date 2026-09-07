@@ -78,6 +78,7 @@ CLAUDE.md
 # Environment files
 .env*
 !.env.example
+!.envrc
 
 # Lighthouse CI artifacts
 .lighthouseci/
