@@ -4,14 +4,17 @@
 /**
  * ClientOnlyRegionSelector
  *
- * A client-side only wrapper for the RegionSelector component that prevents hydration
- * mismatches in an Astro static site.
- *
- * This component handles the client-side only rendering of the region selector
- * to avoid issues with browser-specific APIs during server-side rendering.
+ * Swaps a static placeholder pill for the interactive RegionSelector on mount.
+ * The placeholder is rendered during SSR/build so the header row keeps its
+ * height and width before hydration; both use RegionLabel to reserve the same
+ * label width, so the swap is not a layout shift. The interactive selector is
+ * deferred to the client only because its dropdown wiring is not needed until
+ * the user can interact (RegionSelector itself is SSR-safe — browser APIs are
+ * confined to onMounted).
  */
 import { ref, onMounted } from "vue";
 import RegionSelector from "./RegionSelector.vue";
+import RegionLabel from "./RegionLabel.vue";
 import type { Region } from "@/types/jurisdiction";
 
 defineOptions({
@@ -61,18 +64,21 @@ const handleRegionChange = (region: Region) => {
   <template v-else>
     <!--
       Static placeholder used during build/SSR. It mirrors the pill in
-      RegionSelector.vue (same padding, border, dot, chevron) so the row
-      keeps the same height when the live selector replaces it on mount.
-      Keep the two in sync or the swap becomes a layout shift.
+      RegionSelector.vue (same padding, border, dot, chevron, and RegionLabel
+      width reservation) so the row keeps the same size when the live selector
+      replaces it on mount. It is decorative and non-interactive until then, so
+      it is hidden from assistive tech (aria-hidden) rather than exposing a
+      pill that cannot be operated.
     -->
-    <div id="region-selector" class="relative inline-flex items-center text-xs xs:text-sm text-gray-500 dark:text-gray-300" v-bind="$attrs">
+    <div id="region-selector" class="relative inline-flex items-center text-xs xs:text-sm text-gray-500 dark:text-gray-300" aria-hidden="true" v-bind="$attrs">
       <div
-        class="relative inline-flex items-center rounded-full bg-surface-2 px-3 py-1.5 text-xs xs:text-sm font-medium text-text-secondary border border-surface-3"
-        :aria-label="`${currentRegion.displayName} region`">
+        class="relative inline-flex items-center rounded-full bg-surface-2 px-3 py-1.5 text-xs xs:text-sm font-medium text-text-secondary border border-surface-3">
         <span
           class="size-2 rounded-full bg-green-500 mr-2"
           aria-hidden="true"></span>
-        <span>{{ currentRegion.displayName }}</span>
+        <RegionLabel
+          :current-region="currentRegion"
+          :available-regions="availableRegions" />
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"

@@ -93,8 +93,10 @@ defineExpose({
 
             <!--
               Region selector pill. Rendered during SSR so the row keeps its
-              height before hydration; ClientOnlyRegionSelector swaps its
-              static placeholder for the live selector on mount.
+              size before hydration; ClientOnlyRegionSelector swaps its static
+              placeholder for the live selector on mount. Both reserve the
+              widest region's label width (RegionLabel), so neither the swap nor
+              a post-mount region change reflows this header row.
             -->
             <ClientOnlyRegionSelector
               :current-region="currentRegion"

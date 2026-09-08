@@ -205,8 +205,10 @@ onUnmounted(() => {
 
               <!--
                 Rendered during SSR with the default region so the controls
-                row keeps its height; initJurisdiction() updates the label
-                after mount without changing the pill's size.
+                row keeps its size. initJurisdiction() may swap the label to a
+                persisted or geo-detected region after mount; RegionLabel
+                reserves the widest region's width so that swap does not resize
+                the selector or reflow the centered row.
               -->
               <PricingRegionSelector
                 :current-region="currentRegion"
