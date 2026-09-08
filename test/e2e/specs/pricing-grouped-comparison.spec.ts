@@ -6,11 +6,11 @@
  * Covers:
  *   - Page load (no console errors)
  *   - Controls row: payment frequency toggle and region selector visible together
- *   - Grouped comparison section: one card per feature group in productTiers
+ *   - Grouped comparison section: one card (and table) per feature group in
+ *     productTiers, with a column per tier
  *
  * Assertions salvaged from PR #158 (closed unmerged) and rebased onto the
- * data-driven tier structure now on develop. The grouped comparison tests are
- * marked fixme until the section is built on top of productTiers groups.
+ * data-driven tier structure now on develop.
  */
 
 import { test, expect } from '@playwright/test';
@@ -96,19 +96,22 @@ test.describe('Pricing — grouped comparison section', () => {
   });
 
   test('renders the "Compare Plans" heading', async ({ page }) => {
-    test.fixme(true, 'Grouped comparison section not yet built (#122)');
     await expect(page.getByRole('heading', { name: /compare plans/i })).toBeVisible();
   });
 
   test('renders one grouped card per feature group', async ({ page }) => {
-    test.fixme(true, 'Grouped comparison section not yet built (#122)');
     for (const name of groupHeadings) {
-      await expect(page.getByRole('heading', { name })).toBeVisible();
+      const heading = page.getByRole('heading', { name });
+      await expect(heading).toBeVisible();
+      // Each group is its own table, labelled by the group heading and with
+      // one column per tier so screen readers announce the tier for each cell.
+      const table = page.getByRole('table', { name });
+      await expect(table).toBeVisible();
+      await expect(table.getByRole('columnheader')).toHaveCount(3);
     }
   });
 
   test('does not render the legacy flat comparison table', async ({ page }) => {
-    test.fixme(true, 'Grouped comparison section not yet built (#122)');
     // The old comparison used a <table> with a "Feature" column header.
     await expect(page.getByRole('columnheader', { name: /^feature$/i })).toHaveCount(0);
   });

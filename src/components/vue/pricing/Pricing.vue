@@ -18,6 +18,8 @@ import RegionCtaHint
 import type { Region } from "@/types/jurisdiction";
 
 import {
+  ComparisonFeature,
+  featureGroups,
   paymentFrequencies as frequencies,
   ProductTier,
   productTiers as tiers,
@@ -98,6 +100,9 @@ const tierHref = (tier: ProductTier) => {
 };
 
 const feedbackHref = computed(() => regionalUrl("/feedback"));
+
+const includes = (feature: ComparisonFeature, tier: ProductTier) =>
+  feature.availableIn.includes(tier.id);
 
 onMounted(async () => {
   isClient.value = true;
@@ -344,6 +349,102 @@ onUnmounted(() => {
                   :current-region="currentRegion"
                   :available-regions="availableRegions"
                   @region-change="handleRegionChange" />
+              </div>
+            </div>
+
+            <!-- Feature comparison: one card per feature group -->
+            <div
+              class="mt-20 mx-auto max-w-6xl"
+              aria-labelledby="pricing-comparison-heading">
+              <div class="mb-10 sm:mb-14">
+                <p class="section-label mb-3">
+                  {{ t("web.pricing.features") }}
+                </p>
+                <h3
+                  id="pricing-comparison-heading"
+                  class="text-3xl font-bold tracking-tight
+                    text-text-primary sm:text-4xl">
+                  {{ t("web.pricing.compare-plans") }}
+                </h3>
+                <p
+                  class="mt-4 max-w-2xl text-lg
+                    text-text-secondary">
+                  {{ t("web.pricing.comparison.description") }}
+                </p>
+              </div>
+
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div
+                  v-for="(group, groupIndex) in featureGroups"
+                  :key="group.labelKey"
+                  class="rounded-2xl bg-surface-1
+                    border border-surface-3 p-6
+                    hover:border-surface-4
+                    transition-colors duration-200
+                    sm:p-8">
+                  <h4
+                    :id="`pricing-group-${groupIndex}`"
+                    class="mb-5 text-lg font-bold
+                      text-text-primary">
+                    {{ t(group.labelKey) }}
+                  </h4>
+                  <table
+                    class="w-full border-collapse text-sm"
+                    :aria-labelledby="`pricing-group-${groupIndex}`">
+                    <thead>
+                      <tr class="border-b border-surface-3">
+                        <td></td>
+                        <th
+                          v-for="tier in tiers"
+                          :key="tier.id"
+                          scope="col"
+                          class="w-12 pb-3 text-center
+                            text-xs font-medium"
+                          :class="tier.featured
+                            ? 'text-brand-500'
+                            : 'text-text-tertiary'">
+                          {{ t(tier.nameKey) }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-surface-3">
+                      <tr
+                        v-for="feature in group.features"
+                        :key="feature.labelKey">
+                        <th
+                          scope="row"
+                          class="py-3 pr-3 text-left
+                            font-normal text-text-secondary">
+                          {{ t(feature.labelKey) }}
+                        </th>
+                        <td
+                          v-for="tier in tiers"
+                          :key="tier.id"
+                          class="py-3 text-center">
+                          <OIcon
+                            v-if="includes(feature, tier)"
+                            collection="heroicons"
+                            name="check-20-solid"
+                            class="mx-auto size-5 text-brand-500"
+                            aria-hidden="true" />
+                          <OIcon
+                            v-else
+                            collection="heroicons"
+                            name="x-mark-20-solid"
+                            class="mx-auto size-5 text-text-tertiary/60"
+                            aria-hidden="true" />
+                          <span class="sr-only">
+                            {{
+                              includes(feature, tier)
+                                ? t("web.pricing.comparison.included")
+                                : t("web.pricing.comparison.not-included")
+                            }}
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
 
