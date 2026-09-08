@@ -13,6 +13,8 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { App } from 'vue';
+import { featureGroups, productTiers } from '@/data/product/productTiers';
+import en from '@/i18n/ui/en.json';
 import {
   JURISDICTION_STORAGE_KEY as STORAGE_KEY,
   installStorage,
@@ -60,6 +62,18 @@ function feedbackHost(el: HTMLElement): string | undefined {
     .find((url) => url.pathname === '/feedback')?.host;
 }
 
+/** Resolves a dotted i18n key against the English source, matching what the
+ *  component's `t()` renders for the default locale. */
+function tEn(key: string): string {
+  const value = key
+    .split('.')
+    .reduce<unknown>((node, part) => (node as Record<string, unknown>)?.[part], en);
+  if (typeof value !== 'string') {
+    throw new Error(`Missing or non-string i18n key: ${key}`);
+  }
+  return value;
+}
+
 beforeEach(() => {
   installStorage();
   setCountry(undefined);
@@ -105,6 +119,71 @@ describe('Pricing CTA region', () => {
       const hosts = signupHosts(el);
       expect(hosts.length).toBeGreaterThan(0);
       expect([...new Set(hosts)]).toEqual(['eu.onetimesecret.com']);
+    });
+  });
+});
+
+describe('Pricing plan comparison', () => {
+  it('renders one labelled table per feature group with a column per tier', async () => {
+    const el = await mountPricing();
+
+    const tables = [...el.querySelectorAll('table')];
+    expect(tables).toHaveLength(featureGroups.length);
+
+    tables.forEach((table, i) => {
+      const heading = el.querySelector(`#${table.getAttribute('aria-labelledby')}`);
+      expect(heading?.tagName).toBe('H4');
+      expect(table.querySelectorAll('thead th[scope="col"]')).toHaveLength(productTiers.length);
+      expect(table.querySelectorAll('tbody th[scope="row"]')).toHaveLength(
+        featureGroups[i].features.length
+      );
+    });
+  });
+
+  it('marks every cell from the availableIn list of its feature', async () => {
+    const el = await mountPricing();
+    const tables = [...el.querySelectorAll('table')];
+
+    featureGroups.forEach((group, gi) => {
+      const rows = [...tables[gi].querySelectorAll('tbody tr')];
+      group.features.forEach((feature, fi) => {
+        // The icon is aria-hidden; the visually hidden span carries the state.
+        const cells = [...rows[fi].querySelectorAll('td .sr-only')].map((span) =>
+          span.textContent?.trim()
+        );
+        const expected = productTiers.map((tier) =>
+          feature.availableIn.includes(tier.id) ? 'Included' : 'Not included'
+        );
+        expect(cells, feature.labelKey).toEqual(expected);
+      });
+    });
+  });
+
+  it('renders a status badge only for features that declare a statusKey', async () => {
+    const el = await mountPricing();
+    const tables = [...el.querySelectorAll('table')];
+
+    // Guard: the assertion below is only meaningful while some feature carries
+    // a status badge (e.g. Beta, Coming soon). If that ever stops being true,
+    // this fails loudly rather than passing vacuously.
+    const withStatus = featureGroups.flatMap((g) => g.features).filter((f) => f.statusKey);
+    expect(withStatus.length).toBeGreaterThan(0);
+
+    featureGroups.forEach((group, gi) => {
+      const rows = [...tables[gi].querySelectorAll('tbody tr')];
+      group.features.forEach((feature, fi) => {
+        // Select by a stable test hook rather than styling utilities, so a
+        // radius/class change cannot silently break or mislead this assertion.
+        const badge = rows[fi].querySelector(
+          'th[scope="row"] [data-testid="feature-status-badge"]'
+        );
+        if (feature.statusKey) {
+          expect(badge, feature.labelKey).not.toBeNull();
+          expect(badge?.textContent?.trim(), feature.labelKey).toBe(tEn(feature.statusKey));
+        } else {
+          expect(badge, feature.labelKey).toBeNull();
+        }
+      });
     });
   });
 });

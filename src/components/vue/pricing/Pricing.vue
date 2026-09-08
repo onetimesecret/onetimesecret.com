@@ -18,6 +18,8 @@ import RegionCtaHint
 import type { Region } from "@/types/jurisdiction";
 
 import {
+  ComparisonFeature,
+  featureGroups,
   paymentFrequencies as frequencies,
   ProductTier,
   productTiers as tiers,
@@ -51,8 +53,6 @@ const {
   initJurisdiction,
   cleanup,
 } = useJurisdiction();
-
-const isClient = ref(false);
 
 const frequency = ref(frequencies[0]);
 
@@ -99,9 +99,10 @@ const tierHref = (tier: ProductTier) => {
 
 const feedbackHref = computed(() => regionalUrl("/feedback"));
 
-onMounted(async () => {
-  isClient.value = true;
+const includes = (feature: ComparisonFeature, tier: ProductTier) =>
+  feature.availableIn.includes(tier.id);
 
+onMounted(async () => {
   // Resolve the region for CTA links: persisted choice, then geo, then
   // default. Runs after the first render so hydration still matches the
   // prerendered markup.
@@ -178,7 +179,28 @@ onUnmounted(() => {
               class="mx-auto max-w-6xl flex flex-col
                 sm:flex-row items-center justify-center
                 gap-6">
-              <fieldset aria-label="Payment frequency">
+              <!--
+                Mobile stacks these controls with the region selector on top
+                and the interval toggle beneath, nearest the pricing tiers it
+                drives. DOM order matches that stacked order so keyboard focus
+                follows the visual sequence; sm+ restores the horizontal reading
+                order (interval then region) with order-* utilities.
+
+                PricingRegionSelector is rendered during SSR with the default
+                region so the controls row keeps its size. initJurisdiction()
+                may swap the label to a persisted or geo-detected region after
+                mount; RegionLabel reserves the widest region's width so that
+                swap does not resize the selector or reflow the centered row.
+              -->
+              <PricingRegionSelector
+                class="sm:order-2"
+                :current-region="currentRegion"
+                :available-regions="availableRegions"
+                @region-change="handleRegionChange" />
+
+              <fieldset
+                :aria-label="t('web.pricing.payment-frequency')"
+                class="sm:order-1">
                 <RadioGroup
                   v-model="frequency"
                   class="grid grid-cols-2 gap-x-1
@@ -206,13 +228,6 @@ onUnmounted(() => {
                   </RadioGroupOption>
                 </RadioGroup>
               </fieldset>
-
-              <div v-if="isClient">
-                <PricingRegionSelector
-                  :current-region="currentRegion"
-                  :available-regions="availableRegions"
-                  @region-change="handleRegionChange" />
-              </div>
             </div>
           </div>
         </div>
@@ -252,7 +267,8 @@ onUnmounted(() => {
                         v-if="tier.featured && tier.badgeKey"
                         class="rounded-full bg-brand-500/10
                           px-2.5 py-0.5 text-xs
-                          font-semibold text-brand-500">
+                          font-semibold text-brand-700
+                          dark:text-brand-400">
                         {{ t(tier.badgeKey) }}
                       </span>
                     </div>
@@ -340,10 +356,152 @@ onUnmounted(() => {
                 </a>
 
                 <RegionCtaHint
-                  v-if="isClient"
                   :current-region="currentRegion"
                   :available-regions="availableRegions"
                   @region-change="handleRegionChange" />
+              </div>
+            </div>
+
+            <!-- Feature comparison: one card per feature group -->
+            <div
+              class="mt-20 mx-auto max-w-6xl"
+              aria-labelledby="pricing-comparison-heading">
+              <div class="mb-10 sm:mb-14">
+                <p class="section-label mb-3">
+                  {{ t("web.pricing.features") }}
+                </p>
+                <h3
+                  id="pricing-comparison-heading"
+                  class="text-3xl font-bold tracking-tight
+                    text-text-primary sm:text-4xl">
+                  {{ t("web.pricing.compare-plans") }}
+                </h3>
+                <p
+                  class="mt-4 max-w-2xl text-lg
+                    text-text-secondary">
+                  {{ t("web.pricing.comparison.description") }}
+                </p>
+              </div>
+
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div
+                  v-for="(group, groupIndex) in featureGroups"
+                  :key="group.labelKey"
+                  class="rounded-2xl bg-surface-1
+                    border border-surface-3 p-6
+                    hover:border-surface-4
+                    transition-colors duration-200
+                    sm:p-8">
+                  <h4
+                    :id="`pricing-group-${groupIndex}`"
+                    class="mb-5 text-lg font-bold
+                      text-text-primary">
+                    {{ t(group.labelKey) }}
+                  </h4>
+                  <table
+                    class="w-full border-collapse text-sm"
+                    :aria-labelledby="`pricing-group-${groupIndex}`">
+                    <thead>
+                      <tr class="border-b border-surface-3">
+                        <td></td>
+                        <th
+                          v-for="tier in tiers"
+                          :key="tier.id"
+                          scope="col"
+                          class="w-12 pb-3 text-center
+                            text-xs font-medium"
+                          :class="tier.featured
+                            ? 'text-brand-500'
+                            : 'text-text-tertiary'">
+                          {{ t(tier.nameKey) }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-surface-3">
+                      <tr
+                        v-for="feature in group.features"
+                        :key="feature.labelKey">
+                        <th
+                          scope="row"
+                          class="py-3 pr-3 text-left align-middle
+                            font-normal text-text-secondary">
+                          <span class="flex flex-col items-start gap-1.5">
+                            <span>{{ t(feature.labelKey)
+                              }}<span
+                                v-if="feature.infoKey"
+                                class="group/info relative ml-1
+                                  inline-block align-middle">
+                                <button
+                                  type="button"
+                                  class="inline-flex text-text-tertiary
+                                    transition-colors
+                                    hover:text-text-secondary
+                                    focus:outline-none
+                                    focus-visible:text-text-secondary"
+                                  :aria-label="t(feature.infoKey)">
+                                  <OIcon
+                                    collection="heroicons"
+                                    name="information-circle-20-solid"
+                                    class="size-4"
+                                    aria-hidden="true" />
+                                </button>
+                                <span
+                                  role="tooltip"
+                                  aria-hidden="true"
+                                  class="pointer-events-none absolute
+                                    left-0 top-full z-20 mt-1.5 w-48
+                                    rounded-lg border border-surface-3
+                                    bg-surface-2 px-3 py-2 text-xs
+                                    font-normal normal-case leading-snug
+                                    text-text-secondary shadow-lg
+                                    opacity-0 transition-opacity
+                                    duration-150
+                                    group-hover/info:opacity-100
+                                    group-focus-within/info:opacity-100">
+                                  {{ t(feature.infoKey) }}
+                                </span>
+                              </span></span>
+                            <span
+                              v-if="feature.statusKey"
+                              data-testid="feature-status-badge"
+                              class="inline-flex items-center
+                                whitespace-nowrap
+                                rounded-full border border-surface-4
+                                px-1.5 py-0.5 text-[0.625rem]
+                                font-semibold uppercase leading-none
+                                tracking-wider text-text-tertiary">
+                              {{ t(feature.statusKey) }}
+                            </span>
+                          </span>
+                        </th>
+                        <td
+                          v-for="tier in tiers"
+                          :key="tier.id"
+                          class="py-3 text-center">
+                          <OIcon
+                            v-if="includes(feature, tier)"
+                            collection="heroicons"
+                            name="check-20-solid"
+                            class="mx-auto size-5 text-brand-500"
+                            aria-hidden="true" />
+                          <OIcon
+                            v-else
+                            collection="heroicons"
+                            name="x-mark-20-solid"
+                            class="mx-auto size-5 text-text-tertiary/60"
+                            aria-hidden="true" />
+                          <span class="sr-only">
+                            {{
+                              includes(feature, tier)
+                                ? t("web.pricing.comparison.included")
+                                : t("web.pricing.comparison.not-included")
+                            }}
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
 
@@ -379,14 +537,14 @@ onUnmounted(() => {
               <a
                 :href="feedbackHref"
                 aria-describedby="discounted-tier"
-                class="rounded-lg bg-brandcompdim-600
-                  hover:bg-brandcompdim-700 px-6 py-3
+                class="rounded-lg bg-brandcompdim-700
+                  hover:bg-brandcompdim-800 px-6 py-3
                   text-base font-semibold text-white
                   transition-colors
                   focus-visible:outline
                   focus-visible:outline-2
                   focus-visible:outline-offset-2
-                  focus-visible:outline-brandcompdim-600
+                  focus-visible:outline-brandcompdim-700
                   whitespace-nowrap">
                 {{ t("web.pricing.discounts.cta") }}
                 <span aria-hidden="true">&rarr;</span>

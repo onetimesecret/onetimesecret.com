@@ -1,10 +1,16 @@
+export interface ComparisonFeature {
+  labelKey: string;
+  /** Ids of the tiers (see productTiers) that include this feature */
+  availableIn: string[];
+  /** Optional status badge (e.g. Beta, Coming soon) shown beside the label */
+  statusKey?: string;
+  /** Optional info-tooltip key explaining the feature beside the label */
+  infoKey?: string;
+}
+
 export interface FeatureGroup {
   labelKey: string;
-  features: Array<{
-    labelKey: string;
-    free: boolean;
-    identity: boolean;
-  }>;
+  features: ComparisonFeature[];
 }
 
 export interface PaymentFrequency {
@@ -133,27 +139,40 @@ export const productTiers: Array<ProductTier> = [
   },
 ];
 
+const ALL_TIERS = ["tier-free", "tier-identity", "tier-team"];
+const PAID_TIERS = ["tier-identity", "tier-team"];
+const TEAM_ONLY = ["tier-team"];
+
+/**
+ * Feature comparison, grouped by concern. Availability mirrors the tier
+ * feature copy in web.pricing.tiers.*.features; keep the two in step.
+ *
+ * NOTE: Features are sorted from least to most exclusive and are displayed in that order in the UI.
+ */
 export const featureGroups: FeatureGroup[] = [
   {
     labelKey: "web.pricing.groups.core-sharing",
     features: [
       {
-        labelKey:
-          "web.pricing.comparison.features.secret-sharing",
-        free: true,
-        identity: true,
+        labelKey: "web.pricing.comparison.features.secret-sharing",
+        availableIn: ALL_TIERS,
       },
       {
-        labelKey:
-          "web.pricing.comparison.features.email-recipients",
-        free: false,
-        identity: true,
+        labelKey: "web.pricing.comparison.features.email-recipients",
+        availableIn: ALL_TIERS,
       },
       {
-        labelKey:
-          "web.pricing.comparison.features.rest-api",
-        free: true,
-        identity: true,
+        labelKey: "web.pricing.comparison.features.rest-api",
+        availableIn: ALL_TIERS,
+      },
+      {
+        labelKey: "web.pricing.comparison.features.incoming-secrets",
+        availableIn: ALL_TIERS,
+        infoKey: "web.pricing.comparison.info.incoming-secrets",
+      },
+      {
+        labelKey: "web.pricing.comparison.features.expiration-30-days",
+        availableIn: PAID_TIERS,
       },
     ],
   },
@@ -161,27 +180,60 @@ export const featureGroups: FeatureGroup[] = [
     labelKey: "web.pricing.groups.brand-identity",
     features: [
       {
-        labelKey:
-          "web.pricing.comparison.features.custom-domains",
-        free: false,
-        identity: true,
+        labelKey: "web.pricing.comparison.features.custom-domains",
+        availableIn: ALL_TIERS,
       },
       {
-        labelKey:
-          "web.pricing.comparison.features.custom-branding",
-        free: false,
-        identity: true,
+        labelKey: "web.pricing.comparison.features.unlimited-domains",
+        availableIn: PAID_TIERS,
+      },
+      {
+        labelKey: "web.pricing.comparison.features.custom-branding",
+        availableIn: PAID_TIERS,
+      },
+      {
+        labelKey: "web.pricing.comparison.features.custom-mail-sender",
+        availableIn: PAID_TIERS,
+      },
+      {
+        labelKey: "web.pricing.comparison.features.workspace-branding",
+        availableIn: TEAM_ONLY,
+        statusKey: "web.pricing.comparison.status.coming-soon",
+      },
+      {
+        labelKey: "web.pricing.comparison.features.flexible-from-domain",
+        availableIn: TEAM_ONLY,
       },
     ],
   },
   {
-    labelKey: "web.pricing.groups.infrastructure",
+    labelKey: "web.pricing.groups.governance",
     features: [
       {
-        labelKey:
-          "web.pricing.comparison.features.no-rate-limits",
-        free: false,
-        identity: true,
+        labelKey: "web.pricing.comparison.features.access-controls",
+        availableIn: ALL_TIERS,
+      },
+      {
+        labelKey: "web.pricing.comparison.features.no-rate-limits",
+        availableIn: PAID_TIERS,
+      },
+      {
+        labelKey: "web.pricing.comparison.features.sso",
+        availableIn: TEAM_ONLY,
+      },
+      {
+        labelKey: "web.pricing.comparison.features.rbac",
+        availableIn: TEAM_ONLY,
+      },
+      {
+        labelKey: "web.pricing.comparison.features.audit-logs",
+        availableIn: TEAM_ONLY,
+        statusKey: "web.pricing.comparison.status.beta",
+      },
+      {
+        labelKey: "web.pricing.comparison.features.ip-access-filtering",
+        availableIn: TEAM_ONLY,
+        statusKey: "web.pricing.comparison.status.coming-soon",
       },
     ],
   },

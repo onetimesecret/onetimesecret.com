@@ -10,6 +10,7 @@ browser can never disagree.
 | `bunnycdn-auth-redirect.ts` | every request | 302s `/signin` and `/signup` to the visitor's regional domain |
 | `bunnycdn-country-injection.ts` | origin response, cache MISS only | appends `window.__USER_COUNTRY__` to `<head>` of HTML pages |
 | `country.ts` | — | shared, pure helpers used by both (not deployed on its own) |
+| `error-page/regional.html` | regional zones, on error | custom error page pushed by `error-page/cli.mjs` |
 
 The auth paths themselves come from `src/utils/authPaths.ts`, shared with the
 client-side link rewriter, so the edge and the browser cannot disagree about
@@ -117,12 +118,22 @@ pnpm edge:build
 # → edge/dist/bunnycdn-country-injection.js
 ```
 
+`edge/dist` holds exactly these two files and nothing else: the build removes
+the directory before it starts, `publicDir` is disabled (left on, Vite copies
+all of `public/` in beside them, and a paste box is a bad place to be hunting
+for the right file), and `edge:verify` fails on any other file it finds there.
+
 Each script is bundled to a single self-contained ES module with the shared
-country tables inlined, ready to paste into the Bunny dashboard. The two
-builds are separate `vite build` invocations (`--mode auth-redirect`,
+country tables inlined, ready to paste into the Bunny dashboard. The build
+ends in `pnpm edge:verify` (`edge/verify-bundles.mjs`), which fails if
+`edge/dist` contains anything but the two bundles, if any import specifier
+other than `npm:` survived, or if the load-bearing strings (`servePullZone`,
+`CDN-RequestCountryCode`) are missing — a bundle that cannot register is the
+one failure the runtime turns into a zone-wide outage. The two builds are
+separate `vite build` invocations (`--mode auth-redirect`,
 `--mode country-injection`) so neither produces a shared chunk; an unknown
-mode is a hard error. Neither run empties `edge/dist` — each overwrites only
-its own file.
+mode is a hard error. Neither run empties `edge/dist` (each would delete the
+other's output), which is why the script removes the directory up front.
 
 The injection bundle keeps its `import * as BunnySDK from
 "npm:@bunny.net/edgescript-sdk@0.12.1"` line intact: `npm:` specifiers are
@@ -159,9 +170,16 @@ runs `onOriginResponse`.
 
 ## Deploy
 
+> **Paste `edge/dist/*.js`. Never paste a `.ts` file.**
+> The sources import `./country` and `../src/utils/authPaths`. Bunny deploys a
+> single module with no filesystem beside it, so those specifiers cannot
+> resolve, the script dies at load, and **every request on the zone gets a bare
+> 400** — see [Deploying the source file](#deploying-the-source-file).
+
 Do this for **both** pull zones (apex and www).
 
-1. `pnpm edge:build`
+1. `pnpm edge:build` — bundles both scripts and runs `edge:verify`, which fails
+   the build if any specifier other than `npm:` survived into the output
 2. Pull Zone → **Caching → Vary Cache → User Country Code** must be
    **enabled** before either script goes on
 3. **`bunnycdn-country-injection.js`** — Bunny dashboard → Pull Zones → *your
@@ -215,6 +233,159 @@ Re-run from a VPN exit in another country and confirm the values change and
 that a repeat request from the first country still returns its own value —
 that last check is what proves Vary Cache is on.
 
+## Regional error page
+
+`edge/error-page/regional.html` is the custom error page for the five regional
+pull zones (`eu`, `ca`, `nz`, `us`, `uk`). Bunny stores **one** custom error
+page per pull zone (`ErrorPageCustomCode`) and fills `{{status_code}}` and
+`{{status_title}}` at serve time, so a single template covers every status;
+the per-status files in `public/bunnycdn_errors/` stay where they are for the
+marketing storage zone, where `/bunnycdn_errors/404.html` is a storage-level
+feature.
+
+The page is built for the moment the regional origin is down:
+
+- `@font-face` URLs are absolute (`https://onetimesecret.com/fonts/…`). The
+  regional origins have no `/fonts/` path, and the marketing zone answers
+  those with `access-control-allow-origin: *`, which a cross-origin font load
+  requires.
+- Links go to `https://onetimesecret.com/` and `https://status.onetimesecret.com/`,
+  never to `/`, which on a regional domain is the app that just failed.
+- A three-line inline script hides a placeholder that comes through unfilled,
+  so a renamed placeholder degrades to a blank line rather than `{{…}}`.
+- English only. The regional apps are localized; this page is deliberately not.
+
+`edge/error-page/cli.mjs` keeps the five zones from drifting, through three
+pnpm scripts that take the same arguments:
+
+```bash
+# BUNNY_API_KEY from the environment, .env.local or .env (declared in
+# .env.example); the same precedence as .envrc, with or without direnv
+pnpm edge:error-page:push              # report: which zones differ (exit 1 if any)
+pnpm edge:error-page:push --apply      # push regional.html to every zone that differs
+pnpm edge:error-page:verify            # check every zone; writes nothing
+pnpm edge:error-page:deploy            # push then verify, one region at a time
+pnpm edge:error-page:probe             # with the origin down: is the page actually served?
+pnpm edge:error-page:probe nz=<host>   # probe this hostname for the region (see below)
+pnpm edge:error-page:deploy eu uk      # limit to some regions (any command)
+pnpm edge:error-page:deploy nz=<zone>  # name the pull zone for a region (name or ID)
+```
+
+The region list is read from `src/data/ops/jurisdictions.ts` (live entries
+only), the same source as the edge scripts and the client, so launching a
+region there is enough for this script to pick up its zone.
+
+A zone is located by its public hostname from `GET /pullzone` by default, so
+recreating such a zone needs no change here. A pull zone behind Bunny Shield
+cannot be found that way: the public hostname terminates at the shield, and
+the zone itself has a generated, non-guessable name and only its
+`*.b-cdn.net` hostname. Those zones are named per region, by
+`BUNNY_PULL_ZONE_<REGION>` (`BUNNY_PULL_ZONE_NZ=<name or ID>`, declared in
+`.env.example`, read from the same sources as `BUNNY_API_KEY`) or by a
+`region=zone` argument, which wins over the environment. A region with no
+zone, a hostname on two zones, an unknown zone name or ID, or a named zone
+that carries another region's hostname aborts before anything is written.
+
+Each push is `POST /pullzone/{id}` with `ErrorPageEnableCustomCode: true` and
+the file contents, followed by a `GET` read-back that must match. The
+read-back is also diffed against the zone as it was before the push: Bunny
+documents that endpoint as a partial update, and the diff turns that
+documented claim into a check, since a full-replace would silently reset the
+origin, cache rules and Vary settings on a production zone. Any field other
+than the two sent (plus Bunny's own bandwidth and charge counters) that
+changed is reported as a failure for that zone.
+
+With `push --apply` a failed zone does not stop the run; the remaining zones
+are still pushed and the summary lists how many succeeded and failed.
+Re-running is idempotent and only touches zones that still differ.
+
+`verify` writes nothing. It reads each zone fresh, applies the same check as
+the push read-back (page enabled, content equal to the file), prints the
+zone's origin and hostnames for eyeballing, and exits `1` if any zone fails.
+When every zone passes it ends by naming the `probe` for those regions, the
+one check that needs the origin down.
+
+`deploy` is push and verify for one region at a time, in the order given:
+read the zone fresh, push if it differs, verify, then the next region. It
+stops at the first failure, including a collateral change caught by the
+read-back diff, and says which regions it did not reach. A push that
+misbehaves on one production zone is therefore never repeated on the next.
+Zones already up to date are only verified. This is the command to run after
+changing `regional.html`.
+
+`probe` is the serving check. It fetches `https://<host>/` once per region,
+straight through the pull zone with no API key and no zone lookup, and
+classifies the answer: a 2xx or 3xx is the origin answering and proves
+nothing about the page, a 5xx carrying the template's `<title>` with every
+placeholder filled is the custom page, any other 5xx is not. It exits `0`
+only when every region served the page, so a run with the origin up fails
+and says so instead of passing by accident. Bunny serves the custom page
+only for errors it generates itself (origin unreachable or timed out); a
+`500` from the app passes through untouched. So the probe means something
+only with the origin down, or its `OriginUrl` temporarily pointed at a
+closed port (restore it in the same session). Each region line says which
+pull zone answered (Bunny's `CDN-PullZone` header) and the cache status; a
+hostname whose answer carries neither is not routed through Bunny at all,
+and no origin outage will show the page there. Probe the zone's own
+hostname instead, `nz=be2169e1-7.b-cdn.net`, which `verify` prints, and
+look at the DNS. When a run proves nothing the probe ends by saying what to
+do about it.
+
+Exit codes for all four: `0` clean, `1` drift found by `push` without
+`--apply`, a zone failed `verify`, or `probe` did not see the page from
+every region, `2` a push failed, `deploy` stopped, or the script could not
+run.
+
+`test/unit/edge/errorPageCli.test.ts` covers zone resolution, drift
+planning, the zone-list parsing, the read-back diff, the probe's
+classification and, through an injected `fetch`, all four commands end to
+end.
+
+### Checking a zone by hand
+
+For the day the script is not trusted, the same checks against the API
+directly. `ZONE` is the pull zone ID, `HOST` the region's public hostname
+(both are in the `verify` output).
+
+```bash
+ZONE=6421160 HOST=nz.onetimesecret.com
+
+# What Bunny stores for the zone (BUNNY_API_KEY in the shell)
+curl -s -H "AccessKey: $BUNNY_API_KEY" -H "Accept: application/json" \
+  "https://api.bunny.net/pullzone/$ZONE" \
+  | jq '{enabled: .ErrorPageEnableCustomCode, origin: .OriginUrl, hosts: [.Hostnames[].Value]}'
+
+# The stored page against the file in git. A diff of only a trailing
+# newline is fine; anything else is drift.
+curl -s -H "AccessKey: $BUNNY_API_KEY" -H "Accept: application/json" \
+  "https://api.bunny.net/pullzone/$ZONE" \
+  | jq -r '.ErrorPageCustomCode' | diff - edge/error-page/regional.html && echo match
+```
+
+In the dashboard: dash.bunny.net, CDN, the zone, its custom error page
+setting shows the same toggle and HTML.
+
+Seeing the page served is what `probe` does; by hand it is one request
+with the origin down. The homepage of the app also says "Onetime Secret",
+so the title is the line to look for, together with the status:
+
+```bash
+curl -sS -w 'status %{http_code}\n' "https://$HOST/" | grep -E 'Service Error|^status '
+```
+
+A `status 502` or `504` with a `Service Error` title line is the custom
+page. A `status 200` with no title line is the app, and proves nothing.
+
+Verified against the nz zone on 2026-09-07 with `probe nz=be2169e1-7.b-cdn.net`:
+the origin's Caddy has no certificate for the `b-cdn.net` name, Bunny's
+fetch fails the TLS handshake, and Bunny answers `502` with the custom page,
+`{{status_code}}` filled as `502` and `{{status_title}}` as `Bad Gateway`.
+Through `nz.onetimesecret.com` the same zone (`6421160`) reaches the origin
+and returns the app, which is the "origin answered" case.
+Still not verified: the exact set of statuses Bunny routes through the page
+(origin-unreachable 502/504 and Bunny's own errors are the documented case;
+a `500` the origin itself returns passes through untouched).
+
 ## Country to jurisdiction mapping
 
 Defined once in `src/utils/countryToJurisdiction.ts` and bundled into both
@@ -232,6 +403,43 @@ Regions marked `comingSoon` in `src/data/ops/jurisdictions.ts` (BR, AU, MX)
 are never redirect targets; their countries route to a live region.
 
 ## Troubleshooting
+
+### Deploying the source file
+
+**Symptom:** every request on the zone returns `400` with a zero-length body,
+in 0ms, uniformly across all paths and both hostnames, while `PullSuccess` is
+still `True`. The edge script log shows, once per request:
+
+```
+Unknown: disallowed module reference; specifier=./country, referrer=file:///mod.ts
+```
+
+**Cause:** a `.ts` source was pasted into the dashboard instead of the built
+bundle. `file:///mod.ts` is the single module Bunny deploys; `./country` has
+nothing to resolve against. The script fails at load, before it handles a
+request, so the 400 is not something the script code can be responsible for.
+
+This happened on 2026-08-27 and took the `.dev` zone down for hours. The
+dashboard editor uploads exactly one file and will never resolve a relative
+import — pasting source can only ever fail this way.
+
+**Recovery:**
+
+1. Detach the script from the zone (`MiddlewareScriptId: -1`) — the site comes
+   back immediately
+2. `pnpm edge:build`
+3. Paste `edge/dist/<name>.js`, save, enable
+4. **Purge the zone.** `CacheErrorResponses: true` plus a 12-hour max-age
+   override means cached 400s outlive the fix
+
+**Prevention:** `pnpm edge:build` now ends in `pnpm edge:verify`, which rejects
+any output containing a specifier that is not `npm:`. Run `pnpm edge:verify`
+before pasting if you are deploying a bundle you did not just build.
+
+**Enable zone logging.** These zones ship with `EnableLogging: false` and no
+log forwarding, which is why the failure above was found by symptom hours
+later instead of from the error at the moment it happened.
+
 
 **No country code on the page.** Confirm the script is enabled in the
 dashboard, then purge — `onOriginResponse` never runs for a cache HIT, so a

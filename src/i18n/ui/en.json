@@ -185,22 +185,43 @@
       "groups": {
         "core-sharing": "Core Sharing",
         "brand-identity": "Brand Identity",
-        "infrastructure": "Infrastructure"
+        "governance": "Governance & Access"
       },
       "comparison": {
         "feature": "Feature",
+        "description": "Every plan shares secrets the same secure way. Paid plans add your brand, domains and team controls.",
+        "included": "Included",
+        "not-included": "Not included",
         "features": {
           "secret-sharing": "Secret sharing",
-          "email-recipients": "Email recipients",
+          "email-recipients": "Send links by email",
           "rest-api": "REST API access",
           "custom-domains": "Custom domains",
           "custom-branding": "Custom branding",
-          "no-rate-limits": "No rate limits"
+          "no-rate-limits": "No rate limits",
+          "expiration-30-days": "Expiration up to 30 days",
+          "incoming-secrets": "Incoming secrets",
+          "unlimited-domains": "Unlimited custom domains",
+          "workspace-branding": "Workspace branding",
+          "access-controls": "Homepage privacy controls",
+          "sso": "Single sign-on (SSO)",
+          "rbac": "Role-based access control",
+          "custom-mail-sender": "Custom email sender",
+          "flexible-from-domain": "Send from your company domain",
+          "audit-logs": "Security audit trail",
+          "ip-access-filtering": "IP address allowlisting"
+        },
+        "status": {
+          "beta": "Beta",
+          "coming-soon": "Coming soon"
+        },
+        "info": {
+          "incoming-secrets": "Let others securely send secrets to you through a private request link."
         }
       },
       "discounts": {
         "title": "Special Discounts",
-        "description": "Are you a student or a non-profit organization? Or maybe you really like discounts? We offer a discounted subscription for you.",
+        "description": "Are you a student or a non-profit organization? Or maybe you really like discounts? We offer a discounted subscription just for you.",
         "cta": "Contact Us"
       }
     },
@@ -212,7 +233,6 @@
     },
     "secrets": {
       "keepSensitiveInfo": "Keep sensitive info out of your email and chat logs.",
-      "securelyStored": "Securely stored in",
       "europe": "Europe",
       "create_link": "Create Link",
       "expirationTime": "Extend lifetime",

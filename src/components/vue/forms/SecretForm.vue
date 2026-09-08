@@ -79,6 +79,7 @@ const isLoading = ref(false);
 const apiResult = ref<ApiResult | null>(null);
 const apiError = ref<string | null>(null);
 const copySuccess = ref(false);
+const secretTextareaRef = ref<HTMLTextAreaElement | null>(null);
 const copyButtonRef = ref<HTMLButtonElement | null>(null);
 const secretUrlInputRef = ref<HTMLInputElement | null>(null);
 
@@ -158,6 +159,12 @@ const clearPassphrase = () => {
 onMounted(() => {
   document.addEventListener("pointerdown", handleClickOutside);
   document.addEventListener("keydown", handleEscape);
+  // Focus without scrolling. A server-rendered `autofocus` attribute made the
+  // browser scroll the textarea into view before first paint whenever it sat
+  // below the fold (viewports under ~700px tall), and Chrome stops LCP
+  // measurement on that scroll, so Lighthouse reported NO_LCP and a null
+  // performance score for the homepage.
+  secretTextareaRef.value?.focus({ preventScroll: true });
 });
 
 onUnmounted(() => {
@@ -363,9 +370,9 @@ const createAnotherSecret = () => {
         <!-- Text Area Input -->
         <div>
           <textarea
+            ref="secretTextareaRef"
             v-model="secretText"
             rows="5"
-            autofocus
             :aria-label="t('web.secrets.secret-label')"
             aria-describedby="secret-description"
             class="block w-full rounded-lg border-0 py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 placeholder:text-sm text-sm disabled:opacity-50 bg-white dark:bg-gray-800 dark:text-gray-100 dark:ring-gray-600 focus-visible:outline-2 focus-visible:outline-brand-500/50 resize-y"

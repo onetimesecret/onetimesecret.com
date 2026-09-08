@@ -1,23 +1,44 @@
 <!doctype html>
+<!--
+  Custom error page for the REGIONAL pull zones (eu, ca, nz, us, uk).
+
+  Bunny keeps one custom error page per pull zone (ErrorPageCustomCode) and
+  fills {{status_code}} and {{status_title}} at serve time, so this single
+  file replaces the per-status pages in public/bunnycdn_errors/ for the
+  regional zones. Those three stay as they are: they serve the marketing
+  storage zone, where /bunnycdn_errors/404.html is a storage-level feature.
+
+  Everything here is self-contained or points at onetimesecret.com, because on
+  a regional domain the origin is the Ruby app, and it is the thing that just
+  failed. Roll out with `pnpm edge:error-page:deploy`.
+-->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta
+      name="color-scheme"
+      content="light dark" />
+    <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0" />
-    <title>Onetime Secret - Maintenance</title>
     <meta
-      name="description"
-      content="Onetime Secret is temporarily unavailable for maintenance. Please try again in a few minutes." />
+      name="robots"
+      content="noindex" />
+    <title>Onetime Secret - Service Error</title>
     <style>
+      /*
+        Absolute font URLs: the marketing pull zone serves /fonts/ with
+        `access-control-allow-origin: *`, which is what a cross-origin
+        @font-face load needs. The regional origins have no /fonts/ path.
+      */
       @font-face {
         font-family: "Zilla Slab";
         font-style: normal;
         font-weight: 400;
         font-display: swap;
         src:
-          url("/fonts/ZillaSlab-Regular.woff2") format("woff2"),
-          url("/fonts/ZillaSlab-Regular.woff") format("woff");
+          url("https://onetimesecret.com/fonts/ZillaSlab-Regular.woff2") format("woff2"),
+          url("https://onetimesecret.com/fonts/ZillaSlab-Regular.woff") format("woff");
       }
 
       @font-face {
@@ -26,8 +47,8 @@
         font-weight: 600;
         font-display: swap;
         src:
-          url("/fonts/ZillaSlab-SemiBold.woff2") format("woff2"),
-          url("/fonts/ZillaSlab-SemiBold.woff") format("woff");
+          url("https://onetimesecret.com/fonts/ZillaSlab-SemiBold.woff2") format("woff2"),
+          url("https://onetimesecret.com/fonts/ZillaSlab-SemiBold.woff") format("woff");
       }
 
       @font-face {
@@ -36,8 +57,8 @@
         font-weight: 700;
         font-display: swap;
         src:
-          url("/fonts/ZillaSlab-Bold.woff2") format("woff2"),
-          url("/fonts/ZillaSlab-Bold.woff") format("woff");
+          url("https://onetimesecret.com/fonts/ZillaSlab-Bold.woff2") format("woff2"),
+          url("https://onetimesecret.com/fonts/ZillaSlab-Bold.woff") format("woff");
       }
 
       :root {
@@ -68,6 +89,7 @@
         display: flex;
         flex-direction: column;
         min-height: 100vh;
+        min-height: 100dvh;
         line-height: 1.5;
       }
 
@@ -111,7 +133,6 @@
           rgba(220, 74, 34, 0.05) 100%
         );
         background-size: 200% 100%;
-        animation: gradient-x 5s ease-in-out infinite;
         pointer-events: none;
         z-index: 0;
       }
@@ -139,7 +160,14 @@
           var(--brand-500)
         );
         background-size: 200% 100%;
-        animation: gradient-x 5s ease-in-out infinite;
+      }
+
+      /* The gradients only move for visitors who have not asked for less motion. */
+      @media (prefers-reduced-motion: no-preference) {
+        .error-card::before,
+        .animated-border {
+          animation: gradient-x 5s ease-in-out infinite;
+        }
       }
 
       .header {
@@ -185,9 +213,16 @@
         margin-top: 1.5rem;
       }
 
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem 2rem;
+        margin-top: 1.5rem;
+      }
+
       .action-link {
         display: inline-block;
-        margin-top: 1.5rem;
         color: var(--brand-600);
         text-decoration: none;
         font-weight: 500;
@@ -250,26 +285,47 @@
   </head>
   <body>
     <div class="container">
-      <div
-        class="error-card"
-        role="alert">
+      <div class="error-card">
         <div class="animated-border"></div>
         <div class="header">
           <h1 class="brand-text">Onetime Secret</h1>
         </div>
-        <div class="error-code">503</div>
-        <h2 class="error-title">Scheduled Maintenance</h2>
+        <div
+          class="error-code"
+          data-placeholder>
+          {{status_code}}
+        </div>
+        <h2
+          class="error-title"
+          data-placeholder>
+          {{status_title}}
+        </h2>
         <p class="error-description">
-          We're currently performing scheduled maintenance to improve our
-          service. We'll be back online shortly.
+          This Onetime Secret region is not responding right now. Our team has
+          been notified and is working on it.
         </p>
-        <p class="error-description">Thank you for your patience.</p>
+        <p class="error-description">Please try again in a few moments.</p>
       </div>
-      <a
-        href="/"
-        class="action-link"
-        >Go to Homepage</a
-      >
+      <div class="actions">
+        <a
+          href="https://onetimesecret.com/"
+          class="action-link"
+          >Go to onetimesecret.com</a
+        >
+        <a
+          href="https://status.onetimesecret.com/"
+          class="action-link"
+          >Service status</a
+        >
+      </div>
     </div>
+    <script>
+      // Bunny fills the {{…}} placeholders server-side. If a placeholder ever
+      // comes through unfilled (renamed, or the page served outside Bunny),
+      // hide the element rather than show template syntax to a visitor.
+      document.querySelectorAll("[data-placeholder]").forEach((el) => {
+        if (el.textContent.includes("{{")) el.hidden = true;
+      });
+    </script>
   </body>
 </html>

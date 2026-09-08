@@ -29,6 +29,12 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    // Vite copies `publicDir` into `outDir` on every build. Left on, each
+    // `pnpm edge:build` buries the two bundles under a copy of the whole
+    // `public/` tree — favicons, sitemap, robots.txt — and the deploy step is
+    // "find the right file in the Bunny dashboard paste box". That noise is
+    // how the wrong file gets pasted. edge/dist holds exactly two files.
+    publicDir: false,
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("../src", import.meta.url)),
@@ -41,8 +47,10 @@ export default defineConfig(({ mode }) => {
         fileName: () => `${name}.js`,
       },
       outDir: fileURLToPath(new URL("./dist", import.meta.url)),
-      // Each run overwrites its own deterministic file name. Never empty the
-      // directory: the two bundles are built by separate invocations.
+      // The two bundles come from separate invocations, so neither may empty
+      // the directory or it would delete the other. `pnpm edge:build` removes
+      // edge/dist once before the first build instead, and edge:verify fails
+      // if anything but the two bundles is left in it.
       emptyOutDir: false,
       minify: false,
       target: "es2022",

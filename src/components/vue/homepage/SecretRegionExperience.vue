@@ -9,7 +9,7 @@
 <script setup lang="ts">
 import type { ApiResult } from "@/components/vue/forms/SecretForm.vue";
 import HomepageSecretForm from "@/components/vue/homepage/HomepageSecretForm.vue";
-import ClientOnlyRegionSelector from "@/components/vue/homepage/regions/ClientOnlyRegionSelector.vue";
+import RegionSelector from "@/components/vue/homepage/regions/RegionSelector.vue";
 import type { Region } from "@/types/jurisdiction";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -18,7 +18,6 @@ interface Props {
   currentRegion: Region;
   availableRegions: Region[];
   apiBaseUrl: string;
-  isClient: boolean;
 }
 
 defineProps<Props>();
@@ -92,9 +91,14 @@ defineExpose({
               }}
             </h2>
 
-            <!-- Region selector pill -->
-            <ClientOnlyRegionSelector
-              v-if="isClient"
+            <!--
+              Region selector pill. Rendered during SSR with the default region
+              so the row keeps its size before hydration (RegionSelector is
+              SSR-safe: browser APIs are confined to onMounted). RegionLabel
+              reserves the widest region's label width, so a post-mount region
+              change does not reflow this header row.
+            -->
+            <RegionSelector
               :current-region="currentRegion"
               :available-regions="availableRegions"
               class="flex-shrink-0 transition-colors duration-300"
