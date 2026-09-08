@@ -16,6 +16,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta
+      name="color-scheme"
+      content="light dark" />
+    <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0" />
     <meta
@@ -86,6 +89,7 @@
         display: flex;
         flex-direction: column;
         min-height: 100vh;
+        min-height: 100dvh;
         line-height: 1.5;
       }
 
@@ -129,7 +133,6 @@
           rgba(220, 74, 34, 0.05) 100%
         );
         background-size: 200% 100%;
-        animation: gradient-x 5s ease-in-out infinite;
         pointer-events: none;
         z-index: 0;
       }
@@ -157,7 +160,14 @@
           var(--brand-500)
         );
         background-size: 200% 100%;
-        animation: gradient-x 5s ease-in-out infinite;
+      }
+
+      /* The gradients only move for visitors who have not asked for less motion. */
+      @media (prefers-reduced-motion: no-preference) {
+        .error-card::before,
+        .animated-border {
+          animation: gradient-x 5s ease-in-out infinite;
+        }
       }
 
       .header {
@@ -275,9 +285,7 @@
   </head>
   <body>
     <div class="container">
-      <div
-        class="error-card"
-        role="alert">
+      <div class="error-card">
         <div class="animated-border"></div>
         <div class="header">
           <h1 class="brand-text">Onetime Secret</h1>
