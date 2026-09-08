@@ -462,6 +462,7 @@ onUnmounted(() => {
                             <span
                               v-if="feature.statusKey"
                               class="inline-flex items-center
+                                whitespace-nowrap
                                 rounded-full border border-surface-4
                                 px-1.5 py-0.5 text-[0.625rem]
                                 font-semibold uppercase leading-none
