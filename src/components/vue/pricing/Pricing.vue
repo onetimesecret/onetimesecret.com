@@ -179,7 +179,28 @@ onUnmounted(() => {
               class="mx-auto max-w-6xl flex flex-col
                 sm:flex-row items-center justify-center
                 gap-6">
-              <fieldset aria-label="Payment frequency">
+              <!--
+                Mobile stacks these controls with the region selector on top
+                and the interval toggle beneath, nearest the pricing tiers it
+                drives. DOM order matches that stacked order so keyboard focus
+                follows the visual sequence; sm+ restores the horizontal reading
+                order (interval then region) with order-* utilities.
+
+                PricingRegionSelector is rendered during SSR with the default
+                region so the controls row keeps its size. initJurisdiction()
+                may swap the label to a persisted or geo-detected region after
+                mount; RegionLabel reserves the widest region's width so that
+                swap does not resize the selector or reflow the centered row.
+              -->
+              <PricingRegionSelector
+                class="sm:order-2"
+                :current-region="currentRegion"
+                :available-regions="availableRegions"
+                @region-change="handleRegionChange" />
+
+              <fieldset
+                :aria-label="t('web.pricing.payment-frequency')"
+                class="sm:order-1">
                 <RadioGroup
                   v-model="frequency"
                   class="grid grid-cols-2 gap-x-1
@@ -207,18 +228,6 @@ onUnmounted(() => {
                   </RadioGroupOption>
                 </RadioGroup>
               </fieldset>
-
-              <!--
-                Rendered during SSR with the default region so the controls
-                row keeps its size. initJurisdiction() may swap the label to a
-                persisted or geo-detected region after mount; RegionLabel
-                reserves the widest region's width so that swap does not resize
-                the selector or reflow the centered row.
-              -->
-              <PricingRegionSelector
-                :current-region="currentRegion"
-                :available-regions="availableRegions"
-                @region-change="handleRegionChange" />
             </div>
           </div>
         </div>
@@ -454,7 +463,9 @@ onUnmounted(() => {
                               </span></span>
                             <span
                               v-if="feature.statusKey"
+                              data-testid="feature-status-badge"
                               class="inline-flex items-center
+                                whitespace-nowrap
                                 rounded-full border border-surface-4
                                 px-1.5 py-0.5 text-[0.625rem]
                                 font-semibold uppercase leading-none
