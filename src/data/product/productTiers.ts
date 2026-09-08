@@ -198,6 +198,7 @@ export const featureGroups: FeatureGroup[] = [
       {
         labelKey: "web.pricing.comparison.features.workspace-branding",
         availableIn: TEAM_ONLY,
+        statusKey: "web.pricing.comparison.status.coming-soon",
       },
       {
         labelKey: "web.pricing.comparison.features.flexible-from-domain",
