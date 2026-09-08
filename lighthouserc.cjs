@@ -59,8 +59,11 @@ module.exports = {
             'unsized-images': 'error',
             'render-blocking-resources': 'warn',
 
-            // Performance optimizations (warn not error: NO_LCP on heavy
-            // pages returns null scores, which LHCI treats as failures)
+            // Performance optimizations (warn not error: a NO_LCP run returns
+            // null scores, which LHCI treats as failures). The homepage used
+            // to hit NO_LCP because the SSR `autofocus` on the secret textarea
+            // scrolled the page before first paint on the 640px-tall mobile
+            // profile; SecretForm.vue now focuses on mount with preventScroll.
             'uses-text-compression': 'warn',
             'unminified-css': 'warn',
             'unminified-javascript': 'warn',
