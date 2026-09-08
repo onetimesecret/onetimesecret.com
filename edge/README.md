@@ -10,7 +10,7 @@ browser can never disagree.
 | `bunnycdn-auth-redirect.ts` | every request | 302s `/signin` and `/signup` to the visitor's regional domain |
 | `bunnycdn-country-injection.ts` | origin response, cache MISS only | appends `window.__USER_COUNTRY__` to `<head>` of HTML pages |
 | `country.ts` | — | shared, pure helpers used by both (not deployed on its own) |
-| `error-page/regional.html` | regional zones, on error | custom error page pushed by `error-page/push.mjs` |
+| `error-page/regional.html` | regional zones, on error | custom error page pushed by `error-page/cli.mjs` |
 
 The auth paths themselves come from `src/utils/authPaths.ts`, shared with the
 client-side link rewriter, so the edge and the browser cannot disagree about
@@ -255,15 +255,18 @@ The page is built for the moment the regional origin is down:
   so a renamed placeholder degrades to a blank line rather than `{{…}}`.
 - English only. The regional apps are localized; this page is deliberately not.
 
-`edge/error-page/push.mjs` keeps the five zones from drifting:
+`edge/error-page/cli.mjs` keeps the five zones from drifting, through three
+pnpm scripts that take the same arguments:
 
 ```bash
 # BUNNY_API_KEY from the environment, .env.local or .env (declared in
 # .env.example); the same precedence as .envrc, with or without direnv
 pnpm edge:error-page:push              # report: which zones differ (exit 1 if any)
 pnpm edge:error-page:push --apply      # push regional.html to every zone that differs
-pnpm edge:error-page:push eu uk        # limit to some regions, in either mode
-pnpm edge:error-page:push nz=<zone>    # name the pull zone for a region (name or ID)
+pnpm edge:error-page:verify            # check every zone; print the manual checks
+pnpm edge:error-page:deploy            # push then verify, one region at a time
+pnpm edge:error-page:deploy eu uk      # limit to some regions (any command)
+pnpm edge:error-page:deploy nz=<zone>  # name the pull zone for a region (name or ID)
 ```
 
 The region list is read from `src/data/ops/jurisdictions.ts` (live entries
@@ -290,14 +293,36 @@ origin, cache rules and Vary settings on a production zone. Any field other
 than the two sent (plus Bunny's own bandwidth and charge counters) that
 changed is reported as a failure for that zone.
 
-A failed zone does not stop the run; the remaining zones are still pushed and
-the summary lists how many succeeded and failed. Exit codes: `0` clean, `1`
-drift found in report mode, `2` a push failed or the script could not run.
+With `push --apply` a failed zone does not stop the run; the remaining zones
+are still pushed and the summary lists how many succeeded and failed.
 Re-running is idempotent and only touches zones that still differ.
 
-`test/unit/edge/errorPagePush.test.ts` covers zone resolution, drift
-planning, the zone-list parsing, the read-back diff and, through an injected
-`fetch`, the full `main` flow in both modes.
+`verify` writes nothing. It reads each zone fresh, applies the same check as
+the push read-back (page enabled, content equal to the file), prints the
+zone's origin and hostnames for eyeballing, and exits `1` if any zone fails.
+It ends with the manual checks, with the zone IDs and hostnames filled in:
+the two `curl` calls against the API that reproduce what it just did, where
+to look in the dashboard, and how to see the page actually served. That last
+one is manual by nature: Bunny serves the custom page only for errors it
+generates itself (origin unreachable or timed out), so it takes an origin
+that is down or briefly pointed at a closed port. A `500` from the app
+passes through untouched.
+
+`deploy` is push and verify for one region at a time, in the order given:
+read the zone fresh, push if it differs, verify, then the next region. It
+stops at the first failure, including a collateral change caught by the
+read-back diff, and says which regions it did not reach. A push that
+misbehaves on one production zone is therefore never repeated on the next.
+Zones already up to date are only verified. This is the command to run after
+changing `regional.html`.
+
+Exit codes for all three: `0` clean, `1` drift found by `push` without
+`--apply` or a zone failed `verify`, `2` a push failed, `deploy` stopped,
+or the script could not run.
+
+`test/unit/edge/errorPageCli.test.ts` covers zone resolution, drift
+planning, the zone-list parsing, the read-back diff, the manual-steps text
+and, through an injected `fetch`, all three commands end to end.
 
 Not verified against a live zone: the exact set of statuses Bunny routes
 through the custom page (origin-unreachable 502/504 and Bunny's own errors
