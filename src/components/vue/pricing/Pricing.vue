@@ -413,9 +413,20 @@ onUnmounted(() => {
                         :key="feature.labelKey">
                         <th
                           scope="row"
-                          class="py-3 pr-3 text-left
+                          class="py-3 pr-3 text-left align-middle
                             font-normal text-text-secondary">
-                          {{ t(feature.labelKey) }}
+                          <span class="flex flex-col items-start gap-1.5">
+                            <span>{{ t(feature.labelKey) }}</span>
+                            <span
+                              v-if="feature.statusKey"
+                              class="inline-flex items-center
+                                rounded-full border border-surface-4
+                                px-1.5 py-0.5 text-[0.625rem]
+                                font-semibold uppercase leading-none
+                                tracking-wider text-text-tertiary">
+                              {{ t(feature.statusKey) }}
+                            </span>
+                          </span>
                         </th>
                         <td
                           v-for="tier in tiers"

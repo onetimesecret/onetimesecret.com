@@ -2,6 +2,8 @@ export interface ComparisonFeature {
   labelKey: string;
   /** Ids of the tiers (see productTiers) that include this feature */
   availableIn: string[];
+  /** Optional status badge (e.g. Beta, Coming soon) shown beside the label */
+  statusKey?: string;
 }
 
 export interface FeatureGroup {
