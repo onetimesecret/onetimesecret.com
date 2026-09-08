@@ -5,9 +5,9 @@
 // every regional pull zone, so the five zones never drift from the file in
 // git or from each other.
 //
-//   pnpm edge:error-page            # report drift, exit 1 if any zone differs
-//   pnpm edge:error-page --apply    # push the file to every zone that differs
-//   pnpm edge:error-page eu uk      # limit to some regions (either mode)
+//   pnpm edge:error-page:push            # report drift, exit 1 if any zone differs
+//   pnpm edge:error-page:push --apply    # push the file to every zone that differs
+//   pnpm edge:error-page:push eu uk      # limit to some regions (either mode)
 //
 // Needs BUNNY_API_KEY (the account API key, same secret the deploy workflows
 // use to purge), from the environment or from the repo-root .env / .env.local,
@@ -74,7 +74,7 @@ const ROOT_DIR = join(import.meta.dirname, "..", "..");
 /** Placeholders the template must keep, or Bunny serves a page with no status. */
 const REQUIRED_PLACEHOLDERS = ["{{status_code}}", "{{status_title}}"];
 
-const USAGE = `Usage: pnpm edge:error-page [--apply] [region ...]
+const USAGE = `Usage: pnpm edge:error-page:push [--apply] [region ...]
 
 Pushes edge/error-page/regional.html to the custom error page of the
 regional Bunny pull zones.

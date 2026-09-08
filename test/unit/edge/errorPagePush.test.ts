@@ -273,7 +273,7 @@ describe("push.mjs under plain node", () => {
   it("loads and runs --help", () => {
     const out = execFileSync(process.execPath, [SCRIPT, "--help"], { encoding: "utf8" });
 
-    expect(out).toMatch(/^Usage: pnpm edge:error-page/);
+    expect(out).toMatch(/^Usage: pnpm edge:error-page:push/);
     expect(out).toContain(Object.keys(REGIONAL_HOSTS).join(", "));
   });
 });

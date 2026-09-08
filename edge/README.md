@@ -260,9 +260,9 @@ The page is built for the moment the regional origin is down:
 ```bash
 # BUNNY_API_KEY from the environment, .env.local or .env (declared in
 # .env.example); the same precedence as .envrc, with or without direnv
-pnpm edge:error-page            # report: which zones differ (exit 1 if any)
-pnpm edge:error-page --apply    # push regional.html to every zone that differs
-pnpm edge:error-page eu uk      # limit to some regions, in either mode
+pnpm edge:error-page:push            # report: which zones differ (exit 1 if any)
+pnpm edge:error-page:push --apply    # push regional.html to every zone that differs
+pnpm edge:error-page:push eu uk      # limit to some regions, in either mode
 ```
 
 The region list is read from `src/data/ops/jurisdictions.ts` (live entries
