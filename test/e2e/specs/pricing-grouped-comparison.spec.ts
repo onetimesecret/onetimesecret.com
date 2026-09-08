@@ -14,6 +14,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import en from '../../../src/i18n/ui/en.json' with { type: 'json' };
 
 // ---------------------------------------------------------------------------
 // Suite: page load
@@ -87,9 +88,15 @@ test.describe('Pricing — controls row', () => {
 // ---------------------------------------------------------------------------
 
 test.describe('Pricing — grouped comparison section', () => {
-  // Group labels come from web.pricing.groups.* in en.json and are referenced
-  // by labelKey in src/data/product/productTiers.ts.
-  const groupHeadings = [/core sharing/i, /brand identity/i, /infrastructure/i];
+  // Group labels are derived from web.pricing.groups.* in en.json (referenced
+  // by labelKey in src/data/product/productTiers.ts) so a rename — e.g.
+  // "Infrastructure" -> "Governance & Access" — can't silently desync this spec.
+  const groups = en.web.pricing.groups;
+  const groupHeadings = [
+    groups['core-sharing'],
+    groups['brand-identity'],
+    groups.governance,
+  ];
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/pricing');
