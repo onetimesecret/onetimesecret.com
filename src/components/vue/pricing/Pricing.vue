@@ -179,7 +179,13 @@ onUnmounted(() => {
               class="mx-auto max-w-6xl flex flex-col
                 sm:flex-row items-center justify-center
                 gap-6">
-              <fieldset aria-label="Payment frequency">
+              <!--
+                Mobile stacks these controls; the interval toggle sits second
+                so it is nearest the pricing tiers it affects. sm+ restores the
+                horizontal reading order (interval then region). Visual order
+                only: DOM order is unchanged so sibling selectors still resolve.
+              -->
+              <fieldset aria-label="Payment frequency" class="order-2 sm:order-1">
                 <RadioGroup
                   v-model="frequency"
                   class="grid grid-cols-2 gap-x-1
@@ -216,6 +222,7 @@ onUnmounted(() => {
                 the selector or reflow the centered row.
               -->
               <PricingRegionSelector
+                class="order-1 sm:order-2"
                 :current-region="currentRegion"
                 :available-regions="availableRegions"
                 @region-change="handleRegionChange" />
