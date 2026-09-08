@@ -260,16 +260,26 @@ The page is built for the moment the regional origin is down:
 ```bash
 # BUNNY_API_KEY from the environment, .env.local or .env (declared in
 # .env.example); the same precedence as .envrc, with or without direnv
-pnpm edge:error-page:push            # report: which zones differ (exit 1 if any)
-pnpm edge:error-page:push --apply    # push regional.html to every zone that differs
-pnpm edge:error-page:push eu uk      # limit to some regions, in either mode
+pnpm edge:error-page:push              # report: which zones differ (exit 1 if any)
+pnpm edge:error-page:push --apply      # push regional.html to every zone that differs
+pnpm edge:error-page:push eu uk        # limit to some regions, in either mode
+pnpm edge:error-page:push nz=<zone>    # name the pull zone for a region (name or ID)
 ```
 
 The region list is read from `src/data/ops/jurisdictions.ts` (live entries
 only), the same source as the edge scripts and the client, so launching a
-region there is enough for this script to pick up its zone. Zones are located
-by hostname from `GET /pullzone`, never by ID; a region with no zone, or a
-hostname on two zones, aborts before anything is written.
+region there is enough for this script to pick up its zone.
+
+A zone is located by its public hostname from `GET /pullzone` by default, so
+recreating such a zone needs no change here. A pull zone behind Bunny Shield
+cannot be found that way: the public hostname terminates at the shield, and
+the zone itself has a generated, non-guessable name and only its
+`*.b-cdn.net` hostname. Those zones are named per region, by
+`BUNNY_PULL_ZONE_<REGION>` (`BUNNY_PULL_ZONE_NZ=<name or ID>`, declared in
+`.env.example`, read from the same sources as `BUNNY_API_KEY`) or by a
+`region=zone` argument, which wins over the environment. A region with no
+zone, a hostname on two zones, an unknown zone name or ID, or a named zone
+that carries another region's hostname aborts before anything is written.
 
 Each push is `POST /pullzone/{id}` with `ErrorPageEnableCustomCode: true` and
 the file contents, followed by a `GET` read-back that must match. The
