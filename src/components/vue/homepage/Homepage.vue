@@ -68,11 +68,7 @@ const handleSecretCreationResult = (result: ApiResult) => {
   }
 };
 
-const isClient = ref(false);
-
 onMounted(async () => {
-  isClient.value = true;
-
   // Same resolution order as /pricing and the header: a persisted choice
   // first, then the country code injected at the edge. Detecting without
   // applying would leave the hero form on the default region while the header
@@ -103,7 +99,6 @@ onUnmounted(() => {
         :current-region="currentRegion"
         :available-regions="availableRegions"
         :api-base-url="apiBaseUrl"
-        :is-client="isClient"
         @region-change="handleRegionChange"
         @create-secret="handleSecretCreationResult" />
 

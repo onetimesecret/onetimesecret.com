@@ -18,7 +18,6 @@ interface Props {
   currentRegion: Region;
   availableRegions: Region[];
   apiBaseUrl: string;
-  isClient: boolean;
 }
 
 defineProps<Props>();
@@ -92,9 +91,12 @@ defineExpose({
               }}
             </h2>
 
-            <!-- Region selector pill -->
+            <!--
+              Region selector pill. Rendered during SSR so the row keeps its
+              height before hydration; ClientOnlyRegionSelector swaps its
+              static placeholder for the live selector on mount.
+            -->
             <ClientOnlyRegionSelector
-              v-if="isClient"
               :current-region="currentRegion"
               :available-regions="availableRegions"
               class="flex-shrink-0 transition-colors duration-300"
