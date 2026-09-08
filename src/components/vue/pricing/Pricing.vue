@@ -180,12 +180,27 @@ onUnmounted(() => {
                 sm:flex-row items-center justify-center
                 gap-6">
               <!--
-                Mobile stacks these controls; the interval toggle sits second
-                so it is nearest the pricing tiers it affects. sm+ restores the
-                horizontal reading order (interval then region). Visual order
-                only: DOM order is unchanged so sibling selectors still resolve.
+                Mobile stacks these controls with the region selector on top
+                and the interval toggle beneath, nearest the pricing tiers it
+                drives. DOM order matches that stacked order so keyboard focus
+                follows the visual sequence; sm+ restores the horizontal reading
+                order (interval then region) with order-* utilities.
+
+                PricingRegionSelector is rendered during SSR with the default
+                region so the controls row keeps its size. initJurisdiction()
+                may swap the label to a persisted or geo-detected region after
+                mount; RegionLabel reserves the widest region's width so that
+                swap does not resize the selector or reflow the centered row.
               -->
-              <fieldset aria-label="Payment frequency" class="order-2 sm:order-1">
+              <PricingRegionSelector
+                class="sm:order-2"
+                :current-region="currentRegion"
+                :available-regions="availableRegions"
+                @region-change="handleRegionChange" />
+
+              <fieldset
+                :aria-label="t('web.pricing.payment-frequency')"
+                class="sm:order-1">
                 <RadioGroup
                   v-model="frequency"
                   class="grid grid-cols-2 gap-x-1
@@ -213,19 +228,6 @@ onUnmounted(() => {
                   </RadioGroupOption>
                 </RadioGroup>
               </fieldset>
-
-              <!--
-                Rendered during SSR with the default region so the controls
-                row keeps its size. initJurisdiction() may swap the label to a
-                persisted or geo-detected region after mount; RegionLabel
-                reserves the widest region's width so that swap does not resize
-                the selector or reflow the centered row.
-              -->
-              <PricingRegionSelector
-                class="order-1 sm:order-2"
-                :current-region="currentRegion"
-                :available-regions="availableRegions"
-                @region-change="handleRegionChange" />
             </div>
           </div>
         </div>
@@ -461,6 +463,7 @@ onUnmounted(() => {
                               </span></span>
                             <span
                               v-if="feature.statusKey"
+                              data-testid="feature-status-badge"
                               class="inline-flex items-center
                                 whitespace-nowrap
                                 rounded-full border border-surface-4

@@ -64,14 +64,17 @@ test.describe('Pricing — controls row', () => {
   });
 
   test('region selector is visible alongside the frequency toggle', async ({ page }) => {
-    // PricingRegionSelector mounts client-side in the div right after the
-    // frequency fieldset. Its trigger is the only aria-haspopup button in the
-    // controls row and its accessible name is the region display name
+    // PricingRegionSelector mounts client-side as a sibling of the frequency
+    // fieldset in the controls row. Its trigger is the only aria-haspopup
+    // button in that row and its accessible name is the region display name
     // (e.g. "European Union"); the "<Region> region" label sits on an
-    // aria-hidden icon, so it never reaches the accessible name.
-    const regionBtn = page.locator(
-      'fieldset[aria-label="Payment frequency"] + div button[aria-haspopup="true"]'
-    );
+    // aria-hidden icon, so it never reaches the accessible name. Scope to the
+    // shared parent instead of DOM adjacency, which the mobile focus-order
+    // fix no longer guarantees.
+    const controlsRow = page
+      .locator('fieldset[aria-label="Payment frequency"]')
+      .locator('..');
+    const regionBtn = controlsRow.locator('button[aria-haspopup="true"]');
     await expect(regionBtn).toBeVisible();
     await expect(regionBtn).not.toHaveText(/^\s*$/);
   });

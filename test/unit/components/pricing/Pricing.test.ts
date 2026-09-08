@@ -172,8 +172,11 @@ describe('Pricing plan comparison', () => {
     featureGroups.forEach((group, gi) => {
       const rows = [...tables[gi].querySelectorAll('tbody tr')];
       group.features.forEach((feature, fi) => {
-        // The status pill is the only rounded-full element in the row header.
-        const badge = rows[fi].querySelector('th[scope="row"] .rounded-full');
+        // Select by a stable test hook rather than styling utilities, so a
+        // radius/class change cannot silently break or mislead this assertion.
+        const badge = rows[fi].querySelector(
+          'th[scope="row"] [data-testid="feature-status-badge"]'
+        );
         if (feature.statusKey) {
           expect(badge, feature.labelKey).not.toBeNull();
           expect(badge?.textContent?.trim(), feature.labelKey).toBe(tEn(feature.statusKey));
