@@ -42,9 +42,14 @@ module.exports = {
             // Critical for performance
             'first-contentful-paint': ['warn', { maxNumericValue: 2000 }],
             'largest-contentful-paint': ['warn', { maxNumericValue: 2500 }],
-            // Hydration of Astro client:load islands causes minor CLS (~0.13);
-            // downgraded to warning since this is architectural, not a design issue
-            'cumulative-layout-shift': ['warn', { maxNumericValue: 0.1 }],
+            // CLS is enforced. The region selector and pricing controls now
+            // render during SSR with reserved label widths, and Zilla Slab has
+            // metric-adjusted local fallbacks, so hydration and the font swap
+            // no longer shift layout. Measured 0 on /, /en/, /de/, /en/about/
+            // and /en/pricing/ (3 runs each, mobile profile). The standalone
+            // Bunny error pages still swap fonts without tuned fallbacks and
+            // measure <= 0.04, inside the threshold.
+            'cumulative-layout-shift': ['error', { maxNumericValue: 0.1 }],
             'total-blocking-time': ['warn', { maxNumericValue: 300 }],
 
             // Image related tests
