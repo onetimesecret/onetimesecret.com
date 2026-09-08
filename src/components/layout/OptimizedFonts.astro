@@ -5,6 +5,18 @@
  * This component provides optimized font loading for the Zilla Slab font family.
  * It preloads the most critical weights (Regular, Bold, SemiBold, BoldItalic) and efficiently
  * loads other font variations with proper font-display settings.
+ *
+ * font-display policy (deliberate, keep the split):
+ * - The four preloaded faces use `swap`. They carry the brand headline and
+ *   body copy, so they must always end up rendered in Zilla Slab, even on a
+ *   slow first visit. The metric-adjusted fallback faces below make the swap
+ *   itself layout-neutral, which is what removes the CLS; `optional` would
+ *   trade that for "fallback for the whole page view" whenever the font
+ *   misses the ~100ms block window, which is the common case on 3G mobile.
+ * - Every other face uses `optional`. They are secondary weights and the
+ *   Highlight display face; a one-visit fallback there is invisible to most
+ *   readers and avoids late re-layout of text that has no size-adjusted
+ *   fallback tuned for it.
  */
 
 // Paths are relative to the public directory when used in link elements
