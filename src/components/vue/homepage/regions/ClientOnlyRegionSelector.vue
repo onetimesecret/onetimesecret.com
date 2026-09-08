@@ -13,7 +13,6 @@
 import { ref, onMounted } from "vue";
 import RegionSelector from "./RegionSelector.vue";
 import type { Region } from "@/types/jurisdiction";
-import OIcon from "@/components/vue/icons/OIcon.vue";
 
 defineOptions({
   inheritAttrs: false,
@@ -60,17 +59,31 @@ const handleRegionChange = (region: Region) => {
     />
   </template>
   <template v-else>
-    <!-- Static placeholder used during build/SSR with matching DOM structure -->
+    <!--
+      Static placeholder used during build/SSR. It mirrors the pill in
+      RegionSelector.vue (same padding, border, dot, chevron) so the row
+      keeps the same height when the live selector replaces it on mount.
+      Keep the two in sync or the swap becomes a layout shift.
+    -->
     <div id="region-selector" class="relative inline-flex items-center text-xs xs:text-sm text-gray-500 dark:text-gray-300" v-bind="$attrs">
-      <span class="inline self-center">{{ $t("web.secrets.securelyStored") }}</span>
-      <div class="relative ml-1 xs:ml-2 inline-flex items-center rounded-md bg-white dark:bg-gray-800 px-1.5 xs:px-2.5 py-0.5 text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600">
-        <OIcon
-          :collection="currentRegion.icon.collection"
-          :name="currentRegion.icon.name"
-          class="size-3 xs:size-4 mr-1 xs:mr-1.5 text-gray-500 dark:text-gray-300 self-center"
-          :aria-label="`${currentRegion.displayName} region`"
-        />
-        <span class="self-center">{{ currentRegion.displayName }}</span>
+      <div
+        class="relative inline-flex items-center rounded-full bg-surface-2 px-3 py-1.5 text-xs xs:text-sm font-medium text-text-secondary border border-surface-3"
+        :aria-label="`${currentRegion.displayName} region`">
+        <span
+          class="size-2 rounded-full bg-green-500 mr-2"
+          aria-hidden="true"></span>
+        <span>{{ currentRegion.displayName }}</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          class="ml-1 size-4 text-text-tertiary"
+          aria-hidden="true">
+          <path
+            fill-rule="evenodd"
+            d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+            clip-rule="evenodd" />
+        </svg>
       </div>
     </div>
   </template>
