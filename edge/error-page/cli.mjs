@@ -141,9 +141,9 @@ const ROOT_DIR = join(import.meta.dirname, "..", "..");
 /** Placeholders the template must keep, or Bunny serves a page with no status. */
 const REQUIRED_PLACEHOLDERS = ["{{status_code}}", "{{status_title}}"];
 
-export const COMMANDS = Object.freeze(["push", "verify", "deploy"]);
+export const COMMANDS = Object.freeze(["push", "verify", "deploy", "probe"]);
 
-const USAGE = `Usage: pnpm edge:error-page:<push|verify|deploy> [--apply] [region[=zone] ...]
+const USAGE = `Usage: pnpm edge:error-page:<push|verify|deploy|probe> [--apply] [region[=zone] ...]
 
 Keeps the custom error page of the regional Bunny pull zones equal to
 edge/error-page/regional.html.
@@ -157,6 +157,11 @@ Commands:
   deploy        push and verify one region at a time, in the order given,
                 stopping at the first failure so it never reaches the next
                 zone. Zones already up to date are only verified.
+  probe         fetch each region's public URL and report whether Bunny
+                served the custom page. Only meaningful with the origin
+                down: Bunny substitutes the page for its own errors, never
+                for the app's. Needs no API key; exit 1 unless every region
+                served it.
 
 Arguments, the same for all three:
   --apply       push only: write to the zones that differ
@@ -164,6 +169,9 @@ Arguments, the same for all three:
   region ...    limit to these regions: ${Object.keys(REGIONAL_HOSTS).join(", ")}
   region=zone   use this pull zone (name or numeric ID) for the region,
                 e.g. nz=shield-3f9a2c or nz=123456; overrides the environment
+  region=host   probe only: fetch this hostname for the region instead of
+                the public one, e.g. nz=be2169e1-7.b-cdn.net when the public
+                hostname does not route through the zone yet
 
 A zone is found by its public hostname (${REGIONAL_HOSTS.eu}) unless one is
 named for the region. A pull zone behind Bunny Shield has a generated name
@@ -526,6 +534,88 @@ ${get} \\
 }
 
 /**
+ * The template's <title>, the one line of the page the app never sends, so
+ * finding it in a response means Bunny substituted the custom page.
+ * @param {string} html
+ */
+export function pageMarker(html) {
+  const m = /<title>[^<]*<\/title>/i.exec(html);
+  if (!m) throw new Error("regional.html has no <title>; the probe needs one to recognise the page");
+  return m[0];
+}
+
+/**
+ * @typedef {object} Probe
+ * @property {string} region
+ * @property {string} host
+ * @property {number} status 0 when the request itself failed
+ * @property {"served" | "origin" | "other" | "unfilled" | "error"} outcome
+ * @property {string} detail
+ */
+
+/**
+ * Fetches a region's public URL once, straight through the pull zone, and
+ * classifies what came back. Redirects are not followed: a 3xx is the app
+ * answering, which is all the probe needs to know about it.
+ * @param {typeof fetch} fetchImpl
+ * @param {string} region
+ * @param {string} host
+ * @param {string} marker
+ * @returns {Promise<Probe>}
+ */
+export async function probeRegion(fetchImpl, region, host, marker) {
+  const url = `https://${host}/`;
+  let status;
+  let body;
+  try {
+    const res = await fetchImpl(url, {
+      redirect: "manual",
+      cache: "no-store",
+      headers: { Accept: "text/html" },
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+    status = res.status;
+    body = await res.text();
+  } catch (err) {
+    // Node's fetch says "fetch failed" and keeps the reason (DNS, TLS, reset) in cause.
+    const cause = err instanceof Error && err.cause instanceof Error ? `: ${err.cause.message.trim()}` : "";
+    const detail = err instanceof Error ? err.message : String(err);
+    return { region, host, status: 0, outcome: "error", detail: `request failed: ${detail}${cause}` };
+  }
+  const isPage = body.includes(marker);
+  if (status < 500) {
+    return {
+      region,
+      host,
+      status,
+      outcome: "origin",
+      detail: "origin answered; the custom page was not exercised",
+    };
+  }
+  if (!isPage) {
+    return { region, host, status, outcome: "other", detail: "not the custom page" };
+  }
+  // The template's own hide script and header comment mention "{{", so only
+  // the real placeholder tokens count as unfilled.
+  if (REQUIRED_PLACEHOLDERS.some((t) => body.includes(t))) {
+    return {
+      region,
+      host,
+      status,
+      outcome: "unfilled",
+      detail: "custom page served with a placeholder Bunny did not fill",
+    };
+  }
+  return { region, host, status, outcome: "served", detail: "custom page served" };
+}
+
+/** @param {Probe} p */
+function describeProbe(p) {
+  const status = p.status ? String(p.status) : "---";
+  return `${p.region.padEnd(3)} ${p.host.padEnd(24)} ${status}  ${p.detail}`;
+}
+
+/**
  * @typedef {object} Run what every command works from
  * @property {Client} client
  * @property {{ region: string, host: string, zone: PullZone }[]} selected
@@ -618,6 +708,35 @@ async function deployCommand({ client, selected, html, log, error }) {
 }
 
 /**
+ * No API, no zone lookup: one GET per region through its public hostname.
+ * Exit 0 only when every region served the custom page, so a run with the
+ * origin up fails loudly instead of passing by accident.
+ * @param {{ fetch: typeof fetch, hosts: Record<string, string>, html: string,
+ *   log: (line: string) => void }} run
+ */
+async function probeCommand({ fetch: fetchImpl, hosts, html, log }) {
+  const marker = pageMarker(html);
+  const results = [];
+  for (const [region, host] of Object.entries(hosts)) {
+    results.push(await probeRegion(fetchImpl, region, host, marker));
+  }
+  for (const p of results) log(describeProbe(p));
+
+  const notServed = results.filter((p) => p.outcome !== "served");
+  if (notServed.length === 0) {
+    log("Every region served the custom page.");
+    return 0;
+  }
+  if (notServed.every((p) => p.outcome === "origin")) {
+    log(`${notServed.length} region(s) answered from the origin; nothing proven. ` +
+      "The probe only means something with the origin down.");
+  } else {
+    log(`${notServed.length} region(s) did not serve the custom page.`);
+  }
+  return 1;
+}
+
+/**
  * @typedef {object} Deps injectable for tests; every default is the real thing
  * @property {Record<string, string | undefined>} [env]
  * @property {typeof fetch} [fetch]
@@ -629,8 +748,8 @@ async function deployCommand({ client, selected, html, log, error }) {
 /**
  * @param {string[]} argv the command, then its arguments
  * @param {Deps} [deps]
- * @returns {Promise<number>} exit code: 0 clean, 1 drift or a failed
- *   verification reported, 2 a push failed
+ * @returns {Promise<number>} exit code: 0 clean, 1 drift, a failed
+ *   verification, or a probe that did not see the page, 2 a push failed
  */
 export async function main(argv, deps = {}) {
   const {
@@ -657,11 +776,25 @@ export async function main(argv, deps = {}) {
   }
   const apply = args.includes("--apply");
   if (apply && command !== "push") {
-    const why = command === "verify" ? "verify never writes" : "deploy always pushes";
+    const why = { verify: "verify never writes", deploy: "deploy always pushes" }[command] ??
+      `${command} never writes`;
     throw new Error(`--apply is for push only; ${why}. Drop the flag.`);
   }
   const { regions, refs: argRefs } = parseRegionArgs(args.filter((a) => !a.startsWith("-")));
   const hosts = pickRegions(regions);
+
+  if (command === "probe") {
+    // region=host swaps in the hostname to fetch, for a public hostname that
+    // does not (yet) route through the pull zone; the zone's *.b-cdn.net one does.
+    const bad = Object.entries(argRefs).filter(([, h]) => !h.includes("."));
+    if (bad.length) {
+      throw new Error(
+        `probe takes region=hostname, not a zone name or ID: ${bad.map(([r, h]) => `${r}=${h}`).join(", ")}`,
+      );
+    }
+    const html = await readFile(TEMPLATE_PATH, "utf8");
+    return probeCommand({ fetch: fetchImpl, hosts: { ...hosts, ...argRefs }, html, log });
+  }
 
   loadEnv();
   const apiKey = env.BUNNY_API_KEY;

@@ -265,6 +265,8 @@ pnpm edge:error-page:push              # report: which zones differ (exit 1 if a
 pnpm edge:error-page:push --apply      # push regional.html to every zone that differs
 pnpm edge:error-page:verify            # check every zone; print the manual checks
 pnpm edge:error-page:deploy            # push then verify, one region at a time
+pnpm edge:error-page:probe             # with the origin down: is the page actually served?
+pnpm edge:error-page:probe nz=<host>   # probe this hostname for the region (see below)
 pnpm edge:error-page:deploy eu uk      # limit to some regions (any command)
 pnpm edge:error-page:deploy nz=<zone>  # name the pull zone for a region (name or ID)
 ```
@@ -316,13 +318,31 @@ misbehaves on one production zone is therefore never repeated on the next.
 Zones already up to date are only verified. This is the command to run after
 changing `regional.html`.
 
-Exit codes for all three: `0` clean, `1` drift found by `push` without
-`--apply` or a zone failed `verify`, `2` a push failed, `deploy` stopped,
-or the script could not run.
+`probe` is the serving check. It fetches `https://<host>/` once per region,
+straight through the pull zone with no API key and no zone lookup, and
+classifies the answer: a 2xx or 3xx is the origin answering and proves
+nothing about the page, a 5xx carrying the template's `<title>` with every
+placeholder filled is the custom page, any other 5xx is not. It exits `0`
+only when every region served the page, so a run with the origin up fails
+and says so instead of passing by accident. Bunny serves the custom page
+only for errors it generates itself (origin unreachable or timed out); a
+`500` from the app passes through untouched. So the probe means something
+only with the origin down, or its `OriginUrl` temporarily pointed at a
+closed port (restore it in the same session). A public hostname that does
+not route through the pull zone yet (`nz.onetimesecret.com` is a CNAME to
+its origin while Bunny Shield is pending) never reaches the page; probe the
+zone's own hostname instead, `nz=be2169e1-7.b-cdn.net`, which `verify`
+prints.
+
+Exit codes for all four: `0` clean, `1` drift found by `push` without
+`--apply`, a zone failed `verify`, or `probe` did not see the page from
+every region, `2` a push failed, `deploy` stopped, or the script could not
+run.
 
 `test/unit/edge/errorPageCli.test.ts` covers zone resolution, drift
-planning, the zone-list parsing, the read-back diff, the manual-steps text
-and, through an injected `fetch`, all three commands end to end.
+planning, the zone-list parsing, the read-back diff, the manual-steps text,
+the probe's classification and, through an injected `fetch`, all four
+commands end to end.
 
 Not verified against a live zone: the exact set of statuses Bunny routes
 through the custom page (origin-unreachable 502/504 and Bunny's own errors

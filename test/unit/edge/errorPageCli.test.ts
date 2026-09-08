@@ -26,6 +26,8 @@ import {
   loadDotenv,
   main,
   manualSteps,
+  pageMarker,
+  probeRegion,
   normalize,
   parsePullZoneList,
   parseRegionArgs,
@@ -374,7 +376,7 @@ describe("cli.mjs under plain node", () => {
   it("loads and runs --help", () => {
     const out = execFileSync(process.execPath, [SCRIPT, "--help"], { encoding: "utf8" });
 
-    expect(out).toMatch(/^Usage: pnpm edge:error-page:<push\|verify\|deploy>/);
+    expect(out).toMatch(/^Usage: pnpm edge:error-page:<push\|verify\|deploy\|probe>/);
     expect(out).toContain("BUNNY_PULL_ZONE_<REGION>");
     expect(out).toContain(Object.keys(REGIONAL_HOSTS).join(", "));
     for (const c of COMMANDS) expect(out).toMatch(new RegExp(`^  ${c} `, "m"));
@@ -469,6 +471,63 @@ describe("manualSteps", () => {
     expect(text).toContain("diff - edge/error-page/regional.html");
     expect(text).toContain('"https://$HOST/"');
     expect(text).toMatch(/500 from the app passes through/);
+  });
+});
+
+describe("pageMarker", () => {
+  it("is the template's title element", () => {
+    expect(pageMarker("<html><title>Onetime Secret - Service Error</title></html>")).toBe(
+      "<title>Onetime Secret - Service Error</title>",
+    );
+  });
+
+  it("refuses a template without one", () => {
+    expect(() => pageMarker("<html></html>")).toThrow(/no <title>/);
+  });
+});
+
+describe("probeRegion", () => {
+  const marker = "<title>Onetime Secret - Service Error</title>";
+  const page = (status: number, body: string) =>
+    vi.fn(async () => new Response(body, { status })) as unknown as typeof fetch;
+  const probe = (f: typeof fetch) => probeRegion(f, "nz", "nz.onetimesecret.com", marker);
+
+  it("reports the custom page on a 5xx carrying the title with placeholders filled", async () => {
+    // The template's hide script and comment say "{{" themselves; only a
+    // surviving placeholder token counts as unfilled.
+    const body = `<html>${marker}<div>502</div><script>if (t.includes("{{")) {}</script></html>`;
+    const p = await probe(page(502, body));
+
+    expect(p).toMatchObject({ status: 502, outcome: "served" });
+  });
+
+  it("fetches the public URL once, without following redirects", async () => {
+    const f = page(200, "<html><title>Onetime Secret</title></html>");
+    await probe(f);
+
+    expect(f).toHaveBeenCalledTimes(1);
+    const [url, init] = (f as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls[0];
+    expect(url).toBe("https://nz.onetimesecret.com/");
+    expect(init.redirect).toBe("manual");
+  });
+
+  it("calls a 2xx or 3xx the origin answering, whatever the body says", async () => {
+    // The app's own homepage also says "Onetime Secret"; that must not count.
+    expect(await probe(page(200, `<html>${marker}</html>`))).toMatchObject({ outcome: "origin" });
+    expect(await probe(page(302, ""))).toMatchObject({ status: 302, outcome: "origin" });
+  });
+
+  it("distinguishes a 5xx that is not the page from one with an unfilled placeholder", async () => {
+    expect(await probe(page(503, "<html>Bunny default</html>"))).toMatchObject({ outcome: "other" });
+    expect(await probe(page(502, `${marker}{{status_code}}`))).toMatchObject({ outcome: "unfilled" });
+  });
+
+  it("turns a failed request into an outcome rather than throwing", async () => {
+    const f = vi.fn(async () => {
+      throw new Error("ECONNRESET");
+    }) as unknown as typeof fetch;
+
+    expect(await probe(f)).toMatchObject({ status: 0, outcome: "error", detail: /ECONNRESET/ });
   });
 });
 
@@ -657,7 +716,7 @@ describe("main", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it.each(["verify", "deploy"])("rejects --apply for %s", async (command) => {
+  it.each(["verify", "deploy", "probe"])("rejects --apply for %s", async (command) => {
     const { fetch } = fakeBunny([]);
 
     const message = await rejection(run([command, "--apply"], fetch).code);
@@ -814,6 +873,70 @@ describe("main", () => {
       expect(await code).toBe(2);
       expect(posts.map((p) => p.id)).toEqual([zones[0].Id]);
       expect(error).toHaveBeenCalledWith(expect.stringMatching(/also changed OriginUrl/));
+    });
+  });
+
+  describe("probe", () => {
+    const marker = "<title>Onetime Secret - Service Error</title>";
+    /** The public hostnames as the pull zones answer them, by host. */
+    function fakeEdge(answers: Record<string, { status: number; body: string }>) {
+      return vi.fn(async (input: string | URL | Request) => {
+        const { host } = new URL(String(input));
+        const a = answers[host] ?? { status: 200, body: "<html><title>Onetime Secret</title></html>" };
+        return new Response(a.body, { status: a.status });
+      });
+    }
+    const served = { status: 502, body: `<html>${marker}<div>502</div></html>` };
+    const allServed = () =>
+      Object.fromEntries(Object.values(REGIONAL_HOSTS).map((h) => [h, served]));
+
+    it("needs no API key, reads no zones, and exits 0 when every region serves the page", async () => {
+      const fetch = fakeEdge(allServed());
+      const { code, log, loadEnv } = run(["probe"], fetch, {} as { BUNNY_API_KEY: string });
+
+      expect(await code).toBe(0);
+      expect(loadEnv).not.toHaveBeenCalled();
+      const urls = fetch.mock.calls.map((c) => String(c[0]));
+      expect(urls).toEqual(Object.values(REGIONAL_HOSTS).map((h) => `https://${h}/`));
+      expect(log).toHaveBeenLastCalledWith("Every region served the custom page.");
+    });
+
+    it("exits 1 and says nothing was proven when the origin is up", async () => {
+      const fetch = fakeEdge({});
+      const { code, log } = run(["probe", "nz"], fetch);
+
+      expect(await code).toBe(1);
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const lines = log.mock.calls.map((c) => String(c[0]));
+      expect(lines[0]).toMatch(/^nz {2}nz\.onetimesecret\.com\s+200 {2}origin answered/);
+      expect(lines.at(-1)).toMatch(/nothing proven/);
+    });
+
+    it("exits 1 and names the region that served something else", async () => {
+      const answers = allServed();
+      answers[REGIONAL_HOSTS.eu] = { status: 503, body: "<html>bunny default</html>" };
+      const { code, log } = run(["probe"], fakeEdge(answers));
+
+      expect(await code).toBe(1);
+      const lines = log.mock.calls.map((c) => String(c[0]));
+      expect(lines.find((l) => l.startsWith("eu "))).toMatch(/503 {2}not the custom page/);
+      expect(lines.at(-1)).toBe("1 region(s) did not serve the custom page.");
+    });
+
+    it("fetches a substitute hostname given as region=host", async () => {
+      const fetch = fakeEdge({ "be2169e1-7.b-cdn.net": served });
+      const { code, log } = run(["probe", "nz=be2169e1-7.b-cdn.net"], fetch);
+
+      expect(await code).toBe(0);
+      expect(fetch.mock.calls.map((c) => String(c[0]))).toEqual(["https://be2169e1-7.b-cdn.net/"]);
+      expect(log.mock.calls[0][0]).toMatch(/^nz {2}be2169e1-7\.b-cdn\.net\s+502 {2}custom page served/);
+    });
+
+    it("rejects a zone name or ID where a hostname is expected", async () => {
+      const fetch = fakeEdge({});
+
+      expect(await rejection(run(["probe", "nz=123"], fetch).code)).toMatch(/region=hostname.*nz=123/);
+      expect(fetch).not.toHaveBeenCalled();
     });
   });
 });
