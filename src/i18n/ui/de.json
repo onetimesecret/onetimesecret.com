@@ -212,7 +212,6 @@
     },
     "secrets": {
       "keepSensitiveInfo": "Halten Sie sensible Informationen aus Ihren E-Mails und Chat-Protokollen heraus.",
-      "securelyStored": "Sicher gespeichert in",
       "europe": "Europa",
       "create_link": "Link erstellen",
       "expirationTime": "Lebensdauer verlängern",

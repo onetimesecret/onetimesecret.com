@@ -20,7 +20,6 @@ interface Props {
   currentRegion: Region;
   availableRegions: Region[];
   apiBaseUrl: string;
-  isClient: boolean;
 }
 
 defineProps<Props>();
@@ -70,7 +69,6 @@ defineExpose({
           :current-region="currentRegion"
           :available-regions="availableRegions"
           :api-base-url="apiBaseUrl"
-          :is-client="isClient"
           @region-change="(region) => emit('regionChange', region)"
           @create-secret="(result) => emit('createSecret', result)" />
       </div>

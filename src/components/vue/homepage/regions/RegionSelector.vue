@@ -2,6 +2,7 @@
 
 <script setup lang="ts">
 import OIcon from "@/components/vue/icons/OIcon.vue";
+import RegionLabel from "./RegionLabel.vue";
 import { onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import type { Region } from "@/types/jurisdiction";
@@ -76,7 +77,9 @@ onUnmounted(() => {
       <span
         class="size-2 rounded-full bg-green-500 mr-2"
         aria-hidden="true"></span>
-      <span>{{ currentRegion.displayName }}</span>
+      <RegionLabel
+        :current-region="currentRegion"
+        :available-regions="availableRegions" />
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 20 20"

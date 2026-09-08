@@ -95,8 +95,14 @@
   --color-gray-950: var(--color-neutral-950);
 
   /* Custom brand font family. */
+  /*
+   * The fallback families are metric-adjusted local serifs defined in
+   * components/layout/OptimizedFonts.astro; they keep line breaks stable
+   * until Zilla Slab loads. var(--font-serif) is a Tailwind default.
+   */
   --font-brand:
-    "Zilla Slab", var(--font-serif); /* var(--font-serif) is a Tailwind default */
+    "Zilla Slab", "Zilla Slab Fallback Georgia", "Zilla Slab Fallback Times",
+    "Zilla Slab Fallback Noto", var(--font-serif);
 
   /* Custom brand color palette. */
   --color-brand-50: #fcf8f2;

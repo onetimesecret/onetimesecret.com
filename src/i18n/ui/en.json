@@ -212,7 +212,6 @@
     },
     "secrets": {
       "keepSensitiveInfo": "Keep sensitive info out of your email and chat logs.",
-      "securelyStored": "Securely stored in",
       "europe": "Europe",
       "create_link": "Create Link",
       "expirationTime": "Extend lifetime",

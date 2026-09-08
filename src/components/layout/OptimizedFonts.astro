@@ -5,6 +5,18 @@
  * This component provides optimized font loading for the Zilla Slab font family.
  * It preloads the most critical weights (Regular, Bold, SemiBold, BoldItalic) and efficiently
  * loads other font variations with proper font-display settings.
+ *
+ * font-display policy (deliberate, keep the split):
+ * - The four preloaded faces use `swap`. They carry the brand headline and
+ *   body copy, so they must always end up rendered in Zilla Slab, even on a
+ *   slow first visit. The metric-adjusted fallback faces below make the swap
+ *   itself layout-neutral, which is what removes the CLS; `optional` would
+ *   trade that for "fallback for the whole page view" whenever the font
+ *   misses the ~100ms block window, which is the common case on 3G mobile.
+ * - Every other face uses `optional`. They are secondary weights and the
+ *   Highlight display face; a one-visit fallback there is invisible to most
+ *   readers and avoids late re-layout of text that has no size-adjusted
+ *   fallback tuned for it.
  */
 
 // Paths are relative to the public directory when used in link elements
@@ -177,5 +189,156 @@ export const otherFonts = [
     font-weight: 700;
     font-style: normal;
     font-display: optional;
+  }
+  /*
+   * Metric-compatible fallbacks for Zilla Slab.
+   *
+   * While Zilla Slab is still downloading, text renders in a local serif.
+   * Georgia Bold is ~15% wider than Zilla Slab Bold, so headings wrap onto
+   * an extra line and everything below them jumps when the webfont swaps in
+   * (CLS). These faces scale the local fonts so their advance widths and
+   * vertical metrics match Zilla Slab, which keeps line breaks stable across
+   * the swap.
+   *
+   * Zilla Slab metrics (units per em 1000): ascent 944, descent 256,
+   * line gap 0. These are the same on every platform: the hhea table
+   * (used by macOS/iOS and FreeType) and the OS/2 usWinAscent/usWinDescent
+   * pair (used by Windows, since USE_TYPO_METRICS is not set) both read
+   * 944/256 with zero line gap in all twelve shipped faces, so the
+   * overrides below match the webfont's line box on Windows as well as on
+   * Mac. (OS/2 typo metrics differ, 787/213/200, but no browser uses them
+   * for this font.) Verified with fontTools against public/fonts/*.woff2.
+   * size-adjust is the measured width ratio of Zilla Slab to
+   * the local font for the same text at the same size; ascent/descent are
+   * divided by size-adjust because the overrides apply after scaling.
+   *
+   * Each local font gets its own family name so a missing local face falls
+   * through to the next one instead of masking an earlier rule. Android ships
+   * neither Georgia nor Times New Roman; its platform serif is Noto Serif, so
+   * the last pair covers it (and Linux and ChromeOS, which also ship Noto).
+   *
+   * Georgia and Times ratios were measured in Chrome. The Noto Serif ratios
+   * come from summing advance widths of every English UI string in both fonts
+   * (fontTools); the same method reproduces the Chrome numbers within 0.4%.
+   */
+  @font-face {
+    font-family: "Zilla Slab Fallback Georgia";
+    src: local("Georgia");
+    font-weight: 100 500;
+    size-adjust: 97.35%;
+    ascent-override: 96.97%;
+    descent-override: 26.3%;
+    line-gap-override: 0%;
+    /*
+     * Limit these size-adjusted fallbacks to the scripts Zilla Slab covers
+     * (Latin + common punctuation/currency). Text outside this range (e.g.
+     * Greek, Cyrillic, CJK on the bg/el_GR/uk/ja/ko pages) falls through to
+     * var(--font-serif) at its natural size instead of being scaled down by
+     * the size-adjust tuned for Zilla Slab's Latin metrics.
+     */
+    unicode-range: U+0000-00FF, U+0100-024F, U+0259, U+2000-206F, U+20A0-20AB,
+      U+2C60-2C7F, U+A720-A7FF;
+  }
+  @font-face {
+    font-family: "Zilla Slab Fallback Georgia";
+    src:
+      local("Georgia Bold"),
+      local("Georgia-Bold");
+    font-weight: 600 900;
+    size-adjust: 85.43%;
+    ascent-override: 110.5%;
+    descent-override: 29.97%;
+    line-gap-override: 0%;
+    /*
+     * Limit these size-adjusted fallbacks to the scripts Zilla Slab covers
+     * (Latin + common punctuation/currency). Text outside this range (e.g.
+     * Greek, Cyrillic, CJK on the bg/el_GR/uk/ja/ko pages) falls through to
+     * var(--font-serif) at its natural size instead of being scaled down by
+     * the size-adjust tuned for Zilla Slab's Latin metrics.
+     */
+    unicode-range: U+0000-00FF, U+0100-024F, U+0259, U+2000-206F, U+20A0-20AB,
+      U+2C60-2C7F, U+A720-A7FF;
+  }
+  @font-face {
+    font-family: "Zilla Slab Fallback Times";
+    src:
+      local("Times New Roman"),
+      local("TimesNewRomanPSMT");
+    font-weight: 100 500;
+    size-adjust: 106.94%;
+    ascent-override: 88.27%;
+    descent-override: 23.94%;
+    line-gap-override: 0%;
+    /*
+     * Limit these size-adjusted fallbacks to the scripts Zilla Slab covers
+     * (Latin + common punctuation/currency). Text outside this range (e.g.
+     * Greek, Cyrillic, CJK on the bg/el_GR/uk/ja/ko pages) falls through to
+     * var(--font-serif) at its natural size instead of being scaled down by
+     * the size-adjust tuned for Zilla Slab's Latin metrics.
+     */
+    unicode-range: U+0000-00FF, U+0100-024F, U+0259, U+2000-206F, U+20A0-20AB,
+      U+2C60-2C7F, U+A720-A7FF;
+  }
+  @font-face {
+    font-family: "Zilla Slab Fallback Times";
+    src:
+      local("Times New Roman Bold"),
+      local("TimesNewRomanPS-BoldMT");
+    font-weight: 600 900;
+    size-adjust: 102.44%;
+    ascent-override: 92.15%;
+    descent-override: 24.99%;
+    line-gap-override: 0%;
+    /*
+     * Limit these size-adjusted fallbacks to the scripts Zilla Slab covers
+     * (Latin + common punctuation/currency). Text outside this range (e.g.
+     * Greek, Cyrillic, CJK on the bg/el_GR/uk/ja/ko pages) falls through to
+     * var(--font-serif) at its natural size instead of being scaled down by
+     * the size-adjust tuned for Zilla Slab's Latin metrics.
+     */
+    unicode-range: U+0000-00FF, U+0100-024F, U+0259, U+2000-206F, U+20A0-20AB,
+      U+2C60-2C7F, U+A720-A7FF;
+  }
+  @font-face {
+    font-family: "Zilla Slab Fallback Noto";
+    src:
+      local("Noto Serif"),
+      local("Noto Serif Regular"),
+      local("NotoSerif-Regular"),
+      local("NotoSerif");
+    font-weight: 100 500;
+    size-adjust: 90.5%;
+    ascent-override: 104.31%;
+    descent-override: 28.29%;
+    line-gap-override: 0%;
+    /*
+     * Limit these size-adjusted fallbacks to the scripts Zilla Slab covers
+     * (Latin + common punctuation/currency). Text outside this range (e.g.
+     * Greek, Cyrillic, CJK on the bg/el_GR/uk/ja/ko pages) falls through to
+     * var(--font-serif) at its natural size instead of being scaled down by
+     * the size-adjust tuned for Zilla Slab's Latin metrics.
+     */
+    unicode-range: U+0000-00FF, U+0100-024F, U+0259, U+2000-206F, U+20A0-20AB,
+      U+2C60-2C7F, U+A720-A7FF;
+  }
+  @font-face {
+    font-family: "Zilla Slab Fallback Noto";
+    src:
+      local("Noto Serif Bold"),
+      local("NotoSerif-Bold");
+    font-weight: 600 900;
+    size-adjust: 87%;
+    ascent-override: 108.51%;
+    descent-override: 29.43%;
+    line-gap-override: 0%;
+    /*
+     * Limit these size-adjusted fallbacks to the scripts Zilla Slab covers
+     * (Latin + common punctuation/currency). Text outside this range (e.g.
+     * Greek, Cyrillic, CJK on the bg/el_GR/uk/ja/ko pages) falls through to
+     * var(--font-serif) at its natural size instead of being scaled down by
+     * the size-adjust tuned for Zilla Slab's Latin metrics.
+     */
+    unicode-range: U+0000-00FF, U+0100-024F, U+0259, U+2000-206F, U+20A0-20AB,
+      U+2C60-2C7F, U+A720-A7FF;
   }
 </style>

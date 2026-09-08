@@ -212,7 +212,6 @@
     },
     "secrets": {
       "keepSensitiveInfo": "Gardez les informations sensibles hors de vos e-mails et de vos journaux de discussion.",
-      "securelyStored": "Stocké en toute sécurité en",
       "europe": "Europe",
       "create_link": "Créer un lien",
       "expirationTime": "Prolonger la durée de vie",

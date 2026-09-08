@@ -3,6 +3,20 @@ module.exports = {
     collect: {
       // Static Distribution Directory
       staticDistDir: './dist',
+      // Explicit page set. Without this LHCI autodiscovers the first five
+      // HTML files alphabetically (500.html, index.html, about, and the two
+      // Bunny error pages), so the localized home and pricing pages were
+      // never audited. Paths resolve against the static server's origin.
+      url: [
+        '/',
+        '/en/',
+        '/en/pricing/',
+        '/en/about/',
+        '/de/',
+        '/500.html',
+        '/bunnycdn_errors/404.html',
+        '/bunnycdn_errors/500.html',
+      ],
       // Run multiple times to get more stable results
       numberOfRuns: 3,
       // Mobile-first testing (desktop can be added as a separate LHCI run)
@@ -42,9 +56,14 @@ module.exports = {
             // Critical for performance
             'first-contentful-paint': ['warn', { maxNumericValue: 2000 }],
             'largest-contentful-paint': ['warn', { maxNumericValue: 2500 }],
-            // Hydration of Astro client:load islands causes minor CLS (~0.13);
-            // downgraded to warning since this is architectural, not a design issue
-            'cumulative-layout-shift': ['warn', { maxNumericValue: 0.1 }],
+            // CLS is enforced. The region selector and pricing controls now
+            // render during SSR with reserved label widths, and Zilla Slab has
+            // metric-adjusted local fallbacks, so hydration and the font swap
+            // no longer shift layout. Measured 0 on /, /en/, /de/, /en/about/
+            // and /en/pricing/ (3 runs each, mobile profile). The standalone
+            // Bunny error pages still swap fonts without tuned fallbacks and
+            // measure <= 0.04, inside the threshold.
+            'cumulative-layout-shift': ['error', { maxNumericValue: 0.1 }],
             'total-blocking-time': ['warn', { maxNumericValue: 300 }],
 
             // Image related tests
@@ -54,8 +73,11 @@ module.exports = {
             'unsized-images': 'error',
             'render-blocking-resources': 'warn',
 
-            // Performance optimizations (warn not error: NO_LCP on heavy
-            // pages returns null scores, which LHCI treats as failures)
+            // Performance optimizations (warn not error: a NO_LCP run returns
+            // null scores, which LHCI treats as failures). The homepage used
+            // to hit NO_LCP because the SSR `autofocus` on the secret textarea
+            // scrolled the page before first paint on the 640px-tall mobile
+            // profile; SecretForm.vue now focuses on mount with preventScroll.
             'uses-text-compression': 'warn',
             'unminified-css': 'warn',
             'unminified-javascript': 'warn',

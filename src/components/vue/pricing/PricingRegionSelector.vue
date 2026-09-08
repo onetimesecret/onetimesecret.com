@@ -2,6 +2,8 @@
 
 <script setup lang="ts">
 import OIcon from "@/components/vue/icons/OIcon.vue";
+import RegionLabel
+  from "@/components/vue/homepage/regions/RegionLabel.vue";
 import RegionListPanel
   from "@/components/vue/pricing/RegionListPanel.vue";
 import { onMounted, onUnmounted, ref } from "vue";
@@ -103,7 +105,9 @@ onUnmounted(() => {
         :name="currentRegion.icon.name"
         class="size-4 mr-2 text-text-secondary"
         :aria-label="`${currentRegion.displayName} region`" />
-      <span>{{ currentRegion.displayName }}</span>
+      <RegionLabel
+        :current-region="currentRegion"
+        :available-regions="availableRegions" />
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 20 20"
