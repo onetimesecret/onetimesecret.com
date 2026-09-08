@@ -5,15 +5,23 @@
 // every regional pull zone, so the five zones never drift from the file in
 // git or from each other.
 //
-//   pnpm edge:error-page:push            # report drift, exit 1 if any zone differs
-//   pnpm edge:error-page:push --apply    # push the file to every zone that differs
-//   pnpm edge:error-page:push eu uk      # limit to some regions (either mode)
+//   pnpm edge:error-page:push              # report drift, exit 1 if any differs
+//   pnpm edge:error-page:push --apply      # push the file to every zone that differs
+//   pnpm edge:error-page:push eu uk        # limit to some regions (either mode)
+//   pnpm edge:error-page:push nz=<zone>    # name the zone for a region (name or ID)
 //
 // Needs BUNNY_API_KEY (the account API key, same secret the deploy workflows
 // use to purge), from the environment or from the repo-root .env / .env.local,
-// which are loaded if present. It is declared in .env.example. Zones are found
-// by hostname, not by ID, so nothing here has to be updated when a zone is
-// recreated.
+// which are loaded if present. It is declared in .env.example.
+//
+// Zones are found by their public hostname (eu.onetimesecret.com) by default,
+// so nothing here has to be updated when such a zone is recreated. A pull zone
+// behind Bunny Shield is different: the public hostname terminates at the
+// shield, and the zone itself has a generated, non-guessable name and only its
+// *.b-cdn.net hostname. Those zones are named per region, by
+// BUNNY_PULL_ZONE_<REGION> in the environment or .env, or by a region=zone
+// argument, which wins over the environment. Either form takes the zone's
+// name or its numeric ID.
 //
 // Bunny API surface used (verified against docs.bunny.net, 2026-09):
 //   GET  /pullzone           → all zones, each with Hostnames[].Value
@@ -57,6 +65,60 @@ export const REGIONAL_HOSTS = Object.freeze(
 );
 
 /**
+ * Environment variable naming the pull zone for a region, for zones that do
+ * not carry the region's public hostname (see the header). The value is the
+ * zone's name or numeric ID.
+ * @param {string} region
+ */
+export function zoneEnvVar(region) {
+  return `BUNNY_PULL_ZONE_${region.toUpperCase()}`;
+}
+
+/**
+ * Zone references from the environment, one per region in `hosts`. Empty
+ * values are treated as unset so a blank line in .env.example is harmless.
+ * @param {Record<string, string | undefined>} env
+ * @param {Record<string, string>} hosts region → hostname
+ * @returns {Record<string, string>} region → zone name or ID
+ */
+export function envZoneRefs(env, hosts = REGIONAL_HOSTS) {
+  /** @type {Record<string, string>} */
+  const refs = {};
+  for (const region of Object.keys(hosts)) {
+    const value = env[zoneEnvVar(region)]?.trim();
+    if (value) refs[region] = value;
+  }
+  return refs;
+}
+
+/**
+ * Splits the positional arguments into regions and per-region zone overrides.
+ * `eu` names a region; `nz=some-zone-name` or `nz=123456` names a region and
+ * the pull zone to use for it. Region codes are lower-cased here; whether they
+ * are known is checked by `pickRegions`.
+ * @param {string[]} args positional arguments, flags already removed
+ * @returns {{ regions: string[], refs: Record<string, string> }}
+ */
+export function parseRegionArgs(args) {
+  const regions = [];
+  /** @type {Record<string, string>} */
+  const refs = {};
+  for (const arg of args) {
+    const eq = arg.indexOf("=");
+    const region = (eq === -1 ? arg : arg.slice(0, eq)).toLowerCase();
+    if (eq !== -1) {
+      const ref = arg.slice(eq + 1).trim();
+      if (!region || !ref) {
+        throw new Error(`Malformed argument "${arg}"; expected region=<zone name or ID>`);
+      }
+      refs[region] = ref;
+    }
+    regions.push(region);
+  }
+  return { regions, refs };
+}
+
+/**
  * Fields the read-back diff ignores: the two this script sends, and the two
  * Bunny updates on its own as traffic flows. Anything else that changes across
  * a push means the partial-update assumption above is wrong.
@@ -74,19 +136,27 @@ const ROOT_DIR = join(import.meta.dirname, "..", "..");
 /** Placeholders the template must keep, or Bunny serves a page with no status. */
 const REQUIRED_PLACEHOLDERS = ["{{status_code}}", "{{status_title}}"];
 
-const USAGE = `Usage: pnpm edge:error-page:push [--apply] [region ...]
+const USAGE = `Usage: pnpm edge:error-page:push [--apply] [region[=zone] ...]
 
 Pushes edge/error-page/regional.html to the custom error page of the
 regional Bunny pull zones.
 
-  (no flags)   report which zones differ from the file; exit 1 if any do
-  --apply      push the file to every zone that differs, then verify
-  --help       show this text
-  region ...   limit to these regions: ${Object.keys(REGIONAL_HOSTS).join(", ")}
+  (no flags)    report which zones differ from the file; exit 1 if any do
+  --apply       push the file to every zone that differs, then verify
+  --help        show this text
+  region ...    limit to these regions: ${Object.keys(REGIONAL_HOSTS).join(", ")}
+  region=zone   use this pull zone (name or numeric ID) for the region,
+                e.g. nz=shield-3f9a2c or nz=123456; overrides the environment
+
+A zone is found by its public hostname (${REGIONAL_HOSTS.eu}) unless one is
+named for the region. A pull zone behind Bunny Shield has a generated name
+and does not carry the public hostname, so it has to be named.
 
 Environment:
-  BUNNY_API_KEY   Bunny account API key. Read from the environment, then
-                  .env.local, then .env (see .env.example).`;
+  BUNNY_API_KEY             Bunny account API key. Read from the environment,
+                            then .env.local, then .env (see .env.example).
+  BUNNY_PULL_ZONE_<REGION>  pull zone name or numeric ID for one region, e.g.
+                            BUNNY_PULL_ZONE_NZ=shield-3f9a2c. Same sources.`;
 
 /**
  * @typedef {object} PullZone
@@ -119,17 +189,24 @@ export function normalize(html) {
 }
 
 /**
- * Resolves each wanted region to exactly one pull zone by hostname. A region
- * with no zone, or a hostname claimed by two zones, is a hard error: this
- * writes production config and must not guess.
+ * Resolves each wanted region to exactly one pull zone: the zone named in
+ * `refs` (by numeric ID or by name) when there is one, otherwise the zone
+ * carrying the region's hostname. A region with no zone, a hostname claimed by
+ * two zones, or a named zone that carries another region's hostname is a hard
+ * error: this writes production config and must not guess.
  *
  * @param {PullZone[]} zones
  * @param {Record<string, string>} hosts region → hostname
+ * @param {Record<string, string>} [refs] region → zone name or ID
  * @returns {{ region: string, host: string, zone: PullZone }[]}
  */
-export function selectRegionalZones(zones, hosts = REGIONAL_HOSTS) {
+export function selectRegionalZones(zones, hosts = REGIONAL_HOSTS, refs = {}) {
   const byHost = new Map();
+  const byName = new Map();
+  const byId = new Map();
   for (const zone of zones) {
+    byId.set(String(zone.Id), zone);
+    byName.set(zone.Name.toLowerCase(), zone);
     for (const { Value } of zone.Hostnames ?? []) {
       const host = Value.toLowerCase();
       if (byHost.has(host) && byHost.get(host).Id !== zone.Id) {
@@ -145,15 +222,46 @@ export function selectRegionalZones(zones, hosts = REGIONAL_HOSTS) {
   const missing = [];
   const selected = [];
   for (const [region, host] of Object.entries(hosts)) {
+    const ref = refs[region];
+    if (ref !== undefined) {
+      const zone = /^\d+$/.test(ref) ? byId.get(ref) : byName.get(ref.toLowerCase());
+      if (!zone) {
+        throw new Error(
+          `No pull zone named or numbered "${ref}" (given for ${region}). ` +
+            "Check the zone's name or ID in dash.bunny.net.",
+        );
+      }
+      // A zone named for one region must not be another region's zone. The
+      // check is against every live region, not just the ones requested.
+      const zoneHosts = (zone.Hostnames ?? []).map((h) => h.Value.toLowerCase());
+      const other = Object.entries(REGIONAL_HOSTS).find(
+        ([r, h]) => r !== region && zoneHosts.includes(h),
+      );
+      if (other) {
+        throw new Error(
+          `Pull zone ${zone.Name} (${zone.Id}), given for ${region}, carries ` +
+            `${other[1]}, the ${other[0]} hostname; refusing to push to it`,
+        );
+      }
+      selected.push({ region, host, zone });
+      continue;
+    }
     const zone = byHost.get(host);
     if (!zone) {
-      missing.push(host);
+      missing.push(region);
       continue;
     }
     selected.push({ region, host, zone });
   }
   if (missing.length) {
-    throw new Error(`No pull zone carries hostname(s): ${missing.join(", ")}`);
+    const hostList = missing.map((r) => hosts[r]).join(", ");
+    const envList = missing.map((r) => `${zoneEnvVar(r)}=<zone name or ID>`).join(" ");
+    const argList = missing.map((r) => `${r}=<zone name or ID>`).join(" ");
+    throw new Error(
+      `No pull zone carries hostname(s): ${hostList}. A zone behind Bunny Shield ` +
+        "does not carry its public hostname; name it with " +
+        `${envList} in the environment or .env, or as ${argList} on the command line.`,
+    );
   }
   return selected;
 }
@@ -317,7 +425,8 @@ async function applyZone(client, plan, html) {
 /** @param {ZonePlan} plan */
 function describe(plan) {
   const state = plan.action === "up-to-date" ? "up-to-date" : `needs update (${plan.reason})`;
-  return `${plan.region.padEnd(3)} ${plan.host.padEnd(24)} zone ${plan.id}  ${state}`;
+  const zone = `zone ${plan.id} (${plan.name})`;
+  return `${plan.region.padEnd(3)} ${plan.host.padEnd(24)} ${zone}  ${state}`;
 }
 
 /**
@@ -352,7 +461,8 @@ export async function main(argv, deps = {}) {
     throw new Error(`Unknown option(s): ${unknownFlags.join(", ")}\n\n${USAGE}`);
   }
   const apply = argv.includes("--apply");
-  const regions = argv.filter((a) => !a.startsWith("-"));
+  const { regions, refs: argRefs } = parseRegionArgs(argv.filter((a) => !a.startsWith("-")));
+  const hosts = pickRegions(regions);
 
   loadEnv();
   const apiKey = env.BUNNY_API_KEY;
@@ -369,9 +479,10 @@ export async function main(argv, deps = {}) {
     throw new Error(`regional.html lost its ${lost.join(" and ")} placeholder(s)`);
   }
 
-  const hosts = pickRegions(regions);
+  // Command line beats environment, per region.
+  const refs = { ...envZoneRefs(env, hosts), ...argRefs };
   const zones = await listPullZones(client);
-  const plans = selectRegionalZones(zones, hosts).map((s) => planZone(s, html));
+  const plans = selectRegionalZones(zones, hosts, refs).map((s) => planZone(s, html));
 
   for (const plan of plans) log(describe(plan));
 

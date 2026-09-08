@@ -8,7 +8,8 @@
  * The failure modes worth pinning are the ones that would write to the wrong
  * zone, skip a zone that needed the push, or work from a partial zone list: a
  * hostname on two zones, a region with no zone at all, a zone whose page
- * matches but is disabled, and a paginated response with more pages.
+ * matches but is disabled, a paginated response with more pages, and a zone
+ * named for one region that is really another region's zone.
  */
 
 import { execFileSync } from "node:child_process";
@@ -19,14 +20,17 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   EXPECTED_CHANGES,
   REGIONAL_HOSTS,
+  envZoneRefs,
   loadDotenv,
   main,
   normalize,
   parsePullZoneList,
+  parseRegionArgs,
   pickRegions,
   planZone,
   selectRegionalZones,
   unexpectedChanges,
+  zoneEnvVar,
 } from "../../../edge/error-page/push.mjs";
 import { jurisdictions } from "../../../src/data/ops/jurisdictions";
 
@@ -92,11 +96,59 @@ describe("selectRegionalZones", () => {
     ]);
   });
 
-  it("fails loudly when a region has no zone", () => {
+  it("fails loudly when a region has no zone, and says how to name one", () => {
     const zones = [zone(2, ["eu.onetimesecret.com"])];
 
-    expect(() => selectRegionalZones(zones, { eu: REGIONAL_HOSTS.eu, ca: REGIONAL_HOSTS.ca }))
-      .toThrow(/ca\.onetimesecret\.com/);
+    const attempt = () =>
+      selectRegionalZones(zones, { eu: REGIONAL_HOSTS.eu, ca: REGIONAL_HOSTS.ca });
+
+    expect(attempt).toThrow(/ca\.onetimesecret\.com/);
+    expect(attempt).toThrow(/BUNNY_PULL_ZONE_CA=/);
+    expect(attempt).toThrow(/ ca=<zone name or ID>/);
+  });
+
+  describe("with a zone named for a region", () => {
+    // A shield zone: generated name, only the b-cdn hostname, no public one.
+    const shield = { ...zone(7, ["x9k2m4p1.b-cdn.net"]), Name: "x9k2m4p1" };
+    const zones = [zone(2, ["eu.onetimesecret.com"]), shield];
+
+    it("resolves the region to the zone by name, case-insensitively", () => {
+      const selected = selectRegionalZones(zones, { nz: REGIONAL_HOSTS.nz }, { nz: "X9K2M4P1" });
+
+      expect(selected).toEqual([{ region: "nz", host: REGIONAL_HOSTS.nz, zone: shield }]);
+    });
+
+    it("resolves the region to the zone by numeric ID", () => {
+      const selected = selectRegionalZones(zones, { nz: REGIONAL_HOSTS.nz }, { nz: "7" });
+
+      expect(selected.map((s) => s.zone.Id)).toEqual([7]);
+    });
+
+    it("still finds unnamed regions by hostname", () => {
+      const hosts = { eu: REGIONAL_HOSTS.eu, nz: REGIONAL_HOSTS.nz };
+
+      const selected = selectRegionalZones(zones, hosts, { nz: "x9k2m4p1" });
+
+      expect(selected.map((s) => [s.region, s.zone.Id])).toEqual([["eu", 2], ["nz", 7]]);
+    });
+
+    it("fails when no zone has that name or ID", () => {
+      expect(() => selectRegionalZones(zones, { nz: REGIONAL_HOSTS.nz }, { nz: "nope" }))
+        .toThrow(/No pull zone named or numbered "nope" \(given for nz\)/);
+      expect(() => selectRegionalZones(zones, { nz: REGIONAL_HOSTS.nz }, { nz: "99" }))
+        .toThrow(/"99"/);
+    });
+
+    it("refuses a zone that carries another region's hostname", () => {
+      expect(() => selectRegionalZones(zones, { nz: REGIONAL_HOSTS.nz }, { nz: "zone-2" }))
+        .toThrow(/carries eu\.onetimesecret\.com, the eu hostname/);
+    });
+
+    it("accepts a zone that carries its own region's hostname", () => {
+      const selected = selectRegionalZones(zones, { eu: REGIONAL_HOSTS.eu }, { eu: "2" });
+
+      expect(selected.map((s) => s.zone.Id)).toEqual([2]);
+    });
   });
 
   it("refuses a hostname attached to two zones", () => {
@@ -167,6 +219,52 @@ describe("planZone", () => {
     );
 
     expect([plan.action, plan.id, plan.host]).toEqual(["update", 2, REGIONAL_HOSTS.eu]);
+  });
+});
+
+describe("zoneEnvVar", () => {
+  it("upper-cases the region into the variable name", () => {
+    expect(zoneEnvVar("nz")).toBe("BUNNY_PULL_ZONE_NZ");
+  });
+});
+
+describe("envZoneRefs", () => {
+  it("collects one reference per region that has a non-empty variable", () => {
+    const env = {
+      BUNNY_PULL_ZONE_NZ: " x9k2m4p1 ",
+      BUNNY_PULL_ZONE_UK: "",
+      BUNNY_PULL_ZONE_BR: "not-live",
+      BUNNY_API_KEY: "k",
+    };
+
+    expect(envZoneRefs(env)).toEqual({ nz: "x9k2m4p1" });
+  });
+
+  it("only reads the regions asked for", () => {
+    const env = { BUNNY_PULL_ZONE_NZ: "a", BUNNY_PULL_ZONE_EU: "b" };
+
+    expect(envZoneRefs(env, { eu: REGIONAL_HOSTS.eu })).toEqual({ eu: "b" });
+  });
+});
+
+describe("parseRegionArgs", () => {
+  it("separates plain regions from region=zone overrides", () => {
+    expect(parseRegionArgs(["EU", "nz=X9k2", "ca=123"])).toEqual({
+      regions: ["eu", "nz", "ca"],
+      refs: { nz: "X9k2", ca: "123" },
+    });
+  });
+
+  it("keeps the zone name's case and allows '=' inside it", () => {
+    expect(parseRegionArgs(["nz=a=b"]).refs).toEqual({ nz: "a=b" });
+  });
+
+  it.each(["nz=", "=zone", "="])("rejects %j", (arg) => {
+    expect(() => parseRegionArgs([arg])).toThrow(/Malformed argument/);
+  });
+
+  it("is empty for no arguments", () => {
+    expect(parseRegionArgs([])).toEqual({ regions: [], refs: {} });
   });
 });
 
@@ -274,6 +372,7 @@ describe("push.mjs under plain node", () => {
     const out = execFileSync(process.execPath, [SCRIPT, "--help"], { encoding: "utf8" });
 
     expect(out).toMatch(/^Usage: pnpm edge:error-page:push/);
+    expect(out).toContain("BUNNY_PULL_ZONE_<REGION>");
     expect(out).toContain(Object.keys(REGIONAL_HOSTS).join(", "));
   });
 });
@@ -464,6 +563,50 @@ describe("main", () => {
 
     expect(await code).toBe(0);
     expect(posts.map((p) => p.id)).toEqual([zones[Object.keys(REGIONAL_HOSTS).indexOf("uk")].Id]);
+  });
+
+  it("pushes to the zone named in the environment when it lacks the hostname", async () => {
+    const zones = liveZones();
+    const nz = zones[Object.keys(REGIONAL_HOSTS).indexOf("nz")];
+    nz.Name = "x9k2m4p1";
+    nz.Hostnames = [{ Value: "x9k2m4p1.b-cdn.net" }];
+    nz.ErrorPageEnableCustomCode = false;
+    const { fetch, posts } = fakeBunny(zones);
+
+    const without = run(["--apply"], fetch);
+    expect(await rejection(without.code)).toMatch(/nz\.onetimesecret\.com.*BUNNY_PULL_ZONE_NZ/);
+    expect(posts).toEqual([]);
+
+    const env = { BUNNY_API_KEY: "k", BUNNY_PULL_ZONE_NZ: "x9k2m4p1" };
+    const { code } = run(["--apply"], fetch, env);
+    expect(await code).toBe(0);
+    expect(posts.map((p) => p.id)).toEqual([nz.Id]);
+  });
+
+  it("lets a region=zone argument override the environment", async () => {
+    const zones = liveZones();
+    const nz = zones[Object.keys(REGIONAL_HOSTS).indexOf("nz")];
+    nz.Hostnames = [{ Value: "x9k2m4p1.b-cdn.net" }];
+    nz.ErrorPageEnableCustomCode = false;
+    const { fetch, posts } = fakeBunny(zones);
+    const env = { BUNNY_API_KEY: "k", BUNNY_PULL_ZONE_NZ: "stale-name" };
+
+    const { code } = run(["--apply", `nz=${nz.Id}`], fetch, env);
+
+    expect(await code).toBe(0);
+    expect(posts.map((p) => p.id)).toEqual([nz.Id]);
+  });
+
+  it("refuses a named zone that is another region's zone, before writing", async () => {
+    const zones = liveZones();
+    for (const z of zones) z.ErrorPageEnableCustomCode = false;
+    const eu = zones[Object.keys(REGIONAL_HOSTS).indexOf("eu")];
+    const { fetch, posts } = fakeBunny(zones);
+
+    const { code } = run(["--apply", `nz=${eu.Name}`], fetch);
+
+    expect(await rejection(code)).toMatch(/the eu hostname/);
+    expect(posts).toEqual([]);
   });
 
   it("keeps going after a failed zone and exits 2", async () => {
