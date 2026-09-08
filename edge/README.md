@@ -323,11 +323,13 @@ and says so instead of passing by accident. Bunny serves the custom page
 only for errors it generates itself (origin unreachable or timed out); a
 `500` from the app passes through untouched. So the probe means something
 only with the origin down, or its `OriginUrl` temporarily pointed at a
-closed port (restore it in the same session). A public hostname that does
-not route through the pull zone yet (`nz.onetimesecret.com` is a CNAME to
-its origin while Bunny Shield is pending) never reaches the page; probe the
-zone's own hostname instead, `nz=be2169e1-7.b-cdn.net`, which `verify`
-prints.
+closed port (restore it in the same session). Each region line says which
+pull zone answered (Bunny's `CDN-PullZone` header) and the cache status; a
+hostname whose answer carries neither is not routed through Bunny at all,
+and no origin outage will show the page there. Probe the zone's own
+hostname instead, `nz=be2169e1-7.b-cdn.net`, which `verify` prints, and
+look at the DNS. When a run proves nothing the probe ends by saying what to
+do about it.
 
 Exit codes for all four: `0` clean, `1` drift found by `push` without
 `--apply`, a zone failed `verify`, or `probe` did not see the page from
@@ -374,9 +376,12 @@ curl -sS -w 'status %{http_code}\n' "https://$HOST/" | grep -E 'Service Error|^s
 A `status 502` or `504` with a `Service Error` title line is the custom
 page. A `status 200` with no title line is the app, and proves nothing.
 
-Verified against the nz zone on 2026-09-07 with `probe nz=be2169e1-7.b-cdn.net`
-while its origin was unreachable: Bunny answered `502` with the custom page,
+Verified against the nz zone on 2026-09-07 with `probe nz=be2169e1-7.b-cdn.net`:
+the origin's Caddy has no certificate for the `b-cdn.net` name, Bunny's
+fetch fails the TLS handshake, and Bunny answers `502` with the custom page,
 `{{status_code}}` filled as `502` and `{{status_title}}` as `Bad Gateway`.
+Through `nz.onetimesecret.com` the same zone (`6421160`) reaches the origin
+and returns the app, which is the "origin answered" case.
 Still not verified: the exact set of statuses Bunny routes through the page
 (origin-unreachable 502/504 and Bunny's own errors are the documented case;
 a `500` the origin itself returns passes through untouched).

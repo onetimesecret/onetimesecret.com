@@ -530,14 +530,18 @@ export function pageMarker(html) {
  * @property {string} region
  * @property {string} host
  * @property {number} status 0 when the request itself failed
- * @property {"served" | "origin" | "other" | "unfilled" | "error"} outcome
+ * @property {"served" | "origin" | "direct" | "other" | "unfilled" | "error"} outcome
  * @property {string} detail
+ * @property {string} [zone] the pull zone ID Bunny reported, when it answered
  */
 
 /**
  * Fetches a region's public URL once, straight through the pull zone, and
  * classifies what came back. Redirects are not followed: a 3xx is the app
- * answering, which is all the probe needs to know about it.
+ * answering, which is all the probe needs to know about it. Bunny stamps
+ * every answer with CDN-PullZone and CDN-Cache; their absence means the
+ * hostname is not routed through Bunny at all, which no origin outage would
+ * change.
  * @param {typeof fetch} fetchImpl
  * @param {string} region
  * @param {string} host
@@ -548,6 +552,8 @@ export async function probeRegion(fetchImpl, region, host, marker) {
   const url = `https://${host}/`;
   let status;
   let body;
+  let zone;
+  let cache;
   try {
     const res = await fetchImpl(url, {
       redirect: "manual",
@@ -557,24 +563,38 @@ export async function probeRegion(fetchImpl, region, host, marker) {
     });
     status = res.status;
     body = await res.text();
+    zone = res.headers.get("cdn-pullzone") ?? undefined;
+    cache = res.headers.get("cdn-cache") ?? undefined;
   } catch (err) {
     // Node's fetch says "fetch failed" and keeps the reason (DNS, TLS, reset) in cause.
     const cause = err instanceof Error && err.cause instanceof Error ? `: ${err.cause.message.trim()}` : "";
     const detail = err instanceof Error ? err.message : String(err);
     return { region, host, status: 0, outcome: "error", detail: `request failed: ${detail}${cause}` };
   }
+  const via = zone ? `via pull zone ${zone}` : "not via Bunny";
+  if (!zone) {
+    return {
+      region,
+      host,
+      status,
+      outcome: "direct",
+      detail: `${via}: no CDN-PullZone header, so ${host} does not route through the zone`,
+    };
+  }
   const isPage = body.includes(marker);
   if (status < 500) {
+    const cached = cache ? `, cache ${cache}` : "";
     return {
       region,
       host,
       status,
       outcome: "origin",
-      detail: "origin answered; the custom page was not exercised",
+      zone,
+      detail: `${via}${cached}: the origin answered, so the custom page was not exercised`,
     };
   }
   if (!isPage) {
-    return { region, host, status, outcome: "other", detail: "not the custom page" };
+    return { region, host, status, outcome: "other", zone, detail: `${via}: not the custom page` };
   }
   // The template's own hide script and header comment mention "{{", so only
   // the real placeholder tokens count as unfilled.
@@ -584,16 +604,52 @@ export async function probeRegion(fetchImpl, region, host, marker) {
       host,
       status,
       outcome: "unfilled",
-      detail: "custom page served with a placeholder Bunny did not fill",
+      zone,
+      detail: `${via}: custom page served with a placeholder Bunny did not fill`,
     };
   }
-  return { region, host, status, outcome: "served", detail: "custom page served" };
+  return { region, host, status, outcome: "served", zone, detail: `${via}: custom page served` };
 }
 
 /** @param {Probe} p */
 function describeProbe(p) {
   const status = p.status ? String(p.status) : "---";
   return `${p.region.padEnd(3)} ${p.host.padEnd(24)} ${status}  ${p.detail}`;
+}
+
+/**
+ * What to do next, by what went wrong. One paragraph, not one per region:
+ * the region lines above already say which is which.
+ * @param {Probe[]} notServed
+ */
+function probeAdvice(notServed) {
+  const outcomes = new Set(notServed.map((p) => p.outcome));
+  const lines = [];
+  if (outcomes.has("origin")) {
+    lines.push(
+      "Bunny substitutes the custom page only for errors it generates itself, so a healthy",
+      "origin never shows it. To exercise it: in dash.bunny.net set the zone's origin URL to a",
+      "closed port (or stop the origin), re-run this probe, then restore the origin URL.",
+    );
+  }
+  if (outcomes.has("direct")) {
+    lines.push(
+      "A hostname that does not route through Bunny cannot show the page whatever the origin",
+      "does. Probe the zone's own hostname instead, region=<name>.b-cdn.net (verify prints it),",
+      "and check the DNS for the public hostname.",
+    );
+  }
+  if (outcomes.has("other") || outcomes.has("unfilled")) {
+    lines.push(
+      "A 5xx without the page, or with a bare placeholder, means the zone is not serving what",
+      "verify says it stores. Re-run verify for that region; a cached copy (CDN-Cache HIT) can",
+      "also stand in for the origin until it expires or is purged.",
+    );
+  }
+  if (outcomes.has("error")) {
+    lines.push("A failed request never reached Bunny; the reason is on the region's line above.");
+  }
+  return lines.join("\n");
 }
 
 /**
@@ -712,12 +768,13 @@ async function probeCommand({ fetch: fetchImpl, hosts, html, log }) {
     log("Every region served the custom page.");
     return 0;
   }
-  if (notServed.every((p) => p.outcome === "origin")) {
-    log(`${notServed.length} region(s) answered from the origin; nothing proven. ` +
-      "The probe only means something with the origin down.");
-  } else {
-    log(`${notServed.length} region(s) did not serve the custom page.`);
-  }
+  const inconclusive = notServed.every((p) => p.outcome === "origin");
+  log(
+    inconclusive
+      ? `${notServed.length} region(s) answered from the origin; nothing proven.`
+      : `${notServed.length} region(s) did not serve the custom page.`,
+  );
+  log(`\n${probeAdvice(notServed)}`);
   return 1;
 }
 

@@ -486,9 +486,22 @@ describe("pageMarker", () => {
 
 describe("probeRegion", () => {
   const marker = "<title>Onetime Secret - Service Error</title>";
-  const page = (status: number, body: string) =>
-    vi.fn(async () => new Response(body, { status })) as unknown as typeof fetch;
+  const bunny = { "CDN-PullZone": "6421160", "CDN-Cache": "MISS" };
+  const page = (status: number, body: string, headers: Record<string, string> = bunny) =>
+    vi.fn(async () => new Response(body, { status, headers })) as unknown as typeof fetch;
   const probe = (f: typeof fetch) => probeRegion(f, "nz", "nz.onetimesecret.com", marker);
+
+  it("reports the pull zone Bunny answered from", async () => {
+    const p = await probe(page(502, `<html>${marker}</html>`));
+
+    expect(p).toMatchObject({ outcome: "served", zone: "6421160", detail: /via pull zone 6421160/ });
+  });
+
+  it("calls an answer without Bunny's headers a hostname that bypasses the zone", async () => {
+    const p = await probe(page(200, "<html>app</html>", {}));
+
+    expect(p).toMatchObject({ outcome: "direct", detail: /does not route through the zone/ });
+  });
 
   it("reports the custom page on a 5xx carrying the title with placeholders filled", async () => {
     // The template's hide script and comment say "{{" themselves; only a
@@ -513,6 +526,7 @@ describe("probeRegion", () => {
     // The app's own homepage also says "Onetime Secret"; that must not count.
     expect(await probe(page(200, `<html>${marker}</html>`))).toMatchObject({ outcome: "origin" });
     expect(await probe(page(302, ""))).toMatchObject({ status: 302, outcome: "origin" });
+    expect((await probe(page(200, "app"))).detail).toMatch(/cache MISS/);
   });
 
   it("distinguishes a 5xx that is not the page from one with an unfilled placeholder", async () => {
@@ -883,7 +897,10 @@ describe("main", () => {
       return vi.fn(async (input: string | URL | Request) => {
         const { host } = new URL(String(input));
         const a = answers[host] ?? { status: 200, body: "<html><title>Onetime Secret</title></html>" };
-        return new Response(a.body, { status: a.status });
+        return new Response(a.body, {
+          status: a.status,
+          headers: { "CDN-PullZone": "1", "CDN-Cache": "MISS" },
+        });
       });
     }
     const served = { status: 502, body: `<html>${marker}<div>502</div></html>` };
@@ -908,8 +925,9 @@ describe("main", () => {
       expect(await code).toBe(1);
       expect(fetch).toHaveBeenCalledTimes(1);
       const lines = log.mock.calls.map((c) => String(c[0]));
-      expect(lines[0]).toMatch(/^nz {2}nz\.onetimesecret\.com\s+200 {2}origin answered/);
-      expect(lines.at(-1)).toMatch(/nothing proven/);
+      expect(lines[0]).toMatch(/^nz {2}nz\.onetimesecret\.com\s+200 {2}via pull zone 1, cache MISS/);
+      expect(lines.at(-2)).toMatch(/nothing proven/);
+      expect(lines.at(-1)).toMatch(/set the zone's origin URL to a\nclosed port/);
     });
 
     it("exits 1 and names the region that served something else", async () => {
@@ -919,8 +937,9 @@ describe("main", () => {
 
       expect(await code).toBe(1);
       const lines = log.mock.calls.map((c) => String(c[0]));
-      expect(lines.find((l) => l.startsWith("eu "))).toMatch(/503 {2}not the custom page/);
-      expect(lines.at(-1)).toBe("1 region(s) did not serve the custom page.");
+      expect(lines.find((l) => l.startsWith("eu "))).toMatch(/503 {2}via pull zone 1: not the custom page/);
+      expect(lines.at(-2)).toBe("1 region(s) did not serve the custom page.");
+      expect(lines.at(-1)).toMatch(/Re-run verify/);
     });
 
     it("fetches a substitute hostname given as region=host", async () => {
@@ -929,7 +948,7 @@ describe("main", () => {
 
       expect(await code).toBe(0);
       expect(fetch.mock.calls.map((c) => String(c[0]))).toEqual(["https://be2169e1-7.b-cdn.net/"]);
-      expect(log.mock.calls[0][0]).toMatch(/^nz {2}be2169e1-7\.b-cdn\.net\s+502 {2}custom page served/);
+      expect(log.mock.calls[0][0]).toMatch(/^nz {2}be2169e1-7\.b-cdn\.net\s+502 {2}via pull zone 1: custom page served/);
     });
 
     it("rejects a zone name or ID where a hostname is expected", async () => {
