@@ -51,6 +51,7 @@ declare module 'vitest' {
   interface Matchers {
     toBe(expected: unknown): void;
     toEqual(expected: unknown): void;
+    toMatchObject(expected: unknown): void;
     toHaveLength(n: number): void;
     toContain(item: unknown): void;
     toMatch(pattern: RegExp | string): void;
@@ -63,10 +64,12 @@ declare module 'vitest' {
     toBeFalsy(): void;
     toBeGreaterThan(n: number): void;
     toBeGreaterThanOrEqual(n: number): void;
+    toBeLessThan(n: number): void;
     toBeLessThanOrEqual(n: number): void;
     toHaveBeenCalled(): void;
     toHaveBeenCalledTimes(times: number): void;
     toHaveBeenCalledWith(...args: unknown[]): void;
+    toHaveBeenLastCalledWith(...args: unknown[]): void;
     toHaveCount(n: number): void;
     toBeAttached(): void;
     toBeVisible(): void;

@@ -14,4 +14,4 @@ against the marketing site.
 The **regional** zones (eu, ca, nz, us, uk) do not use these files. Their
 origin is the Ruby app, so anything relative would point at the thing that
 just failed. They get `edge/error-page/regional.html`, pushed by
-`pnpm edge:error-page`. See `edge/README.md`.
+`pnpm edge:error-page:deploy`. See `edge/README.md`.

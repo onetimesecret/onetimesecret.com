@@ -43,7 +43,7 @@ All commands are run from the root of the project, from a terminal:
 | `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `pnpm astro -- --help` | Get help using the Astro CLI                     |
 | `pnpm edge:build`      | Bundle the BunnyCDN edge scripts (see `edge/`)   |
-| `pnpm edge:error-page` | Sync the regional error page to Bunny (`--help`) |
+| `pnpm edge:error-page:deploy` | Push and verify the regional error page on Bunny (`--help`) |
 
 Copy `.env.example` to `.env` and fill in the values you need; every variable
 the build, dev server, and scripts read is declared there.
