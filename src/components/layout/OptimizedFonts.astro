@@ -201,7 +201,14 @@ export const otherFonts = [
    * the swap.
    *
    * Zilla Slab metrics (units per em 1000): ascent 944, descent 256,
-   * line gap 0. size-adjust is the measured width ratio of Zilla Slab to
+   * line gap 0. These are the same on every platform: the hhea table
+   * (used by macOS/iOS and FreeType) and the OS/2 usWinAscent/usWinDescent
+   * pair (used by Windows, since USE_TYPO_METRICS is not set) both read
+   * 944/256 with zero line gap in all twelve shipped faces, so the
+   * overrides below match the webfont's line box on Windows as well as on
+   * Mac. (OS/2 typo metrics differ, 787/213/200, but no browser uses them
+   * for this font.) Verified with fontTools against public/fonts/*.woff2.
+   * size-adjust is the measured width ratio of Zilla Slab to
    * the local font for the same text at the same size; ascent/descent are
    * divided by size-adjust because the overrides apply after scaling.
    *
