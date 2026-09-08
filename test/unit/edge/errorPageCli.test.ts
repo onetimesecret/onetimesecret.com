@@ -25,9 +25,9 @@ import {
   envZoneRefs,
   loadDotenv,
   main,
-  manualSteps,
   pageMarker,
   probeRegion,
+  servingCheck,
   normalize,
   parsePullZoneList,
   parseRegionArgs,
@@ -445,7 +445,7 @@ describe("regional.html", () => {
   });
 });
 
-describe("manualSteps", () => {
+describe("servingCheck", () => {
   const plan = (region: string, id: number, name: string) => ({
     region,
     host: `${region}.onetimesecret.com`,
@@ -456,21 +456,19 @@ describe("manualSteps", () => {
   });
   const plans = [plan("nz", 6421160, "be2169e1-7"), plan("eu", 11, "zone-11")];
 
-  it("lists every zone's ID and hostname as shell variables", () => {
-    const text = manualSteps(plans);
+  it("names the probe for the regions just handled", () => {
+    const text = servingCheck(plans);
 
-    expect(text).toContain("ZONE=6421160 HOST=nz.onetimesecret.com   # nz, be2169e1-7");
-    expect(text).toContain("ZONE=11 HOST=eu.onetimesecret.com   # eu, zone-11");
+    expect(text).toContain("pnpm edge:error-page:probe nz eu");
+    expect(text).not.toContain("ZONE=");
+    expect(text).not.toContain("api.bunny.net");
   });
 
-  it("covers the stored config, the stored page, and a served error", () => {
-    const text = manualSteps(plans);
+  it("says when the page is served and where the by-hand checks live", () => {
+    const text = servingCheck(plans);
 
-    expect(text).toContain('"https://api.bunny.net/pullzone/$ZONE"');
-    expect(text).toContain(".ErrorPageEnableCustomCode");
-    expect(text).toContain("diff - edge/error-page/regional.html");
-    expect(text).toContain('"https://$HOST/"');
     expect(text).toMatch(/500 from the app passes through/);
+    expect(text).toContain('edge/README.md, "Regional error page"');
   });
 });
 
@@ -751,7 +749,7 @@ describe("main", () => {
   });
 
   describe("verify", () => {
-    it("exits 0, writes nothing, and prints the manual checks when all is well", async () => {
+    it("exits 0, writes nothing, and ends with the summary after the serving check", async () => {
       const zones = liveZones();
       const { fetch, posts } = fakeBunny(zones);
       const { code, log } = run(["verify"], fetch);
@@ -761,8 +759,10 @@ describe("main", () => {
       expect(log).toHaveBeenCalledWith("All zones verified.");
       const lines = log.mock.calls.map((c) => String(c[0]));
       expect(lines.filter((l) => / {2}OK\n {4}origin/.test(l))).toHaveLength(zones.length);
-      expect(lines.at(-1)).toContain("Manual verification");
-      for (const z of zones) expect(lines.at(-1)).toContain(`ZONE=${z.Id} HOST=`);
+      expect(lines.at(-1)).toBe("All zones verified.");
+      expect(lines.at(-2)).toContain(
+        `pnpm edge:error-page:probe ${Object.keys(REGIONAL_HOSTS).join(" ")}`,
+      );
     });
 
     it("exits 1 and names the failing zones, still without writing", async () => {
@@ -822,8 +822,8 @@ describe("main", () => {
       const lines = log.mock.calls.map((c) => String(c[0]));
       expect(lines.filter((l) => / {2}OK\n {4}origin/.test(l))).toHaveLength(zones.length);
       expect(lines.filter((l) => l.endsWith(", nothing to push"))).toHaveLength(zones.length - 2);
-      expect(log).toHaveBeenCalledWith(`${zones.length} zone(s) deployed and verified.`);
-      expect(lines.at(-1)).toContain("Manual verification");
+      expect(lines.at(-1)).toBe(`${zones.length} zone(s) deployed and verified.`);
+      expect(lines.at(-2)).toContain("take the origin down");
     });
 
     it("works one region at a time, in the order given", async () => {

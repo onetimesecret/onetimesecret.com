@@ -263,7 +263,7 @@ pnpm scripts that take the same arguments:
 # .env.example); the same precedence as .envrc, with or without direnv
 pnpm edge:error-page:push              # report: which zones differ (exit 1 if any)
 pnpm edge:error-page:push --apply      # push regional.html to every zone that differs
-pnpm edge:error-page:verify            # check every zone; print the manual checks
+pnpm edge:error-page:verify            # check every zone; writes nothing
 pnpm edge:error-page:deploy            # push then verify, one region at a time
 pnpm edge:error-page:probe             # with the origin down: is the page actually served?
 pnpm edge:error-page:probe nz=<host>   # probe this hostname for the region (see below)
@@ -302,13 +302,8 @@ Re-running is idempotent and only touches zones that still differ.
 `verify` writes nothing. It reads each zone fresh, applies the same check as
 the push read-back (page enabled, content equal to the file), prints the
 zone's origin and hostnames for eyeballing, and exits `1` if any zone fails.
-It ends with the manual checks, with the zone IDs and hostnames filled in:
-the two `curl` calls against the API that reproduce what it just did, where
-to look in the dashboard, and how to see the page actually served. That last
-one is manual by nature: Bunny serves the custom page only for errors it
-generates itself (origin unreachable or timed out), so it takes an origin
-that is down or briefly pointed at a closed port. A `500` from the app
-passes through untouched.
+When every zone passes it ends by naming the `probe` for those regions, the
+one check that needs the origin down.
 
 `deploy` is push and verify for one region at a time, in the order given:
 read the zone fresh, push if it differs, verify, then the next region. It
@@ -340,9 +335,44 @@ every region, `2` a push failed, `deploy` stopped, or the script could not
 run.
 
 `test/unit/edge/errorPageCli.test.ts` covers zone resolution, drift
-planning, the zone-list parsing, the read-back diff, the manual-steps text,
-the probe's classification and, through an injected `fetch`, all four
-commands end to end.
+planning, the zone-list parsing, the read-back diff, the probe's
+classification and, through an injected `fetch`, all four commands end to
+end.
+
+### Checking a zone by hand
+
+For the day the script is not trusted, the same checks against the API
+directly. `ZONE` is the pull zone ID, `HOST` the region's public hostname
+(both are in the `verify` output).
+
+```bash
+ZONE=6421160 HOST=nz.onetimesecret.com
+
+# What Bunny stores for the zone (BUNNY_API_KEY in the shell)
+curl -s -H "AccessKey: $BUNNY_API_KEY" -H "Accept: application/json" \
+  "https://api.bunny.net/pullzone/$ZONE" \
+  | jq '{enabled: .ErrorPageEnableCustomCode, origin: .OriginUrl, hosts: [.Hostnames[].Value]}'
+
+# The stored page against the file in git. A diff of only a trailing
+# newline is fine; anything else is drift.
+curl -s -H "AccessKey: $BUNNY_API_KEY" -H "Accept: application/json" \
+  "https://api.bunny.net/pullzone/$ZONE" \
+  | jq -r '.ErrorPageCustomCode' | diff - edge/error-page/regional.html && echo match
+```
+
+In the dashboard: dash.bunny.net, CDN, the zone, its custom error page
+setting shows the same toggle and HTML.
+
+Seeing the page served is what `probe` does; by hand it is one request
+with the origin down. The homepage of the app also says "Onetime Secret",
+so the title is the line to look for, together with the status:
+
+```bash
+curl -sS -w 'status %{http_code}\n' "https://$HOST/" | grep -E 'Service Error|^status '
+```
+
+A `status 502` or `504` with a `Service Error` title line is the custom
+page. A `status 200` with no title line is the app, and proves nothing.
 
 Not verified against a live zone: the exact set of statuses Bunny routes
 through the custom page (origin-unreachable 502/504 and Bunny's own errors

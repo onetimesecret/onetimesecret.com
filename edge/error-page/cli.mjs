@@ -153,7 +153,8 @@ Commands:
                 With --apply, push the file to every zone that differs and
                 read each one back.
   verify        read every zone and check its page is enabled and equal to
-                the file; writes nothing. Then print the manual checks.
+                the file; writes nothing. Ends with the one check left to
+                do by hand: seeing the page served.
   deploy        push and verify one region at a time, in the order given,
                 stopping at the first failure so it never reaches the next
                 zone. Zones already up to date are only verified.
@@ -494,42 +495,22 @@ function describeVerification(v) {
 }
 
 /**
- * The checks a person can run by hand, with the zone IDs and hostnames of
- * the zones just handled filled in. Printed after verify and after a
- * successful deploy: the script can prove what Bunny stores, but only a real
- * edge error proves what Bunny serves, and that step is manual.
+ * The one check the script cannot run on its own: Bunny serves the custom
+ * page only for errors it generates itself (origin unreachable or timed
+ * out), so seeing it served takes an origin that is down. Printed after
+ * verify and after a successful deploy, naming the probe for the regions
+ * just handled. The config and content checks by hand live in
+ * edge/README.md; the script just ran them.
  * @param {ZonePlan[]} plans
  */
-export function manualSteps(plans) {
-  const vars = plans
-    .map((p) => `  ZONE=${p.id} HOST=${p.host}   # ${p.region}, ${p.name}`)
-    .join("\n");
-  const get =
-    '  curl -s -H "AccessKey: $BUNNY_API_KEY" -H "Accept: application/json" \\\n' +
-    '    "https://api.bunny.net/pullzone/$ZONE"';
+export function servingCheck(plans) {
+  const regions = plans.map((p) => p.region).join(" ");
   return `
-Manual verification. Pick a zone (set ZONE and HOST), then run the checks:
-
-${vars}
-
-  # 1. Config: what Bunny stores for the zone (BUNNY_API_KEY in the shell)
-${get} \\
-    | jq '{enabled: .ErrorPageEnableCustomCode, origin: .OriginUrl, hosts: [.Hostnames[].Value]}'
-
-  # 2. Content: the stored page against the file in git. A diff of only a
-  #    trailing newline is fine; anything else is drift.
-${get} \\
-    | jq -r '.ErrorPageCustomCode' | diff - edge/error-page/regional.html && echo match
-
-  # 3. Dashboard: dash.bunny.net -> CDN -> the zone -> its custom error page
-  #    setting shows the same toggle and HTML.
-
-  # 4. Serving: Bunny serves the page only for errors it generates itself,
-  #    origin unreachable or timed out. A 500 from the app passes through
-  #    untouched and proves nothing. With the origin down, or its OriginUrl
-  #    temporarily pointed at a closed port (restore it in the same session):
-  curl -sS -o "/tmp/$HOST.html" -w '%{http_code}\\n' "https://$HOST/"
-  grep -c 'Onetime Secret' "/tmp/$HOST.html"   # 1 or more: the custom page was served
+Bunny serves this page only for errors it generates itself (origin down or
+timed out); a 500 from the app passes through untouched. To see it served,
+take the origin down, then:
+  pnpm edge:error-page:probe ${regions}
+Config and content checks by hand: edge/README.md, "Regional error page".
 `;
 }
 
@@ -664,9 +645,13 @@ async function verifyCommand({ client, selected, html, log }) {
   for (const v of results) log(describeVerification(v));
 
   const failed = results.filter((v) => !v.ok);
-  log(failed.length ? `${failed.length} zone(s) failed verification.` : "All zones verified.");
-  log(manualSteps(results.map((v) => v.plan)));
-  return failed.length ? 1 : 0;
+  if (failed.length) {
+    log(`${failed.length} zone(s) failed verification.`);
+    return 1;
+  }
+  log(servingCheck(results.map((v) => v.plan)));
+  log("All zones verified.");
+  return 0;
 }
 
 /**
@@ -702,8 +687,8 @@ async function deployCommand({ client, selected, html, log, error }) {
       return 2;
     }
   }
+  log(servingCheck(done));
   log(`${done.length} zone(s) deployed and verified.`);
-  log(manualSteps(done));
   return 0;
 }
 
