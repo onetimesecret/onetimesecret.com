@@ -416,7 +416,41 @@ onUnmounted(() => {
                           class="py-3 pr-3 text-left align-middle
                             font-normal text-text-secondary">
                           <span class="flex flex-col items-start gap-1.5">
-                            <span>{{ t(feature.labelKey) }}</span>
+                            <span>{{ t(feature.labelKey)
+                              }}<span
+                                v-if="feature.infoKey"
+                                class="group/info relative ml-1
+                                  inline-block align-middle">
+                                <button
+                                  type="button"
+                                  class="inline-flex text-text-tertiary
+                                    transition-colors
+                                    hover:text-text-secondary
+                                    focus:outline-none
+                                    focus-visible:text-text-secondary"
+                                  :aria-label="t(feature.infoKey)">
+                                  <OIcon
+                                    collection="heroicons"
+                                    name="information-circle-20-solid"
+                                    class="size-4"
+                                    aria-hidden="true" />
+                                </button>
+                                <span
+                                  role="tooltip"
+                                  aria-hidden="true"
+                                  class="pointer-events-none absolute
+                                    left-0 top-full z-20 mt-1.5 w-48
+                                    rounded-lg border border-surface-3
+                                    bg-surface-2 px-3 py-2 text-xs
+                                    font-normal normal-case leading-snug
+                                    text-text-secondary shadow-lg
+                                    opacity-0 transition-opacity
+                                    duration-150
+                                    group-hover/info:opacity-100
+                                    group-focus-within/info:opacity-100">
+                                  {{ t(feature.infoKey) }}
+                                </span>
+                              </span></span>
                             <span
                               v-if="feature.statusKey"
                               class="inline-flex items-center

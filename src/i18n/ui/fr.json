@@ -215,6 +215,9 @@
         "status": {
           "beta": "Bêta",
           "coming-soon": "Bientôt disponible"
+        },
+        "info": {
+          "incoming-secrets": "Laissez d'autres personnes vous envoyer des secrets en toute sécurité via un lien de demande privé."
         }
       },
       "discounts": {

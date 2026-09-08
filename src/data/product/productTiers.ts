@@ -4,6 +4,8 @@ export interface ComparisonFeature {
   availableIn: string[];
   /** Optional status badge (e.g. Beta, Coming soon) shown beside the label */
   statusKey?: string;
+  /** Optional info-tooltip key explaining the feature beside the label */
+  infoKey?: string;
 }
 
 export interface FeatureGroup {
@@ -164,6 +166,7 @@ export const featureGroups: FeatureGroup[] = [
       {
         labelKey: "web.pricing.comparison.features.incoming-secrets",
         availableIn: ALL_TIERS,
+        infoKey: "web.pricing.comparison.info.incoming-secrets",
       },
       {
         labelKey: "web.pricing.comparison.features.expiration-30-days",
