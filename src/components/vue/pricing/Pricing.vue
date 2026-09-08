@@ -253,7 +253,8 @@ onUnmounted(() => {
                         v-if="tier.featured && tier.badgeKey"
                         class="rounded-full bg-brand-500/10
                           px-2.5 py-0.5 text-xs
-                          font-semibold text-brand-500">
+                          font-semibold text-brand-700
+                          dark:text-brand-400">
                         {{ t(tier.badgeKey) }}
                       </span>
                     </div>
@@ -379,14 +380,14 @@ onUnmounted(() => {
               <a
                 :href="feedbackHref"
                 aria-describedby="discounted-tier"
-                class="rounded-lg bg-brandcompdim-600
-                  hover:bg-brandcompdim-700 px-6 py-3
+                class="rounded-lg bg-brandcompdim-700
+                  hover:bg-brandcompdim-800 px-6 py-3
                   text-base font-semibold text-white
                   transition-colors
                   focus-visible:outline
                   focus-visible:outline-2
                   focus-visible:outline-offset-2
-                  focus-visible:outline-brandcompdim-600
+                  focus-visible:outline-brandcompdim-700
                   whitespace-nowrap">
                 {{ t("web.pricing.discounts.cta") }}
                 <span aria-hidden="true">&rarr;</span>
