@@ -1,9 +1,10 @@
 /**
- * @file errorPagePush.test.ts
- * @description Unit tests for edge/error-page/push.mjs: which pull zones a
+ * @file errorPageCli.test.ts
+ * @description Unit tests for edge/error-page/cli.mjs: which pull zones a
  * region resolves to, when a zone counts as out of date, how the zone list is
- * parsed, and what `main` decides to write. The HTTP layer is exercised
- * through an injected fetch so no test reaches the Bunny API.
+ * parsed, and what the push, verify and deploy commands decide to write. The
+ * HTTP layer is exercised through an injected fetch so no test reaches the
+ * Bunny API.
  *
  * The failure modes worth pinning are the ones that would write to the wrong
  * zone, skip a zone that needed the push, or work from a partial zone list: a
@@ -18,11 +19,13 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  COMMANDS,
   EXPECTED_CHANGES,
   REGIONAL_HOSTS,
   envZoneRefs,
   loadDotenv,
   main,
+  manualSteps,
   normalize,
   parsePullZoneList,
   parseRegionArgs,
@@ -31,11 +34,11 @@ import {
   selectRegionalZones,
   unexpectedChanges,
   zoneEnvVar,
-} from "../../../edge/error-page/push.mjs";
+} from "../../../edge/error-page/cli.mjs";
 import { jurisdictions } from "../../../src/data/ops/jurisdictions";
 
 const PAGE = "<html>\n<body>\n{{status_code}}\n</body>\n</html>";
-const SCRIPT = resolve(import.meta.dirname, "../../../edge/error-page/push.mjs");
+const SCRIPT = resolve(import.meta.dirname, "../../../edge/error-page/cli.mjs");
 const TEMPLATE = resolve(import.meta.dirname, "../../../edge/error-page/regional.html");
 
 type FakeZone = Record<string, unknown> & {
@@ -364,16 +367,24 @@ describe("unexpectedChanges", () => {
   });
 });
 
-describe("push.mjs under plain node", () => {
+describe("cli.mjs under plain node", () => {
   // Vitest resolves the .ts import through Vite; the script has to load under
   // node's own type stripping too, and the "run when executed directly" guard
   // has to fire. One --help run pins both.
   it("loads and runs --help", () => {
     const out = execFileSync(process.execPath, [SCRIPT, "--help"], { encoding: "utf8" });
 
-    expect(out).toMatch(/^Usage: pnpm edge:error-page:push/);
+    expect(out).toMatch(/^Usage: pnpm edge:error-page:<push\|verify\|deploy>/);
     expect(out).toContain("BUNNY_PULL_ZONE_<REGION>");
     expect(out).toContain(Object.keys(REGIONAL_HOSTS).join(", "));
+    for (const c of COMMANDS) expect(out).toMatch(new RegExp(`^  ${c} `, "m"));
+  });
+
+  it("names every pnpm script for its command", () => {
+    const pkg = JSON.parse(readFileSync(resolve(SCRIPT, "../../../package.json"), "utf8"));
+    for (const c of COMMANDS) {
+      expect(pkg.scripts[`edge:error-page:${c}`]).toBe(`node edge/error-page/cli.mjs ${c}`);
+    }
   });
 });
 
@@ -432,6 +443,35 @@ describe("regional.html", () => {
   });
 });
 
+describe("manualSteps", () => {
+  const plan = (region: string, id: number, name: string) => ({
+    region,
+    host: `${region}.onetimesecret.com`,
+    id,
+    name,
+    action: "up-to-date" as const,
+    reason: "",
+  });
+  const plans = [plan("nz", 6421160, "be2169e1-7"), plan("eu", 11, "zone-11")];
+
+  it("lists every zone's ID and hostname as shell variables", () => {
+    const text = manualSteps(plans);
+
+    expect(text).toContain("ZONE=6421160 HOST=nz.onetimesecret.com   # nz, be2169e1-7");
+    expect(text).toContain("ZONE=11 HOST=eu.onetimesecret.com   # eu, zone-11");
+  });
+
+  it("covers the stored config, the stored page, and a served error", () => {
+    const text = manualSteps(plans);
+
+    expect(text).toContain('"https://api.bunny.net/pullzone/$ZONE"');
+    expect(text).toContain(".ErrorPageEnableCustomCode");
+    expect(text).toContain("diff - edge/error-page/regional.html");
+    expect(text).toContain('"https://$HOST/"');
+    expect(text).toMatch(/500 from the app passes through/);
+  });
+});
+
 describe("main", () => {
   const template = normalize(
     readFileSync(resolve(import.meta.dirname, "../../../edge/error-page/regional.html"), "utf8"),
@@ -485,7 +525,7 @@ describe("main", () => {
 
   it("prints usage and exits 0 on --help without touching the network", async () => {
     const { fetch } = fakeBunny([]);
-    const { code, log, loadEnv } = run(["--help"], fetch);
+    const { code, log, loadEnv } = run(["push", "--help"], fetch);
 
     expect(await code).toBe(0);
     expect(log.mock.calls[0][0]).toMatch(/^Usage:/);
@@ -495,7 +535,7 @@ describe("main", () => {
 
   it("rejects an unknown flag before doing anything", async () => {
     const { fetch } = fakeBunny([]);
-    const { code } = run(["--force"], fetch);
+    const { code } = run(["push", "--force"], fetch);
 
     expect(await rejection(code)).toMatch(/Unknown option\(s\): --force/);
     expect(fetch).not.toHaveBeenCalled();
@@ -503,7 +543,7 @@ describe("main", () => {
 
   it("fails without BUNNY_API_KEY", async () => {
     const { fetch } = fakeBunny([]);
-    const { code, loadEnv } = run([], fetch, {} as { BUNNY_API_KEY: string });
+    const { code, loadEnv } = run(["push"], fetch, {} as { BUNNY_API_KEY: string });
 
     expect(await rejection(code)).toMatch(/BUNNY_API_KEY is not set/);
     expect(loadEnv).toHaveBeenCalledTimes(1);
@@ -512,7 +552,7 @@ describe("main", () => {
 
   it("sends the API key on every request", async () => {
     const { fetch } = fakeBunny(liveZones());
-    await run([], fetch, { BUNNY_API_KEY: "secret" }).code;
+    await run(["push"], fetch, { BUNNY_API_KEY: "secret" }).code;
 
     for (const [, init] of fetch.mock.calls) {
       expect((init as RequestInit).headers).toEqual(expect.objectContaining({ AccessKey: "secret" }));
@@ -522,7 +562,7 @@ describe("main", () => {
 
   it("exits 0 and writes nothing when every zone matches", async () => {
     const { fetch, posts } = fakeBunny(liveZones());
-    const { code, log } = run([], fetch);
+    const { code, log } = run(["push"], fetch);
 
     expect(await code).toBe(0);
     expect(posts).toEqual([]);
@@ -533,7 +573,7 @@ describe("main", () => {
     const zones = liveZones();
     zones[1].ErrorPageCustomCode = "<html>old</html>";
     const { fetch, posts } = fakeBunny(zones);
-    const { code, log } = run([], fetch);
+    const { code, log } = run(["push"], fetch);
 
     expect(await code).toBe(1);
     expect(posts).toEqual([]);
@@ -545,7 +585,7 @@ describe("main", () => {
     zones[0].ErrorPageEnableCustomCode = false;
     zones[3].ErrorPageCustomCode = "<html>old</html>";
     const { fetch, posts } = fakeBunny(zones);
-    const { code, log } = run(["--apply"], fetch);
+    const { code, log } = run(["push", "--apply"], fetch);
 
     expect(await code).toBe(0);
     expect(posts.map((p) => p.id)).toEqual([zones[0].Id, zones[3].Id]);
@@ -559,7 +599,7 @@ describe("main", () => {
     const zones = liveZones();
     for (const z of zones) z.ErrorPageEnableCustomCode = false;
     const { fetch, posts } = fakeBunny(zones);
-    const { code } = run(["--apply", "UK"], fetch);
+    const { code } = run(["push", "--apply", "UK"], fetch);
 
     expect(await code).toBe(0);
     expect(posts.map((p) => p.id)).toEqual([zones[Object.keys(REGIONAL_HOSTS).indexOf("uk")].Id]);
@@ -573,12 +613,12 @@ describe("main", () => {
     nz.ErrorPageEnableCustomCode = false;
     const { fetch, posts } = fakeBunny(zones);
 
-    const without = run(["--apply"], fetch);
+    const without = run(["push", "--apply"], fetch);
     expect(await rejection(without.code)).toMatch(/nz\.onetimesecret\.com.*BUNNY_PULL_ZONE_NZ/);
     expect(posts).toEqual([]);
 
     const env = { BUNNY_API_KEY: "k", BUNNY_PULL_ZONE_NZ: "x9k2m4p1" };
-    const { code } = run(["--apply"], fetch, env);
+    const { code } = run(["push", "--apply"], fetch, env);
     expect(await code).toBe(0);
     expect(posts.map((p) => p.id)).toEqual([nz.Id]);
   });
@@ -591,7 +631,7 @@ describe("main", () => {
     const { fetch, posts } = fakeBunny(zones);
     const env = { BUNNY_API_KEY: "k", BUNNY_PULL_ZONE_NZ: "stale-name" };
 
-    const { code } = run(["--apply", `nz=${nz.Id}`], fetch, env);
+    const { code } = run(["push", "--apply", `nz=${nz.Id}`], fetch, env);
 
     expect(await code).toBe(0);
     expect(posts.map((p) => p.id)).toEqual([nz.Id]);
@@ -603,17 +643,34 @@ describe("main", () => {
     const eu = zones[Object.keys(REGIONAL_HOSTS).indexOf("eu")];
     const { fetch, posts } = fakeBunny(zones);
 
-    const { code } = run(["--apply", `nz=${eu.Name}`], fetch);
+    const { code } = run(["push", "--apply", `nz=${eu.Name}`], fetch);
 
     expect(await rejection(code)).toMatch(/the eu hostname/);
     expect(posts).toEqual([]);
+  });
+
+  it("rejects a missing or unknown command before doing anything", async () => {
+    const { fetch } = fakeBunny([]);
+
+    expect(await rejection(run([], fetch).code)).toMatch(/Unknown command ""/);
+    expect(await rejection(run(["sync"], fetch).code)).toMatch(/Unknown command "sync"/);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each(["verify", "deploy"])("rejects --apply for %s", async (command) => {
+    const { fetch } = fakeBunny([]);
+
+    const message = await rejection(run([command, "--apply"], fetch).code);
+
+    expect(message).toMatch(/--apply is for push only/);
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it("keeps going after a failed zone and exits 2", async () => {
     const zones = liveZones();
     for (const z of zones) z.ErrorPageEnableCustomCode = false;
     const { fetch, posts } = fakeBunny(zones, { failIds: [zones[1].Id] });
-    const { code, log, error } = run(["--apply"], fetch);
+    const { code, log, error } = run(["push", "--apply"], fetch);
 
     expect(await code).toBe(2);
     expect(posts).toHaveLength(zones.length - 1);
@@ -626,11 +683,137 @@ describe("main", () => {
     zones[0].ErrorPageEnableCustomCode = false;
     zones[0].OriginUrl = "https://origin";
     const { fetch, store } = fakeBunny(zones, { sideEffect: { OriginUrl: null } });
-    const { code, error } = run(["--apply"], fetch);
+    const { code, error } = run(["push", "--apply"], fetch);
 
     expect(await code).toBe(2);
     expect(error).toHaveBeenCalledWith(expect.stringMatching(/also changed OriginUrl/));
     // The page itself did land; the exit code is about the collateral change.
     expect(store.get(zones[0].Id)?.ErrorPageCustomCode).toBe(template);
+  });
+
+  describe("verify", () => {
+    it("exits 0, writes nothing, and prints the manual checks when all is well", async () => {
+      const zones = liveZones();
+      const { fetch, posts } = fakeBunny(zones);
+      const { code, log } = run(["verify"], fetch);
+
+      expect(await code).toBe(0);
+      expect(posts).toEqual([]);
+      expect(log).toHaveBeenCalledWith("All zones verified.");
+      const lines = log.mock.calls.map((c) => String(c[0]));
+      expect(lines.filter((l) => / {2}OK\n {4}origin/.test(l))).toHaveLength(zones.length);
+      expect(lines.at(-1)).toContain("Manual verification");
+      for (const z of zones) expect(lines.at(-1)).toContain(`ZONE=${z.Id} HOST=`);
+    });
+
+    it("exits 1 and names the failing zones, still without writing", async () => {
+      const zones = liveZones();
+      zones[0].ErrorPageEnableCustomCode = false;
+      zones[2].ErrorPageCustomCode = "<html>old</html>";
+      const { fetch, posts } = fakeBunny(zones);
+      const { code, log } = run(["verify"], fetch);
+
+      expect(await code).toBe(1);
+      expect(posts).toEqual([]);
+      const lines = log.mock.calls.map((c) => String(c[0]));
+      const failing = (id: number) => lines.find((l) => l.includes(`zone ${id} `)) ?? "";
+      expect(failing(zones[0].Id)).toContain("FAIL (custom error page disabled)");
+      expect(failing(zones[2].Id)).toContain("FAIL (page content differs)");
+      expect(log).toHaveBeenCalledWith("2 zone(s) failed verification.");
+    });
+
+    it("reads each zone fresh and shows its origin and hostnames", async () => {
+      const zones = liveZones();
+      zones[1].OriginUrl = "https://ca-origin.example";
+      const { fetch } = fakeBunny(zones);
+      const { code, log } = run(["verify", "ca"], fetch);
+      expect(await code).toBe(0);
+
+      const lines = log.mock.calls.map((c) => String(c[0]));
+      expect(lines[0]).toContain(
+        "origin https://ca-origin.example; hostnames ca.onetimesecret.com",
+      );
+      const gets = fetch.mock.calls.map(([u]) => new URL(String(u)).pathname);
+      expect(gets).toEqual(["/pullzone", `/pullzone/${zones[1].Id}`]);
+    });
+
+    it("honours a region=zone override like push does", async () => {
+      const zones = liveZones();
+      const nz = zones[Object.keys(REGIONAL_HOSTS).indexOf("nz")];
+      nz.Hostnames = [{ Value: "x9k2m4p1.b-cdn.net" }];
+      const { fetch } = fakeBunny(zones);
+
+      expect(await run(["verify", "nz"], fetch).code.then(() => "ok", (e: Error) => e.message))
+        .toMatch(/BUNNY_PULL_ZONE_NZ/);
+      expect(await run(["verify", `nz=${nz.Id}`], fetch).code).toBe(0);
+    });
+  });
+
+  describe("deploy", () => {
+    it("pushes the drifted zones, verifies every zone, and prints the manual checks", async () => {
+      const zones = liveZones();
+      zones[0].ErrorPageEnableCustomCode = false;
+      zones[3].ErrorPageCustomCode = "<html>old</html>";
+      const { fetch, posts } = fakeBunny(zones);
+      const { code, log, error } = run(["deploy"], fetch);
+
+      expect(await code).toBe(0);
+      expect(posts.map((p) => p.id)).toEqual([zones[0].Id, zones[3].Id]);
+      expect(error).not.toHaveBeenCalled();
+      const lines = log.mock.calls.map((c) => String(c[0]));
+      expect(lines.filter((l) => / {2}OK\n {4}origin/.test(l))).toHaveLength(zones.length);
+      expect(lines.filter((l) => l.endsWith(", nothing to push"))).toHaveLength(zones.length - 2);
+      expect(log).toHaveBeenCalledWith(`${zones.length} zone(s) deployed and verified.`);
+      expect(lines.at(-1)).toContain("Manual verification");
+    });
+
+    it("works one region at a time, in the order given", async () => {
+      const zones = liveZones();
+      for (const z of zones) z.ErrorPageEnableCustomCode = false;
+      const { fetch, posts } = fakeBunny(zones);
+      const { code } = run(["deploy", "uk", "eu"], fetch);
+
+      expect(await code).toBe(0);
+      const uk = zones[Object.keys(REGIONAL_HOSTS).indexOf("uk")].Id;
+      const eu = zones[Object.keys(REGIONAL_HOSTS).indexOf("eu")].Id;
+      expect(posts.map((p) => p.id)).toEqual([uk, eu]);
+      // Every request for uk precedes every request for eu: no interleaving.
+      const paths = fetch.mock.calls.map(([u]) => new URL(String(u)).pathname).slice(1);
+      const lastUk = paths.lastIndexOf(`/pullzone/${uk}`);
+      const firstEu = paths.indexOf(`/pullzone/${eu}`);
+      expect(lastUk).toBeLessThan(firstEu);
+    });
+
+    it("stops at the first failure and leaves the remaining zones untouched", async () => {
+      const zones = liveZones();
+      for (const z of zones) z.ErrorPageEnableCustomCode = false;
+      const { fetch, posts } = fakeBunny(zones, { failIds: [zones[1].Id] });
+      const { code, log, error } = run(["deploy"], fetch);
+
+      expect(await code).toBe(2);
+      expect(posts.map((p) => p.id)).toEqual([zones[0].Id]);
+      expect(error).toHaveBeenCalledWith(expect.stringMatching(/FAILED — POST .* HTTP 500/));
+      const rest = Object.keys(REGIONAL_HOSTS).slice(2).join(", ");
+      expect(error).toHaveBeenCalledWith(
+        `Stopped before ${rest}; nothing was written to those zones.`,
+      );
+      expect(log).toHaveBeenCalledWith(
+        `1 zone(s) deployed, 1 failed, ${zones.length - 2} not attempted.`,
+      );
+      const touched = new Set(fetch.mock.calls.map(([u]) => new URL(String(u)).pathname));
+      for (const z of zones.slice(2)) expect(touched.has(`/pullzone/${z.Id}`)).toBe(false);
+    });
+
+    it("treats a collateral change on one zone as a failure and stops there", async () => {
+      const zones = liveZones();
+      for (const z of zones) z.ErrorPageEnableCustomCode = false;
+      zones[0].OriginUrl = "https://origin";
+      const { fetch, posts } = fakeBunny(zones, { sideEffect: { OriginUrl: null } });
+      const { code, error } = run(["deploy"], fetch);
+
+      expect(await code).toBe(2);
+      expect(posts.map((p) => p.id)).toEqual([zones[0].Id]);
+      expect(error).toHaveBeenCalledWith(expect.stringMatching(/also changed OriginUrl/));
+    });
   });
 });

@@ -1,14 +1,19 @@
 #!/usr/bin/env node
-// edge/error-page/push.mjs
+// edge/error-page/cli.mjs
 //
-// Pushes edge/error-page/regional.html to the custom error page setting of
-// every regional pull zone, so the five zones never drift from the file in
-// git or from each other.
+// Keeps the custom error page of every regional pull zone equal to
+// edge/error-page/regional.html, so the five zones never drift from the file
+// in git or from each other. Three pnpm scripts run this file with a command:
 //
 //   pnpm edge:error-page:push              # report drift, exit 1 if any differs
 //   pnpm edge:error-page:push --apply      # push the file to every zone that differs
-//   pnpm edge:error-page:push eu uk        # limit to some regions (either mode)
-//   pnpm edge:error-page:push nz=<zone>    # name the zone for a region (name or ID)
+//   pnpm edge:error-page:verify            # check every zone, print the manual checks
+//   pnpm edge:error-page:deploy            # push then verify, one region at a time
+//
+// All three take the same region arguments:
+//
+//   pnpm edge:error-page:deploy eu uk        # limit to some regions
+//   pnpm edge:error-page:deploy nz=<zone>    # name the zone for a region (name or ID)
 //
 // Needs BUNNY_API_KEY (the account API key, same secret the deploy workflows
 // use to purge), from the environment or from the repo-root .env / .env.local,
@@ -136,13 +141,25 @@ const ROOT_DIR = join(import.meta.dirname, "..", "..");
 /** Placeholders the template must keep, or Bunny serves a page with no status. */
 const REQUIRED_PLACEHOLDERS = ["{{status_code}}", "{{status_title}}"];
 
-const USAGE = `Usage: pnpm edge:error-page:push [--apply] [region[=zone] ...]
+export const COMMANDS = Object.freeze(["push", "verify", "deploy"]);
 
-Pushes edge/error-page/regional.html to the custom error page of the
-regional Bunny pull zones.
+const USAGE = `Usage: pnpm edge:error-page:<push|verify|deploy> [--apply] [region[=zone] ...]
 
-  (no flags)    report which zones differ from the file; exit 1 if any do
-  --apply       push the file to every zone that differs, then verify
+Keeps the custom error page of the regional Bunny pull zones equal to
+edge/error-page/regional.html.
+
+Commands:
+  push          report which zones differ from the file; exit 1 if any do.
+                With --apply, push the file to every zone that differs and
+                read each one back.
+  verify        read every zone and check its page is enabled and equal to
+                the file; writes nothing. Then print the manual checks.
+  deploy        push and verify one region at a time, in the order given,
+                stopping at the first failure so it never reaches the next
+                zone. Zones already up to date are only verified.
+
+Arguments, the same for all three:
+  --apply       push only: write to the zones that differ
   --help        show this text
   region ...    limit to these regions: ${Object.keys(REGIONAL_HOSTS).join(", ")}
   region=zone   use this pull zone (name or numeric ID) for the region,
@@ -425,65 +442,102 @@ async function applyZone(client, plan, html) {
 /** @param {ZonePlan} plan */
 function describe(plan) {
   const state = plan.action === "up-to-date" ? "up-to-date" : `needs update (${plan.reason})`;
-  const zone = `zone ${plan.id} (${plan.name})`;
-  return `${plan.region.padEnd(3)} ${plan.host.padEnd(24)} ${zone}  ${state}`;
+  return `${prefix(plan)}  ${state}`;
+}
+
+/** @param {ZonePlan} plan */
+function prefix(plan) {
+  return `${plan.region.padEnd(3)} ${plan.host.padEnd(24)} zone ${plan.id} (${plan.name})`;
 }
 
 /**
- * @typedef {object} Deps injectable for tests; every default is the real thing
- * @property {Record<string, string | undefined>} [env]
- * @property {typeof fetch} [fetch]
- * @property {() => void} [loadEnv]
- * @property {(line: string) => void} [log]
- * @property {(line: string) => void} [error]
+ * @typedef {object} Verification
+ * @property {ZonePlan} plan planned against a fresh read of the zone
+ * @property {boolean} ok page enabled and equal to the file
+ * @property {string} origin the zone's OriginUrl, for eyeballing
+ * @property {string[]} hostnames the zone's hostnames, for eyeballing
  */
 
 /**
- * @param {string[]} argv
- * @param {Deps} [deps]
- * @returns {Promise<number>} exit code: 0 clean, 1 drift reported, 2 a push failed
+ * Reads one zone fresh and checks its page the same way a push read-back
+ * does: enabled, and equal to the file after normalization. Writes nothing.
+ * @param {Client} client
+ * @param {{ region: string, host: string, zone: PullZone }} selected
+ * @param {string} html
+ * @returns {Promise<Verification>}
  */
-export async function main(argv, deps = {}) {
-  const {
-    env = process.env,
-    fetch: fetchImpl = globalThis.fetch,
-    loadEnv = loadDotenv,
-    log = console.log,
-    error = console.error,
-  } = deps;
+async function verifyZone(client, { region, host, zone }, html) {
+  /** @type {PullZone & { OriginUrl?: string | null }} */
+  const fresh = await bunny(client, `/pullzone/${zone.Id}`);
+  const plan = planZone({ region, host, zone: fresh }, html);
+  return {
+    plan,
+    ok: plan.action === "up-to-date",
+    origin: fresh.OriginUrl ?? "",
+    hostnames: (fresh.Hostnames ?? []).map((h) => h.Value),
+  };
+}
 
-  if (argv.includes("--help") || argv.includes("-h")) {
-    log(USAGE);
-    return 0;
-  }
-  const unknownFlags = argv.filter((a) => a.startsWith("-") && a !== "--apply");
-  if (unknownFlags.length) {
-    throw new Error(`Unknown option(s): ${unknownFlags.join(", ")}\n\n${USAGE}`);
-  }
-  const apply = argv.includes("--apply");
-  const { regions, refs: argRefs } = parseRegionArgs(argv.filter((a) => !a.startsWith("-")));
-  const hosts = pickRegions(regions);
+/** @param {Verification} v */
+function describeVerification(v) {
+  const state = v.ok ? "OK" : `FAIL (${v.plan.reason})`;
+  const detail = `origin ${v.origin || "(none)"}; hostnames ${v.hostnames.join(", ") || "(none)"}`;
+  return `${prefix(v.plan)}  ${state}\n    ${detail}`;
+}
 
-  loadEnv();
-  const apiKey = env.BUNNY_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      "BUNNY_API_KEY is not set. Export it or add it to .env (see .env.example).",
-    );
-  }
-  const client = { apiKey, fetch: fetchImpl };
+/**
+ * The checks a person can run by hand, with the zone IDs and hostnames of
+ * the zones just handled filled in. Printed after verify and after a
+ * successful deploy: the script can prove what Bunny stores, but only a real
+ * edge error proves what Bunny serves, and that step is manual.
+ * @param {ZonePlan[]} plans
+ */
+export function manualSteps(plans) {
+  const vars = plans
+    .map((p) => `  ZONE=${p.id} HOST=${p.host}   # ${p.region}, ${p.name}`)
+    .join("\n");
+  const get =
+    '  curl -s -H "AccessKey: $BUNNY_API_KEY" -H "Accept: application/json" \\\n' +
+    '    "https://api.bunny.net/pullzone/$ZONE"';
+  return `
+Manual verification. Pick a zone (set ZONE and HOST), then run the checks:
 
-  const html = normalize(await readFile(TEMPLATE_PATH, "utf8"));
-  const lost = REQUIRED_PLACEHOLDERS.filter((p) => !html.includes(p));
-  if (lost.length) {
-    throw new Error(`regional.html lost its ${lost.join(" and ")} placeholder(s)`);
-  }
+${vars}
 
-  // Command line beats environment, per region.
-  const refs = { ...envZoneRefs(env, hosts), ...argRefs };
-  const zones = await listPullZones(client);
-  const plans = selectRegionalZones(zones, hosts, refs).map((s) => planZone(s, html));
+  # 1. Config: what Bunny stores for the zone (BUNNY_API_KEY in the shell)
+${get} \\
+    | jq '{enabled: .ErrorPageEnableCustomCode, origin: .OriginUrl, hosts: [.Hostnames[].Value]}'
 
+  # 2. Content: the stored page against the file in git. A diff of only a
+  #    trailing newline is fine; anything else is drift.
+${get} \\
+    | jq -r '.ErrorPageCustomCode' | diff - edge/error-page/regional.html && echo match
+
+  # 3. Dashboard: dash.bunny.net -> CDN -> the zone -> its custom error page
+  #    setting shows the same toggle and HTML.
+
+  # 4. Serving: Bunny serves the page only for errors it generates itself,
+  #    origin unreachable or timed out. A 500 from the app passes through
+  #    untouched and proves nothing. With the origin down, or its OriginUrl
+  #    temporarily pointed at a closed port (restore it in the same session):
+  curl -sS -o "/tmp/$HOST.html" -w '%{http_code}\\n' "https://$HOST/"
+  grep -c 'Onetime Secret' "/tmp/$HOST.html"   # 1 or more: the custom page was served
+`;
+}
+
+/**
+ * @typedef {object} Run what every command works from
+ * @property {Client} client
+ * @property {{ region: string, host: string, zone: PullZone }[]} selected
+ * @property {string} html
+ * @property {boolean} apply
+ * @property {(line: string) => void} log
+ * @property {(line: string) => void} error
+ */
+
+/** @param {Run} run */
+async function pushCommand({ client, selected, html, apply, log, error }) {
+  const plans = selected.map((s) => planZone(s, html));
   for (const plan of plans) log(describe(plan));
 
   const pending = plans.filter((p) => p.action === "update");
@@ -511,6 +565,128 @@ export async function main(argv, deps = {}) {
   const pushed = pending.length - failed.length;
   log(`${pushed} zone(s) pushed, ${failed.length} failed.`);
   return failed.length ? 2 : 0;
+}
+
+/** @param {Run} run */
+async function verifyCommand({ client, selected, html, log }) {
+  const results = [];
+  for (const s of selected) results.push(await verifyZone(client, s, html));
+  for (const v of results) log(describeVerification(v));
+
+  const failed = results.filter((v) => !v.ok);
+  log(failed.length ? `${failed.length} zone(s) failed verification.` : "All zones verified.");
+  log(manualSteps(results.map((v) => v.plan)));
+  return failed.length ? 1 : 0;
+}
+
+/**
+ * One region at a time: read it fresh, push if it differs, verify, then move
+ * on. Unlike push --apply this stops at the first failure, so a push that
+ * misbehaves on one production zone is not repeated on the next four.
+ * @param {Run} run
+ */
+async function deployCommand({ client, selected, html, log, error }) {
+  const done = [];
+  for (const [i, s] of selected.entries()) {
+    const fresh = await bunny(client, `/pullzone/${s.zone.Id}`);
+    const plan = planZone({ ...s, zone: fresh }, html);
+    try {
+      if (plan.action === "update") {
+        log(describe(plan));
+        await applyZone(client, plan, html);
+        log(`${plan.host}: pushed`);
+      } else {
+        log(`${describe(plan)}, nothing to push`);
+      }
+      const v = await verifyZone(client, s, html);
+      log(describeVerification(v));
+      if (!v.ok) throw new Error(`verification failed: ${v.plan.reason}`);
+      done.push(v.plan);
+    } catch (err) {
+      error(`${plan.host}: FAILED — ${err instanceof Error ? err.message : err}`);
+      const remaining = selected.slice(i + 1).map((r) => r.region);
+      if (remaining.length) {
+        error(`Stopped before ${remaining.join(", ")}; nothing was written to those zones.`);
+      }
+      log(`${done.length} zone(s) deployed, 1 failed, ${remaining.length} not attempted.`);
+      return 2;
+    }
+  }
+  log(`${done.length} zone(s) deployed and verified.`);
+  log(manualSteps(done));
+  return 0;
+}
+
+/**
+ * @typedef {object} Deps injectable for tests; every default is the real thing
+ * @property {Record<string, string | undefined>} [env]
+ * @property {typeof fetch} [fetch]
+ * @property {() => void} [loadEnv]
+ * @property {(line: string) => void} [log]
+ * @property {(line: string) => void} [error]
+ */
+
+/**
+ * @param {string[]} argv the command, then its arguments
+ * @param {Deps} [deps]
+ * @returns {Promise<number>} exit code: 0 clean, 1 drift or a failed
+ *   verification reported, 2 a push failed
+ */
+export async function main(argv, deps = {}) {
+  const {
+    env = process.env,
+    fetch: fetchImpl = globalThis.fetch,
+    loadEnv = loadDotenv,
+    log = console.log,
+    error = console.error,
+  } = deps;
+
+  if (argv.includes("--help") || argv.includes("-h")) {
+    log(USAGE);
+    return 0;
+  }
+  const [command, ...args] = argv;
+  if (!COMMANDS.includes(command)) {
+    throw new Error(
+      `Unknown command "${command ?? ""}"; expected ${COMMANDS.join(", ")}\n\n${USAGE}`,
+    );
+  }
+  const unknownFlags = args.filter((a) => a.startsWith("-") && a !== "--apply");
+  if (unknownFlags.length) {
+    throw new Error(`Unknown option(s): ${unknownFlags.join(", ")}\n\n${USAGE}`);
+  }
+  const apply = args.includes("--apply");
+  if (apply && command !== "push") {
+    const why = command === "verify" ? "verify never writes" : "deploy always pushes";
+    throw new Error(`--apply is for push only; ${why}. Drop the flag.`);
+  }
+  const { regions, refs: argRefs } = parseRegionArgs(args.filter((a) => !a.startsWith("-")));
+  const hosts = pickRegions(regions);
+
+  loadEnv();
+  const apiKey = env.BUNNY_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "BUNNY_API_KEY is not set. Export it or add it to .env (see .env.example).",
+    );
+  }
+  const client = { apiKey, fetch: fetchImpl };
+
+  const html = normalize(await readFile(TEMPLATE_PATH, "utf8"));
+  const lost = REQUIRED_PLACEHOLDERS.filter((p) => !html.includes(p));
+  if (lost.length) {
+    throw new Error(`regional.html lost its ${lost.join(" and ")} placeholder(s)`);
+  }
+
+  // Command line beats environment, per region.
+  const refs = { ...envZoneRefs(env, hosts), ...argRefs };
+  const zones = await listPullZones(client);
+  const selected = selectRegionalZones(zones, hosts, refs);
+  const run = { client, selected, html, apply, log, error };
+
+  if (command === "verify") return verifyCommand(run);
+  if (command === "deploy") return deployCommand(run);
+  return pushCommand(run);
 }
 
 // Only run when executed directly, so the pure helpers stay importable by tests.
