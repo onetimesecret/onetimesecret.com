@@ -194,8 +194,13 @@ export const otherFonts = [
    * divided by size-adjust because the overrides apply after scaling.
    *
    * Each local font gets its own family name so a missing local face falls
-   * through to the next one instead of masking an earlier rule. Android has
-   * neither Georgia nor Times New Roman and keeps its default serif.
+   * through to the next one instead of masking an earlier rule. Android ships
+   * neither Georgia nor Times New Roman; its platform serif is Noto Serif, so
+   * the last pair covers it (and Linux and ChromeOS, which also ship Noto).
+   *
+   * Georgia and Times ratios were measured in Chrome. The Noto Serif ratios
+   * come from summing advance widths of every English UI string in both fonts
+   * (fontTools); the same method reproduces the Chrome numbers within 0.4%.
    */
   @font-face {
     font-family: "Zilla Slab Fallback Georgia";
@@ -237,6 +242,30 @@ export const otherFonts = [
     size-adjust: 102.44%;
     ascent-override: 92.15%;
     descent-override: 24.99%;
+    line-gap-override: 0%;
+  }
+  @font-face {
+    font-family: "Zilla Slab Fallback Noto";
+    src:
+      local("Noto Serif"),
+      local("Noto Serif Regular"),
+      local("NotoSerif-Regular"),
+      local("NotoSerif");
+    font-weight: 100 500;
+    size-adjust: 90.5%;
+    ascent-override: 104.31%;
+    descent-override: 28.29%;
+    line-gap-override: 0%;
+  }
+  @font-face {
+    font-family: "Zilla Slab Fallback Noto";
+    src:
+      local("Noto Serif Bold"),
+      local("NotoSerif-Bold");
+    font-weight: 600 900;
+    size-adjust: 87%;
+    ascent-override: 108.51%;
+    descent-override: 29.43%;
     line-gap-override: 0%;
   }
 </style>

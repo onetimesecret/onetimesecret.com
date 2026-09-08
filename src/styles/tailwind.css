@@ -96,13 +96,13 @@
 
   /* Custom brand font family. */
   /*
-   * The two fallback families are metric-adjusted local serifs defined in
+   * The fallback families are metric-adjusted local serifs defined in
    * components/layout/OptimizedFonts.astro; they keep line breaks stable
    * until Zilla Slab loads. var(--font-serif) is a Tailwind default.
    */
   --font-brand:
     "Zilla Slab", "Zilla Slab Fallback Georgia", "Zilla Slab Fallback Times",
-    var(--font-serif);
+    "Zilla Slab Fallback Noto", var(--font-serif);
 
   /* Custom brand color palette. */
   --color-brand-50: #fcf8f2;
