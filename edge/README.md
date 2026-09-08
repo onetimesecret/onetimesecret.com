@@ -374,12 +374,12 @@ curl -sS -w 'status %{http_code}\n' "https://$HOST/" | grep -E 'Service Error|^s
 A `status 502` or `504` with a `Service Error` title line is the custom
 page. A `status 200` with no title line is the app, and proves nothing.
 
-Not verified against a live zone: the exact set of statuses Bunny routes
-through the custom page (origin-unreachable 502/504 and Bunny's own errors
-are the documented case; a `500` the origin itself returns passes through
-untouched), and whether `{{status_title}}` is the placeholder Bunny's editor
-currently offers alongside `{{status_code}}`. The hide script above is the
-guard for the second.
+Verified against the nz zone on 2026-09-07 with `probe nz=be2169e1-7.b-cdn.net`
+while its origin was unreachable: Bunny answered `502` with the custom page,
+`{{status_code}}` filled as `502` and `{{status_title}}` as `Bad Gateway`.
+Still not verified: the exact set of statuses Bunny routes through the page
+(origin-unreachable 502/504 and Bunny's own errors are the documented case;
+a `500` the origin itself returns passes through untouched).
 
 ## Country to jurisdiction mapping
 
