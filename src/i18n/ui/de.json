@@ -185,7 +185,7 @@
       "groups": {
         "core-sharing": "Kernfunktionen",
         "brand-identity": "Markenidentität",
-        "infrastructure": "Infrastruktur"
+        "governance": "Governance & Zugriff"
       },
       "comparison": {
         "feature": "Funktion",
@@ -206,7 +206,15 @@
           "access-controls": "Startseiten-Zugriffskontrollen",
           "sso": "Single Sign-On (SSO)",
           "rbac": "Rollenbasierte Zugriffskontrolle (RBAC)",
-          "organizations": "Organisationen und Teams"
+          "organizations": "Organisationen und Teams",
+          "custom-mail-sender": "Eigener E-Mail-Absender",
+          "flexible-from-domain": "Versand über Ihre Unternehmensdomain",
+          "audit-logs": "Audit-Protokolle",
+          "ip-access-filtering": "IP- und CIDR-Zugriffsfilterung"
+        },
+        "status": {
+          "beta": "Beta",
+          "coming-soon": "Demnächst"
         }
       },
       "discounts": {

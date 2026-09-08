@@ -185,11 +185,11 @@
       "groups": {
         "core-sharing": "Core Sharing",
         "brand-identity": "Brand Identity",
-        "infrastructure": "Infrastructure"
+        "governance": "Governance & Access"
       },
       "comparison": {
         "feature": "Feature",
-        "description": "Every plan shares secrets the same way. Paid plans add your brand, your domains and team controls.",
+        "description": "Every plan shares secrets the same secure way. Paid plans add your brand, and team controls.",
         "included": "Included",
         "not-included": "Not included",
         "features": {
@@ -206,7 +206,15 @@
           "access-controls": "Homepage access controls",
           "sso": "Single sign-on (SSO)",
           "rbac": "Role-based access control",
-          "organizations": "Organizations and teams"
+          "organizations": "Organizations and teams",
+          "custom-mail-sender": "Custom email sender",
+          "flexible-from-domain": "Send from your company domain",
+          "audit-logs": "Audit logs",
+          "ip-access-filtering": "IP and CIDR access filtering"
+        },
+        "status": {
+          "beta": "Beta",
+          "coming-soon": "Coming soon"
         }
       },
       "discounts": {

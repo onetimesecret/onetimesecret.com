@@ -185,7 +185,7 @@
       "groups": {
         "core-sharing": "Funciones principales",
         "brand-identity": "Identidad de marca",
-        "infrastructure": "Infraestructura"
+        "governance": "Gobernanza y acceso"
       },
       "comparison": {
         "feature": "Característica",
@@ -206,7 +206,15 @@
           "access-controls": "Controles de acceso a la página de inicio",
           "sso": "Inicio de sesión único (SSO)",
           "rbac": "Control de acceso basado en roles (RBAC)",
-          "organizations": "Organizaciones y equipos"
+          "organizations": "Organizaciones y equipos",
+          "custom-mail-sender": "Remitente de correo personalizado",
+          "flexible-from-domain": "Envío desde el dominio de tu empresa",
+          "audit-logs": "Registros de auditoría",
+          "ip-access-filtering": "Filtrado de acceso por IP y CIDR"
+        },
+        "status": {
+          "beta": "Beta",
+          "coming-soon": "Próximamente"
         }
       },
       "discounts": {

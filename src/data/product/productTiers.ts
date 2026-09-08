@@ -162,11 +162,11 @@ export const featureGroups: FeatureGroup[] = [
         availableIn: ALL_TIERS,
       },
       {
-        labelKey: "web.pricing.comparison.features.expiration-30-days",
-        availableIn: PAID_TIERS,
+        labelKey: "web.pricing.comparison.features.incoming-secrets",
+        availableIn: ALL_TIERS,
       },
       {
-        labelKey: "web.pricing.comparison.features.incoming-secrets",
+        labelKey: "web.pricing.comparison.features.expiration-30-days",
         availableIn: PAID_TIERS,
       },
     ],
@@ -190,14 +190,22 @@ export const featureGroups: FeatureGroup[] = [
         labelKey: "web.pricing.comparison.features.workspace-branding",
         availableIn: TEAM_ONLY,
       },
+      {
+        labelKey: "web.pricing.comparison.features.custom-mail-sender",
+        availableIn: PAID_TIERS,
+      },
+      {
+        labelKey: "web.pricing.comparison.features.flexible-from-domain",
+        availableIn: TEAM_ONLY,
+      },
     ],
   },
   {
-    labelKey: "web.pricing.groups.infrastructure",
+    labelKey: "web.pricing.groups.governance",
     features: [
       {
         labelKey: "web.pricing.comparison.features.access-controls",
-        availableIn: PAID_TIERS,
+        availableIn: ALL_TIERS,
       },
       {
         labelKey: "web.pricing.comparison.features.no-rate-limits",
@@ -212,8 +220,14 @@ export const featureGroups: FeatureGroup[] = [
         availableIn: TEAM_ONLY,
       },
       {
-        labelKey: "web.pricing.comparison.features.organizations",
+        labelKey: "web.pricing.comparison.features.audit-logs",
         availableIn: TEAM_ONLY,
+        statusKey: "web.pricing.comparison.status.beta",
+      },
+      {
+        labelKey: "web.pricing.comparison.features.ip-access-filtering",
+        availableIn: TEAM_ONLY,
+        statusKey: "web.pricing.comparison.status.coming-soon",
       },
     ],
   },
