@@ -13,6 +13,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { App } from 'vue';
+import { featureGroups, productTiers } from '@/data/product/productTiers';
 import {
   JURISDICTION_STORAGE_KEY as STORAGE_KEY,
   installStorage,
@@ -105,6 +106,43 @@ describe('Pricing CTA region', () => {
       const hosts = signupHosts(el);
       expect(hosts.length).toBeGreaterThan(0);
       expect([...new Set(hosts)]).toEqual(['eu.onetimesecret.com']);
+    });
+  });
+});
+
+describe('Pricing plan comparison', () => {
+  it('renders one labelled table per feature group with a column per tier', async () => {
+    const el = await mountPricing();
+
+    const tables = [...el.querySelectorAll('table')];
+    expect(tables).toHaveLength(featureGroups.length);
+
+    tables.forEach((table, i) => {
+      const heading = el.querySelector(`#${table.getAttribute('aria-labelledby')}`);
+      expect(heading?.tagName).toBe('H4');
+      expect(table.querySelectorAll('thead th[scope="col"]')).toHaveLength(productTiers.length);
+      expect(table.querySelectorAll('tbody th[scope="row"]')).toHaveLength(
+        featureGroups[i].features.length
+      );
+    });
+  });
+
+  it('marks every cell from the availableIn list of its feature', async () => {
+    const el = await mountPricing();
+    const tables = [...el.querySelectorAll('table')];
+
+    featureGroups.forEach((group, gi) => {
+      const rows = [...tables[gi].querySelectorAll('tbody tr')];
+      group.features.forEach((feature, fi) => {
+        // The icon is aria-hidden; the visually hidden span carries the state.
+        const cells = [...rows[fi].querySelectorAll('td .sr-only')].map((span) =>
+          span.textContent?.trim()
+        );
+        const expected = productTiers.map((tier) =>
+          feature.availableIn.includes(tier.id) ? 'Included' : 'Not included'
+        );
+        expect(cells, feature.labelKey).toEqual(expected);
+      });
     });
   });
 });

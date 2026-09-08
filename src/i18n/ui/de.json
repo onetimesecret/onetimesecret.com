@@ -185,17 +185,38 @@
       "groups": {
         "core-sharing": "Kernfunktionen",
         "brand-identity": "Markenidentität",
-        "infrastructure": "Infrastruktur"
+        "governance": "Governance & Zugriff"
       },
       "comparison": {
         "feature": "Funktion",
+        "description": "Jeder Plan teilt Geheimnisse auf dieselbe sichere Weise. Bezahlte Pläne ergänzen Ihre Marke, Ihre Domains und Teamkontrollen.",
+        "included": "Enthalten",
+        "not-included": "Nicht enthalten",
         "features": {
           "secret-sharing": "Geheimnisse teilen",
-          "email-recipients": "E-Mail-Empfänger",
+          "email-recipients": "Links per E-Mail senden",
           "rest-api": "REST-API-Zugriff",
           "custom-domains": "Benutzerdefinierte Domains",
           "custom-branding": "Benutzerdefiniertes Branding",
-          "no-rate-limits": "Keine Ratenbegrenzungen"
+          "no-rate-limits": "Keine Ratenbegrenzungen",
+          "expiration-30-days": "Ablauf nach bis zu 30 Tagen",
+          "incoming-secrets": "Eingehende Geheimnisse",
+          "unlimited-domains": "Unbegrenzt viele benutzerdefinierte Domains",
+          "workspace-branding": "Arbeitsbereich-Branding",
+          "access-controls": "Startseiten-Datenschutzkontrollen",
+          "sso": "Single Sign-On (SSO)",
+          "rbac": "Rollenbasierte Zugriffskontrolle (RBAC)",
+          "custom-mail-sender": "Eigener E-Mail-Absender",
+          "flexible-from-domain": "Versand über Ihre Unternehmensdomain",
+          "audit-logs": "Sicherheits-Audit-Protokoll",
+          "ip-access-filtering": "IP-Adressen-Zulassungsliste"
+        },
+        "status": {
+          "beta": "Beta",
+          "coming-soon": "Demnächst"
+        },
+        "info": {
+          "incoming-secrets": "Lassen Sie andere Ihnen Geheimnisse sicher über einen privaten Anfrage-Link zusenden."
         }
       },
       "discounts": {

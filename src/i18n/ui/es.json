@@ -185,17 +185,38 @@
       "groups": {
         "core-sharing": "Funciones principales",
         "brand-identity": "Identidad de marca",
-        "infrastructure": "Infraestructura"
+        "governance": "Gobernanza y acceso"
       },
       "comparison": {
         "feature": "Característica",
+        "description": "Todos los planes comparten secretos de la misma forma segura. Los planes de pago añaden su marca, sus dominios y controles de equipo.",
+        "included": "Incluido",
+        "not-included": "No incluido",
         "features": {
           "secret-sharing": "Compartir secretos",
-          "email-recipients": "Destinatarios de correo electrónico",
+          "email-recipients": "Enviar enlaces por correo electrónico",
           "rest-api": "Acceso a la API REST",
           "custom-domains": "Dominios personalizados",
           "custom-branding": "Marca personalizada",
-          "no-rate-limits": "Sin límites de velocidad"
+          "no-rate-limits": "Sin límites de velocidad",
+          "expiration-30-days": "Caducidad de hasta 30 días",
+          "incoming-secrets": "Secretos entrantes",
+          "unlimited-domains": "Dominios personalizados ilimitados",
+          "workspace-branding": "Personalización del espacio de trabajo",
+          "access-controls": "Controles de privacidad de la página de inicio",
+          "sso": "Inicio de sesión único (SSO)",
+          "rbac": "Control de acceso basado en roles (RBAC)",
+          "custom-mail-sender": "Remitente de correo personalizado",
+          "flexible-from-domain": "Envío desde el dominio de tu empresa",
+          "audit-logs": "Registro de auditoría de seguridad",
+          "ip-access-filtering": "Lista de direcciones IP permitidas"
+        },
+        "status": {
+          "beta": "Beta",
+          "coming-soon": "Próximamente"
+        },
+        "info": {
+          "incoming-secrets": "Permite que otros te envíen secretos de forma segura mediante un enlace de solicitud privado."
         }
       },
       "discounts": {

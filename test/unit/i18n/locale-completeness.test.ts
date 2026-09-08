@@ -88,6 +88,7 @@ const ALLOWED_COMMON = [
   "web.footer.links.dpa",
   "web.homepage.hero.title.line1", // "Onetime Secret" — brand wordmark
   "web.homepage.infrastructure.features.sso", // "SSO / SAML"
+  "web.pricing.comparison.status.beta", // "Beta" — universal technical term
 ];
 
 // Per-locale: words that happen to be spelled the same in that language, or
@@ -112,7 +113,6 @@ const ALLOWED_BY_LANG: Record<Lang, string[]> = {
   ],
   fr: [
     "LABELS.docs", // "Documentation"
-    "web.pricing.groups.infrastructure", // "Infrastructure"
     "web.secrets.europe", // "Europe"
     "web.secrets.ttl.5minutes", // "5 minutes"
     "web.secrets.ttl.30minutes", // "30 minutes"

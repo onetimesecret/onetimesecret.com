@@ -185,17 +185,38 @@
       "groups": {
         "core-sharing": "Partage principal",
         "brand-identity": "Identité de marque",
-        "infrastructure": "Infrastructure"
+        "governance": "Gouvernance et accès"
       },
       "comparison": {
         "feature": "Fonctionnalité",
+        "description": "Chaque plan partage les secrets de la même manière sécurisée. Les plans payants ajoutent votre marque, vos domaines et des contrôles d'équipe.",
+        "included": "Inclus",
+        "not-included": "Non inclus",
         "features": {
           "secret-sharing": "Partage de secrets",
-          "email-recipients": "Destinataires e-mail",
+          "email-recipients": "Envoyer des liens par e-mail",
           "rest-api": "Accès API REST",
           "custom-domains": "Domaines personnalisés",
           "custom-branding": "Image de marque personnalisée",
-          "no-rate-limits": "Aucune limite de débit"
+          "no-rate-limits": "Aucune limite de débit",
+          "expiration-30-days": "Expiration jusqu'à 30 jours",
+          "incoming-secrets": "Secrets entrants",
+          "unlimited-domains": "Domaines personnalisés illimités",
+          "workspace-branding": "Image de marque de l'espace de travail",
+          "access-controls": "Contrôles de confidentialité de la page d'accueil",
+          "sso": "Authentification unique (SSO)",
+          "rbac": "Contrôle d'accès basé sur les rôles (RBAC)",
+          "custom-mail-sender": "Expéditeur d'e-mail personnalisé",
+          "flexible-from-domain": "Envoi depuis votre domaine d'entreprise",
+          "audit-logs": "Journal d'audit de sécurité",
+          "ip-access-filtering": "Liste d'adresses IP autorisées"
+        },
+        "status": {
+          "beta": "Bêta",
+          "coming-soon": "Bientôt disponible"
+        },
+        "info": {
+          "incoming-secrets": "Laissez d'autres personnes vous envoyer des secrets en toute sécurité via un lien de demande privé."
         }
       },
       "discounts": {
