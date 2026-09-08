@@ -210,6 +210,15 @@ export const otherFonts = [
     ascent-override: 96.97%;
     descent-override: 26.3%;
     line-gap-override: 0%;
+    /*
+     * Limit these size-adjusted fallbacks to the scripts Zilla Slab covers
+     * (Latin + common punctuation/currency). Text outside this range (e.g.
+     * Greek, Cyrillic, CJK on the bg/el_GR/uk/ja/ko pages) falls through to
+     * var(--font-serif) at its natural size instead of being scaled down by
+     * the size-adjust tuned for Zilla Slab's Latin metrics.
+     */
+    unicode-range: U+0000-00FF, U+0100-024F, U+0259, U+2000-206F, U+20A0-20AB,
+      U+2C60-2C7F, U+A720-A7FF;
   }
   @font-face {
     font-family: "Zilla Slab Fallback Georgia";
@@ -221,6 +230,15 @@ export const otherFonts = [
     ascent-override: 110.5%;
     descent-override: 29.97%;
     line-gap-override: 0%;
+    /*
+     * Limit these size-adjusted fallbacks to the scripts Zilla Slab covers
+     * (Latin + common punctuation/currency). Text outside this range (e.g.
+     * Greek, Cyrillic, CJK on the bg/el_GR/uk/ja/ko pages) falls through to
+     * var(--font-serif) at its natural size instead of being scaled down by
+     * the size-adjust tuned for Zilla Slab's Latin metrics.
+     */
+    unicode-range: U+0000-00FF, U+0100-024F, U+0259, U+2000-206F, U+20A0-20AB,
+      U+2C60-2C7F, U+A720-A7FF;
   }
   @font-face {
     font-family: "Zilla Slab Fallback Times";
@@ -232,6 +250,15 @@ export const otherFonts = [
     ascent-override: 88.27%;
     descent-override: 23.94%;
     line-gap-override: 0%;
+    /*
+     * Limit these size-adjusted fallbacks to the scripts Zilla Slab covers
+     * (Latin + common punctuation/currency). Text outside this range (e.g.
+     * Greek, Cyrillic, CJK on the bg/el_GR/uk/ja/ko pages) falls through to
+     * var(--font-serif) at its natural size instead of being scaled down by
+     * the size-adjust tuned for Zilla Slab's Latin metrics.
+     */
+    unicode-range: U+0000-00FF, U+0100-024F, U+0259, U+2000-206F, U+20A0-20AB,
+      U+2C60-2C7F, U+A720-A7FF;
   }
   @font-face {
     font-family: "Zilla Slab Fallback Times";
@@ -243,6 +270,15 @@ export const otherFonts = [
     ascent-override: 92.15%;
     descent-override: 24.99%;
     line-gap-override: 0%;
+    /*
+     * Limit these size-adjusted fallbacks to the scripts Zilla Slab covers
+     * (Latin + common punctuation/currency). Text outside this range (e.g.
+     * Greek, Cyrillic, CJK on the bg/el_GR/uk/ja/ko pages) falls through to
+     * var(--font-serif) at its natural size instead of being scaled down by
+     * the size-adjust tuned for Zilla Slab's Latin metrics.
+     */
+    unicode-range: U+0000-00FF, U+0100-024F, U+0259, U+2000-206F, U+20A0-20AB,
+      U+2C60-2C7F, U+A720-A7FF;
   }
   @font-face {
     font-family: "Zilla Slab Fallback Noto";
@@ -256,6 +292,15 @@ export const otherFonts = [
     ascent-override: 104.31%;
     descent-override: 28.29%;
     line-gap-override: 0%;
+    /*
+     * Limit these size-adjusted fallbacks to the scripts Zilla Slab covers
+     * (Latin + common punctuation/currency). Text outside this range (e.g.
+     * Greek, Cyrillic, CJK on the bg/el_GR/uk/ja/ko pages) falls through to
+     * var(--font-serif) at its natural size instead of being scaled down by
+     * the size-adjust tuned for Zilla Slab's Latin metrics.
+     */
+    unicode-range: U+0000-00FF, U+0100-024F, U+0259, U+2000-206F, U+20A0-20AB,
+      U+2C60-2C7F, U+A720-A7FF;
   }
   @font-face {
     font-family: "Zilla Slab Fallback Noto";
@@ -267,5 +312,14 @@ export const otherFonts = [
     ascent-override: 108.51%;
     descent-override: 29.43%;
     line-gap-override: 0%;
+    /*
+     * Limit these size-adjusted fallbacks to the scripts Zilla Slab covers
+     * (Latin + common punctuation/currency). Text outside this range (e.g.
+     * Greek, Cyrillic, CJK on the bg/el_GR/uk/ja/ko pages) falls through to
+     * var(--font-serif) at its natural size instead of being scaled down by
+     * the size-adjust tuned for Zilla Slab's Latin metrics.
+     */
+    unicode-range: U+0000-00FF, U+0100-024F, U+0259, U+2000-206F, U+20A0-20AB,
+      U+2C60-2C7F, U+A720-A7FF;
   }
 </style>
