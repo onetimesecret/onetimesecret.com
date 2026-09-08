@@ -3,6 +3,20 @@ module.exports = {
     collect: {
       // Static Distribution Directory
       staticDistDir: './dist',
+      // Explicit page set. Without this LHCI autodiscovers the first five
+      // HTML files alphabetically (500.html, index.html, about, and the two
+      // Bunny error pages), so the localized home and pricing pages were
+      // never audited. Paths resolve against the static server's origin.
+      url: [
+        '/',
+        '/en/',
+        '/en/pricing/',
+        '/en/about/',
+        '/de/',
+        '/500.html',
+        '/bunnycdn_errors/404.html',
+        '/bunnycdn_errors/500.html',
+      ],
       // Run multiple times to get more stable results
       numberOfRuns: 3,
       // Mobile-first testing (desktop can be added as a separate LHCI run)
