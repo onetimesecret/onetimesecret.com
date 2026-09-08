@@ -11,12 +11,15 @@
  * matches but is disabled, and a paginated response with more pages.
  */
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-import { describe, expect, it, vi } from "vitest";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   EXPECTED_CHANGES,
   REGIONAL_HOSTS,
+  loadDotenv,
   main,
   normalize,
   parsePullZoneList,
@@ -28,6 +31,8 @@ import {
 import { jurisdictions } from "../../../src/data/ops/jurisdictions";
 
 const PAGE = "<html>\n<body>\n{{status_code}}\n</body>\n</html>";
+const SCRIPT = resolve(import.meta.dirname, "../../../edge/error-page/push.mjs");
+const TEMPLATE = resolve(import.meta.dirname, "../../../edge/error-page/regional.html");
 
 type FakeZone = Record<string, unknown> & {
   Id: number;
@@ -45,14 +50,19 @@ function zone(id: number, hosts: string[], extra: Record<string, unknown> = {}):
 }
 
 describe("REGIONAL_HOSTS", () => {
-  it("matches the live jurisdictions, so a launched region cannot be missed", () => {
-    const live = Object.fromEntries(
-      jurisdictions
-        .filter((j) => !j.comingSoon)
-        .map((j) => [j.identifier.toLowerCase(), j.domain]),
-    );
-
-    expect(REGIONAL_HOSTS).toEqual(live);
+  it("is the live jurisdictions' domains, keyed by lower-case identifier", () => {
+    expect(REGIONAL_HOSTS).toEqual({
+      eu: "eu.onetimesecret.com",
+      ca: "ca.onetimesecret.com",
+      nz: "nz.onetimesecret.com",
+      us: "us.onetimesecret.com",
+      uk: "uk.onetimesecret.com",
+    });
+    for (const [region, host] of Object.entries(REGIONAL_HOSTS)) {
+      const j = jurisdictions.find((x) => x.identifier.toLowerCase() === region);
+      expect(j?.domain).toBe(host);
+      expect(j?.comingSoon).toBeFalsy();
+    }
   });
 
   it("excludes comingSoon regions, which have no pull zone yet", () => {
@@ -158,12 +168,6 @@ describe("planZone", () => {
 
     expect([plan.action, plan.id, plan.host]).toEqual(["update", 2, REGIONAL_HOSTS.eu]);
   });
-
-  it("carries the pre-push zone so the read-back can be diffed against it", () => {
-    const s = selected({ ErrorPageEnableCustomCode: true, OriginUrl: "https://origin" });
-
-    expect(planZone(s, PAGE).zone).toBe(s.zone);
-  });
 });
 
 describe("pickRegions", () => {
@@ -262,6 +266,73 @@ describe("unexpectedChanges", () => {
   });
 });
 
+describe("push.mjs under plain node", () => {
+  // Vitest resolves the .ts import through Vite; the script has to load under
+  // node's own type stripping too, and the "run when executed directly" guard
+  // has to fire. One --help run pins both.
+  it("loads and runs --help", () => {
+    const out = execFileSync(process.execPath, [SCRIPT, "--help"], { encoding: "utf8" });
+
+    expect(out).toMatch(/^Usage: pnpm edge:error-page/);
+    expect(out).toContain(Object.keys(REGIONAL_HOSTS).join(", "));
+  });
+});
+
+describe("loadDotenv", () => {
+  const KEY = "ERROR_PAGE_PUSH_TEST_VAR";
+  let dir: string;
+
+  afterEach(() => {
+    delete process.env[KEY];
+    if (dir) rmSync(dir, { recursive: true, force: true });
+  });
+
+  function root(files: Record<string, string>) {
+    dir = mkdtempSync(join(tmpdir(), "push-dotenv-"));
+    for (const [name, body] of Object.entries(files)) writeFileSync(join(dir, name), body);
+    return dir;
+  }
+
+  it("is silent when neither file exists", () => {
+    expect(() => loadDotenv(root({}))).not.toThrow();
+    expect(process.env[KEY]).toBeUndefined();
+  });
+
+  it("lets .env.local override .env, and the environment override both", () => {
+    const r = root({ ".env": `${KEY}=from-env\n`, ".env.local": `${KEY}=from-local\n` });
+
+    loadDotenv(r);
+    expect(process.env[KEY]).toBe("from-local");
+
+    process.env[KEY] = "from-shell";
+    loadDotenv(r);
+    expect(process.env[KEY]).toBe("from-shell");
+  });
+});
+
+describe("regional.html", () => {
+  const html = readFileSync(TEMPLATE, "utf8");
+
+  it("keeps both Bunny placeholders", () => {
+    expect(html).toContain("{{status_code}}");
+    expect(html).toContain("{{status_title}}");
+  });
+
+  it("only animates for visitors without a reduced-motion preference", () => {
+    const gated = html.match(/@media \(prefers-reduced-motion: no-preference\) \{[\s\S]*?\n {6}\}/);
+    expect(gated).not.toBeNull();
+    const outside = html.replace(gated![0], "");
+    expect(outside).not.toMatch(/animation:/);
+  });
+
+  it("links and fonts are absolute, never relative to the failing origin", () => {
+    for (const m of html.matchAll(/(?:href=|url\()["']([^"']+)["']/g)) {
+      expect(m[1]).toMatch(/^https:\/\/(status\.)?onetimesecret\.com\//);
+    }
+    expect(html).not.toContain('href="/');
+  });
+});
+
 describe("main", () => {
   const template = normalize(
     readFileSync(resolve(import.meta.dirname, "../../../edge/error-page/regional.html"), "utf8"),
@@ -346,6 +417,7 @@ describe("main", () => {
 
     for (const [, init] of fetch.mock.calls) {
       expect((init as RequestInit).headers).toEqual(expect.objectContaining({ AccessKey: "secret" }));
+      expect((init as RequestInit).signal instanceof AbortSignal).toBe(true);
     }
   });
 

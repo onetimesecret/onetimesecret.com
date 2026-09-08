@@ -28,6 +28,7 @@
 // against the zone as it was before, and any change outside the two fields
 // sent is reported as an error (see `unexpectedChanges`).
 
+import { realpathSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -102,7 +103,6 @@ Environment:
  * @property {string} host
  * @property {number} id
  * @property {string} name
- * @property {PullZone} zone the zone as read before any push
  * @property {"up-to-date" | "update"} action
  * @property {string} reason
  */
@@ -164,7 +164,7 @@ export function selectRegionalZones(zones, hosts = REGIONAL_HOSTS) {
  * @returns {ZonePlan}
  */
 export function planZone({ region, host, zone }, html) {
-  const base = { region, host, id: zone.Id, name: zone.Name, zone };
+  const base = { region, host, id: zone.Id, name: zone.Name };
   if (!zone.ErrorPageEnableCustomCode) {
     return { ...base, action: "update", reason: "custom error page disabled" };
   }
@@ -233,11 +233,12 @@ export function unexpectedChanges(before, after, expected = EXPECTED_CHANGES) {
  * already in the environment, so loading .env.local first gives the same
  * precedence as direnv: environment > .env.local > .env. A missing file is the
  * normal case in CI and is silently fine.
+ * @param {string} [rootDir] where the files live; the repo root by default
  */
-function loadDotenv() {
+export function loadDotenv(rootDir = ROOT_DIR) {
   for (const name of [".env.local", ".env"]) {
     try {
-      process.loadEnvFile(join(ROOT_DIR, name));
+      process.loadEnvFile(join(rootDir, name));
     } catch (err) {
       if (err?.code !== "ENOENT") throw err;
     }
@@ -284,12 +285,16 @@ async function listPullZones(client) {
 
 /**
  * Pushes the page to one zone, then reads the zone back and checks two
- * things: the page took, and nothing else moved.
+ * things: the page took, and nothing else moved. The "before" snapshot comes
+ * from the same single-zone endpoint as the read-back, taken just before the
+ * POST, so the diff never compares two differently shaped payloads.
  * @param {Client} client
  * @param {ZonePlan} plan
  * @param {string} html
  */
 async function applyZone(client, plan, html) {
+  /** @type {PullZone} */
+  const before = await bunny(client, `/pullzone/${plan.id}`);
   await bunny(client, `/pullzone/${plan.id}`, {
     method: "POST",
     body: { ErrorPageEnableCustomCode: true, ErrorPageCustomCode: html },
@@ -300,7 +305,7 @@ async function applyZone(client, plan, html) {
   if (verified.action !== "up-to-date") {
     throw new Error(`${plan.host}: pushed, but read-back still says "${verified.reason}"`);
   }
-  const changed = unexpectedChanges(plan.zone, after);
+  const changed = unexpectedChanges(before, after);
   if (changed.length) {
     throw new Error(
       `${plan.host}: page pushed, but the update also changed ${changed.join(", ")}. ` +
@@ -398,8 +403,10 @@ export async function main(argv, deps = {}) {
 }
 
 // Only run when executed directly, so the pure helpers stay importable by tests.
+// argv[1] is realpath'd because import.meta.url already is, and a symlinked
+// checkout must not turn the script into a silent no-op.
 // Sets exitCode rather than calling exit() so buffered output drains when piped.
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) {
   main(process.argv.slice(2)).then(
     (code) => {
       process.exitCode = code;
