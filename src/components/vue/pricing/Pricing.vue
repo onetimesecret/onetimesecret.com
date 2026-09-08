@@ -52,8 +52,6 @@ const {
   cleanup,
 } = useJurisdiction();
 
-const isClient = ref(false);
-
 const frequency = ref(frequencies[0]);
 
 const handleRegionChange = (region: Region) => {
@@ -100,8 +98,6 @@ const tierHref = (tier: ProductTier) => {
 const feedbackHref = computed(() => regionalUrl("/feedback"));
 
 onMounted(async () => {
-  isClient.value = true;
-
   // Resolve the region for CTA links: persisted choice, then geo, then
   // default. Runs after the first render so hydration still matches the
   // prerendered markup.
@@ -207,12 +203,15 @@ onUnmounted(() => {
                 </RadioGroup>
               </fieldset>
 
-              <div v-if="isClient">
-                <PricingRegionSelector
-                  :current-region="currentRegion"
-                  :available-regions="availableRegions"
-                  @region-change="handleRegionChange" />
-              </div>
+              <!--
+                Rendered during SSR with the default region so the controls
+                row keeps its height; initJurisdiction() updates the label
+                after mount without changing the pill's size.
+              -->
+              <PricingRegionSelector
+                :current-region="currentRegion"
+                :available-regions="availableRegions"
+                @region-change="handleRegionChange" />
             </div>
           </div>
         </div>
@@ -340,7 +339,6 @@ onUnmounted(() => {
                 </a>
 
                 <RegionCtaHint
-                  v-if="isClient"
                   :current-region="currentRegion"
                   :available-regions="availableRegions"
                   @region-change="handleRegionChange" />
