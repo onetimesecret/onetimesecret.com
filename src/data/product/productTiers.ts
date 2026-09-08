@@ -146,6 +146,8 @@ const TEAM_ONLY = ["tier-team"];
 /**
  * Feature comparison, grouped by concern. Availability mirrors the tier
  * feature copy in web.pricing.tiers.*.features; keep the two in step.
+ *
+ * NOTE: Features are sorted from least to most exclusive and are displayed in that order in the UI.
  */
 export const featureGroups: FeatureGroup[] = [
   {
@@ -190,12 +192,12 @@ export const featureGroups: FeatureGroup[] = [
         availableIn: PAID_TIERS,
       },
       {
-        labelKey: "web.pricing.comparison.features.workspace-branding",
-        availableIn: TEAM_ONLY,
-      },
-      {
         labelKey: "web.pricing.comparison.features.custom-mail-sender",
         availableIn: PAID_TIERS,
+      },
+      {
+        labelKey: "web.pricing.comparison.features.workspace-branding",
+        availableIn: TEAM_ONLY,
       },
       {
         labelKey: "web.pricing.comparison.features.flexible-from-domain",

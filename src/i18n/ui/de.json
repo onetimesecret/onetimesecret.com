@@ -189,12 +189,12 @@
       },
       "comparison": {
         "feature": "Funktion",
-        "description": "Jeder Plan teilt Geheimnisse auf dieselbe Weise. Bezahlte Pläne ergänzen Ihre Marke, Ihre Domains und Teamkontrollen.",
+        "description": "Jeder Plan teilt Geheimnisse auf dieselbe sichere Weise. Bezahlte Pläne ergänzen Ihre Marke, Ihre Domains und Teamkontrollen.",
         "included": "Enthalten",
         "not-included": "Nicht enthalten",
         "features": {
           "secret-sharing": "Geheimnisse teilen",
-          "email-recipients": "E-Mail-Empfänger",
+          "email-recipients": "Links per E-Mail senden",
           "rest-api": "REST-API-Zugriff",
           "custom-domains": "Benutzerdefinierte Domains",
           "custom-branding": "Benutzerdefiniertes Branding",
@@ -203,14 +203,13 @@
           "incoming-secrets": "Eingehende Geheimnisse",
           "unlimited-domains": "Unbegrenzt viele benutzerdefinierte Domains",
           "workspace-branding": "Arbeitsbereich-Branding",
-          "access-controls": "Startseiten-Zugriffskontrollen",
+          "access-controls": "Startseiten-Datenschutzkontrollen",
           "sso": "Single Sign-On (SSO)",
           "rbac": "Rollenbasierte Zugriffskontrolle (RBAC)",
-          "organizations": "Organisationen und Teams",
           "custom-mail-sender": "Eigener E-Mail-Absender",
           "flexible-from-domain": "Versand über Ihre Unternehmensdomain",
-          "audit-logs": "Audit-Protokolle",
-          "ip-access-filtering": "IP- und CIDR-Zugriffsfilterung"
+          "audit-logs": "Sicherheits-Audit-Protokoll",
+          "ip-access-filtering": "IP-Adressen-Zulassungsliste"
         },
         "status": {
           "beta": "Beta",

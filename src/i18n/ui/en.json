@@ -189,12 +189,12 @@
       },
       "comparison": {
         "feature": "Feature",
-        "description": "Every plan shares secrets the same secure way. Paid plans add your brand, and team controls.",
+        "description": "Every plan shares secrets the same secure way. Paid plans add your brand, domains and team controls.",
         "included": "Included",
         "not-included": "Not included",
         "features": {
           "secret-sharing": "Secret sharing",
-          "email-recipients": "Email recipients",
+          "email-recipients": "Send links by email",
           "rest-api": "REST API access",
           "custom-domains": "Custom domains",
           "custom-branding": "Custom branding",
@@ -203,14 +203,13 @@
           "incoming-secrets": "Incoming secrets",
           "unlimited-domains": "Unlimited custom domains",
           "workspace-branding": "Workspace branding",
-          "access-controls": "Homepage access controls",
+          "access-controls": "Homepage privacy controls",
           "sso": "Single sign-on (SSO)",
           "rbac": "Role-based access control",
-          "organizations": "Organizations and teams",
           "custom-mail-sender": "Custom email sender",
           "flexible-from-domain": "Send from your company domain",
-          "audit-logs": "Audit logs",
-          "ip-access-filtering": "IP and CIDR access filtering"
+          "audit-logs": "Security audit trail",
+          "ip-access-filtering": "IP address allowlisting"
         },
         "status": {
           "beta": "Beta",
@@ -222,7 +221,7 @@
       },
       "discounts": {
         "title": "Special Discounts",
-        "description": "Are you a student or a non-profit organization? Or maybe you really like discounts? We offer a discounted subscription for you.",
+        "description": "Are you a student or a non-profit organization? Or maybe you really like discounts? We offer a discounted subscription just for you.",
         "cta": "Contact Us"
       }
     },
