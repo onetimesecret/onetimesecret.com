@@ -10,9 +10,9 @@
 //   pnpm edge:error-page eu uk      # limit to some regions (either mode)
 //
 // Needs BUNNY_API_KEY (the account API key, same secret the deploy workflows
-// use to purge), from the environment or from the repo-root .env, which is
-// loaded if present. It is declared in .env.example. Zones are found by
-// hostname, not by ID, so nothing here has to be updated when a zone is
+// use to purge), from the environment or from the repo-root .env / .env.local,
+// which are loaded if present. It is declared in .env.example. Zones are found
+// by hostname, not by ID, so nothing here has to be updated when a zone is
 // recreated.
 //
 // Bunny API surface used (verified against docs.bunny.net, 2026-09):
@@ -21,23 +21,57 @@
 //   POST /pullzone/{id}      → partial update; only the fields sent change
 // Fields: ErrorPageEnableCustomCode (bool), ErrorPageCustomCode (string).
 // Placeholders Bunny fills in the HTML: {{status_code}}, {{status_title}}.
+//
+// The partial-update claim is load-bearing: if a POST ever reset other zone
+// settings (origin, cache rules, Vary on country code) it would do so on
+// production zones. So every push is followed by a read-back that is diffed
+// against the zone as it was before, and any change outside the two fields
+// sent is reported as an error (see `unexpectedChanges`).
 
 import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+
+// Node strips the type annotations at import time (engines: node >= 26), so
+// the plain-JS script reads the same inventory as the edge scripts and the
+// client instead of keeping its own copy.
+import { jurisdictions } from "../../src/data/ops/jurisdictions.ts";
 
 export const API_BASE = "https://api.bunny.net";
 
-/** Region code → pull zone hostname. Live regions only; comingSoon has no zone. */
-export const REGIONAL_HOSTS = Object.freeze({
-  eu: "eu.onetimesecret.com",
-  ca: "ca.onetimesecret.com",
-  nz: "nz.onetimesecret.com",
-  us: "us.onetimesecret.com",
-  uk: "uk.onetimesecret.com",
-});
+/** Bunny answers within a few seconds; anything longer is a hung connection. */
+const REQUEST_TIMEOUT_MS = 30_000;
 
-const TEMPLATE_URL = new URL("./regional.html", import.meta.url);
-const DOTENV_URL = new URL("../../.env", import.meta.url);
+/**
+ * Region code → pull zone hostname, derived from the canonical jurisdiction
+ * list. Live regions only: a comingSoon region has no pull zone yet.
+ * @type {Readonly<Record<string, string>>}
+ */
+export const REGIONAL_HOSTS = Object.freeze(
+  Object.fromEntries(
+    jurisdictions
+      .filter((j) => !j.comingSoon)
+      .map((j) => [j.identifier.toLowerCase(), j.domain]),
+  ),
+);
+
+/**
+ * Fields the read-back diff ignores: the two this script sends, and the two
+ * Bunny updates on its own as traffic flows. Anything else that changes across
+ * a push means the partial-update assumption above is wrong.
+ */
+export const EXPECTED_CHANGES = Object.freeze([
+  "ErrorPageEnableCustomCode",
+  "ErrorPageCustomCode",
+  "MonthlyBandwidthUsed",
+  "MonthlyCharges",
+]);
+
+const TEMPLATE_PATH = join(import.meta.dirname, "regional.html");
+const ROOT_DIR = join(import.meta.dirname, "..", "..");
+
+/** Placeholders the template must keep, or Bunny serves a page with no status. */
+const REQUIRED_PLACEHOLDERS = ["{{status_code}}", "{{status_title}}"];
 
 const USAGE = `Usage: pnpm edge:error-page [--apply] [region ...]
 
@@ -50,8 +84,8 @@ regional Bunny pull zones.
   region ...   limit to these regions: ${Object.keys(REGIONAL_HOSTS).join(", ")}
 
 Environment:
-  BUNNY_API_KEY   Bunny account API key. Read from the environment or from
-                  .env (see .env.example).`;
+  BUNNY_API_KEY   Bunny account API key. Read from the environment, then
+                  .env.local, then .env (see .env.example).`;
 
 /**
  * @typedef {object} PullZone
@@ -68,13 +102,16 @@ Environment:
  * @property {string} host
  * @property {number} id
  * @property {string} name
+ * @property {PullZone} zone the zone as read before any push
  * @property {"up-to-date" | "update"} action
  * @property {string} reason
  */
 
 /**
- * Line endings are the one thing the API is allowed to rewrite on the way
- * through; everything else must match byte for byte.
+ * Makes the file and the API's copy of it comparable. Line endings may be
+ * rewritten on the way through, and a trailing newline (from an editor, or
+ * added by Bunny's own editor) is not drift; everything else must match byte
+ * for byte.
  * @param {string | null | undefined} html
  */
 export function normalize(html) {
@@ -127,7 +164,7 @@ export function selectRegionalZones(zones, hosts = REGIONAL_HOSTS) {
  * @returns {ZonePlan}
  */
 export function planZone({ region, host, zone }, html) {
-  const base = { region, host, id: zone.Id, name: zone.Name };
+  const base = { region, host, id: zone.Id, name: zone.Name, zone };
   if (!zone.ErrorPageEnableCustomCode) {
     return { ...base, action: "update", reason: "custom error page disabled" };
   }
@@ -138,49 +175,96 @@ export function planZone({ region, host, zone }, html) {
 }
 
 /**
- * Narrows REGIONAL_HOSTS to the regions named on the command line.
+ * Narrows REGIONAL_HOSTS to the regions named on the command line. Region
+ * codes are matched case-insensitively (`EU` and `eu` are the same zone).
  * @param {string[]} regions
  * @param {Record<string, string>} hosts
  */
 export function pickRegions(regions, hosts = REGIONAL_HOSTS) {
   if (regions.length === 0) return hosts;
-  const unknown = regions.filter((r) => !(r in hosts));
+  const wanted = regions.map((r) => r.toLowerCase());
+  const unknown = wanted.filter((r) => !(r in hosts));
   if (unknown.length) {
     throw new Error(
       `Unknown region(s): ${unknown.join(", ")}. ` +
         `Known: ${Object.keys(hosts).join(", ")}`,
     );
   }
-  return Object.fromEntries(regions.map((r) => [r, hosts[r]]));
+  return Object.fromEntries(wanted.map((r) => [r, hosts[r]]));
 }
 
 /**
- * Loads the repo-root .env the way Astro does for the build, so one file
- * serves both. Variables already in the environment win. A missing file is
- * the normal case in CI and is silently fine.
+ * Bunny returns a bare array without a `page` parameter and a paginated
+ * `{ Items, HasMoreItems }` object with one. Accept both, refuse to silently
+ * work from a partial list.
+ * @param {unknown} data the parsed body of GET /pullzone
+ * @returns {PullZone[]}
+ */
+export function parsePullZoneList(data) {
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === "object") {
+    if (data.HasMoreItems) {
+      throw new Error("More than 1000 pull zones; add pagination to push.mjs");
+    }
+    if (Array.isArray(data.Items)) return data.Items;
+  }
+  throw new Error("Unexpected shape from GET /pullzone");
+}
+
+/**
+ * Names every field that differs between the zone before a push and the
+ * read-back after it, apart from the ones a push is expected to change.
+ * @param {Record<string, unknown>} before
+ * @param {Record<string, unknown>} after
+ * @param {readonly string[]} [expected]
+ * @returns {string[]} changed field names, empty when the push was clean
+ */
+export function unexpectedChanges(before, after, expected = EXPECTED_CHANGES) {
+  const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
+  return [...keys]
+    .filter((k) => !expected.includes(k))
+    .filter((k) => JSON.stringify(before[k]) !== JSON.stringify(after[k]))
+    .sort();
+}
+
+/**
+ * Loads the repo-root .env.local and .env the way .envrc does for direnv
+ * users, so both paths see the same variables. Node never overrides a variable
+ * already in the environment, so loading .env.local first gives the same
+ * precedence as direnv: environment > .env.local > .env. A missing file is the
+ * normal case in CI and is silently fine.
  */
 function loadDotenv() {
-  try {
-    process.loadEnvFile(DOTENV_URL);
-  } catch (err) {
-    if (err?.code !== "ENOENT") throw err;
+  for (const name of [".env.local", ".env"]) {
+    try {
+      process.loadEnvFile(join(ROOT_DIR, name));
+    } catch (err) {
+      if (err?.code !== "ENOENT") throw err;
+    }
   }
 }
 
 /**
- * @param {string} apiKey
+ * @typedef {object} Client
+ * @property {string} apiKey
+ * @property {typeof fetch} fetch
+ */
+
+/**
+ * @param {Client} client
  * @param {string} path
  * @param {{ method?: string, body?: unknown }} [init]
  */
-async function bunny(apiKey, path, { method = "GET", body } = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
+async function bunny(client, path, { method = "GET", body } = {}) {
+  const res = await client.fetch(`${API_BASE}${path}`, {
     method,
     headers: {
-      AccessKey: apiKey,
+      AccessKey: client.apiKey,
       Accept: "application/json",
       ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
   if (!res.ok) {
     const text = (await res.text()).slice(0, 300);
@@ -191,37 +275,37 @@ async function bunny(apiKey, path, { method = "GET", body } = {}) {
 }
 
 /**
- * Bunny returns a bare array without a `page` parameter and a paginated
- * `{ Items, HasMoreItems }` object with one. Accept both, refuse to silently
- * work from a partial list.
- * @param {string} apiKey
+ * @param {Client} client
  * @returns {Promise<PullZone[]>}
  */
-async function listPullZones(apiKey) {
-  const data = await bunny(apiKey, "/pullzone?perPage=1000");
-  if (Array.isArray(data)) return data;
-  if (data?.HasMoreItems) {
-    throw new Error("More than 1000 pull zones; add pagination to push.mjs");
-  }
-  if (Array.isArray(data?.Items)) return data.Items;
-  throw new Error("Unexpected shape from GET /pullzone");
+async function listPullZones(client) {
+  return parsePullZoneList(await bunny(client, "/pullzone?perPage=1000"));
 }
 
 /**
- * @param {string} apiKey
+ * Pushes the page to one zone, then reads the zone back and checks two
+ * things: the page took, and nothing else moved.
+ * @param {Client} client
  * @param {ZonePlan} plan
  * @param {string} html
  */
-async function applyZone(apiKey, plan, html) {
-  await bunny(apiKey, `/pullzone/${plan.id}`, {
+async function applyZone(client, plan, html) {
+  await bunny(client, `/pullzone/${plan.id}`, {
     method: "POST",
     body: { ErrorPageEnableCustomCode: true, ErrorPageCustomCode: html },
   });
   /** @type {PullZone} */
-  const after = await bunny(apiKey, `/pullzone/${plan.id}`);
+  const after = await bunny(client, `/pullzone/${plan.id}`);
   const verified = planZone({ region: plan.region, host: plan.host, zone: after }, html);
   if (verified.action !== "up-to-date") {
     throw new Error(`${plan.host}: pushed, but read-back still says "${verified.reason}"`);
+  }
+  const changed = unexpectedChanges(plan.zone, after);
+  if (changed.length) {
+    throw new Error(
+      `${plan.host}: page pushed, but the update also changed ${changed.join(", ")}. ` +
+        "Check the zone in dash.bunny.net before pushing again.",
+    );
   }
 }
 
@@ -231,10 +315,31 @@ function describe(plan) {
   return `${plan.region.padEnd(3)} ${plan.host.padEnd(24)} zone ${plan.id}  ${state}`;
 }
 
-/** @param {string[]} argv */
-export async function main(argv) {
+/**
+ * @typedef {object} Deps injectable for tests; every default is the real thing
+ * @property {Record<string, string | undefined>} [env]
+ * @property {typeof fetch} [fetch]
+ * @property {() => void} [loadEnv]
+ * @property {(line: string) => void} [log]
+ * @property {(line: string) => void} [error]
+ */
+
+/**
+ * @param {string[]} argv
+ * @param {Deps} [deps]
+ * @returns {Promise<number>} exit code: 0 clean, 1 drift reported, 2 a push failed
+ */
+export async function main(argv, deps = {}) {
+  const {
+    env = process.env,
+    fetch: fetchImpl = globalThis.fetch,
+    loadEnv = loadDotenv,
+    log = console.log,
+    error = console.error,
+  } = deps;
+
   if (argv.includes("--help") || argv.includes("-h")) {
-    console.log(USAGE);
+    log(USAGE);
     return 0;
   }
   const unknownFlags = argv.filter((a) => a.startsWith("-") && a !== "--apply");
@@ -244,49 +349,64 @@ export async function main(argv) {
   const apply = argv.includes("--apply");
   const regions = argv.filter((a) => !a.startsWith("-"));
 
-  loadDotenv();
-  const apiKey = process.env.BUNNY_API_KEY;
+  loadEnv();
+  const apiKey = env.BUNNY_API_KEY;
   if (!apiKey) {
     throw new Error(
       "BUNNY_API_KEY is not set. Export it or add it to .env (see .env.example).",
     );
   }
+  const client = { apiKey, fetch: fetchImpl };
 
-  const html = normalize(await readFile(TEMPLATE_URL, "utf8"));
-  if (!html.includes("{{status_code}}")) {
-    throw new Error("regional.html lost its {{status_code}} placeholder");
+  const html = normalize(await readFile(TEMPLATE_PATH, "utf8"));
+  const lost = REQUIRED_PLACEHOLDERS.filter((p) => !html.includes(p));
+  if (lost.length) {
+    throw new Error(`regional.html lost its ${lost.join(" and ")} placeholder(s)`);
   }
 
   const hosts = pickRegions(regions);
-  const zones = await listPullZones(apiKey);
+  const zones = await listPullZones(client);
   const plans = selectRegionalZones(zones, hosts).map((s) => planZone(s, html));
 
-  for (const plan of plans) console.log(describe(plan));
+  for (const plan of plans) log(describe(plan));
 
   const pending = plans.filter((p) => p.action === "update");
   if (pending.length === 0) {
-    console.log("All zones match regional.html.");
+    log("All zones match regional.html.");
     return 0;
   }
   if (!apply) {
-    console.log(`${pending.length} zone(s) differ. Re-run with --apply to push.`);
+    log(`${pending.length} zone(s) differ. Re-run with --apply to push.`);
     return 1;
   }
 
+  // Keep going past a failed zone so one run reports the state of all of
+  // them; a re-run is idempotent and picks up whatever is still pending.
+  const failed = [];
   for (const plan of pending) {
-    await applyZone(apiKey, plan, html);
-    console.log(`${plan.host}: pushed and verified`);
+    try {
+      await applyZone(client, plan, html);
+      log(`${plan.host}: pushed and verified`);
+    } catch (err) {
+      failed.push(plan.host);
+      error(`${plan.host}: FAILED — ${err instanceof Error ? err.message : err}`);
+    }
   }
-  return 0;
+  const pushed = pending.length - failed.length;
+  log(`${pushed} zone(s) pushed, ${failed.length} failed.`);
+  return failed.length ? 2 : 0;
 }
 
 // Only run when executed directly, so the pure helpers stay importable by tests.
+// Sets exitCode rather than calling exit() so buffered output drains when piped.
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main(process.argv.slice(2)).then(
-    (code) => process.exit(code),
+    (code) => {
+      process.exitCode = code;
+    },
     (err) => {
       console.error(err instanceof Error ? err.message : err);
-      process.exit(2);
+      process.exitCode = 2;
     },
   );
 }

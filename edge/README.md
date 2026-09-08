@@ -258,17 +258,36 @@ The page is built for the moment the regional origin is down:
 `edge/error-page/push.mjs` keeps the five zones from drifting:
 
 ```bash
-# BUNNY_API_KEY from the environment or .env (declared in .env.example)
+# BUNNY_API_KEY from the environment, .env.local or .env (declared in
+# .env.example); the same precedence as .envrc, with or without direnv
 pnpm edge:error-page            # report: which zones differ (exit 1 if any)
 pnpm edge:error-page --apply    # push regional.html to every zone that differs
 pnpm edge:error-page eu uk      # limit to some regions, in either mode
 ```
 
-Zones are located by hostname from `GET /pullzone`, never by ID; a region with
-no zone, or a hostname on two zones, aborts before anything is written. Each
-push is `POST /pullzone/{id}` with `ErrorPageEnableCustomCode: true` and the
-file contents, followed by a `GET` read-back that must match. The planning
-half is covered by `test/unit/edge/errorPagePush.test.ts`.
+The region list is read from `src/data/ops/jurisdictions.ts` (live entries
+only), the same source as the edge scripts and the client, so launching a
+region there is enough for this script to pick up its zone. Zones are located
+by hostname from `GET /pullzone`, never by ID; a region with no zone, or a
+hostname on two zones, aborts before anything is written.
+
+Each push is `POST /pullzone/{id}` with `ErrorPageEnableCustomCode: true` and
+the file contents, followed by a `GET` read-back that must match. The
+read-back is also diffed against the zone as it was before the push: Bunny
+documents that endpoint as a partial update, and the diff turns that
+documented claim into a check, since a full-replace would silently reset the
+origin, cache rules and Vary settings on a production zone. Any field other
+than the two sent (plus Bunny's own bandwidth and charge counters) that
+changed is reported as a failure for that zone.
+
+A failed zone does not stop the run; the remaining zones are still pushed and
+the summary lists how many succeeded and failed. Exit codes: `0` clean, `1`
+drift found in report mode, `2` a push failed or the script could not run.
+Re-running is idempotent and only touches zones that still differ.
+
+`test/unit/edge/errorPagePush.test.ts` covers zone resolution, drift
+planning, the zone-list parsing, the read-back diff and, through an injected
+`fetch`, the full `main` flow in both modes.
 
 Not verified against a live zone: the exact set of statuses Bunny routes
 through the custom page (origin-unreachable 502/504 and Bunny's own errors
