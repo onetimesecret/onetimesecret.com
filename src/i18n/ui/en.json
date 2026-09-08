@@ -189,13 +189,24 @@
       },
       "comparison": {
         "feature": "Feature",
+        "description": "Every plan shares secrets the same way. Paid plans add your brand, your domains and team controls.",
+        "included": "Included",
+        "not-included": "Not included",
         "features": {
           "secret-sharing": "Secret sharing",
           "email-recipients": "Email recipients",
           "rest-api": "REST API access",
           "custom-domains": "Custom domains",
           "custom-branding": "Custom branding",
-          "no-rate-limits": "No rate limits"
+          "no-rate-limits": "No rate limits",
+          "expiration-30-days": "Expiration up to 30 days",
+          "incoming-secrets": "Incoming secrets",
+          "unlimited-domains": "Unlimited custom domains",
+          "workspace-branding": "Workspace branding",
+          "access-controls": "Homepage access controls",
+          "sso": "Single sign-on (SSO)",
+          "rbac": "Role-based access control",
+          "organizations": "Organizations and teams"
         }
       },
       "discounts": {
