@@ -84,22 +84,35 @@ jobs:
           node-version: "26"
           cache: "pnpm"
 
-      # Step 4: Install dependencies exactly as locked
+      # Step 4: Refuse to build with a pnpm other than the one that wrote
+      # pnpm-lock.yaml. pnpm/action-setup resolves `packageManager`, but the
+      # deploy must not depend on that silently holding.
+      - name: Verify pnpm matches packageManager
+        run: |
+          expected="$(node -p "require('./package.json').packageManager.replace(/^pnpm@/, '')")"
+          actual="$(pnpm --version)"
+          if [ "$actual" != "$expected" ]; then
+            echo "pnpm $actual on the runner does not match packageManager pnpm@$expected"
+            exit 1
+          fi
+          echo "pnpm $actual matches packageManager"
+
+      # Step 5: Install dependencies exactly as locked
       - name: Install dependencies
         run: |
           echo "Deploying to ${VITE_BASE_URL}"
           pnpm install --frozen-lockfile
 
-      # Step 5: Build Astro site
+      # Step 6: Build Astro site
       - name: Build site
         run: pnpm build
 
-      # Step 6: Refuse to ship a bundle whose islands cannot hydrate.
+      # Step 7: Refuse to ship a bundle whose islands cannot hydrate.
       # See scripts/verify-dist.mjs.
       - name: Verify client bundle
         run: pnpm build:verify
 
-      # Step 7: Deploy to BunnyCDN Storage
+      # Step 8: Deploy to BunnyCDN Storage
       # Note: We separate upload and cache purge to allow BunnyCDN storage
       # replication to complete before purging. See: https://github.com/ayeressian/bunnycdn-storage-deploy/issues/47
       - name: Upload to BunnyCDN Storage
@@ -115,7 +128,7 @@ jobs:
           remove: "false" # Remove files that don't exist locally
           purgePullZone: "false" # Disabled - we purge separately after replication delay
 
-      # Step 8: Wait for BunnyCDN storage replication
+      # Step 9: Wait for BunnyCDN storage replication
       # BunnyCDN recommends waiting 5+ seconds for storage zone replicas to sync
       # before purging the cache, otherwise edge servers may re-cache stale content
       - name: Wait for storage replication
@@ -123,7 +136,7 @@ jobs:
           echo "Waiting 10 seconds for BunnyCDN storage replication..."
           sleep 10
 
-      # Step 9: Purge BunnyCDN Pull Zone cache
+      # Step 10: Purge BunnyCDN Pull Zone cache
       - name: Purge CDN cache
         run: |
           echo "Purging BunnyCDN pull zone cache..."

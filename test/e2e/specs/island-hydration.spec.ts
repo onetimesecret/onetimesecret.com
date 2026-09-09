@@ -26,18 +26,25 @@ const EAGER_ISLANDS_UNHYDRATED =
 /** Console noise from third parties that is not a hydration signal. */
 const IGNORED_ERRORS = [/ERR_BLOCKED_BY_CLIENT/i, /sentry/i, /spotlight/i];
 
-/** Console errors emitted while loading `url`, minus known third-party noise. */
-async function loadAndCollectErrors(page: Page, url: string): Promise<string[]> {
+/**
+ * Start collecting console and page errors on `page`. The returned array is
+ * live: hydration errors are logged asynchronously after `load`, so callers
+ * must read it only after the assertions that wait for hydration.
+ */
+function collectErrors(page: Page): string[] {
   const errors: string[] = [];
   page.on('console', (msg) => {
     if (msg.type() === 'error') errors.push(msg.text());
   });
   page.on('pageerror', (err) => errors.push(err.message));
-  // Hydration errors are reported during and shortly after `load`. The
-  // assertions that follow carry their own timeouts, so there is no need to
-  // wait for the network to go quiet (Sentry keeps it busy anyway).
-  await page.goto(url, { waitUntil: 'load' });
-  return errors.filter((e) => !IGNORED_ERRORS.some((re) => re.test(e)));
+  return errors;
+}
+
+/** Hydration failures among `errors`, minus known third-party noise. */
+function hydrationErrors(errors: string[]): string[] {
+  return errors.filter(
+    (e) => /Error hydrating/i.test(e) && !IGNORED_ERRORS.some((re) => re.test(e))
+  );
 }
 
 // `/pricing` is a build-time redirect to `/en/pricing` (config/astro/redirects.ts)
@@ -45,7 +52,11 @@ async function loadAndCollectErrors(page: Page, url: string): Promise<string[]> 
 for (const path of ['/', '/en/pricing']) {
   test.describe(`Island hydration — ${path}`, () => {
     test('every eager astro-island hydrates', async ({ page }) => {
-      const errors = await loadAndCollectErrors(page, path);
+      const errors = collectErrors(page);
+
+      // The assertions below carry their own timeouts, so there is no need to
+      // wait for the network to go quiet (Sentry keeps it busy anyway).
+      await page.goto(path, { waitUntil: 'load' });
 
       // At least one island must exist, otherwise the assertion below is vacuous.
       expect(await page.locator(EAGER_ISLANDS).count()).toBeGreaterThan(0);
@@ -55,8 +66,8 @@ for (const path of ['/', '/en/pricing']) {
         timeout: 10_000,
       });
 
-      const hydrationErrors = errors.filter((e) => /Error hydrating/i.test(e));
-      expect(hydrationErrors).toHaveLength(0);
+      // Read the live error list only now, after the hydration wait above.
+      expect(hydrationErrors(errors)).toHaveLength(0);
     });
   });
 }

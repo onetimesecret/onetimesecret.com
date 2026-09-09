@@ -1,0 +1,37 @@
+---
+title: "Forms on onetimesecret.com were unresponsive after the 8 September deploy"
+date: 2026-09-09
+description: "A production deploy on 8 September shipped a JavaScript bundle that never initialised, leaving Create Link, the region selector and the pricing controls inert on every browser."
+category: operations
+planned: false
+highlights:
+  - { icon: warn, text: "From 21:47 UTC on 8 September until this deploy, no interactive control on onetimesecret.com worked: Create Link stayed disabled, the region selector and pricing toggles did nothing" }
+  - { icon: info, text: "Only the onetimesecret.com pages were affected. The regional apps (eu., us., ca., nz., uk.) and every existing secret link were unaffected, and nothing was submitted or lost" }
+  - { icon: check, text: "Cause: the deploy job used a different package manager version than development and CI, ignored the lockfile, and built from a dependency tree nobody had tested" }
+  - { icon: check, text: "Every workflow now installs from the locked tree with the same pnpm, and a build fails before upload if its bundle cannot initialise" }
+  - { icon: check, text: "A browser test that loads the homepage and pricing page and uses the controls now runs on every change" }
+---
+
+On 8 September at 21:47 UTC we deployed a release of this website. The pages rendered
+normally, but nothing on them responded: the Create Link button stayed disabled, the
+region selector would not open, and the pricing controls did nothing. This affected every
+browser, desktop and mobile alike. The regional apps where secrets are created and read
+were not involved, so no secret or account was affected. The deploy that published this
+entry carries a correctly built bundle.
+
+The cause was in how the site was built, not in the site itself. Our deploy workflow had
+been pinned to an older major version of pnpm than the one the project declares. After a
+dependency upgrade the day before, that older pnpm could no longer read the lockfile,
+said so in a warning nobody was watching, and resolved a fresh dependency tree on every
+deploy. The bundle it produced had a small runtime helper transpiled in a way that throws
+on the first module it loads, so no component ever started. The same source built
+correctly in CI, on staging an hour earlier, and locally. We could not reproduce the
+exact tree the failing deploy resolved.
+
+Three things changed so this cannot ship again. Every workflow now takes its pnpm version
+from the project and installs strictly from the lockfile, failing loudly if they disagree.
+Every build is scanned before upload for the specific breakage that occurred, and refuses
+to deploy if found. And a browser test now loads the homepage and pricing page on desktop
+and mobile, types into the form, opens the region selector and confirms every component
+initialised, on every pull request. A build that looks fine but does nothing is exactly the
+failure our existing checks could not see.
