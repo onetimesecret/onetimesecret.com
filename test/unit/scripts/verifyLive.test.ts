@@ -60,6 +60,16 @@ function fakeFetch(routes: Record<string, Route>, calls: string[] = []) {
 const BASE = "https://cdn.test";
 let distDir: string;
 
+/** The error a promise rejects with; fails the test if it resolves. */
+async function rejection(promise: Promise<unknown>): Promise<Error> {
+  try {
+    await promise;
+  } catch (error) {
+    return error as Error;
+  }
+  throw new Error("expected the promise to reject");
+}
+
 beforeEach(() => {
   distDir = mkdtempSync(join(tmpdir(), "verify-live-"));
   mkdirSync(join(distDir, "assets"));
@@ -237,23 +247,24 @@ describe("verifyLive", () => {
 
   it("refuses an attempt count that would skip the compare loop", async () => {
     for (const attempts of [0, Number.NaN, 1.5]) {
-      await expect(run(allGood(), { attempts }).result).rejects.toThrow(/positive integer/);
+      const error = await rejection(run(allGood(), { attempts }).result);
+      expect(error.message).toMatch(/positive integer/);
     }
   });
 
   it("refuses a dist with no JavaScript rather than passing vacuously", async () => {
     const empty = mkdtempSync(join(tmpdir(), "verify-live-empty-"));
     try {
-      await expect(run(allGood(), { distDir: empty }).result).rejects.toThrow(/No JavaScript/);
+      const error = await rejection(run(allGood(), { distDir: empty }).result);
+      expect(error.message).toMatch(/No JavaScript/);
     } finally {
       rmSync(empty, { recursive: true, force: true });
     }
   });
 
   it("names a missing dist directory", async () => {
-    await expect(run(allGood(), { distDir: join(distDir, "nope") }).result).rejects.toThrow(
-      /does not exist/,
-    );
+    const error = await rejection(run(allGood(), { distDir: join(distDir, "nope") }).result);
+    expect(error.message).toMatch(/does not exist/);
   });
 });
 

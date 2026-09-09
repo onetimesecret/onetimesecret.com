@@ -127,6 +127,7 @@ export async function fetchChunk(
       signal: AbortSignal.timeout(timeoutMs),
     });
     const body = Buffer.from(await response.arrayBuffer());
+    /** @type {Record<string, string>} */
     const headers = {};
     for (const key of FORENSIC_HEADERS) {
       const value = response.headers.get(key);
@@ -135,7 +136,9 @@ export async function fetchChunk(
     return { url, status: response.status, body, headers };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    return { url, status: 0, body: Buffer.alloc(0), headers: {}, error: message };
+    /** @type {Record<string, string>} */
+    const headers = {};
+    return { url, status: 0, body: Buffer.alloc(0), headers, error: message };
   }
 }
 
