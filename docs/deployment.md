@@ -128,12 +128,25 @@ Run, after a deployment has finished:
 pnpm build:verify:live https://onetimesecret.com
 ```
 
-`scripts/verify-live.mjs` fetches every `dist/assets/*.js` chunk from the given origin and
-requires each response body to equal the local file byte for byte. It retries a few times to allow
-for cache purge and storage replication, then fails naming every differing file with its
-`last-modified`, `x-bo-version` and `x-downloadsize` headers. When the served preload helper no
-longer resolves with `import.meta.url`, it says so explicitly. Both deployment workflows run this
-as their final step.
+`scripts/verify-live.mjs` fetches every `.js` and `.mjs` file under `dist/`, at any depth, from
+the same path on the given site and requires each response body to equal the local file byte for
+byte. A file that differs is fetched again a few times, to allow for cache purge and storage
+replication, unless its response carries `x-bo-version`: an Optimizer rewrite does not resolve
+with time, so that fails at once. The report names every differing file with its `last-modified`,
+`x-bo-version`, `x-downloadsize`, `cdn-cache` and `location` headers, and when the served preload
+helper no longer resolves with `import.meta.url` it says so explicitly. Both deployment workflows
+run this as their final step. `pnpm test` covers the script, including the ways it could otherwise
+pass without checking anything.
+
+Only JavaScript is compared. HTML is rewritten at the edge on purpose by the country injection
+script, so it never matches `dist/`. CSS still goes through Optimizer's CSS minifier on the
+production pull zone; a re-minified stylesheet is byte-different and functionally the same, and
+comparing it would fail every deploy for no gain in safety.
+
+The requests send `cache-control: no-cache`, which a CDN edge is free to ignore. The workflows
+purge the pull zone immediately before the check. File names are content hashed, so the only
+stale copy an edge can hold under the same name is one it rewrote itself; after changing a
+pull-zone setting, purge the zone before trusting a manual run.
 
 Run `pnpm build` at the deployed commit first, with the same `VITE_BASE_URL`, `SENTRY_ORG`,
 `SENTRY_PROJECT` and `SENTRY_AUTH_TOKEN`, so that `dist/` matches what was uploaded. The Sentry

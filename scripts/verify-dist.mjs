@@ -31,22 +31,13 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
+import {
+  IMPORT_META_STUB,
+  PRELOAD_HELPER_MARKER,
+  PRELOAD_HELPER_RESOLVES_WITH_IMPORT_META,
+} from "./lib/preload-helper.mjs";
+
 const distDir = resolve(process.argv[2] ?? "dist");
-
-/** Marker Vite always emits in its preload helper chunk. */
-const PRELOAD_HELPER_MARKER = "vite:preloadError";
-
-/**
- * The helper's URL resolution, intact. Matches both the readable and the
- * minified form (`new URL(dep, import.meta.url)`, `new URL(e,import.meta.url)`).
- */
-const PRELOAD_HELPER_RESOLVES_WITH_IMPORT_META = /new URL\([^()]*import\.meta\.url\)/;
-
-/**
- * The stub esbuild emits for `import.meta` when the output target does not
- * support it. Any of these in shipped code means the bundle was lowered.
- */
-const IMPORT_META_STUB = /\bconst import_meta\s*=\s*\{\}|\bimport_meta\.(?:url|resolve)\b/;
 
 function fail(message) {
   console.error(`\n[verify-dist] FAIL: ${message}\n`);

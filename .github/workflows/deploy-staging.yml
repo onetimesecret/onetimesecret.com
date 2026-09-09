@@ -100,6 +100,12 @@ jobs:
       # Step 5: Install dependencies exactly as locked
       - name: Install dependencies
         run: |
+          # The last step verifies the live site at this URL. Find out now,
+          # not after upload and purge, if the environment variable is missing.
+          if [ -z "${VITE_BASE_URL}" ]; then
+            echo "VITE_BASE_URL is not set for this environment"
+            exit 1
+          fi
           echo "Deploying to ${VITE_BASE_URL}"
           pnpm install --frozen-lockfile
 
@@ -161,4 +167,4 @@ jobs:
       # 2026-09-08 and 2026-09-09; dist/ was fine, the site was not.
       # See scripts/verify-live.mjs.
       - name: Verify live bundle matches dist
-        run: node scripts/verify-live.mjs "$VITE_BASE_URL"
+        run: pnpm build:verify:live "$VITE_BASE_URL"
