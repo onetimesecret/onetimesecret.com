@@ -73,7 +73,7 @@ jobs:
       # compatible lockfile") and resolve a fresh dependency tree on every
       # deploy, so production was built from a tree CI never tested.
       - name: Setup pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         with:
           run_install: false
 
@@ -95,11 +95,11 @@ jobs:
         run: pnpm build
 
       # Step 6: Refuse to ship a bundle whose islands cannot hydrate.
-      # See scripts/verify-dist.mjs and docs/incidents/2026-09-08-*.md.
+      # See scripts/verify-dist.mjs.
       - name: Verify client bundle
         run: pnpm build:verify
 
-      # Step 8: Deploy to BunnyCDN Storage
+      # Step 7: Deploy to BunnyCDN Storage
       # Note: We separate upload and cache purge to allow BunnyCDN storage
       # replication to complete before purging. See: https://github.com/ayeressian/bunnycdn-storage-deploy/issues/47
       - name: Upload to BunnyCDN Storage
@@ -115,7 +115,7 @@ jobs:
           remove: "false" # Remove files that don't exist locally
           purgePullZone: "false" # Disabled - we purge separately after replication delay
 
-      # Step 9: Wait for BunnyCDN storage replication
+      # Step 8: Wait for BunnyCDN storage replication
       # BunnyCDN recommends waiting 5+ seconds for storage zone replicas to sync
       # before purging the cache, otherwise edge servers may re-cache stale content
       - name: Wait for storage replication
@@ -123,7 +123,7 @@ jobs:
           echo "Waiting 10 seconds for BunnyCDN storage replication..."
           sleep 10
 
-      # Step 10: Purge BunnyCDN Pull Zone cache
+      # Step 9: Purge BunnyCDN Pull Zone cache
       - name: Purge CDN cache
         run: |
           echo "Purging BunnyCDN pull zone cache..."
