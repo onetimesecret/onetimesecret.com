@@ -107,7 +107,7 @@ module.exports = {
     upload: {
       target: 'temporary-public-storage',
       githubStatusContextSuffix: 'astro-lighthouse-ci',
-      githubToken: process.env.GITHUB_TOKEN,
+      githubToken: process.env.LHCI_GITHUB_TOKEN,
     },
     server: {
       // Don't start a server for static site testing

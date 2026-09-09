@@ -12,10 +12,12 @@ jobs:
     runs-on: ubuntu-latest
 
     # Explicit permissions for GITHUB_TOKEN: read to check out, write to post
-    # the results comment (the default token permissions don't include this).
+    # the results comment, and statuses:write for LHCI's own status-check
+    # upload (see lighthouserc.cjs upload.githubStatusContextSuffix).
     permissions:
       contents: read
       pull-requests: write
+      statuses: write
 
     steps:
       - name: Checkout repository
@@ -62,6 +64,33 @@ jobs:
             const fs = require('fs');
             const path = require('path');
 
+            const COMMENT_MARKER = '<!-- lighthouse-ci-report -->';
+
+            async function upsertComment(body) {
+              const taggedBody = `${COMMENT_MARKER}\n${body}`;
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+              });
+              const existing = comments.find((c) => c.body.includes(COMMENT_MARKER));
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existing.id,
+                  body: taggedBody,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: taggedBody,
+                });
+              }
+            }
+
             try {
               // Find the manifest file
               const reportDir = '.lighthouseci';
@@ -71,14 +100,11 @@ jobs:
                 console.log('No Lighthouse manifest found.');
                 const runId = context.runId;
                 const repoUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}`;
-                await github.rest.issues.createComment({
-                  issue_number: context.issue.number,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  body: `## 🚦 Lighthouse Audit Results\n\n` +
-                        `⚠️ No Lighthouse results were produced. The build or audit step may have failed.\n\n` +
-                        `📦 [View Workflow Run](${repoUrl}/actions/runs/${runId})`
-                });
+                await upsertComment(
+                  `## 🚦 Lighthouse Audit Results\n\n` +
+                  `⚠️ No Lighthouse results were produced. The build or audit step may have failed.\n\n` +
+                  `📦 [View Workflow Run](${repoUrl}/actions/runs/${runId})`
+                );
                 return;
               }
 
@@ -198,13 +224,8 @@ jobs:
               comment += `(mobile ${formFactors.has('mobile') ? '✓' : '✗'}, `;
               comment += `desktop ${formFactors.has('desktop') ? '✓' : '✗'})\n`;
 
-              // Post the comment
-              await github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: comment
-              });
+              // Post (or update) the comment
+              await upsertComment(comment);
 
               console.log('✅ Successfully posted Lighthouse results to PR');
 
@@ -214,15 +235,12 @@ jobs:
               try {
                 const runId = context.runId;
                 const repoUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}`;
-                await github.rest.issues.createComment({
-                  issue_number: context.issue.number,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  body: `## 🚦 Lighthouse Audit Results\n\n` +
-                        `⚠️ Unable to parse Lighthouse results automatically.\n\n` +
-                        `📦 [Download Full Reports](${repoUrl}/actions/runs/${runId})\n\n` +
-                        `Error: ${error.message}`
-                });
+                await upsertComment(
+                  `## 🚦 Lighthouse Audit Results\n\n` +
+                  `⚠️ Unable to parse Lighthouse results automatically.\n\n` +
+                  `📦 [Download Full Reports](${repoUrl}/actions/runs/${runId})\n\n` +
+                  `Error: ${error.message}`
+                );
               } catch (commentError) {
                 console.error('Failed to post fallback comment:', commentError);
               }
