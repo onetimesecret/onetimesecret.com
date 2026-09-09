@@ -12,12 +12,10 @@ jobs:
     runs-on: ubuntu-latest
 
     # Explicit permissions for GITHUB_TOKEN: read to check out, write to post
-    # the results comment, and statuses:write for LHCI's own status-check
-    # upload (see lighthouserc.cjs upload.githubStatusContextSuffix).
+    # the results comment (the default token permissions don't include this).
     permissions:
       contents: read
       pull-requests: write
-      statuses: write
 
     steps:
       - name: Checkout repository
@@ -125,7 +123,9 @@ jobs:
 
               // Process each representative run (mobile/desktop)
               for (const run of representativeRuns) {
-                const lhr = JSON.parse(fs.readFileSync(path.join(reportDir, run.jsonPath), 'utf8'));
+                // run.jsonPath is already absolute (see lighthouserc.cjs's
+                // upload.target comment) — don't re-join it with reportDir.
+                const lhr = JSON.parse(fs.readFileSync(run.jsonPath, 'utf8'));
                 const formFactor = lhr.configSettings.formFactor || 'unknown';
                 const emoji = formFactor === 'mobile' ? '📱' : '🖥️';
 
@@ -200,11 +200,6 @@ jobs:
                   comment += `\n### ✅ No accessibility issues detected!\n\n`;
                 }
 
-                // Link to detailed report (if URL available)
-                if (run.url) {
-                  comment += `[📋 View Full ${formFactor} Report](${run.url})\n\n`;
-                }
-
                 comment += `---\n\n`;
               }
 
@@ -216,7 +211,7 @@ jobs:
               // Detect which form factors were tested
               const formFactors = new Set();
               for (const run of representativeRuns) {
-                const lhr = JSON.parse(fs.readFileSync(path.join(reportDir, run.jsonPath), 'utf8'));
+                const lhr = JSON.parse(fs.readFileSync(run.jsonPath, 'utf8'));
                 formFactors.add(lhr.configSettings.formFactor);
               }
 
