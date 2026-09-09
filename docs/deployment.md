@@ -46,6 +46,8 @@ Each deployment workflow:
 6. Uploads `dist/` to BunnyCDN storage without deleting remote files that are absent locally.
 7. Waits 10 seconds for storage replication.
 8. Purges the BunnyCDN pull-zone cache.
+9. Runs `pnpm build:verify:live` against the site URL. The deployment fails if the JavaScript
+   the CDN serves differs from `dist/`.
 
 CI runs on pull requests to `main` and `develop`, and on pushes to `develop`. Its build job runs
 the same frozen install, production build, and bundle verification. A separate required job runs
@@ -53,13 +55,31 @@ the browser hydration test described below.
 
 ## Validate a production build
 
-A successful build does not prove that browser interaction works. On 2026-09-08, a deployment
-shipped client chunks in which Vite's module preload helper had replaced `import.meta` with an
-empty object. Every `<astro-island>` failed to hydrate in every browser. Pages rendered normally,
-but their interactive controls did not work.
+A successful build does not prove that browser interaction works, and a correct `dist/` does not
+prove that browsers receive it. On 2026-09-08 and again on 2026-09-09, every JavaScript chunk
+served from `onetimesecret.com/assets/` differed from the file the deployment uploaded. Bunny
+Optimizer, enabled on the production pull zone, re-minified each chunk at the edge with a
+JavaScript target that has no `import.meta`, and replaced it with an empty object. Vite's module
+preload helper then threw on its first dependency and every `<astro-island>` failed to hydrate in
+every browser. Pages rendered normally, but their interactive controls did not work. The uploaded
+`dist/` passed `pnpm build:verify` both times.
 
-The repository uses static bundle verification, browser tests, and a post-deployment smoke test
-to detect this failure mode.
+The 2026-09-09 deployment was built from `a08cef1`. A local build of that commit reproduces the
+uploaded files exactly, hash for hash. The served copies carry `x-bo-*` response headers, a
+`last-modified` two minutes after the upload finished, and an `x-downloadsize` equal to the size
+of the local file. Source maps, which Optimizer does not process, keep the upload timestamp.
+
+The rewrite only became fatal with Vite 8 (PR #193). Vite 7 resolved preload dependencies with
+`"/" + dep`, so the shipped code contained no `import.meta` and the lowering was harmless. Vite 8
+resolves them with `import.meta.resolve` and `import.meta.url` unconditionally.
+
+Bunny Optimizer's JavaScript minification must stay disabled on every pull zone that serves this
+site. The bundle is already minified by esbuild; Optimizer reports a 0.00% compression ratio on it
+and only adds risk. This is a Bunny dashboard setting, not something the repository controls,
+which is why the deployment also verifies the served bytes.
+
+The repository uses static bundle verification, browser tests, and a post-deployment comparison
+of served and built files to detect this failure mode.
 
 ### Verify the generated bundle
 
@@ -100,6 +120,38 @@ The test loads `/` and `/en/pricing` and verifies that:
 The `e2e-hydration` job in `.github/workflows/ci.yml` runs this test with desktop and mobile
 Chromium. The job must pass for `ci-success` to pass.
 
+### Verify the served bundle
+
+Run, after a deployment has finished:
+
+```bash
+pnpm build:verify:live https://onetimesecret.com
+```
+
+`scripts/verify-live.mjs` fetches every `.js` and `.mjs` file under `dist/`, at any depth, from
+the same path on the given site and requires each response body to equal the local file byte for
+byte. A file that differs is fetched again a few times, to allow for cache purge and storage
+replication, unless its response carries `x-bo-version`: an Optimizer rewrite does not resolve
+with time, so that fails at once. The report names every differing file with its `last-modified`,
+`x-bo-version`, `x-downloadsize`, `cdn-cache` and `location` headers, and when the served preload
+helper no longer resolves with `import.meta.url` it says so explicitly. Both deployment workflows
+run this as their final step. `pnpm test` covers the script, including the ways it could otherwise
+pass without checking anything.
+
+Only JavaScript is compared. HTML is rewritten at the edge on purpose by the country injection
+script, so it never matches `dist/`. CSS still goes through Optimizer's CSS minifier on the
+production pull zone; a re-minified stylesheet is byte-different and functionally the same, and
+comparing it would fail every deploy for no gain in safety.
+
+The requests send `cache-control: no-cache`, which a CDN edge is free to ignore. The workflows
+purge the pull zone immediately before the check. File names are content hashed, so the only
+stale copy an edge can hold under the same name is one it rewrote itself; after changing a
+pull-zone setting, purge the zone before trusting a manual run.
+
+Run `pnpm build` at the deployed commit first, with the same `VITE_BASE_URL`, `SENTRY_ORG`,
+`SENTRY_PROJECT` and `SENTRY_AUTH_TOKEN`, so that `dist/` matches what was uploaded. The Sentry
+release and debug-id snippets are part of the chunk content.
+
 ## Verify production after deployment
 
 Open [onetimesecret.com](https://onetimesecret.com/) with the browser console visible. Confirm
@@ -109,9 +161,12 @@ that:
 - entering text in the secret field enables the Create Link button; and
 - clicking the region selector opens it.
 
-If any check fails, treat the deployed bundle as broken even if CI passed. Run the production
-workflow with `workflow_dispatch` against a branch or tag containing a known-good commit. The
-upload overwrites matching assets, and the final purge clears the pull-zone cache.
+If any check fails, treat the deployed bundle as broken even if CI passed. Fetch one chunk with
+`curl -sI` and look for `x-bo-version` in the response. If it is present, Bunny Optimizer is
+rewriting JavaScript and must be turned off on the pull zone; redeploying will not help. Otherwise
+run the production workflow with `workflow_dispatch` against a branch or tag containing a
+known-good commit. The upload overwrites matching assets, and the final purge clears the pull-zone
+cache.
 
 ## Keep deployments reproducible
 
@@ -121,3 +176,5 @@ upload overwrites matching assets, and the final purge clears the pull-zone cach
 - When changing dependencies, update `pnpm-lock.yaml` with the pnpm version declared in
   `package.json` and include it in the same pull request.
 - Run `pnpm build:verify` after every production build whose output will be served to browsers.
+- Keep Bunny Optimizer's JavaScript minification disabled on every pull zone for this site, and
+  run `pnpm build:verify:live` after any change to pull-zone settings.
