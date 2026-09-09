@@ -1,5 +1,12 @@
 name: Lighthouse CI Test
 
+# Prevent overlapping runs for the same ref: two runs racing on the
+# results-comment lookup-then-write can each miss the other's comment and
+# post duplicates instead of updating one.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [develop, main]
@@ -10,17 +17,24 @@ jobs:
   lighthouse:
     name: Lighthouse Audit
     runs-on: ubuntu-latest
+
+    # Explicit permissions for GITHUB_TOKEN: read to check out, write to post
+    # the results comment (the default token permissions don't include this).
+    permissions:
+      contents: read
+      pull-requests: write
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           run_install: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "26"
           cache: "pnpm"
@@ -38,7 +52,7 @@ jobs:
           LHCI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Lighthouse reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: lighthouse-reports
           path: .lighthouseci/
@@ -48,12 +62,39 @@ jobs:
 
       - name: Comment on PR with Lighthouse results
         if: always() && github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
             const path = require('path');
+
+            const COMMENT_MARKER = '<!-- lighthouse-ci-report -->';
+
+            async function upsertComment(body) {
+              const taggedBody = `${COMMENT_MARKER}\n${body}`;
+              const comments = await github.paginate(github.rest.issues.listComments, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+              });
+              const existing = comments.find((c) => c.body.includes(COMMENT_MARKER));
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existing.id,
+                  body: taggedBody,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: taggedBody,
+                });
+              }
+            }
 
             try {
               // Find the manifest file
@@ -64,14 +105,11 @@ jobs:
                 console.log('No Lighthouse manifest found.');
                 const runId = context.runId;
                 const repoUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}`;
-                await github.rest.issues.createComment({
-                  issue_number: context.issue.number,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  body: `## 🚦 Lighthouse Audit Results\n\n` +
-                        `⚠️ No Lighthouse results were produced. The build or audit step may have failed.\n\n` +
-                        `📦 [View Workflow Run](${repoUrl}/actions/runs/${runId})`
-                });
+                await upsertComment(
+                  `## 🚦 Lighthouse Audit Results\n\n` +
+                  `⚠️ No Lighthouse results were produced. The build or audit step may have failed.\n\n` +
+                  `📦 [View Workflow Run](${repoUrl}/actions/runs/${runId})`
+                );
                 return;
               }
 
@@ -92,11 +130,16 @@ jobs:
 
               // Process each representative run (mobile/desktop)
               for (const run of representativeRuns) {
-                const lhr = JSON.parse(fs.readFileSync(path.join(reportDir, run.jsonPath), 'utf8'));
+                // run.jsonPath is already absolute (see lighthouserc.cjs's
+                // upload.target comment) — don't re-join it with reportDir.
+                const lhr = JSON.parse(fs.readFileSync(run.jsonPath, 'utf8'));
                 const formFactor = lhr.configSettings.formFactor || 'unknown';
                 const emoji = formFactor === 'mobile' ? '📱' : '🖥️';
+                // run.url is the static server's origin with a random port, so
+                // only the path identifies the page across runs.
+                const pagePath = new URL(run.url).pathname;
 
-                comment += `### ${emoji} ${formFactor.charAt(0).toUpperCase() + formFactor.slice(1)} Results\n\n`;
+                comment += `### ${emoji} \`${pagePath}\` (${formFactor})\n\n`;
 
                 // Score categories
                 const scores = {
@@ -167,11 +210,6 @@ jobs:
                   comment += `\n### ✅ No accessibility issues detected!\n\n`;
                 }
 
-                // Link to detailed report (if URL available)
-                if (run.url) {
-                  comment += `[📋 View Full ${formFactor} Report](${run.url})\n\n`;
-                }
-
                 comment += `---\n\n`;
               }
 
@@ -183,7 +221,7 @@ jobs:
               // Detect which form factors were tested
               const formFactors = new Set();
               for (const run of representativeRuns) {
-                const lhr = JSON.parse(fs.readFileSync(path.join(reportDir, run.jsonPath), 'utf8'));
+                const lhr = JSON.parse(fs.readFileSync(run.jsonPath, 'utf8'));
                 formFactors.add(lhr.configSettings.formFactor);
               }
 
@@ -191,13 +229,8 @@ jobs:
               comment += `(mobile ${formFactors.has('mobile') ? '✓' : '✗'}, `;
               comment += `desktop ${formFactors.has('desktop') ? '✓' : '✗'})\n`;
 
-              // Post the comment
-              await github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: comment
-              });
+              // Post (or update) the comment
+              await upsertComment(comment);
 
               console.log('✅ Successfully posted Lighthouse results to PR');
 
@@ -207,15 +240,12 @@ jobs:
               try {
                 const runId = context.runId;
                 const repoUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}`;
-                await github.rest.issues.createComment({
-                  issue_number: context.issue.number,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  body: `## 🚦 Lighthouse Audit Results\n\n` +
-                        `⚠️ Unable to parse Lighthouse results automatically.\n\n` +
-                        `📦 [Download Full Reports](${repoUrl}/actions/runs/${runId})\n\n` +
-                        `Error: ${error.message}`
-                });
+                await upsertComment(
+                  `## 🚦 Lighthouse Audit Results\n\n` +
+                  `⚠️ Unable to parse Lighthouse results automatically.\n\n` +
+                  `📦 [Download Full Reports](${repoUrl}/actions/runs/${runId})\n\n` +
+                  `Error: ${error.message}`
+                );
               } catch (commentError) {
                 console.error('Failed to post fallback comment:', commentError);
               }

@@ -411,7 +411,7 @@ onUnmounted(() => {
                           class="w-12 pb-3 text-center
                             text-xs font-medium"
                           :class="tier.featured
-                            ? 'text-brand-500'
+                            ? 'text-brand-700 dark:text-brand-400'
                             : 'text-text-tertiary'">
                           {{ t(tier.nameKey) }}
                         </th>

@@ -9,6 +9,7 @@
     "astro": "astro",
     "build": "astro build",
     "build:verify": "node scripts/verify-dist.mjs",
+    "build:verify:live": "node scripts/verify-live.mjs",
     "check": "astro check --tsconfig tsconfig.json",
     "clean": "rm -rf dist/ .astro/ node_modules/.vite/",
     "reinstall": "pnpm clean && pnpm install",

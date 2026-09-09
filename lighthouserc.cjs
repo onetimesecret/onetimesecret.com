@@ -105,9 +105,15 @@ module.exports = {
       ],
     },
     upload: {
-      target: 'temporary-public-storage',
-      githubStatusContextSuffix: 'astro-lighthouse-ci',
-      githubToken: process.env.GITHUB_TOKEN,
+      // @lhci/cli's `temporary-public-storage` target never writes a local
+      // manifest.json (only its `filesystem` target does — see
+      // node_modules/@lhci/cli/src/upload/upload.js: runFilesystemTarget is
+      // the only code path that calls fs.writeFileSync(manifestPath, ...)).
+      // The "Comment on PR with Lighthouse results" and "Upload Lighthouse
+      // reports" steps in .github/workflows/lighthouse.yml both depend on
+      // .lighthouseci/manifest.json existing, so this has to be `filesystem`.
+      target: 'filesystem',
+      outputDir: '.lighthouseci',
     },
     server: {
       // Don't start a server for static site testing
