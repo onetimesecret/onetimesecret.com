@@ -91,6 +91,8 @@ declare module '@playwright/test' {
     toHaveCount(count: number, options?: { timeout?: number }): Promise<void>;
     toHaveText(text: string | RegExp, options?: { timeout?: number }): Promise<void>;
     toHaveAttribute(name: string, value: string | RegExp): Promise<void>;
+    toBeEnabled(options?: { timeout?: number }): Promise<void>;
+    toBeDisabled(options?: { timeout?: number }): Promise<void>;
     readonly not: LocatorAssertions;
   }
 

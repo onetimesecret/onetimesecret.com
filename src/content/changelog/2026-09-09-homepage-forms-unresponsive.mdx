@@ -1,0 +1,26 @@
+---
+title: "Homepage forms unavailable for about three hours"
+date: 2026-09-09
+description: "Homepage forms and controls were unresponsive for about three hours after the 8 September deploy."
+category: operations
+planned: false
+highlights:
+  - { icon: warn, text: "The incident lasted about three hours, starting at 21:47 UTC on 8 September." }
+  - { icon: info, text: "Only the main homepage was affected; regional apps and customer data were unaffected." }
+  - { icon: info, text: "We learned deployments could use untested dependencies when build tooling fell out of sync." }
+  - { icon: check, text: "We tightened deployment safeguards and expanded browser testing to catch similar failures before release." }
+---
+
+The incident began at 21:47 UTC on 8 September and lasted about three hours. The homepage
+remained visible, but the Create Link form, region selector, and pricing controls did not
+respond. Regional apps where secrets are created and read remained available, and no secret,
+account, or submitted data was affected.
+
+We found that our deployment process could use untested dependency versions when its build
+tooling fell out of sync with the project. This allowed a bundle that could not start the
+page's interactive components to be published. A classic "works in development but not in
+production" problem.
+
+We have aligned deployment configuration with the project so release builds use the same
+dependency versions as the builds that passed CI. We also expanded browser coverage of
+interactive pages to catch similar failures before deployment.
