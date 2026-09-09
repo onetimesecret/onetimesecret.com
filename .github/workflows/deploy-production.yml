@@ -66,43 +66,38 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Setup Node.js environment
+      # Step 2: Setup pnpm
+      # The version comes from the `packageManager` field in package.json so
+      # the deploy uses the same pnpm that wrote pnpm-lock.yaml. Pinning an
+      # older major here made pnpm ignore the lockfile ("Ignoring not
+      # compatible lockfile") and resolve a fresh dependency tree on every
+      # deploy, so production was built from a tree CI never tested.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          run_install: false
+
+      # Step 3: Setup Node.js environment (with the pnpm store cached)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "26"
+          cache: "pnpm"
 
-      # Step 3: Setup pnpm
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 8
-          run_install: false
-
-      # Step 4: Get pnpm store directory
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
+      # Step 4: Install dependencies exactly as locked
+      - name: Install dependencies
         run: |
           echo "Deploying to ${VITE_BASE_URL}"
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+          pnpm install --frozen-lockfile
 
-      # Step 5: Setup pnpm cache
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      # Step 6: Install dependencies
-      - name: Install dependencies
-        run: pnpm install
-
-      # Step 7: Build Astro site
+      # Step 5: Build Astro site
       - name: Build site
         run: pnpm build
+
+      # Step 6: Refuse to ship a bundle whose islands cannot hydrate.
+      # See scripts/verify-dist.mjs and docs/incidents/2026-09-08-*.md.
+      - name: Verify client bundle
+        run: pnpm build:verify
 
       # Step 8: Deploy to BunnyCDN Storage
       # Note: We separate upload and cache purge to allow BunnyCDN storage

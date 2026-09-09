@@ -1,12 +1,19 @@
 # Incident: Homepage hero form unresponsive (Create Link + region selector)
 
-- **Status:** Investigating — root cause identified, fix pending
+- **Status:** Root cause confirmed at the bundle level; fix and guards in
+  review, production redeploy pending
 - **Reported:** 2026-09-08
 - **Author:** Delano
-- **Severity:** SEV-2 (primary conversion surface degraded; no data loss)
-- **Affected surface:** Homepage hero (`/` and `/[lang]/`), the `Homepage` Vue island
-- **Suspected environment:** Mobile browsers (needs confirmation of exact browser/OS)
-- **Reference build:** `306cb0e` (branch `develop`)
+- **Severity:** SEV-1 (every interactive control on the site is inert; no data
+  loss)
+- **Affected surface:** Every Vue island on every page: homepage secret form,
+  region selector, pricing controls, language switcher, footer islands
+- **Environment:** All browsers, desktop and mobile. Reproduced in headless
+  Chromium (desktop and iPhone 13 emulation) against a mirror of the deployed
+  assets. The "mobile only" framing came from testing a local build on
+  desktop, not the deployed one.
+- **Reference build:** production deploy run #47 (`ee376a3` on `main`,
+  2026-09-08 21:47 UTC), source identical to `306cb0e` on `develop`
 
 ## Summary
 
@@ -73,43 +80,106 @@ The failure does **not** reproduce in this environment, which is why it points
 to a browser- or build-specific hydration failure rather than a logic bug in
 the homepage components.
 
-## Leading hypothesis
+## Root cause (confirmed 2026-09-09)
 
-The hero island fails to hydrate on the affected (mobile) browsers. Given the
-timing, the most probable trigger is PR #193. Candidate mechanisms, in rough
-order of likelihood:
+The deployed JavaScript is not what the source builds.
 
-1. **A runtime error thrown during client setup on the affected browser**,
-   aborting hydration of the island. Would not surface in desktop/emulated
-   Chromium.
-2. **The renderer or component chunk fails to load in production** (404, wrong
-   MIME type, or a stale/mismatched cached bundle) after the Astro 7 / Vite 8
-   asset-hashing change.
-3. **An unsupported JS feature** emitted into the new client bundle by the
-   upgraded Vite 8 / Astro 7 toolchain (or the Node 26 build target) that the
-   affected browser cannot parse or execute.
+Every client chunk served from `onetimesecret.com/assets/` on 2026-09-08 had
+been transpiled to roughly an ES2018 target: optional chaining and `??` are
+lowered to `== null ? void 0 :` and `var _a` temporaries, optional catch
+bindings are gone, and, decisively, `import.meta` was replaced with an empty
+object:
 
-## Next steps
+```js
+// deployed assets/preload-helper.CQUqqgG6.js (excerpt)
+const import_meta={};
+...
+v=function(e){return import_meta.resolve?import_meta.resolve(e):new URL(e,import_meta.url).href}
+```
 
-1. **Get the real signal from a failing device.** On an affected mobile
-   browser, capture: any console error / CSP violation, whether the Network
-   tab shows the island's `Homepage.*.js` and `client.*.js` chunks loading
-   (status + MIME type), and whether typing reveals the footer button. This
-   single data point discriminates between the three hypotheses above.
-2. **Confirm scope** — which browsers/OS versions, and whether desktop is
-   truly clean.
-3. **Bisect PR #193** if the device signal implicates the bundle: build the
-   homepage at the pre-upgrade dependency set and compare hydration on the
-   affected browser.
-4. Add an e2e assertion that the hero island actually hydrates (region
-   dropdown opens; footer Create Link button becomes enabled after input) so a
-   future hydration regression fails CI instead of shipping.
+That is Vite's module preload helper. `import_meta.url` is `undefined`, so
+`new URL("/assets/App.xxx.js", undefined)` throws `TypeError: Invalid URL` on
+the first dependency of every island. The renderer (`client.*.js`) awaits the
+preload before mounting, so the rejection aborts hydration. The browser
+console shows one line per island:
+
+```
+[astro-island] Error hydrating /assets/Homepage.B_sLzx2R.js TypeError: Failed to construct 'URL': Invalid URL
+    at v (/assets/preload-helper.CQUqqgG6.js:1:904)
+```
+
+Un-hydrated, the page is exactly the SSR fallback described above: a disabled
+Create Link button, an inert region pill, a language switcher that does
+nothing, pricing toggles that do nothing. No component code is at fault.
+
+### What was compared
+
+| Build | pnpm | Lockfile | Output |
+| --- | --- | --- | --- |
+| Production deploy run #47 (`main`, 21:47 UTC) | 8.15.9 | **ignored** ("Ignoring not compatible lockfile"), fresh resolve | **lowered, islands broken** |
+| Staging deploy run #133 (`develop`, 20:48 UTC) | 8.15.9 | ignored, fresh resolve, identical tree | correct (`preload-helper.Cpf3bp8D.js`) |
+| CI build artifact for `306cb0e` | 10.11, `--frozen-lockfile` | honoured | correct (same `Cpf3bp8D` hash) |
+| Local, pnpm 11.24 + Node 22/26, with and without a Sentry auth token and `VITE_BASE_URL` | 11.24.0 | honoured | correct |
+| Local, pnpm 8.15.9 fresh resolve, Node 22 and Node 26, CI env vars | 8.15.9 | ignored | correct |
+
+The lowering fingerprint (unminified `import_meta` and `_a` names inside an
+otherwise minified chunk, `catch(e2)` renames, `const import_meta = {}`) is
+what esbuild emits when asked to transpile already-minified code to a target
+without `import.meta`. Nothing in the repository, in Astro 7.3.x, Vite 8.2.2,
+rolldown 1.2.7 or the Sentry plugin sets such a target, and no dependency in
+the tree published a new version between the good staging build and the bad
+production build. The exact trigger inside run #47 could not be reproduced.
+
+What is certain is that the deploy jobs were **not building the tree CI
+tested**. `pnpm/action-setup` was pinned to pnpm 8 while `package.json`
+declares `pnpm@11.24.0`; pnpm 8 cannot read a v9 lockfile, so every deploy
+silently re-resolved ~1,090 packages against the live registry (production
+got `astro@7.3.2`, released six hours earlier, while the lockfile says
+`7.3.1`) and reused a pnpm store restored from a cache keyed on a lockfile it
+never read. That made every deploy a unique, unreviewed dependency tree, and
+it is the only place in the pipeline where the good and bad builds differ.
+
+## Fix
+
+1. **Deploy workflows build what CI tests.** `deploy-production.yml` and
+   `deploy-staging.yml` now take the pnpm version from `packageManager`, run
+   `pnpm install --frozen-lockfile`, and cache the store through
+   `actions/setup-node` like `ci.yml` does. A deploy whose lockfile does not
+   match now fails instead of re-resolving.
+2. **The build refuses to ship a bundle that cannot hydrate.**
+   `scripts/verify-dist.mjs` (`pnpm build:verify`) scans `dist/assets/*.js`
+   for the emptied `import.meta` stub and asserts Vite's preload helper still
+   references `import.meta.url`. It runs after `pnpm build` in CI and in both
+   deploy workflows, before anything is uploaded. It fails on the deployed
+   2026-09-08 bundle and passes on every correct build above.
+3. **E2E asserts hydration.** `test/e2e/specs/island-hydration.spec.ts`
+   checks that no `astro-island[ssr]` survives page load on `/` and
+   `/pricing`, that no `Error hydrating` reaches the console, that Create
+   Link enables after typing, and that the region selector opens. It fails
+   against the deployed bundle and passes against a correct build.
+
+## Remediation
+
+- Merge the fix to `develop`, promote to `main`, and let the production
+  deploy run (or `workflow_dispatch` it). The rebuilt bundle replaces the
+  broken chunks; `index.html` references new hashes so no CDN purge beyond the
+  workflow's own is needed.
+- Confirm on the live site: the console shows no `[astro-island] Error
+  hydrating`, and typing in the hero textarea enables Create Link.
 
 ## Timeline (UTC)
 
 - **2026-09-07 23:15** — PR #193 (`chore/deps-update-all`) merged: Astro 7,
   Vite 8, `@astrojs/vue` 7, Node 26.
 - **2026-09-08** — Create Link button reported unresponsive on the homepage.
-- **2026-09-08** — Region selector dropdown also reported unresponsive;
-  suspected mobile-specific. Root-cause mechanism (island not hydrating)
-  identified; fix pending device-level diagnostics.
+- **2026-09-08 20:48** — Staging deploy run #133 (`develop` @ `306cb0e`)
+  builds correctly.
+- **2026-09-08 21:47** — Production deploy run #47 (`main` @ `ee376a3`, same
+  source) ships transpiled-down chunks with an emptied `import.meta`. Every
+  island on the site stops hydrating.
+- **2026-09-08** — Create Link button reported unresponsive on the homepage;
+  region selector also reported unresponsive; suspected mobile-specific.
+- **2026-09-09** — Deployed assets mirrored and driven in headless Chromium:
+  all six homepage islands fail to hydrate on desktop and mobile with
+  `TypeError: Invalid URL` from the preload helper. Deploy workflow found to
+  ignore the lockfile. Fix, bundle guard and hydration e2e opened for review.

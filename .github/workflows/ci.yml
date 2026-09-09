@@ -175,6 +175,11 @@ jobs:
       - name: Build site
         run: pnpm run build
 
+      # Fail if the client chunks were transpiled in a way that stops Astro
+      # islands from hydrating (see scripts/verify-dist.mjs).
+      - name: Verify client bundle
+        run: pnpm build:verify
+
       # The BIMI logo is hashed into the Verified Mark Certificate. Anything
       # that rewrites it on the way to dist/ invalidates the certificate.
       - name: Verify BIMI assets ship byte-identical
