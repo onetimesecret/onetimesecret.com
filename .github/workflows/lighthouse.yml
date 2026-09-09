@@ -135,8 +135,11 @@ jobs:
                 const lhr = JSON.parse(fs.readFileSync(run.jsonPath, 'utf8'));
                 const formFactor = lhr.configSettings.formFactor || 'unknown';
                 const emoji = formFactor === 'mobile' ? '📱' : '🖥️';
+                // run.url is the static server's origin with a random port, so
+                // only the path identifies the page across runs.
+                const pagePath = new URL(run.url).pathname;
 
-                comment += `### ${emoji} ${formFactor.charAt(0).toUpperCase() + formFactor.slice(1)} Results\n\n`;
+                comment += `### ${emoji} \`${pagePath}\` (${formFactor})\n\n`;
 
                 // Score categories
                 const scores = {

@@ -109,9 +109,9 @@ module.exports = {
       // manifest.json (only its `filesystem` target does — see
       // node_modules/@lhci/cli/src/upload/upload.js: runFilesystemTarget is
       // the only code path that calls fs.writeFileSync(manifestPath, ...)).
-      // The PR-comment step below and the "Upload Lighthouse reports"
-      // artifact step both depend on .lighthouseci/manifest.json existing,
-      // so this has to be `filesystem`.
+      // The "Comment on PR with Lighthouse results" and "Upload Lighthouse
+      // reports" steps in .github/workflows/lighthouse.yml both depend on
+      // .lighthouseci/manifest.json existing, so this has to be `filesystem`.
       target: 'filesystem',
       outputDir: '.lighthouseci',
     },
