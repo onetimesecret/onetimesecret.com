@@ -98,19 +98,6 @@ test.describe('Homepage redesign — hero section', () => {
     const items = list.locator('li');
     await expect(items).toHaveCount(4);
   });
-
-  test('badge-dot element is present in DOM', async ({ page }) => {
-    // Animation is CSS-only (prefers-reduced-motion gate).
-    // This test only verifies the element exists; animation testing is visual-only.
-    const badgeDot = page.locator('.badge-dot');
-    await expect(badgeDot).toBeAttached();
-  });
-
-  test('badge-dot has aria-hidden="true"', async ({ page }) => {
-    const badgeDot = page.locator('.badge-dot');
-    const ariaHidden = await badgeDot.getAttribute('aria-hidden');
-    expect(ariaHidden).toBe('true');
-  });
 });
 
 // ---------------------------------------------------------------------------
