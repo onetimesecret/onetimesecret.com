@@ -11,7 +11,11 @@
 // build succeeded, CI was green, and only a real browser noticed.
 //
 // This script fails the build if that shape of output is present, so a
-// broken bundle never reaches the CDN. Two checks, in order of strength:
+// broken bundle never reaches the CDN. It only vouches for `dist/`: the
+// 2026-09-08 and 2026-09-09 lowering happened after upload, at the CDN edge
+// (Bunny Optimizer), and this check passed both times on a correct `dist/`.
+// `scripts/verify-live.mjs` covers the served bytes. Two checks, in order of
+// strength:
 //
 //   1. Positive: the chunk carrying Vite's preload helper must still resolve
 //      dependency URLs with `new URL(dep, import.meta.url)`. `import.meta` is
