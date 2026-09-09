@@ -10,6 +10,13 @@ jobs:
   lighthouse:
     name: Lighthouse Audit
     runs-on: ubuntu-latest
+
+    # Explicit permissions for GITHUB_TOKEN: read to check out, write to post
+    # the results comment (the default token permissions don't include this).
+    permissions:
+      contents: read
+      pull-requests: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
