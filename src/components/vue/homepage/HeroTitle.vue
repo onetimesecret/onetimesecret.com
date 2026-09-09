@@ -12,9 +12,6 @@ const { t } = useI18n();
     <div class="mb-6 flex justify-center">
       <span
         class="inline-flex items-center gap-2 rounded-full border border-brand-500/30 bg-brand-500/10 px-4 py-1.5 text-sm font-medium text-brand-700 dark:text-brand-400">
-        <span
-          class="badge-dot dot-glow size-2 rounded-full bg-brand-400"
-          aria-hidden="true"></span>
         {{ t("web.homepage.hero.badge") }}
       </span>
     </div>
@@ -38,16 +35,3 @@ const { t } = useI18n();
 
   </div>
 </template>
-
-<style scoped>
-@keyframes badge-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .badge-dot {
-    animation: badge-pulse 2s ease-in-out infinite;
-  }
-}
-</style>
