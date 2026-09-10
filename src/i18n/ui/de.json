@@ -100,7 +100,7 @@
       "learn-more-about-data-sovereignty": "Mehr über Datensouveränität erfahren"
     },
     "pricing": {
-      "title": "Preispläne | Onetime Secret",
+      "title": "Preispläne {'|'} Onetime Secret",
       "description": "Wählen Sie den perfekten Plan für Ihre Bedürfnisse zum sicheren Informationsaustausch. Von kostenlosen Basisplänen bis hin zu Premium-Optionen mit benutzerdefinierten Domains und dedizierter Infrastruktur.",
       "includes-all-features-and-unlimited-sharing-capa": "Alle Pläne beinhalten Datenschutzfunktionen und unbegrenzte Teilkapazität",
       "includes-all-data-locality-options": "Alle Pläne beinhalten die Wahl der Datenlokalität: {0} Regionen",
@@ -359,7 +359,7 @@
       }
     },
     "homepage": {
-      "title": "Teilen Sie Geheimnisse sicher | Onetime Secret",
+      "title": "Onetime Secret {'|'} Ihr eigener Secret-Dienst auf eigener Domain",
       "description": "Teilen Sie sensible Informationen sicher mit selbstzerstörenden Links. Fügen Sie Ihr Geheimnis ein, generieren Sie einen Link und teilen Sie ihn. Nach dem Anzeigen ist es für immer verschwunden.",
       "a-trusted-way-to-share-sensitive-information-etc": "Eine vertrauenswürdige Methode zum Teilen vertraulicher Informationen, die nach dem Anzeigen automatisch gelöscht werden.",
       "hero": {
