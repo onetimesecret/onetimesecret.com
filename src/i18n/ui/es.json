@@ -359,7 +359,7 @@
       }
     },
     "homepage": {
-      "title": "Onetime Secret {'|'} Gestione su propio servicio secreto en un dominio personalizado",
+      "title": "Onetime Secret {'|'} Servicio de secretos en un dominio personalizado",
       "description": "Comparta información sensible de forma segura con enlaces autodestructibles. Pegue su secreto, genere un enlace y compártalo. Una vez visto, desaparece para siempre",
       "a-trusted-way-to-share-sensitive-information-etc": "Una forma confiable de compartir información sensible que se autodestruye después de ser vista.",
       "hero": {
