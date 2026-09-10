@@ -100,7 +100,7 @@
       "learn-more-about-data-sovereignty": "Learn more about data sovereignty"
     },
     "pricing": {
-      "title": "Pricing Plans | Onetime Secret",
+      "title": "Pricing Plans {'|'} Onetime Secret",
       "description": "Choose the perfect plan for your secure information sharing needs. From basic free plans to premium options with custom domains and dedicated infrastructure.",
       "includes-all-features-and-unlimited-sharing-capa": "All plans include privacy features and unlimited sharing capacity",
       "includes-all-data-locality-options": "All plans include choice of data locality: {0} regions",

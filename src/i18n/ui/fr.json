@@ -100,7 +100,7 @@
       "learn-more-about-data-sovereignty": "En savoir plus sur la souveraineté des données"
     },
     "pricing": {
-      "title": "Plans tarifaires | Onetime Secret",
+      "title": "Plans tarifaires {'|'} Onetime Secret",
       "description": "Choisissez le plan parfait pour vos besoins de partage d'informations sécurisées. Des plans gratuits de base aux options premium avec domaines personnalisés et infrastructure dédiée.",
       "includes-all-features-and-unlimited-sharing-capa": "Tous les forfaits incluent des fonctionnalités de confidentialité et une capacité de partage illimitée",
       "includes-all-data-locality-options": "Tous les forfaits incluent le choix de localité des données : {0} régions",

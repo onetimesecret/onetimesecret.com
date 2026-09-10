@@ -100,7 +100,7 @@
       "learn-more-about-data-sovereignty": "Más información sobre soberanía de datos"
     },
     "pricing": {
-      "title": "Planes de precios | Onetime Secret",
+      "title": "Planes de precios {'|'} Onetime Secret",
       "description": "Elija el plan perfecto para sus necesidades de intercambio seguro de información. Desde planes básicos gratuitos hasta opciones premium con dominios personalizados e infraestructura dedicada.",
       "includes-all-features-and-unlimited-sharing-capa": "Todos los planes incluyen funciones de privacidad y capacidad de intercambio ilimitada",
       "includes-all-data-locality-options": "Todos los planes incluyen opción de localidad de datos: {0} regiones",
