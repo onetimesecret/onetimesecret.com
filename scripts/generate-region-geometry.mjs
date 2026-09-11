@@ -36,8 +36,11 @@ import { presimplify, simplify } from "topojson-simplify";
 
 // --- Shared inputs ---------------------------------------------------------
 
-/** Datacenter cities, not country centroids. Mirrors REGION_COORDS in
- *  `src/data/product/infrastructure.ts` — keep the two in sync. */
+/** Datacenter cities, not country centroids. `REGION_COORDS` in
+ *  `src/data/product/infrastructure.ts` is the source of truth — it is the
+ *  list the rotating globe projects at runtime. This copy exists only because
+ *  a build script cannot import a TypeScript module directly; it is checked
+ *  against the source below, so the two cannot silently diverge. */
 const REGIONS = [
   { code: "CA", lat: 43.65, lon: -79.38 },
   { code: "EU", lat: 49.45, lon: 11.08 },
@@ -45,6 +48,48 @@ const REGIONS = [
   { code: "UK", lat: 51.51, lon: -0.13 },
   { code: "US", lat: 45.52, lon: -122.99 },
 ];
+
+/** Parses the `REGION_COORDS` literal out of `infrastructure.ts` and fails the
+ *  build if it disagrees with `REGIONS` above. A regex rather than a TS loader
+ *  keeps this script dependency-free; the literal is a flat array of object
+ *  literals and is expected to stay that way. */
+function assertRegionParity() {
+  const srcUrl = new URL(
+    "../src/data/product/infrastructure.ts",
+    import.meta.url,
+  );
+  const src = readFileSync(srcUrl, "utf8");
+  const block = src.match(/REGION_COORDS[^=]*=\s*\[([\s\S]*?)\];/);
+  if (!block) {
+    throw new Error(
+      "Could not find the REGION_COORDS array in infrastructure.ts — the " +
+        "parity check needs updating.",
+    );
+  }
+
+  const entry =
+    /\{\s*label:\s*"([A-Z]+)",\s*lat:\s*(-?[\d.]+),\s*lon:\s*(-?[\d.]+)\s*\}/g;
+  const source = [...block[1].matchAll(entry)].map(([, code, lat, lon]) => ({
+    code,
+    lat: Number(lat),
+    lon: Number(lon),
+  }));
+
+  const fmt = (rs) =>
+    rs.map((r) => `${r.code}(${r.lat},${r.lon})`).join(" ");
+  const mine = fmt(REGIONS);
+  const theirs = fmt(source);
+  if (source.length !== REGIONS.length || mine !== theirs) {
+    throw new Error(
+      "REGIONS in this script has drifted from REGION_COORDS in " +
+        "src/data/product/infrastructure.ts — update both together.\n" +
+        `  generator: ${mine}\n` +
+        `  source:    ${theirs}`,
+    );
+  }
+}
+
+assertRegionParity();
 
 const landTopoUrl = new URL(
   "../node_modules/world-atlas/land-110m.json",
