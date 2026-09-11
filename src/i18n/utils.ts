@@ -93,6 +93,50 @@ export function stripLocalePrefix(path: string): string {
 }
 
 /**
+ * Is this path served by a route under src/pages/[lang]/, i.e. does it carry a
+ * locale segment?
+ *
+ * Separate from hasLocalizedVariants() because the two answer different
+ * questions about the same strip, and the root answers them differently. This
+ * one decides where hreflang x-default points: see LayoutHead.astro.
+ */
+export function isLocalePrefixed(path: string): boolean {
+  return !!path && stripLocalePrefix(path) !== path;
+}
+
+/**
+ * Does this path belong to a locale cluster, i.e. does a localized counterpart
+ * exist at /{lang}{path} for every supported language?
+ *
+ * hreflang annotations are only useful when they resolve: Google requires them
+ * to be reciprocal, and discards a cluster whose targets 404. LayoutHead.astro
+ * used to assume every page had a twin at /{lang}{path} and emit one alternate
+ * per language unconditionally, which put four dead URLs each on /privacy/,
+ * /terms/, /example/, /env-debug/ and /test-layout/, twenty in total. The first
+ * two of those are footer-linked from every page on the site (issue #211).
+ *
+ * The test is the site's own structure rather than a list to maintain. Pages
+ * with translations live under src/pages/[lang]/ and are served at /{lang}/...,
+ * so their paths carry a locale segment. A page that renders from
+ * src/pages/*.astro, like privacy.astro, serves one document at one URL and has
+ * no cluster to annotate. Adding another top-level page therefore cannot
+ * reintroduce the defect, and translating /privacy/ later (moving it under
+ * [lang]/, as /about/ already is) restores its alternates without touching this
+ * code.
+ *
+ * The root is the one path that is not locale-prefixed and still has twins:
+ * src/pages/index.astro serves "/" as a language-neutral entry point while
+ * src/pages/[lang]/index.astro serves /en/, /fr/, /de/ and /es/. Those
+ * alternates resolve and are worth keeping, so "/" is admitted explicitly.
+ *
+ * A page that knows better than this rule can still pass `alternateLanguages`
+ * to LayoutHead and override it in either direction.
+ */
+export function hasLocalizedVariants(path: string): boolean {
+  return !path || path === "/" || isLocalePrefixed(path);
+}
+
+/**
  * Generate a localized URL
  *
  * @param path - The path to localize (without locale prefix)
@@ -201,6 +245,8 @@ export default {
   getLocaleFromUrl,
   getPathWithoutLocale,
   stripLocalePrefix,
+  isLocalePrefixed,
+  hasLocalizedVariants,
   localizeUrl,
   createLanguageSwitcherUrl,
   isLocalizedUrlActive,

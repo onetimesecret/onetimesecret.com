@@ -16,7 +16,6 @@ import { generateCanonicalUrl } from '@/utils/canonical-url';
 // Constants matching production configuration
 const PRODUCTION_DOMAIN = 'https://onetimesecret.com';
 const STAGING_DOMAIN = 'https://onetimesecret.dev';
-const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'es'];
 
 /**
  * Helper: build a canonical URL from a full URL string, mirroring the
@@ -29,46 +28,20 @@ function canonicalFromFullUrl(fullUrl: string): string {
 }
 
 /**
- * Generates alternate language URLs for hreflang tags.
- * All URLs should use the production domain.
+ * Alternate-language and x-default URLs are deliberately NOT exercised here.
+ *
+ * This file used to define private reimplementations of both and assert against
+ * those, so the cases passed while production emitted doubled /es/ prefixes, an
+ * x-default of "https://onetimesecret.comv-debug/", and per-locale alternates on
+ * five pages that have no localized twin (#211). A test that ships its own copy
+ * of the logic cannot fail when the logic does.
+ *
+ * The real rules are stripLocalePrefix(), isLocalePrefixed() and
+ * hasLocalizedVariants() in src/i18n/utils.ts, covered by
+ * test/unit/i18n/locale-paths.test.ts; the tags LayoutHead.astro actually emits,
+ * and whether every URL they name resolves, are covered by
+ * test/e2e/specs/canonical-url.spec.ts against a real build.
  */
-function generateAlternateLanguageUrls(
-  currentPath: string,
-  languages: string[]
-): Array<{ code: string; url: string }> {
-  // Strip existing language prefix if present
-  const languagePrefixes = languages.map(lang => `/${lang}`);
-  let basePath = currentPath;
-
-  for (const prefix of languagePrefixes) {
-    if (currentPath.startsWith(prefix)) {
-      basePath = currentPath.substring(prefix.length) || '/';
-      break;
-    }
-  }
-
-  return languages.map(lang => ({
-    code: lang,
-    url: `${PRODUCTION_DOMAIN}/${lang}${basePath === '/' ? '' : basePath}`,
-  }));
-}
-
-/**
- * Generates x-default hreflang URL (no language prefix).
- */
-function generateXDefaultUrl(currentPath: string): string {
-  const languagePrefixes = SUPPORTED_LANGUAGES.map(lang => `/${lang}`);
-  let basePath = currentPath;
-
-  for (const prefix of languagePrefixes) {
-    if (currentPath.startsWith(prefix)) {
-      basePath = currentPath.substring(prefix.length) || '/';
-      break;
-    }
-  }
-
-  return `${PRODUCTION_DOMAIN}${basePath}`;
-}
 
 describe('Canonical URL Generation', () => {
   describe('generateCanonicalUrl', () => {
@@ -159,93 +132,6 @@ describe('Canonical URL Generation', () => {
         PRODUCTION_DOMAIN
       );
       expect(result).toBe(`${PRODUCTION_DOMAIN}/en/pricing?plan=premium`);
-    });
-  });
-});
-
-describe('Alternate Language URL Generation', () => {
-  describe('generateAlternateLanguageUrls', () => {
-    it('should generate URLs for all supported languages', () => {
-      const result = generateAlternateLanguageUrls('/about', SUPPORTED_LANGUAGES);
-
-      expect(result).toHaveLength(SUPPORTED_LANGUAGES.length);
-      expect(result.map(r => r.code)).toEqual(SUPPORTED_LANGUAGES);
-    });
-
-    it('should use production domain for all alternate URLs', () => {
-      const result = generateAlternateLanguageUrls('/about', SUPPORTED_LANGUAGES);
-
-      for (const { url } of result) {
-        expect(url).toMatch(new RegExp(`^${PRODUCTION_DOMAIN}`));
-      }
-    });
-
-    it('should generate correct language-prefixed URLs', () => {
-      const result = generateAlternateLanguageUrls('/about', SUPPORTED_LANGUAGES);
-
-      const expected = [
-        { code: 'en', url: `${PRODUCTION_DOMAIN}/en/about` },
-        { code: 'fr', url: `${PRODUCTION_DOMAIN}/fr/about` },
-        { code: 'de', url: `${PRODUCTION_DOMAIN}/de/about` },
-        { code: 'es', url: `${PRODUCTION_DOMAIN}/es/about` },
-      ];
-
-      expect(result).toEqual(expected);
-    });
-
-    it('should strip existing language prefix before generating alternates', () => {
-      const result = generateAlternateLanguageUrls(
-        '/en/about',
-        SUPPORTED_LANGUAGES
-      );
-
-      // Should not double-prefix: /en/en/about
-      expect(result.find(r => r.code === 'en')?.url).toBe(
-        `${PRODUCTION_DOMAIN}/en/about`
-      );
-    });
-
-    it('should handle root path correctly', () => {
-      const result = generateAlternateLanguageUrls('/', SUPPORTED_LANGUAGES);
-
-      expect(result.find(r => r.code === 'en')?.url).toBe(
-        `${PRODUCTION_DOMAIN}/en`
-      );
-      expect(result.find(r => r.code === 'fr')?.url).toBe(
-        `${PRODUCTION_DOMAIN}/fr`
-      );
-    });
-
-    it('should handle paths with query strings', () => {
-      // Note: hreflang typically doesn't include query strings,
-      // but this tests the path handling
-      const result = generateAlternateLanguageUrls('/pricing', SUPPORTED_LANGUAGES);
-
-      expect(result.find(r => r.code === 'en')?.url).toBe(
-        `${PRODUCTION_DOMAIN}/en/pricing`
-      );
-    });
-  });
-
-  describe('generateXDefaultUrl', () => {
-    it('should generate x-default URL with production domain', () => {
-      const result = generateXDefaultUrl('/about');
-      expect(result).toBe(`${PRODUCTION_DOMAIN}/about`);
-    });
-
-    it('should strip language prefix for x-default', () => {
-      const result = generateXDefaultUrl('/en/about');
-      expect(result).toBe(`${PRODUCTION_DOMAIN}/about`);
-    });
-
-    it('should handle root path correctly', () => {
-      const result = generateXDefaultUrl('/');
-      expect(result).toBe(`${PRODUCTION_DOMAIN}/`);
-    });
-
-    it('should handle language-prefixed root path', () => {
-      const result = generateXDefaultUrl('/en');
-      expect(result).toBe(`${PRODUCTION_DOMAIN}/`);
     });
   });
 });

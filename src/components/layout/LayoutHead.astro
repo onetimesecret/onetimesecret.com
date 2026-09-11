@@ -13,8 +13,12 @@ import {
   defaultSeoValues,
   getDefaultWebApplicationLd,
 } from "@/utils/seo";
-import { stripLocalePrefix } from "@/i18n/utils";
-import { SUPPORTED_LANGUAGES } from "@config/astro/i18n";
+import {
+  hasLocalizedVariants,
+  isLocalePrefixed,
+  stripLocalePrefix,
+} from "@/i18n/utils";
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "@config/astro/i18n";
 
 export interface Props {
   title?: string;
@@ -92,12 +96,43 @@ const pageNoindex =
 // test/e2e/specs/canonical-url.spec.ts and test/unit/i18n/locale-paths.test.ts.
 const basePathForAlternates = stripLocalePrefix(currentPath);
 
+// Only annotate a page that actually has localized counterparts. Emitting one
+// alternate per language unconditionally assumed every page had a twin at
+// /{lang}{path}, which advertised twenty URLs that 404: four each on /privacy/,
+// /terms/, /example/, /env-debug/ and /test-layout/, none of which exist under a
+// locale prefix. Google discards a cluster whose targets do not resolve, so those
+// pages got no locale signal and the dead URLs were crawled from the footer links
+// on every page. hasLocalizedVariants() reads the site's structure instead of a
+// list: see its docstring in src/i18n/utils.ts. Issue #211.
+//
+// `??` rather than `||`: a page that passes an empty array is saying it has no
+// alternates, and that has to survive rather than fall through to the default.
 const pageAlternateLanguages =
-  propsAlternateLanguages ||
-  SUPPORTED_LANGUAGES.map((lang) => ({
-    code: lang,
-    url: `${siteOrigin}/${lang}${basePathForAlternates}`,
-  }));
+  propsAlternateLanguages ??
+  (hasLocalizedVariants(currentPath)
+    ? SUPPORTED_LANGUAGES.map((lang) => ({
+        code: lang,
+        url: `${siteOrigin}/${lang}${basePathForAlternates}`,
+      }))
+    : []);
+
+// x-default names the version served to a visitor whose language none of the
+// alternates match, so it has to be a URL that exists.
+//
+// For a locale-prefixed page that is the default-locale sibling, which is
+// guaranteed to exist because the page itself is one of the cluster. Naming the
+// unprefixed path instead only worked where a top-level redirect happened to
+// cover it (/about, /pricing, /security in config/astro/redirects.ts): the 21
+// changelog entries and the use-cases index have no such entry, so 84 pages
+// advertised an x-default that 404s. Per-entry redirects would need a new one
+// with every changelog post; pointing at the default locale needs nothing, and
+// Google allows x-default to coincide with a language version.
+//
+// For a page with no locale prefix, x-default is the page itself: /privacy/ is
+// the version for every language, and unlike /en/privacy/ it exists.
+const xDefaultUrl = isLocalePrefixed(currentPath)
+  ? `${siteOrigin}/${DEFAULT_LANGUAGE}${basePathForAlternates}`
+  : `${siteOrigin}${currentPath}`;
 
 const pageStructuredData =
   propsStructuredData ||
@@ -172,10 +207,11 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
     rel="sitemap"
     href="/sitemap-index.xml"
   />
+  {/* x-default stays on every page, with or without per-locale alternates. */}
   <link
     rel="alternate"
     hreflang="x-default"
-    href={`${siteOrigin}${basePathForAlternates}`}
+    href={xDefaultUrl}
   />
   <OptimizedFonts />
   <meta

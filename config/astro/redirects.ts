@@ -41,6 +41,19 @@ export function createConfig(): AstroUserConfig["redirects"] {
       status: 301,
       destination: "/en/pricing",
     },
+    // Unprefixed entry points for the two remaining localized sections. /about,
+    // /pricing and /security have had one for a while; /changelog and /use-cases
+    // did not, so both 404d when typed or followed from an external link
+    // (dist/changelog/ holds only rss.xml, and dist/use-cases/ did not exist).
+    // The site's own navigation links the locale-prefixed URLs either way.
+    "/changelog": {
+      status: 301,
+      destination: "/en/changelog",
+    },
+    "/use-cases": {
+      status: 301,
+      destination: "/en/use-cases",
+    },
     "/plans/identity": {
       status: 302,
       destination: "https://eu.onetimesecret.com/plans/identity",

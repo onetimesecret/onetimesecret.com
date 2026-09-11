@@ -180,9 +180,32 @@ test.describe('Canonical URL - HTML Output Verification', () => {
         'href',
         `${PRODUCTION_DOMAIN}/es/about/`
       );
+      // x-default names the default-locale sibling, not the unprefixed path: see
+      // the x-default case below for why.
       await expect(
         page.locator('link[rel="alternate"][hreflang="x-default"]')
-      ).toHaveAttribute('href', `${PRODUCTION_DOMAIN}/about/`);
+      ).toHaveAttribute('href', `${PRODUCTION_DOMAIN}/en/about/`);
+    });
+
+    test('x-default on a localized page names a URL that exists', async ({
+      page,
+    }) => {
+      // x-default used to be the unprefixed path, which exists only where a
+      // top-level redirect happens to cover it. /about, /pricing and /security
+      // have one; the 21 changelog entries and the use-cases index do not, so 84
+      // pages named an x-default that 404s. A changelog entry is the case to pin:
+      // a redirect per entry would need a new one with every post.
+      await page.goto('/fr/changelog/2026-09-10-active-sessions');
+
+      const href =
+        (await page
+          .locator('link[rel="alternate"][hreflang="x-default"]')
+          .getAttribute('href')) ?? '';
+
+      expect(href).toBe(
+        `${PRODUCTION_DOMAIN}/en/changelog/2026-09-10-active-sessions/`
+      );
+      expect((await page.request.get(new URL(href).pathname)).status()).toBe(200);
     });
 
     test('hreflang is not mangled on a path that merely begins with a locale code', async ({
@@ -197,29 +220,92 @@ test.describe('Canonical URL - HTML Output Verification', () => {
       // covers the boundary cases, this covers the built page.
       await page.goto('/env-debug');
 
-      await expect(
-        page.locator('link[rel="alternate"][hreflang="x-default"]')
-      ).toHaveAttribute('href', `${PRODUCTION_DOMAIN}/env-debug/`);
+      const xDefault = page.locator('link[rel="alternate"][hreflang="x-default"]');
+      await expect(xDefault).toHaveAttribute(
+        'href',
+        `${PRODUCTION_DOMAIN}/env-debug/`
+      );
 
-      const hreflangLinks = page.locator('link[rel="alternate"][hreflang]');
-      expect(await hreflangLinks.count()).toBe(EXPECTED_HREFLANG_COUNT);
+      // Parsed, not pattern-matched: PRODUCTION_ORIGIN_PATTERN is a prefix test,
+      // so "https://onetimesecret.comv-debug/" satisfies it while resolving to a
+      // different host entirely. Comparing the parsed origin is what rejects it.
+      const href = (await xDefault.getAttribute('href')) ?? '';
+      expect(new URL(href).origin).toBe(PRODUCTION_DOMAIN);
+      // ...and the page's own path survives the strip intact.
+      expect(new URL(href).pathname).toBe('/env-debug/');
 
-      for (const link of await hreflangLinks.all()) {
-        const href = (await link.getAttribute('href')) ?? '';
+      // x-default is the only annotation here: /en/env-debug/ and its siblings do
+      // not exist, so the page advertises no per-locale alternates (#211).
+      expect(await page.locator('link[rel="alternate"][hreflang]').count()).toBe(1);
+    });
 
-        // Parsed, not pattern-matched: PRODUCTION_ORIGIN_PATTERN is a prefix test,
-        // so "https://onetimesecret.comv-debug/" satisfies it while resolving to a
-        // different host entirely. Comparing the parsed origin is what rejects it.
-        expect(new URL(href).origin).toBe(PRODUCTION_DOMAIN);
-        // ...and the page's own path survives the strip intact.
-        expect(new URL(href).pathname).toMatch(/\/env-debug\/$/);
+    test('a page with no localized twin advertises no per-locale alternates', async ({
+      page,
+    }) => {
+      // /privacy/ and /terms/ render from src/pages/privacy.astro and terms.astro
+      // rather than from src/pages/[lang]/, so nothing exists at /{lang}/privacy/.
+      // Every page on the site used to advertise four alternates for each of them
+      // anyway, reachable from the footer links that appear sitewide, and Google
+      // discards a cluster whose targets 404 (#211).
+      for (const { path, servedAt } of [
+        { path: '/privacy', servedAt: '/privacy/' },
+        { path: '/terms', servedAt: '/terms/' },
+      ]) {
+        await page.goto(path);
+
+        for (const lang of SUPPORTED_LANGUAGES) {
+          await expect(
+            page.locator(`link[rel="alternate"][hreflang="${lang}"]`),
+            `${path} should not advertise a ${lang} alternate`
+          ).toHaveCount(0);
+        }
+
+        // x-default stays and is self-referential: this page is the version for
+        // every language, which is both true and resolvable.
+        await expect(
+          page.locator('link[rel="alternate"][hreflang="x-default"]')
+        ).toHaveAttribute('href', `${PRODUCTION_DOMAIN}${servedAt}`);
       }
+    });
 
-      // Deliberately not asserted: that those per-locale targets resolve. They do
-      // not. No page without a localized twin has them, which also puts four dead
-      // alternates on /privacy/ and /terms/ — footer-linked from every page. That
-      // is issue #211: a wider defect than the mangling gated here, and one that
-      // needs a decision about which pages form a locale cluster, not a fix.
+    test('every advertised hreflang target resolves in the build', async ({
+      page,
+    }) => {
+      // The gate for #211, and the one assertion the other cases here cannot make.
+      // The dead annotations were perfectly well-formed; they named pages that do
+      // not exist, 20 URLs across 5 pages. Only fetching the target catches that.
+      //
+      // Requests go to the preview server under test rather than to production:
+      // the hrefs are absolute on the canonical origin, so only the pathname is
+      // reused, and a relative path resolves against Playwright's baseURL.
+      for (const path of [
+        '/',
+        '/en/about',
+        '/es/about',
+        '/de/changelog',
+        '/fr/changelog/2026-09-10-active-sessions',
+        '/es/use-cases',
+        '/privacy',
+        '/terms',
+        '/env-debug',
+      ]) {
+        await page.goto(path);
+
+        const hreflangLinks = page.locator('link[rel="alternate"][hreflang]');
+        // Guard the loop: a page with its annotations deleted would otherwise
+        // iterate nothing and pass. Every page keeps at least x-default.
+        expect(
+          await hreflangLinks.count(),
+          `${path} should advertise at least x-default`
+        ).toBeGreaterThan(0);
+
+        for (const link of await hreflangLinks.all()) {
+          const target = (await link.getAttribute('href')) ?? '';
+          const response = await page.request.get(new URL(target).pathname);
+
+          expect(response.status(), `${path} advertises ${target}`).toBe(200);
+        }
+      }
     });
 
     test('hreflang should have correct language-prefixed paths', async ({
