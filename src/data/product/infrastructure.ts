@@ -9,6 +9,8 @@
  */
 
 export interface TrustBadge {
+  /** Region code shown verbatim in the badge. Not translated. */
+  readonly code: string;
   readonly key: string;
 }
 
@@ -19,11 +21,11 @@ export interface RegionCoord {
 }
 
 export const trustBadges: readonly TrustBadge[] = [
-  { key: "web.homepage.infrastructure.regions.ca" },
-  { key: "web.homepage.infrastructure.regions.eu" },
-  { key: "web.homepage.infrastructure.regions.nz" },
-  { key: "web.homepage.infrastructure.regions.uk" },
-  { key: "web.homepage.infrastructure.regions.us" },
+  { code: "CA", key: "web.homepage.infrastructure.regions.ca" },
+  { code: "EU", key: "web.homepage.infrastructure.regions.eu" },
+  { code: "NZ", key: "web.homepage.infrastructure.regions.nz" },
+  { code: "UK", key: "web.homepage.infrastructure.regions.uk" },
+  { code: "US", key: "web.homepage.infrastructure.regions.us" },
 ] as const;
 
 /** Real datacenter cities. Mirrored in `scripts/generate-region-geometry.mjs`

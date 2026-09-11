@@ -43,8 +43,12 @@ const { t } = useI18n();
               v-for="badge in trustBadges"
               :key="badge.key"
               role="listitem"
-              class="rounded-full border border-surface-3 bg-surface-2 px-4 py-1.5 text-sm font-medium text-text-secondary">
-              {{ t(badge.key) }}
+              class="inline-flex items-center gap-2 rounded-full border border-surface-3 bg-surface-2 px-4 py-1.5 text-sm text-text-secondary">
+              <span
+                aria-hidden="true"
+                class="size-1.5 shrink-0 rounded-full bg-brand-500"></span>
+              <span class="font-semibold text-text-primary">{{ badge.code }}</span>
+              <span>{{ t(badge.key) }}</span>
             </span>
           </div>
         </div>
