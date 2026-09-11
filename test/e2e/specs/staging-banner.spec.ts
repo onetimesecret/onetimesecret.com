@@ -18,8 +18,14 @@
 
 import { test, expect, Page } from '@playwright/test';
 
-const STAGING_ORIGIN = 'https://onetimesecret.dev';
-const PRODUCTION_ORIGIN = 'https://onetimesecret.com';
+// Same source as the component: a domain change then fails the build rather than
+// leaving these tests asserting against a hostname isStagingHostname() no longer
+// recognises.
+import { CANONICAL_ORIGIN, STAGING_HOSTNAMES } from '../../../config/domains';
+
+const STAGING_HOSTNAME = STAGING_HOSTNAMES[0];
+const STAGING_ORIGIN = `https://${STAGING_HOSTNAME}`;
+const PRODUCTION_ORIGIN = CANONICAL_ORIGIN;
 
 const BANNER_SELECTOR = '[data-testid="staging-banner"]';
 const WRAPPER_SELECTOR = '[data-testid="staging-banner-wrapper"]';
@@ -147,7 +153,7 @@ test.describe('StagingBanner - Visibility', () => {
 
   test('banner should be visible on a staging subdomain', async ({ page, baseURL }) => {
     // isStagingHostname() matches subdomains of the staging apex too
-    await gotoStaging(page, baseURL, '/', 'https://web.onetimesecret.dev');
+    await gotoStaging(page, baseURL, '/', `https://web.${STAGING_HOSTNAME}`);
 
     await expect(page.locator(BANNER_SELECTOR)).toBeVisible();
   });

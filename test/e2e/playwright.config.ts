@@ -20,6 +20,11 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
 
+  // CI installs Chromium only and runs `--project=chromium --project="Mobile
+  // Chrome"` (the e2e job in .github/workflows/ci.yml); the others are here for
+  // local cross-browser checks and need `pnpm exec playwright install` first. A
+  // bare `pnpm test:e2e` tries all of them, so match CI with the two explicit
+  // --project flags, as docs/deployment.md and test/README.md prescribe.
   projects: [
     {
       name: 'chromium',

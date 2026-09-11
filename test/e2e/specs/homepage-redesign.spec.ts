@@ -30,13 +30,21 @@ import { test, expect, type Locator, type Page } from '@playwright/test';
  * JavaScript-dependent control the mobile project exists to cover.
  */
 async function docsNavLink(page: Page, isMobile: boolean | undefined): Promise<Locator> {
+  // Scoped to the header so this cannot silently start matching a docs link
+  // elsewhere on the page if the nav one is ever removed.
   if (!isMobile) {
-    return page.getByRole('link', { name: /^docs$/i }).first();
+    return page.locator('#site-header').getByRole('link', { name: /^docs$/i });
   }
 
   const panel = page.locator('#mobile-navigation-menu');
+  const toggle = page.locator('#mobile-menu-button');
+
+  // Asserting the aria-expanded flip gates the ARIA contract and makes a dead
+  // toggle report itself, rather than surfacing as "panel not visible".
   await expect(panel).toBeHidden();
-  await page.locator('#mobile-menu-button').click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
   await expect(panel).toBeVisible();
 
   return panel.getByRole('link', { name: /^docs$/i });
@@ -222,24 +230,21 @@ test.describe('Homepage redesign — nav Docs link', () => {
   });
 
   test('Docs link is reachable from the navigation', async ({ page, isMobile }) => {
+    const docsLink = await docsNavLink(page, isMobile);
+
     // Visible, not merely attached: on mobile the panel's links are in the DOM
     // the whole time, so attachment alone would pass with the menu stuck shut.
-    await expect(await docsNavLink(page, isMobile)).toBeVisible();
+    await expect(docsLink).toBeVisible();
   });
 
-  test('Docs link has target="_blank"', async ({ page, isMobile }) => {
-    await expect(await docsNavLink(page, isMobile)).toHaveAttribute('target', '_blank');
-  });
+  // Folded into one test because each mobile run re-opens the menu to reach the
+  // link; three separate attribute tests paid for that three times over.
+  test('Docs link opens the docs site safely in a new tab', async ({ page, isMobile }) => {
+    const docsLink = await docsNavLink(page, isMobile);
 
-  test('Docs link has rel containing "noopener"', async ({ page, isMobile }) => {
-    await expect(await docsNavLink(page, isMobile)).toHaveAttribute('rel', /noopener/);
-  });
-
-  test('Docs link href points to docs.onetimesecret.com', async ({ page, isMobile }) => {
-    await expect(await docsNavLink(page, isMobile)).toHaveAttribute(
-      'href',
-      /docs\.onetimesecret\.com/
-    );
+    await expect(docsLink).toHaveAttribute('href', /docs\.onetimesecret\.com/);
+    await expect(docsLink).toHaveAttribute('target', '_blank');
+    await expect(docsLink).toHaveAttribute('rel', /noopener/);
   });
 });
 

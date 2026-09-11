@@ -16,6 +16,28 @@ export type ThemeOption = (typeof AVAILABLE_THEMES)[number];
  */
 export const ThemeManager = {
   /**
+   * Read the stored theme preference, or null when storage is unreachable.
+   *
+   * Every read of the stored theme goes through here. A browser that denies site
+   * data throws SecurityError from the `localStorage` property itself, not just
+   * from getItem, so an unguarded read escapes as an uncaught error — including
+   * from inside the media-query listener in initialize(), where there is no call
+   * stack to catch it.
+   *
+   * Returns the raw value: callers decide whether an unrecognised string counts
+   * as an explicit preference.
+   */
+  readStoredTheme(): string | null {
+    try {
+      return localStorage.getItem("theme");
+    } catch (error) {
+      // Handle errors (localStorage might be unavailable)
+      console.error("Failed to access theme preferences:", error);
+      return null;
+    }
+  },
+
+  /**
    * Get user's preferred theme based on local storage or system preferences
    */
   getPreferredTheme(): ThemeOption {
@@ -23,27 +45,18 @@ export const ThemeManager = {
       return "dark"; // Default for SSR
     }
 
-    try {
-      // Check for stored theme preference
-      const storedTheme = localStorage.getItem("theme");
+    // Check for stored theme preference
+    const storedTheme = this.readStoredTheme();
 
-      if (
-        storedTheme &&
-        AVAILABLE_THEMES.includes(storedTheme as ThemeOption)
-      ) {
-        return storedTheme as ThemeOption;
-      }
-
-      // Check system preference
-      const prefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)",
-      ).matches;
-      return prefersDark ? "dark" : "light";
-    } catch (error) {
-      // Handle errors (localStorage might be unavailable)
-      console.error("Failed to access theme preferences:", error);
-      return "dark";
+    if (storedTheme && AVAILABLE_THEMES.includes(storedTheme as ThemeOption)) {
+      return storedTheme as ThemeOption;
     }
+
+    // Check system preference
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    ).matches;
+    return prefersDark ? "dark" : "light";
   },
 
   /**
@@ -105,7 +118,7 @@ export const ThemeManager = {
     window
       .matchMedia("(prefers-color-scheme: dark)")
       .addEventListener("change", (e) => {
-        if (!localStorage.getItem("theme")) {
+        if (!this.readStoredTheme()) {
           // Only update if user hasn't explicitly set a theme
           this.applyTheme(e.matches ? "dark" : "light");
         }

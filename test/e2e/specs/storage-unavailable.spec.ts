@@ -18,7 +18,9 @@
  * `window.localStorage` for truthiness outside a try, and Astro runs that setup
  * function for every island, so a browser that throws on the property instead of
  * returning null left every island unhydrated and the whole page inert. Same
- * failure mode as the 2026-09-08 incident behind island-hydration.spec.ts.
+ * failure mode as the 2026-09-08 incident behind island-hydration.spec.ts. The
+ * colour-scheme flip below found a second instance of it in ThemeManager's
+ * media-query listener, the one storage read that a page load never reaches.
  */
 
 import { test, expect, type Page } from '@playwright/test';
@@ -74,6 +76,22 @@ async function expectHomepageIntact(page: Page, faults: PageFaults): Promise<voi
   expect(faults.consoleErrors.filter((text) => text.includes('Error hydrating'))).toEqual([]);
 }
 
+/**
+ * Asserts the OS colour-scheme listener still works with storage denied.
+ *
+ * ThemeManager.initialize() subscribes to `prefers-color-scheme` and reads the
+ * stored theme on every change, to avoid overriding an explicit choice. A page
+ * load never reaches that read, so only flipping the scheme afterwards exercises
+ * it — and an unguarded read there throws from inside an event handler, where
+ * nothing catches it.
+ */
+async function expectSchemeChangeSurvives(page: Page, faults: PageFaults): Promise<void> {
+  await page.emulateMedia({ colorScheme: 'dark' });
+
+  await expect(page.locator('html')).toHaveClass(/\bdark\b/);
+  expect(faults.uncaught).toEqual([]);
+}
+
 test.describe('Web Storage unavailable', () => {
   test('page survives localStorage being absent', async ({ page }) => {
     await page.addInitScript(() => {
@@ -87,6 +105,7 @@ test.describe('Web Storage unavailable', () => {
     await page.goto('/');
 
     await expectHomepageIntact(page, faults);
+    await expectSchemeChangeSurvives(page, faults);
   });
 
   test('page survives localStorage throwing on access', async ({ page }) => {
@@ -106,6 +125,7 @@ test.describe('Web Storage unavailable', () => {
     await page.goto('/');
 
     await expectHomepageIntact(page, faults);
+    await expectSchemeChangeSurvives(page, faults);
   });
 
   test('page survives a write that exceeds the storage quota', async ({ page }) => {

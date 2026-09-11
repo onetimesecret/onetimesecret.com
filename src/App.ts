@@ -16,20 +16,28 @@ export default function setupVue(app: App) {
 
     // Only run in browser context (client-side).
     //
-    // The storage access sits inside the try on purpose: when a browser denies
+    // The try covers the storage read and nothing else: when a browser denies
     // site data (blocked cookies, enterprise policy, some private modes) the
     // `localStorage` property getter itself throws SecurityError, so reading it
-    // in a truthiness check throws too. Astro calls setupVue for every island,
-    // so an exception here stops all of them hydrating and leaves the whole page
-    // inert. Covered by test/e2e/specs/storage-unavailable.spec.ts.
+    // in a truthiness check throws too. Astro calls setupVue for every island, so
+    // an exception here stops all of them hydrating and leaves the whole page
+    // inert. Covered by test/unit/App.test.ts and
+    // test/e2e/specs/storage-unavailable.spec.ts.
+    //
+    // setLanguage() stays outside so an i18n failure is not reported as a storage
+    // failure; it is async and handles its own errors by falling back to English.
     if (typeof window !== "undefined") {
+      let preferredLanguage: string | null = null;
+
       try {
-        const preferredLanguage = window.localStorage?.getItem("preferredLanguage");
-        if (preferredLanguage) {
-          setLanguage(preferredLanguage);
-        }
+        preferredLanguage =
+          window.localStorage?.getItem("preferredLanguage") ?? null;
       } catch (error) {
         console.warn("Failed to read preferred language:", error);
+      }
+
+      if (preferredLanguage) {
+        setLanguage(preferredLanguage);
       }
     }
   } else {

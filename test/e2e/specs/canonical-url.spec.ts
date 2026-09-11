@@ -14,7 +14,10 @@
 
 import { test, expect } from '@playwright/test';
 
-const PRODUCTION_DOMAIN = 'https://onetimesecret.com';
+// The same constant LayoutHead.astro builds these tags from.
+import { CANONICAL_ORIGIN } from '../../../config/domains';
+
+const PRODUCTION_DOMAIN = CANONICAL_ORIGIN;
 
 /** Locales LayoutHead.astro emits an hreflang tag for, alongside x-default. */
 const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'es'];

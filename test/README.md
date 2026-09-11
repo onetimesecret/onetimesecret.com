@@ -73,7 +73,12 @@ pnpm vitest run --config test/unit/vitest.config.ts --coverage
 # Build the site first (required for preview server)
 pnpm build
 
-# Run all E2E tests
+# Run the suite the way CI does (the only projects CI installs)
+pnpm test:e2e --project=chromium --project="Mobile Chrome"
+
+# A bare run includes firefox, webkit and Mobile Safari, which are declared in
+# playwright.config.ts for local cross-browser checks. Install them first:
+#   pnpm exec playwright install
 pnpm playwright test --config test/e2e/playwright.config.ts
 
 # Run specific spec file
