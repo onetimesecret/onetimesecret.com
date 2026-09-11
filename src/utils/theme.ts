@@ -14,8 +14,8 @@ export type ThemeOption = (typeof AVAILABLE_THEMES)[number];
 /**
  * Whether the unreachable-storage warning has already been reported.
  *
- * The stored theme is re-read on every colour-scheme change and on every hover
- * or focus of the colour-mode toggle, so a browser that denies site data would
+ * The stored theme is re-read on every prefers-color-scheme change, from the
+ * listener initialize() registers, so a browser that denies site data would
  * otherwise produce an unbounded stream of identical messages (and, with Sentry
  * breadcrumbs, paid-for noise). It is an expected configuration, so it is
  * reported once, as a warning.

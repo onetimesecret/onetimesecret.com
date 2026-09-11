@@ -45,8 +45,10 @@ const translations = enTranslations;
    */
   function appliedTheme(): ThemeOption {
     const classes = document.documentElement.classList;
-    return (AVAILABLE_THEMES.find((theme) => classes.contains(theme)) ??
-      ThemeManager.getPreferredTheme()) as ThemeOption;
+    return (
+      AVAILABLE_THEMES.find((theme) => classes.contains(theme)) ??
+      ThemeManager.getPreferredTheme()
+    );
   }
 
   /**
@@ -56,14 +58,20 @@ const translations = enTranslations;
     const currentTheme = appliedTheme();
     const currentIndex = AVAILABLE_THEMES.indexOf(currentTheme);
     const nextIndex = (currentIndex + 1) % AVAILABLE_THEMES.length;
-    const nextTheme = AVAILABLE_THEMES[nextIndex] as ThemeOption;
+    const nextTheme = AVAILABLE_THEMES[nextIndex];
 
     ThemeManager.setTheme(nextTheme);
     updateTooltip(nextTheme);
   }
 
   /**
-   * Updates the tooltip text with current theme information
+   * Updates the tooltip text with current theme information.
+   *
+   * Inert today: the button carries data-tooltip-id="theme-tooltip" but nothing
+   * in the codebase renders an element with that id, so getElementById() is
+   * always null and every branch guarded by `tooltip` is unreachable. Left in
+   * place and kept correct rather than deleted, so that adding the element is
+   * not also the moment a stale-theme bug appears.
    */
   function updateTooltip(theme: ThemeOption) {
     const tooltip = document.getElementById("theme-tooltip");
@@ -87,10 +95,13 @@ const translations = enTranslations;
     if (cycleButton) {
       cycleButton.addEventListener("click", cycleTheme);
 
-      // Setup tooltip behavior
+      // Setup tooltip behavior. appliedTheme(), not getPreferredTheme(): the
+      // tooltip reports what is on the page, and with storage unreachable the
+      // preference is the OS answer, so after a click to dark it would have read
+      // "Current: Light". Same defect as the one cycleTheme carried.
       cycleButton.addEventListener("mouseenter", () => {
         if (tooltip) {
-          updateTooltip(ThemeManager.getPreferredTheme());
+          updateTooltip(appliedTheme());
           tooltip.classList.remove("hidden");
         }
       });
@@ -102,7 +113,7 @@ const translations = enTranslations;
       // For accessibility - handle focus events
       cycleButton.addEventListener("focus", () => {
         if (tooltip) {
-          updateTooltip(ThemeManager.getPreferredTheme());
+          updateTooltip(appliedTheme());
           tooltip.classList.remove("hidden");
         }
       });

@@ -13,6 +13,7 @@ import {
   defaultSeoValues,
   getDefaultWebApplicationLd,
 } from "@/utils/seo";
+import { stripLocalePrefix } from "@/i18n/utils";
 import { SUPPORTED_LANGUAGES } from "@config/astro/i18n";
 
 export interface Props {
@@ -80,18 +81,16 @@ const pageNoindex =
 
 // Generate alternate language links.
 //
-// Derived from SUPPORTED_LANGUAGES rather than listed by hand: "es" was missing,
-// so no Spanish path counted as prefixed and the prefix was never stripped before
-// the alternates were built. Every /es/ page emitted doubled hrefs that 404 —
-// /en/es/about/, /fr/es/about/, /es/es/about/ — on a quarter of the localized
-// site. Gated by test/e2e/specs/canonical-url.spec.ts.
-const languagePrefixes = SUPPORTED_LANGUAGES.map((lang) => `/${lang}`);
-const hasLangPrefix = languagePrefixes.some((prefix) =>
-  currentPath.startsWith(prefix),
-);
-const basePathForAlternates = hasLangPrefix
-  ? currentPath.substring(3)
-  : currentPath;
+// The locale-prefix strip lives in stripLocalePrefix() so it is unit-testable
+// rather than only reachable through a built page. The hand-rolled version here
+// got it wrong twice: its prefix list omitted "es", so no Spanish path counted as
+// prefixed and every /es/ page emitted doubled hrefs that 404 (/en/es/about/,
+// /es/es/about/) across a quarter of the localized site; and its `startsWith`
+// test had no segment boundary, so "/env-debug/" matched "/en" and the fixed
+// three-character strip turned it into "/frv-debug/" and x-default
+// "https://onetimesecret.comv-debug/". Gated by
+// test/e2e/specs/canonical-url.spec.ts and test/unit/i18n/locale-paths.test.ts.
+const basePathForAlternates = stripLocalePrefix(currentPath);
 
 const pageAlternateLanguages =
   propsAlternateLanguages ||
@@ -211,14 +210,13 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
     AVAILABLE_THEMES.forEach((t) =>
       document.documentElement.classList.remove(t),
     );
+    // This is also what drives Tailwind's `dark:` utilities, which tailwind.css
+    // declares as a class variant: `@custom-variant dark (&:where(.dark, .dark
+    // *))`. "dark" is in AVAILABLE_THEMES, so the loop above already cleared it
+    // and this covers re-adding it — the separate `if (themeToApply === "dark")`
+    // branch that used to sit here was a no-op in both directions. Kept in step
+    // with ThemeManager.applyTheme(), which says the same thing.
     document.documentElement.classList.add(themeToApply);
-
-    // Special case for dark mode (for Tailwind)
-    if (themeToApply === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
   </script>
   <title>{pageTitle}</title>
 </head>

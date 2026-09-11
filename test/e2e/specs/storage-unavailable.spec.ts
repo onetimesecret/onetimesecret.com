@@ -25,6 +25,9 @@
 
 import { test, expect, type Page } from '@playwright/test';
 
+// The same list the toggle cycles through, so this cannot drift from it.
+import { AVAILABLE_THEMES } from '../../../src/utils/theme';
+
 const BANNER_WRAPPER_SELECTOR = '[data-testid="staging-banner-wrapper"]';
 
 /** The colour-mode cycle button in the footer (ColorModeToggle.astro). */
@@ -105,6 +108,11 @@ async function expectSchemeChangeSurvives(page: Page, faults: PageFaults): Promi
   expect(faults.uncaught).toEqual([]);
 }
 
+/** Matches a theme class on `html` without also matching e.g. "dark" in "darker". */
+function themeClassPattern(theme: string): RegExp {
+  return new RegExp(`\\b${theme}\\b`);
+}
+
 /**
  * Asserts the colour-mode toggle cycles when the theme cannot be persisted.
  *
@@ -121,17 +129,24 @@ async function expectThemeToggleCycles(page: Page): Promise<void> {
   const html = page.locator('html');
   const toggle = page.locator(THEME_TOGGLE_SELECTOR);
 
-  await expect(html).toHaveClass(/\blight\b/);
+  // Driven off AVAILABLE_THEMES rather than spelling out light/dark: the list
+  // carries commented-out entries ("high-contrast", "dyslexic"), and uncommenting
+  // one would otherwise make a correct cycle fail here. Indexed from the painted
+  // theme rather than from position 0 for the same reason — reordering the list
+  // must not break this.
+  const start = AVAILABLE_THEMES.indexOf('light');
+  expect(start, 'caller emulates prefers-color-scheme: light').toBeGreaterThan(-1);
+  await expect(html).toHaveClass(themeClassPattern('light'));
 
-  await toggle.click();
-  await expect(html).toHaveClass(/\bdark\b/);
+  for (let step = 1; step <= AVAILABLE_THEMES.length; step += 1) {
+    const expected = AVAILABLE_THEMES[(start + step) % AVAILABLE_THEMES.length];
+    await toggle.click();
+    await expect(html).toHaveClass(themeClassPattern(expected));
+  }
 
-  // AVAILABLE_THEMES is ["light", "dark"], so one more click closes the cycle.
-  await toggle.click();
-  await expect(html).toHaveClass(/\blight\b/);
-
-  await toggle.click();
-  await expect(html).toHaveClass(/\bdark\b/);
+  // The last iteration lands back on the starting theme, which is what makes this
+  // a cycle assertion: a toggle that moves once and then sticks — the defect this
+  // gates — fails on the second click, while asserting only the first step passed.
 }
 
 test.describe('Web Storage unavailable', () => {

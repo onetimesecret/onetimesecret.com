@@ -185,6 +185,43 @@ test.describe('Canonical URL - HTML Output Verification', () => {
       ).toHaveAttribute('href', `${PRODUCTION_DOMAIN}/about/`);
     });
 
+    test('hreflang is not mangled on a path that merely begins with a locale code', async ({
+      page,
+    }) => {
+      // /env-debug/ begins with "/en". The prefix test was a bare startsWith with
+      // no segment boundary and the strip took a fixed three characters, so this
+      // page advertised /frv-debug/, /dev-debug/, /esv-debug/ and an x-default of
+      // "https://onetimesecret.comv-debug/" — the origin with a path fragment
+      // welded onto the hostname, not a URL at all. The strip is segment-based now
+      // (stripLocalePrefix in src/i18n/utils.ts); test/unit/i18n/locale-paths.test.ts
+      // covers the boundary cases, this covers the built page.
+      await page.goto('/env-debug');
+
+      await expect(
+        page.locator('link[rel="alternate"][hreflang="x-default"]')
+      ).toHaveAttribute('href', `${PRODUCTION_DOMAIN}/env-debug/`);
+
+      const hreflangLinks = page.locator('link[rel="alternate"][hreflang]');
+      expect(await hreflangLinks.count()).toBe(EXPECTED_HREFLANG_COUNT);
+
+      for (const link of await hreflangLinks.all()) {
+        const href = (await link.getAttribute('href')) ?? '';
+
+        // Parsed, not pattern-matched: PRODUCTION_ORIGIN_PATTERN is a prefix test,
+        // so "https://onetimesecret.comv-debug/" satisfies it while resolving to a
+        // different host entirely. Comparing the parsed origin is what rejects it.
+        expect(new URL(href).origin).toBe(PRODUCTION_DOMAIN);
+        // ...and the page's own path survives the strip intact.
+        expect(new URL(href).pathname).toMatch(/\/env-debug\/$/);
+      }
+
+      // Deliberately not asserted: that those per-locale targets resolve. They do
+      // not. No page without a localized twin has them, which also puts four dead
+      // alternates on /privacy/ and /terms/ — footer-linked from every page. That
+      // is issue #211: a wider defect than the mangling gated here, and one that
+      // needs a decision about which pages form a locale cluster, not a fix.
+    });
+
     test('hreflang should have correct language-prefixed paths', async ({
       page,
     }) => {
@@ -302,6 +339,9 @@ test.describe('Canonical URL - Cross-Page Consistency', () => {
     { path: '/fr/about', name: 'About (French)' },
     { path: '/es/about', name: 'About (Spanish)' },
     { path: '/pricing', name: 'Pricing' },
+    // First segment starts with a locale code without being one; see the hreflang
+    // case above for what that used to produce.
+    { path: '/env-debug', name: 'Env debug' },
   ];
 
   for (const { path, name } of pagesToTest) {

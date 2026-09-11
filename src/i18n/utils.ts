@@ -62,6 +62,37 @@ export function getPathWithoutLocale(path: string): string {
 }
 
 /**
+ * Strip a leading locale segment, preserving the path's trailing slash.
+ *
+ * getPathWithoutLocale() normalizes the trailing slash away ("/es/about/" ->
+ * "/about"), which is right for its callers — they compare paths and rebuild
+ * URLs from the pieces. Canonical, og:url and hreflang need the opposite: with
+ * Astro's default `build.format: "directory"`, "/about/" is the URL that returns
+ * 200 and "/about" redirects to it, so the tags have to name the form with the
+ * slash. Hence a sibling rather than a flag on the existing function: changing
+ * its normalization would move localizeUrl() and the active-link comparison in
+ * isLocalizedUrlActive() too, and neither wants the slash back.
+ *
+ * Matching is by whole segment. A `startsWith("/en")` test also matches
+ * "/env-debug/", which produced "/frv-debug/" and the malformed
+ * "https://onetimesecret.comv-debug/" as alternates for that page; and a fixed
+ * `substring(3)` strip assumes every locale code is two characters, so adding
+ * "pt-BR" to SUPPORTED_LANGUAGES would reintroduce the doubled prefixes this
+ * replaced.
+ */
+export function stripLocalePrefix(path: string): string {
+  if (!path) return "/";
+
+  for (const lang of SUPPORTED_LANGUAGES) {
+    const prefix = `/${lang}`;
+    if (path === prefix || path === `${prefix}/`) return "/";
+    if (path.startsWith(`${prefix}/`)) return path.slice(prefix.length);
+  }
+
+  return path;
+}
+
+/**
  * Generate a localized URL
  *
  * @param path - The path to localize (without locale prefix)
@@ -169,6 +200,7 @@ export function getDocsLocale(locale: string): string {
 export default {
   getLocaleFromUrl,
   getPathWithoutLocale,
+  stripLocalePrefix,
   localizeUrl,
   createLanguageSwitcherUrl,
   isLocalizedUrlActive,
