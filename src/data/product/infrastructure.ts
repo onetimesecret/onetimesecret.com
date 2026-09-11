@@ -32,12 +32,14 @@ export const trustBadges: readonly TrustBadge[] = [
   { key: "web.homepage.infrastructure.regions.us" },
 ] as const;
 
+/** Real datacenter cities. Mirrored in `scripts/generate-region-geometry.mjs`
+ *  — update both together. */
 const REGION_COORDS: readonly RegionCoord[] = [
-  { label: "CA", lat: 60, lon: -100 },
-  { label: "US", lat: 38, lon: -96 },
-  { label: "UK", lat: 55, lon: -3 },
-  { label: "EU", lat: 50, lon: 10 },
-  { label: "NZ", lat: -41, lon: 175 },
+  { label: "CA", lat: 43.65, lon: -79.38 }, // Toronto
+  { label: "EU", lat: 49.45, lon: 11.08 }, // Nuremberg
+  { label: "NZ", lat: -41.13, lon: 174.84 }, // Porirua
+  { label: "UK", lat: 51.51, lon: -0.13 }, // London
+  { label: "US", lat: 45.52, lon: -122.99 }, // Hillsboro
 ];
 
 /** Max radial reach from center, as % of container size */
