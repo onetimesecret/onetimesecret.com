@@ -12,7 +12,7 @@
  * trailing slash so they name the 200 URL rather than the redirect.
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 // The same constants the site builds these tags from.
 import { SUPPORTED_LANGUAGES } from '../../../config/astro/i18n';
@@ -33,6 +33,76 @@ const PRODUCTION_ORIGIN_PATTERN = new RegExp(
 
 /** One tag per locale, plus x-default. */
 const EXPECTED_HREFLANG_COUNT = SUPPORTED_LANGUAGES.length + 1;
+
+/**
+ * Fetches an advertised hreflang target from the preview server under test and
+ * asserts the page that answers claims that exact URL as its canonical.
+ *
+ * A status check alone is not enough, and `maxRedirects: 0` does not rescue it:
+ * `astro preview` serves 200 for every path in the build, including the
+ * meta-refresh stubs the `redirects` config emits and the slash-less form of a
+ * directory URL. Measured against this build:
+ *
+ *   /en/about/  200, canonical https://onetimesecret.com/en/about/
+ *   /en/about   200, canonical https://onetimesecret.com/en/about/   <- not itself
+ *   /about/     200, canonical /en/about                             <- refresh stub
+ *
+ * So the two ways an annotation can name a URL that exists without naming the
+ * page both report 200. Comparing the canonical is what separates them, and it is
+ * the reciprocity Google checks: the URL advertised for a locale has to be the URL
+ * that locale's page claims. It rejects the old x-default of /about/, and it would
+ * reject a stripLocalePrefix() that ever dropped the trailing slash, which is the
+ * mistake this file's header is most careful about.
+ *
+ * `maxRedirects: 0` stays for the case where BASE_URL points at a host that does
+ * issue real 3xx, where a followed redirect would otherwise report the target's
+ * destination.
+ *
+ * Only the pathname is reused: the hrefs are absolute on the canonical production
+ * origin, and a relative path resolves against the baseURL in
+ * playwright.config.ts.
+ */
+async function expectTargetIsCanonical(
+  page: Page,
+  target: string,
+  advertisedBy: string
+): Promise<void> {
+  const response = await page.request.get(new URL(target).pathname, {
+    maxRedirects: 0,
+  });
+
+  expect(response.status(), `${advertisedBy} advertises ${target}`).toBe(200);
+
+  const canonical = /rel="canonical" href="([^"]*)"/.exec(await response.text());
+
+  expect(
+    canonical?.[1],
+    `${advertisedBy} advertises ${target}, which is served by a page that ` +
+      `canonicalises somewhere else`
+  ).toBe(target);
+}
+
+/**
+ * The path of the newest changelog entry, read off the locale's index page.
+ *
+ * Naming a slug inline ties the test to one post surviving: prune or rename it
+ * and the test fails for a reason that has nothing to do with hreflang.
+ */
+async function firstChangelogEntryPath(
+  page: Page,
+  locale: string
+): Promise<string> {
+  await page.goto(`/${locale}/changelog`);
+
+  const href = await page
+    .locator(`a[href^="/${locale}/changelog/"]`)
+    .first()
+    .getAttribute('href');
+
+  expect(href, `${locale} changelog index should link an entry`).toBeTruthy();
+
+  return href ?? '';
+}
 
 /**
  * Existence is asserted with `expect(locator).toHaveAttribute()` rather than
@@ -195,7 +265,11 @@ test.describe('Canonical URL - HTML Output Verification', () => {
       // have one; the 21 changelog entries and the use-cases index do not, so 84
       // pages named an x-default that 404s. A changelog entry is the case to pin:
       // a redirect per entry would need a new one with every post.
-      await page.goto('/fr/changelog/2026-09-10-active-sessions');
+      //
+      // The entry is read off the index rather than named here, so pruning or
+      // renaming a changelog post cannot fail this test for an unrelated reason.
+      const entryPath = await firstChangelogEntryPath(page, 'fr');
+      await page.goto(entryPath);
 
       const href =
         (await page
@@ -203,9 +277,34 @@ test.describe('Canonical URL - HTML Output Verification', () => {
           .getAttribute('href')) ?? '';
 
       expect(href).toBe(
-        `${PRODUCTION_DOMAIN}/en/changelog/2026-09-10-active-sessions/`
+        `${PRODUCTION_DOMAIN}${entryPath.replace('/fr/', '/en/')}/`
       );
-      expect((await page.request.get(new URL(href).pathname)).status()).toBe(200);
+      await expectTargetIsCanonical(page, href, entryPath);
+    });
+
+    test('every member of a cluster names the same x-default', async ({
+      page,
+    }) => {
+      // All five homepage pages advertise the same four alternates, so they are
+      // one cluster and have to agree on its x-default. Deriving it from the
+      // default locale everywhere broke that: "/" named itself while /en/, /fr/,
+      // /de/ and /es/ named /en/, and "/" is in no page's alternate list, so the
+      // disagreement cost the neutral entry point its only tie to the cluster.
+      const seen = new Map<string, string>();
+
+      for (const path of ['/', '/en/', '/fr/', '/de/', '/es/']) {
+        await page.goto(path);
+        seen.set(
+          path,
+          (await page
+            .locator('link[rel="alternate"][hreflang="x-default"]')
+            .getAttribute('href')) ?? ''
+        );
+      }
+
+      expect([...new Set(seen.values())], JSON.stringify([...seen])).toEqual([
+        `${PRODUCTION_DOMAIN}/`,
+      ]);
     });
 
     test('hreflang is not mangled on a path that merely begins with a locale code', async ({
@@ -278,12 +377,14 @@ test.describe('Canonical URL - HTML Output Verification', () => {
       // Requests go to the preview server under test rather than to production:
       // the hrefs are absolute on the canonical origin, so only the pathname is
       // reused, and a relative path resolves against Playwright's baseURL.
+      const checked = new Set<string>();
+
       for (const path of [
         '/',
         '/en/about',
         '/es/about',
         '/de/changelog',
-        '/fr/changelog/2026-09-10-active-sessions',
+        await firstChangelogEntryPath(page, 'fr'),
         '/es/use-cases',
         '/privacy',
         '/terms',
@@ -299,12 +400,25 @@ test.describe('Canonical URL - HTML Output Verification', () => {
           `${path} should advertise at least x-default`
         ).toBeGreaterThan(0);
 
-        for (const link of await hreflangLinks.all()) {
-          const target = (await link.getAttribute('href')) ?? '';
-          const response = await page.request.get(new URL(target).pathname);
+        const targets = await Promise.all(
+          (await hreflangLinks.all()).map((link) => link.getAttribute('href'))
+        );
 
-          expect(response.status(), `${path} advertises ${target}`).toBe(200);
-        }
+        // Deduplicated across pages: every member of a cluster advertises the
+        // same set, so /en/about and /es/about name the identical four URLs.
+        const unchecked = targets
+          .map((target) => target ?? '')
+          .filter((target) => {
+            if (checked.has(target)) return false;
+            checked.add(target);
+            return true;
+          });
+
+        await Promise.all(
+          unchecked.map((target) =>
+            expectTargetIsCanonical(page, target, path)
+          )
+        );
       }
     });
 

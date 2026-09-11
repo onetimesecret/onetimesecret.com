@@ -117,22 +117,37 @@ const pageAlternateLanguages =
     : []);
 
 // x-default names the version served to a visitor whose language none of the
-// alternates match, so it has to be a URL that exists.
+// alternates match. Two constraints: the URL has to exist, and every member of a
+// cluster has to name the same one, or the annotations disagree about the set
+// they describe.
 //
-// For a locale-prefixed page that is the default-locale sibling, which is
-// guaranteed to exist because the page itself is one of the cluster. Naming the
-// unprefixed path instead only worked where a top-level redirect happened to
-// cover it (/about, /pricing, /security in config/astro/redirects.ts): the 21
-// changelog entries and the use-cases index have no such entry, so 84 pages
-// advertised an x-default that 404s. Per-entry redirects would need a new one
-// with every changelog post; pointing at the default locale needs nothing, and
-// Google allows x-default to coincide with a language version.
-//
-// For a page with no locale prefix, x-default is the page itself: /privacy/ is
-// the version for every language, and unlike /en/privacy/ it exists.
-const xDefaultUrl = isLocalePrefixed(currentPath)
-  ? `${siteOrigin}/${DEFAULT_LANGUAGE}${basePathForAlternates}`
-  : `${siteOrigin}${currentPath}`;
+// Note this is derived from currentPath, which has had its consecutive slashes
+// collapsed, so the CWE-601 guard above covers x-default too. A page that passes
+// its own `canonicalUrl` does not steer this; the override covers
+// `alternateLanguages` only, and no caller passes either today.
+let xDefaultUrl: string;
+
+if (!isLocalePrefixed(currentPath)) {
+  // This page is already the language-neutral URL. /privacy/ is the version for
+  // every language and, unlike /en/privacy/, it exists.
+  xDefaultUrl = `${siteOrigin}${currentPath}`;
+} else if (basePathForAlternates === "/") {
+  // The homepage cluster. /en/, /fr/, /de/ and /es/ defer to "/", which exists
+  // and which src/pages/index.astro serves language-neutrally, so all five pages
+  // name the same x-default. Pointing each at /en/ instead left "/" claiming
+  // itself as x-default while the other four claimed /en/, and "/" appears in no
+  // page's alternate list, so it was the member that lost by the disagreement.
+  xDefaultUrl = `${siteOrigin}/`;
+} else {
+  // Everything else under a locale prefix: the default-locale sibling, which is
+  // guaranteed to exist because this page is itself in the cluster. Naming the
+  // unprefixed path instead only worked where a top-level redirect happened to
+  // cover it (/about, /pricing, /security in config/astro/redirects.ts); the 21
+  // changelog entries and the use-cases index have none, so 84 pages advertised
+  // an x-default that 404s. A redirect per entry would need a new one with every
+  // changelog post. Google allows x-default to coincide with a language version.
+  xDefaultUrl = `${siteOrigin}/${DEFAULT_LANGUAGE}${basePathForAlternates}`;
+}
 
 const pageStructuredData =
   propsStructuredData ||

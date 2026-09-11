@@ -28,10 +28,14 @@ declare module '@playwright/test' {
   interface Response {
     status(): number;
     url(): string;
+    text(): Promise<string>;
   }
 
   interface APIRequestContext {
-    get(url: string, options?: { timeout?: number }): Promise<Response>;
+    get(
+      url: string,
+      options?: { timeout?: number; maxRedirects?: number }
+    ): Promise<Response>;
   }
 
   interface Locator {

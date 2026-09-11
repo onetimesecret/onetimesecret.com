@@ -129,6 +129,13 @@ export function isLocalePrefixed(path: string): boolean {
  * src/pages/[lang]/index.astro serves /en/, /fr/, /de/ and /es/. Those
  * alternates resolve and are worth keeping, so "/" is admitted explicitly.
  *
+ * One dependency the rule rests on: every route under [lang]/ emits a path for
+ * all four locales even where only one translation exists, by iterating
+ * getLanguagePaths() or, in [...slug].astro, by falling back to another
+ * language's entry. A route that generated locale paths conditionally would put
+ * dead alternates back, and only the paths named explicitly in the resolve-all
+ * case in test/e2e/specs/canonical-url.spec.ts would notice.
+ *
  * A page that knows better than this rule can still pass `alternateLanguages`
  * to LayoutHead and override it in either direction.
  */

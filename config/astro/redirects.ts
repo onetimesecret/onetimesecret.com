@@ -46,6 +46,11 @@ export function createConfig(): AstroUserConfig["redirects"] {
     // did not, so both 404d when typed or followed from an external link
     // (dist/changelog/ holds only rss.xml, and dist/use-cases/ did not exist).
     // The site's own navigation links the locale-prefixed URLs either way.
+    //
+    // Destination without the trailing slash, matching the entries above, so each
+    // is two hops: /changelog -> /en/changelog -> /en/changelog/. Naming
+    // /en/changelog/ directly would save one, but only for these two of the five,
+    // and no hreflang annotation points here any more.
     "/changelog": {
       status: 301,
       destination: "/en/changelog",
