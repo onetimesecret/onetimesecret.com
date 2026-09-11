@@ -22,6 +22,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 
 import {
+  geoArea,
   geoContains,
   geoDistance,
   geoEqualEarth,
@@ -181,6 +182,20 @@ const RING_DECIMALS = 1; // ~11km; invisible at this globe's display size
 const roundRing = (ring) =>
   ring.map(([x, y]) => [round(x, RING_DECIMALS), round(y, RING_DECIMALS)]);
 
+/** The rotating variant emits a FLAT list of rings, so polygon nesting is
+ *  lost and every ring is drawn as a standalone exterior ring. d3-geo's
+ *  spherical clipping reads a ring with the wrong winding as "the whole globe
+ *  except this", which floods the sphere with land fill. Winding is measured
+ *  with geoArea rather than assumed: anything covering more than half the
+ *  sphere is inverted and gets reversed.
+ *
+ *  Consequence of dropping the nesting: inner rings (lakes such as the
+ *  Caspian) render as land. Accepted — they are invisible at this scale. */
+const orientRing = (ring) =>
+  geoArea({ type: "Polygon", coordinates: [ring] }) > 2 * Math.PI
+    ? [...ring].reverse()
+    : ring;
+
 function buildGlobeRotating() {
   const simplified = simplify(presimplify(landTopo), SIMPLIFY_MIN_WEIGHT);
   const simplifiedLand = feature(simplified, simplified.objects.land);
@@ -194,7 +209,7 @@ function buildGlobeRotating() {
       // Simplification can collapse a tiny island below the 4 points a closed
       // ring needs; those are dropped rather than emitted degenerate.
       for (const ring of poly) {
-        if (ring.length >= 4) rings.push(roundRing(ring));
+        if (ring.length >= 4) rings.push(orientRing(roundRing(ring)));
       }
     }
   }
@@ -217,18 +232,21 @@ const jsonMarkers = (markers) =>
     .map((m) => `    { code: "${m.code}", x: ${m.x}, y: ${m.y} },`)
     .join("\n")}\n  ]`;
 
-function render({ fine, coarse, globe, rotating }) {
-  return `/**
+const BANNER = `/**
  * GENERATED FILE — DO NOT EDIT BY HAND.
  *
  * Produced by \`scripts/generate-region-geometry.mjs\` (\`pnpm geometry:regions\`).
  * Re-run that script and commit the result; hand edits will be overwritten.
- *
- * Geometry for the region-visualization variants. Source data is
- * world-atlas land-110m; region markers are the real datacenter cities listed
- * in \`src/data/product/infrastructure.ts\`.
  */
+`;
 
+/** The geometry is emitted as one module PER VARIANT, not as a single module.
+ *  Rollup/Rolldown assign a whole module to exactly one chunk, so a combined
+ *  module would drag all ~42 KB gzip of globe geometry into whichever chunk
+ *  the default dot-matrix variant loads. Separate modules let the two globe
+ *  variants be split behind their own dynamic imports. Do not re-merge these. */
+function renderTypes() {
+  return `${BANNER}
 /** A region marker already projected into the variant's 2D viewBox space. */
 export interface RegionMarker2D {
   readonly code: string;
@@ -261,6 +279,12 @@ export interface GlobeRotatingGeometry {
   readonly land: readonly (readonly (readonly [number, number])[])[];
   readonly graticule: readonly (readonly (readonly [number, number])[])[];
 }
+`;
+}
+
+function renderDotMatrix({ fine, coarse }) {
+  return `${BANNER}
+import type { DotMatrixGeometry } from "./regionGeometry.types";
 
 /** Dot matrix at a ${fine.step}-degree grid (${fine.dotCount} dots) — default. */
 export const dotMatrixFine: DotMatrixGeometry = {
@@ -277,6 +301,12 @@ export const dotMatrixCoarse: DotMatrixGeometry = {
     "${coarse.landPath}",
   markers: ${jsonMarkers(coarse.markers)},
 };
+`;
+}
+
+function renderGlobeStatic({ globe }) {
+  return `${BANNER}
+import type { GlobeStaticGeometry } from "./regionGeometry.types";
 
 /** Orthographic globe, sub-point ~25N 40W. */
 export const globeStatic: GlobeStaticGeometry = {
@@ -290,6 +320,12 @@ export const globeStatic: GlobeStaticGeometry = {
     "${globe.graticulePath}",
   markers: ${jsonMarkers(globe.markers)},
 };
+`;
+}
+
+function renderGlobeRotating({ rotating }) {
+  return `${BANNER}
+import type { GlobeRotatingGeometry } from "./regionGeometry.types";
 
 const rotatingLand: readonly (readonly (readonly [number, number])[])[] =
   ${jsonRings(rotating.land)};
@@ -305,14 +341,41 @@ export const globeRotating: GlobeRotatingGeometry = {
 `;
 }
 
+function renderBarrel() {
+  return `${BANNER}
+/**
+ * Convenience barrel. Importing this pulls in EVERY variant's geometry
+ * (~42 KB gzip) — fine for tests and tooling, never for a component. Runtime
+ * code must import the specific \`regionGeometry.<variant>\` module instead.
+ */
+export type {
+  DotMatrixGeometry,
+  GlobeRotatingGeometry,
+  GlobeStaticGeometry,
+  RegionMarker2D,
+} from "./regionGeometry.types";
+export { dotMatrixCoarse, dotMatrixFine } from "./regionGeometry.dotMatrix";
+export { globeRotating } from "./regionGeometry.globeRotating";
+export { globeStatic } from "./regionGeometry.globeStatic";
+`;
+}
+
 const fine = { ...buildDotMatrix(3.2, 1.15), step: 3.2 };
 const coarse = { ...buildDotMatrix(5.5, 1.5), step: 5.5 };
 const globe = buildGlobeStatic();
 const rotating = buildGlobeRotating();
 
-const outUrl = new URL("../src/data/product/regionGeometry.ts", import.meta.url);
-const source = render({ fine, coarse, globe, rotating });
-writeFileSync(outUrl, source);
+const outputs = [
+  ["regionGeometry.types.ts", renderTypes()],
+  ["regionGeometry.dotMatrix.ts", renderDotMatrix({ fine, coarse })],
+  ["regionGeometry.globeStatic.ts", renderGlobeStatic({ globe })],
+  ["regionGeometry.globeRotating.ts", renderGlobeRotating({ rotating })],
+  ["regionGeometry.ts", renderBarrel()],
+];
+
+for (const [name, body] of outputs) {
+  writeFileSync(new URL(`../src/data/product/${name}`, import.meta.url), body);
+}
 
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;
 const report = (label, value) => {
@@ -323,13 +386,13 @@ const report = (label, value) => {
   );
 };
 
-console.log(`Wrote ${outUrl.pathname}`);
+console.log(`Wrote ${outputs.length} modules to src/data/product/`);
 console.log(`  dots: fine=${fine.dotCount} coarse=${coarse.dotCount}`);
 console.log(
   `  rotating: ${rotating.land.length} rings, ` +
     `${rotating.land.reduce((n, r) => n + r.length, 0)} points`,
 );
-report("module", source);
+for (const [name, body] of outputs) report(name.replace(/\.ts$/, ""), body);
 report("dotMatrixFine", fine);
 report("dotMatrixCoarse", coarse);
 report("globeStatic", globe);
