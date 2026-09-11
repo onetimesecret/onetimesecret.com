@@ -18,6 +18,10 @@
 
 import { afterEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 
+// Statically imported for cleanup only; the cases under test load their own fresh
+// copy of the module via freshThemeManager().
+import { AVAILABLE_THEMES } from '@/utils/theme';
+
 type SchemeListener = (event: { matches: boolean }) => void;
 
 const ORIGINAL_STORAGE = Object.getOwnPropertyDescriptor(window, 'localStorage');
@@ -66,6 +70,11 @@ describe('ThemeManager', () => {
   afterEach(() => {
     if (ORIGINAL_STORAGE) {
       Object.defineProperty(window, 'localStorage', ORIGINAL_STORAGE);
+      // In afterEach, not after each assertion: a failing expectation would skip
+      // inline cleanup and leak a stored theme into the next case. Inside this
+      // branch because the else below leaves no localStorage to clear, and a
+      // TypeError thrown here would fail teardown for every later case.
+      window.localStorage.clear();
     } else {
       Reflect.deleteProperty(window, 'localStorage');
     }
@@ -74,7 +83,7 @@ describe('ThemeManager', () => {
     } else {
       Reflect.deleteProperty(window, 'matchMedia');
     }
-    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.remove(...AVAILABLE_THEMES);
     vi.restoreAllMocks();
   });
 
@@ -85,8 +94,6 @@ describe('ThemeManager', () => {
 
     // An explicit choice wins over the system preference.
     expect(themeManager.getPreferredTheme()).toBe('light');
-
-    window.localStorage.removeItem('theme');
   });
 
   it('ignores a stored value that is not a known theme', async () => {
@@ -95,8 +102,6 @@ describe('ThemeManager', () => {
     const themeManager = await freshThemeManager();
 
     expect(themeManager.getPreferredTheme()).toBe('dark');
-
-    window.localStorage.removeItem('theme');
   });
 
   it.each([

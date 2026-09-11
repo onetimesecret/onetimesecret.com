@@ -25,6 +25,9 @@
 
 import { test, expect, type Page } from '@playwright/test';
 
+// The same list the toggle cycles through, so this cannot drift from it.
+import { AVAILABLE_THEMES } from '../../../src/utils/theme';
+
 const BANNER_WRAPPER_SELECTOR = '[data-testid="staging-banner-wrapper"]';
 
 /** The colour-mode cycle button in the footer (ColorModeToggle.astro). */
@@ -76,7 +79,10 @@ async function expectHomepageIntact(page: Page, faults: PageFaults): Promise<voi
   // Unfiltered: every storage guard now reports at warn level, so a denied
   // browser produces no console errors at all. That makes this the most sensitive
   // form of the hydration gate — it catches an island that throws with any
-  // message, not only Astro's `Error hydrating`.
+  // message, not only Astro's `Error hydrating`. Deliberately stricter than
+  // homepage-redesign.spec.ts, which filters blocked-request and Sentry noise; if
+  // preview builds ever initialise Sentry, this assertion is where that shows up
+  // first and the filter list there is what to reuse.
   expect(faults.consoleErrors).toEqual([]);
 }
 
@@ -102,20 +108,45 @@ async function expectSchemeChangeSurvives(page: Page, faults: PageFaults): Promi
   expect(faults.uncaught).toEqual([]);
 }
 
+/** Matches a theme class on `html` without also matching e.g. "dark" in "darker". */
+function themeClassPattern(theme: string): RegExp {
+  return new RegExp(`\\b${theme}\\b`);
+}
+
 /**
- * Asserts the colour-mode toggle still works when the theme cannot be persisted.
+ * Asserts the colour-mode toggle cycles when the theme cannot be persisted.
  *
- * ThemeManager.setTheme() applies the theme before it writes, because the write is
- * the part allowed to fail. With both inside one try, the write threw first and
- * the click changed nothing on screen: the control was inert for the whole
- * session, in exactly the browsers this file is about.
+ * Two ways this used to fail. ThemeManager.setTheme() wrote before it applied, so
+ * the write threw and nothing changed on screen. And the toggle took its current
+ * theme from getPreferredTheme(), which without storage always answers the OS
+ * preference rather than what is on <html> — so the second click computed the
+ * same "next" theme as the first and the control looked dead after one press.
+ *
+ * The whole cycle is therefore asserted, not its first step: clicking once per
+ * available theme must come back to where it started.
  */
-async function expectThemeToggleWorks(page: Page): Promise<void> {
-  await expect(page.locator('html')).toHaveClass(/\blight\b/);
+async function expectThemeToggleCycles(page: Page): Promise<void> {
+  const html = page.locator('html');
+  const toggle = page.locator(THEME_TOGGLE_SELECTOR);
 
-  await page.locator(THEME_TOGGLE_SELECTOR).click();
+  // Driven off AVAILABLE_THEMES rather than spelling out light/dark: the list
+  // carries commented-out entries ("high-contrast", "dyslexic"), and uncommenting
+  // one would otherwise make a correct cycle fail here. Indexed from the painted
+  // theme rather than from position 0 for the same reason — reordering the list
+  // must not break this.
+  const start = AVAILABLE_THEMES.indexOf('light');
+  expect(start, 'caller emulates prefers-color-scheme: light').toBeGreaterThan(-1);
+  await expect(html).toHaveClass(themeClassPattern('light'));
 
-  await expect(page.locator('html')).toHaveClass(/\bdark\b/);
+  for (let step = 1; step <= AVAILABLE_THEMES.length; step += 1) {
+    const expected = AVAILABLE_THEMES[(start + step) % AVAILABLE_THEMES.length];
+    await toggle.click();
+    await expect(html).toHaveClass(themeClassPattern(expected));
+  }
+
+  // The last iteration lands back on the starting theme, which is what makes this
+  // a cycle assertion: a toggle that moves once and then sticks — the defect this
+  // gates — fails on the second click, while asserting only the first step passed.
 }
 
 test.describe('Web Storage unavailable', () => {
@@ -154,7 +185,7 @@ test.describe('Web Storage unavailable', () => {
     await expectSchemeChangeSurvives(page, faults);
   });
 
-  test('colour-mode toggle still applies a theme it cannot persist', async ({ page }) => {
+  test('colour-mode toggle cycles without being able to persist', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
     await page.addInitScript(() => {
       Object.defineProperty(window, 'localStorage', {
@@ -167,7 +198,7 @@ test.describe('Web Storage unavailable', () => {
 
     await page.goto('/');
 
-    await expectThemeToggleWorks(page);
+    await expectThemeToggleCycles(page);
   });
 
   test('theme is painted once, with no flash, when storage is denied', async ({ page }) => {
@@ -225,6 +256,6 @@ test.describe('Web Storage unavailable', () => {
     await expectHomepageIntact(page, faults);
     // Storage reads fine here; only the write fails, which is the other way the
     // toggle used to go inert.
-    await expectThemeToggleWorks(page);
+    await expectThemeToggleCycles(page);
   });
 });

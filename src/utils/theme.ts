@@ -14,8 +14,8 @@ export type ThemeOption = (typeof AVAILABLE_THEMES)[number];
 /**
  * Whether the unreachable-storage warning has already been reported.
  *
- * The stored theme is re-read on every colour-scheme change and on every hover
- * or focus of the colour-mode toggle, so a browser that denies site data would
+ * The stored theme is re-read on every prefers-color-scheme change, from the
+ * listener initialize() registers, so a browser that denies site data would
  * otherwise produce an unbounded stream of identical messages (and, with Sentry
  * breadcrumbs, paid-for noise). It is an expected configuration, so it is
  * reported once, as a warning.
@@ -109,15 +109,11 @@ export const ThemeManager = {
       document.documentElement.classList.remove(t);
     });
 
-    // Add the selected theme class
+    // Add the selected theme class. This is also what drives Tailwind's `dark:`
+    // utilities, which tailwind.css declares as a class variant
+    // (`@custom-variant dark (&:where(.dark, .dark *))`) — "dark" is already in
+    // AVAILABLE_THEMES, so no separate special case is needed here.
     document.documentElement.classList.add(theme);
-
-    // Special case for dark mode (for Tailwind)
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
   },
 
   /**

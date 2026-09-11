@@ -158,15 +158,12 @@ test.describe('Homepage redesign — CTA section', () => {
   test('"Try it free" button links to #secret-form', async ({ page }) => {
     // Find the anchor whose text matches the CTA primary button label
     const tryItBtn = page.getByRole('link', { name: /try it free/i });
-    const href = await tryItBtn.getAttribute('href');
-    expect(href).toBe('#secret-form');
+    await expect(tryItBtn).toHaveAttribute('href', '#secret-form');
   });
 
   test('"View pricing" button links to a pricing URL', async ({ page }) => {
     const pricingBtn = page.getByRole('link', { name: /view pricing/i });
-    const href = await pricingBtn.getAttribute('href');
-    expect(href).toBeTruthy();
-    expect(href).toContain('pricing');
+    await expect(pricingBtn).toHaveAttribute('href', /pricing/);
   });
 
   test('CTA section is visible', async ({ page }) => {
