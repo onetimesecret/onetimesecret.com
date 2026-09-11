@@ -359,7 +359,7 @@
       }
     },
     "homepage": {
-      "title": "Teilen Sie Geheimnisse sicher {'|'} Onetime Secret",
+      "title": "Onetime Secret {'|'} Ihr eigener Secret-Dienst auf eigener Domain",
       "description": "Teilen Sie sensible Informationen sicher mit selbstzerstörenden Links. Fügen Sie Ihr Geheimnis ein, generieren Sie einen Link und teilen Sie ihn. Nach dem Anzeigen ist es für immer verschwunden.",
       "a-trusted-way-to-share-sensitive-information-etc": "Eine vertrauenswürdige Methode zum Teilen vertraulicher Informationen, die nach dem Anzeigen automatisch gelöscht werden.",
       "hero": {

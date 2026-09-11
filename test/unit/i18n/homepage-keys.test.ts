@@ -272,3 +272,24 @@ describe('i18n — all locale files load', () => {
     });
   }
 });
+
+// ---------------------------------------------------------------------------
+// Suite: no message contains an unescaped plural separator
+//
+// vue-i18n reads a bare "|" as the plural-branch separator, so t() silently
+// returns only the first branch — e.g. "Onetime Secret | Run your own..."
+// renders as just "Onetime Secret". The literal must be escaped as {'|'}.
+// This is a silent truncation (t() does not warn), so guard every leaf.
+// ---------------------------------------------------------------------------
+
+describe('i18n — no message contains an unescaped plural separator', () => {
+  for (const lang of LANGS) {
+    it(`${lang}.json has no bare "|" in any message`, () => {
+      const offenders = getLeafPaths(data[lang]).filter((path) => {
+        const value = getNestedValue(data[lang], path);
+        return typeof value === 'string' && value.replace(/\{'\|'\}/g, '').includes('|');
+      });
+      expect(offenders).toEqual([]);
+    });
+  }
+});

@@ -359,7 +359,7 @@
       }
     },
     "homepage": {
-      "title": "Partager des secrets en toute sécurité {'|'} Onetime Secret",
+      "title": "Onetime Secret {'|'} Service de partage de secrets sur votre domaine",
       "description": "Partagez des informations sensibles en toute sécurité avec des liens auto-destructibles. Collez votre secret, générez un lien et partagez-le. Une fois consulté, il disparaît à jamais.",
       "a-trusted-way-to-share-sensitive-information-etc": "Une méthode fiable pour partager des informations confidentielles qui s'autodétruisent après consultation.",
       "hero": {

@@ -359,7 +359,7 @@
       }
     },
     "homepage": {
-      "title": "Share Secrets Securely {'|'} Onetime Secret",
+      "title": "Onetime Secret {'|'} Run your own secret service on a custom domain",
       "description": "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever",
       "a-trusted-way-to-share-sensitive-information-etc": "A trusted way to share sensitive information that self-destructs after being viewed.",
       "hero": {
