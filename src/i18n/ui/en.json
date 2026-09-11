@@ -392,7 +392,7 @@
       "infrastructure": {
         "label": "Global infrastructure",
         "heading": "Your data, your jurisdiction.",
-        "description": "Choose where your secrets are stored and processed. Regional instances ensure your data never leaves the geography you choose.",
+        "description": "Every secret is stored and served from the region you choose — no cross-border replication, no silent failover to a datacenter you didn't pick. Your data stays exactly where you put it, until it's gone.",
         "regions": {
           "ca": "Toronto, Canada",
           "eu": "Nuremberg, Germany",
