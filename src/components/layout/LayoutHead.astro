@@ -15,10 +15,10 @@ import {
 } from "@/utils/seo";
 import {
   hasLocalizedVariants,
-  isLocalePrefixed,
+  resolveXDefaultPath,
   stripLocalePrefix,
 } from "@/i18n/utils";
-import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "@config/astro/i18n";
+import { SUPPORTED_LANGUAGES } from "@config/astro/i18n";
 
 export interface Props {
   title?: string;
@@ -98,12 +98,11 @@ const basePathForAlternates = stripLocalePrefix(currentPath);
 
 // Only annotate a page that actually has localized counterparts. Emitting one
 // alternate per language unconditionally assumed every page had a twin at
-// /{lang}{path}, which advertised twenty URLs that 404: four each on /privacy/,
-// /terms/, /example/, /env-debug/ and /test-layout/, none of which exist under a
-// locale prefix. Google discards a cluster whose targets do not resolve, so those
-// pages got no locale signal and the dead URLs were crawled from the footer links
-// on every page. hasLocalizedVariants() reads the site's structure instead of a
-// list: see its docstring in src/i18n/utils.ts. Issue #211.
+// /{lang}{path}; pages rendered from src/pages/*.astro have none, so they
+// advertised URLs that 404, and Google discards a cluster whose targets do not
+// resolve. hasLocalizedVariants() reads the site's structure rather than a list:
+// see its docstring in src/i18n/utils.ts. Issue #211, audited over the whole
+// build by scripts/verify-hreflang.mjs.
 //
 // `??` rather than `||`: a page that passes an empty array is saying it has no
 // alternates, and that has to survive rather than fall through to the default.
@@ -116,38 +115,12 @@ const pageAlternateLanguages =
       }))
     : []);
 
-// x-default names the version served to a visitor whose language none of the
-// alternates match. Two constraints: the URL has to exist, and every member of a
-// cluster has to name the same one, or the annotations disagree about the set
-// they describe.
-//
-// Note this is derived from currentPath, which has had its consecutive slashes
-// collapsed, so the CWE-601 guard above covers x-default too. A page that passes
-// its own `canonicalUrl` does not steer this; the override covers
+// The rule, and why it is three cases rather than one, is in
+// resolveXDefaultPath()'s docstring. Built from currentPath, whose consecutive
+// slashes are collapsed above, so the CWE-601 guard covers x-default too. A page
+// passing its own `canonicalUrl` does not steer this: the override covers
 // `alternateLanguages` only, and no caller passes either today.
-let xDefaultUrl: string;
-
-if (!isLocalePrefixed(currentPath)) {
-  // This page is already the language-neutral URL. /privacy/ is the version for
-  // every language and, unlike /en/privacy/, it exists.
-  xDefaultUrl = `${siteOrigin}${currentPath}`;
-} else if (basePathForAlternates === "/") {
-  // The homepage cluster. /en/, /fr/, /de/ and /es/ defer to "/", which exists
-  // and which src/pages/index.astro serves language-neutrally, so all five pages
-  // name the same x-default. Pointing each at /en/ instead left "/" claiming
-  // itself as x-default while the other four claimed /en/, and "/" appears in no
-  // page's alternate list, so it was the member that lost by the disagreement.
-  xDefaultUrl = `${siteOrigin}/`;
-} else {
-  // Everything else under a locale prefix: the default-locale sibling, which is
-  // guaranteed to exist because this page is itself in the cluster. Naming the
-  // unprefixed path instead only worked where a top-level redirect happened to
-  // cover it (/about, /pricing, /security in config/astro/redirects.ts); the 21
-  // changelog entries and the use-cases index have none, so 84 pages advertised
-  // an x-default that 404s. A redirect per entry would need a new one with every
-  // changelog post. Google allows x-default to coincide with a language version.
-  xDefaultUrl = `${siteOrigin}/${DEFAULT_LANGUAGE}${basePathForAlternates}`;
-}
+const xDefaultUrl = `${siteOrigin}${resolveXDefaultPath(currentPath)}`;
 
 const pageStructuredData =
   propsStructuredData ||

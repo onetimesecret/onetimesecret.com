@@ -69,8 +69,14 @@ function servedPath(file) {
   return rel.replace(/index\.html$/, "");
 }
 
+// Matched across the whole tag rather than on adjacent attributes in one order:
+// SeoMeta.astro writes rel and href on separate lines and Astro collapses them,
+// so an adjacency-sensitive pattern would report every page as canonicalising
+// nowhere if that markup is ever reformatted or gains an attribute.
 function canonicalOf(html) {
-  return /<link rel="canonical" href="([^"]*)"/.exec(html)?.[1];
+  const tag = /<link\b[^>]*\brel="canonical"[^>]*>/.exec(html)?.[0];
+
+  return tag ? /\bhref="([^"]*)"/.exec(tag)?.[1] : undefined;
 }
 
 function annotationsOf(html) {

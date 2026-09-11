@@ -23,12 +23,18 @@ const PRODUCTION_DOMAIN = CANONICAL_ORIGIN;
 /**
  * Matches hrefs that start on the production origin.
  *
- * The origin is escaped before it becomes a pattern: unescaped, its dots match
- * any character, so `https://onetimesecretXcom` would have satisfied these
- * assertions.
+ * Two things the obvious version gets wrong. The origin is escaped before it
+ * becomes a pattern: unescaped, its dots match any character, so
+ * `https://onetimesecretXcom` satisfied these assertions. And the pattern ends
+ * at a path separator: CANONICAL_ORIGIN carries no trailing slash
+ * (config/domains.ts), so `^https://onetimesecret\.com` also matched
+ * `https://onetimesecret.comv-debug/`, the mangled value from #210, on a host
+ * nobody owns. Every legitimate value here is an origin followed by a path, so
+ * requiring the slash costs nothing and makes the ~8 assertions that use this
+ * pattern reject that host rather than only the one that parses the URL.
  */
 const PRODUCTION_ORIGIN_PATTERN = new RegExp(
-  `^${PRODUCTION_DOMAIN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`
+  `^${PRODUCTION_DOMAIN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/`
 );
 
 /** One tag per locale, plus x-default. */
@@ -73,10 +79,19 @@ async function expectTargetIsCanonical(
 
   expect(response.status(), `${advertisedBy} advertises ${target}`).toBe(200);
 
-  const canonical = /rel="canonical" href="([^"]*)"/.exec(await response.text());
+  // Matched across the whole tag rather than on adjacent attributes in one order.
+  // SeoMeta.astro writes rel and href on separate lines and Astro collapses them,
+  // so an adjacency-sensitive pattern would start reporting every target in the
+  // suite as canonicalising elsewhere the moment that markup is reformatted or
+  // gains an attribute, which is a false answer rather than a failed assertion.
+  const tag = /<link\b[^>]*\brel="canonical"[^>]*>/.exec(await response.text());
+
+  // Split from the comparison so "no canonical tag" and "canonical names
+  // something else" are different failures.
+  expect(tag?.[0], `${target} has no canonical tag`).toBeTruthy();
 
   expect(
-    canonical?.[1],
+    /\bhref="([^"]*)"/.exec(tag?.[0] ?? '')?.[1],
     `${advertisedBy} advertises ${target}, which is served by a page that ` +
       `canonicalises somewhere else`
   ).toBe(target);
@@ -99,7 +114,14 @@ async function firstChangelogEntryPath(
     .first()
     .getAttribute('href');
 
-  expect(href, `${locale} changelog index should link an entry`).toBeTruthy();
+  // Entries are date-prefixed. [lang]/changelog/guide.astro is a sibling under
+  // the same prefix, so without this a "read the guide" link added to the index
+  // would make this return /{locale}/changelog/guide: the x-default assertion
+  // would still pass and would quietly stop covering a content-collection entry.
+  expect(
+    href,
+    `${locale} changelog index should link a dated entry, got ${href}`
+  ).toMatch(new RegExp(`^/${locale}/changelog/\\d{4}-\\d{2}-\\d{2}-`));
 
   return href ?? '';
 }
