@@ -3,10 +3,16 @@
 ## Overview
 
 This document contains test cases for the `StagingBanner.vue` component. This banner:
-- Only appears on the staging domain (`onetimesecret.dev`)
+- Only appears on the staging domain (`onetimesecret.dev`) and its subdomains
 - Uses amber/warning styling to indicate non-production environment
-- Can be dismissed by users with 7-day localStorage expiration
 - Provides a link to the production site
+- Cannot be dismissed: the control, its localStorage state and its 7-day expiry were
+  removed in commit 630ff03
+
+Most of this is now automated. `test/e2e/specs/staging-banner.spec.ts` serves the local preview
+build under `https://onetimesecret.dev` through Playwright's request interception, so the
+hostname branch runs in a real browser; the cases below are the ones a person still has to look
+at.
 
 ## Component Location
 
@@ -16,8 +22,6 @@ This document contains test cases for the `StagingBanner.vue` component. This ba
 
 - Access to staging environment (`onetimesecret.dev`)
 - Access to production environment (`onetimesecret.com`)
-- Browser developer tools for localStorage inspection
-- Ability to clear localStorage
 
 ## Test Cases
 
@@ -27,9 +31,8 @@ This document contains test cases for the `StagingBanner.vue` component. This ba
 **Category**: Visibility
 
 **Steps**:
-1. Clear localStorage (DevTools > Application > Storage > Clear site data)
-2. Navigate to `https://onetimesecret.dev/`
-3. Observe the top of the page
+1. Navigate to `https://onetimesecret.dev/`
+2. Observe the top of the page
 
 **Expected Result**:
 - Staging banner is visible at the top of the page
@@ -126,183 +129,6 @@ This document contains test cases for the `StagingBanner.vue` component. This ba
 
 ---
 
-### TC-SB-07: Dismiss Button Functionality
-
-**Priority**: High
-**Category**: Interaction
-
-**Steps**:
-1. Clear localStorage
-2. Navigate to `https://onetimesecret.dev/`
-3. Click the dismiss/close button on the banner
-4. Observe the page
-
-**Expected Result**:
-- Banner is hidden immediately after clicking dismiss
-- Page layout adjusts smoothly (no jarring movement)
-- No console errors
-
----
-
-### TC-SB-08: Dismiss State Persists in localStorage
-
-**Priority**: High
-**Category**: State Persistence
-
-**Steps**:
-1. Clear localStorage
-2. Navigate to `https://onetimesecret.dev/`
-3. Dismiss the banner
-4. Open DevTools > Application > Storage > Local Storage
-5. Inspect the stored value
-
-**Expected Result**:
-- localStorage contains a key for the banner dismiss state
-- Key name should be descriptive (e.g., `stagingBannerDismissed`)
-- Value should include a timestamp or expiration date
-
-**Expected localStorage format**:
-```javascript
-{
-  "stagingBannerDismissedAt": "2024-01-15T10:30:00.000Z"
-}
-// OR
-{
-  "stagingBannerDismissedUntil": "2024-01-22T10:30:00.000Z"
-}
-```
-
----
-
-### TC-SB-09: Banner Remains Hidden After Page Refresh
-
-**Priority**: High
-**Category**: State Persistence
-
-**Steps**:
-1. Dismiss the staging banner
-2. Refresh the page (F5 or browser refresh)
-3. Observe the page
-
-**Expected Result**:
-- Banner remains hidden after refresh
-- State is correctly read from localStorage
-
----
-
-### TC-SB-10: Banner Remains Hidden Across Navigation
-
-**Priority**: High
-**Category**: State Persistence
-
-**Steps**:
-1. Dismiss the staging banner on homepage
-2. Navigate to another page (e.g., `/about`)
-3. Observe the page
-4. Navigate to another page (e.g., `/pricing`)
-
-**Expected Result**:
-- Banner remains hidden on all pages
-- Dismiss state persists across client-side navigation
-
----
-
-### TC-SB-11: 7-Day Expiration - Banner Reappears
-
-**Priority**: High
-**Category**: State Expiration
-
-**Steps**:
-1. Dismiss the staging banner
-2. Open DevTools > Application > Local Storage
-3. Manually modify the timestamp to be 8 days in the past:
-   ```javascript
-   // Example modification
-   const past = new Date();
-   past.setDate(past.getDate() - 8);
-   localStorage.setItem('stagingBannerDismissedAt', past.toISOString());
-   ```
-4. Refresh the page
-
-**Expected Result**:
-- Banner reappears after the 7-day expiration period
-- Old dismiss state is cleared or ignored
-- User can dismiss again for another 7 days
-
----
-
-### TC-SB-12: 7-Day Expiration - Banner Still Hidden Within Period
-
-**Priority**: Medium
-**Category**: State Expiration
-
-**Steps**:
-1. Dismiss the staging banner
-2. Modify localStorage timestamp to be 6 days in the past
-3. Refresh the page
-
-**Expected Result**:
-- Banner remains hidden (within 7-day window)
-- State is still valid
-
----
-
-### TC-SB-13: localStorage Unavailable - Graceful Degradation
-
-**Priority**: Medium
-**Category**: Error Handling
-
-**Steps**:
-1. Block localStorage access (or use incognito mode with strict settings)
-2. Navigate to `https://onetimesecret.dev/`
-3. Attempt to dismiss the banner
-4. Refresh the page
-
-**Expected Result**:
-- Banner is visible initially
-- Dismiss action works (banner hides)
-- No console errors thrown
-- Banner may reappear after refresh (expected behavior)
-- Application does not crash
-
-**Implementation Note**: Component should wrap localStorage calls in try-catch.
-
----
-
-### TC-SB-14: localStorage Quota Exceeded
-
-**Priority**: Low
-**Category**: Error Handling
-
-**Steps**:
-1. Fill localStorage near quota limit
-2. Navigate to staging and dismiss banner
-
-**Expected Result**:
-- Dismiss action completes without error
-- If storage fails, banner hides for session only
-- No user-facing error messages
-
----
-
-### TC-SB-15: Accessibility - Dismiss Button
-
-**Priority**: High
-**Category**: Accessibility
-
-**Steps**:
-1. Navigate to `https://onetimesecret.dev/`
-2. Inspect the dismiss button with accessibility tools
-3. Use screen reader to navigate to the banner
-
-**Expected Result**:
-- Dismiss button has accessible label (aria-label or sr-only text)
-- Button is keyboard focusable
-- Focus state is visible
-- Screen reader announces the button purpose (e.g., "Dismiss staging banner")
-
----
-
 ### TC-SB-16: Accessibility - Production Link
 
 **Priority**: Medium
@@ -343,13 +169,12 @@ This document contains test cases for the `StagingBanner.vue` component. This ba
 **Steps**:
 1. Navigate to staging site
 2. Use Tab key to navigate through the banner
-3. Use Enter/Space to activate buttons
 
 **Expected Result**:
 - Banner elements are reachable via keyboard
 - Focus order is logical
-- Dismiss button activates with Enter or Space
-- Production link is accessible via keyboard
+- The production link takes focus and shows a visible focus ring
+- Enter follows the production link
 
 ---
 
@@ -388,13 +213,12 @@ This document contains test cases for the `StagingBanner.vue` component. This ba
 - Production link remains correct regardless of language
 - All banner strings use i18n keys (not hardcoded)
 
-**Required i18n keys**:
+**i18n keys the component uses** (`src/i18n/ui/*.json`):
 ```json
 {
-  "banner.staging.title": "Staging Environment",
-  "banner.staging.message": "You are viewing the staging site. Data may differ from production.",
-  "banner.staging.go-to-production": "Go to live site",
-  "banner.staging.dismiss": "Dismiss"
+  "banner.staging-warning": "You are viewing our official staging environment",
+  "banner.staging-description": "Content here is for testing and may differ from production.",
+  "banner.go-to-production": "Go to onetimesecret.com"
 }
 ```
 
@@ -458,13 +282,12 @@ This document contains test cases for the `StagingBanner.vue` component. This ba
 **Steps**:
 1. Compare page layout between:
    - Staging with banner visible
-   - Staging with banner dismissed
    - Production (no banner)
 2. Check for layout shifts
 
 **Expected Result**:
-- Page content adjusts smoothly when banner is present/dismissed
-- No cumulative layout shift (CLS) issues
+- No cumulative layout shift (CLS) issues: the wrapper reserves its space before the
+  `client:only` island mounts and collapses to zero height off staging
 - Header/navigation remains correctly positioned
 
 ---
@@ -509,32 +332,6 @@ This document contains test cases for the `StagingBanner.vue` component. This ba
 
 ## Edge Cases
 
-### TC-SB-27: Rapid Dismiss/Show Toggle
-
-**Steps**:
-1. Dismiss banner
-2. Quickly clear localStorage
-3. Refresh before state can stabilize
-
-**Expected Result**:
-- No race conditions
-- Component handles state transitions gracefully
-
----
-
-### TC-SB-28: Multiple Browser Tabs
-
-**Steps**:
-1. Open staging site in two tabs
-2. Dismiss banner in first tab
-3. Switch to second tab and refresh
-
-**Expected Result**:
-- Dismiss state is shared across tabs (localStorage is shared)
-- Both tabs show consistent state
-
----
-
 ## Performance
 
 ### TC-SB-29: No Performance Impact
@@ -546,9 +343,21 @@ This document contains test cases for the `StagingBanner.vue` component. This ba
 **Expected Result**:
 - Banner does not significantly impact LCP
 - No blocking resources for banner
-- localStorage operations are synchronous but fast
 
 ---
+
+## Retired Cases
+
+The dismiss control was removed in commit 630ff03 ("Remove dismiss functionality from staging
+banner"), along with its localStorage state and 7-day expiry. The cases that covered it are
+retired rather than renumbered, so these IDs are not reused:
+
+- TC-SB-07 through TC-SB-10: the dismiss button and the persistence of its state
+- TC-SB-11, TC-SB-12: the 7-day expiration window
+- TC-SB-13, TC-SB-14: localStorage unavailable and over quota. The page-level version of both now
+  runs automatically in `test/e2e/specs/storage-unavailable.spec.ts`
+- TC-SB-15: the accessible label on the dismiss button
+- TC-SB-27, TC-SB-28: rapid dismiss toggling, and dismiss state shared between tabs
 
 ## Completion Criteria
 
@@ -557,5 +366,7 @@ All high and medium priority test cases must pass before deployment. Low priorit
 ## Related Files
 
 - `src/components/vue/banners/StagingBanner.vue` - Main component
-- `src/i18n/ui/*.json` - Translation files (add staging banner keys)
-- `src/layouts/Layout.astro` - Where banner should be included
+- `config/domains.ts` - `isStagingHostname()`, which decides whether the banner renders
+- `src/i18n/ui/*.json` - Translation files (`banner.staging-*`, `banner.go-to-production`)
+- `src/components/layout/LayoutBase.astro` - Where the banner is included (`client:only="vue"`)
+- `test/e2e/specs/staging-banner.spec.ts` - Automated coverage

@@ -10,6 +10,11 @@ This document contains test cases for verifying the canonical URL fix implementa
 - Staging domain: `https://onetimesecret.dev`
 - Regional domains may also exist (e.g., `eu.onetimesecret.com`)
 
+Expected values below carry a trailing slash. Astro's default `build.format: 'directory'` emits
+`dist/en/about/index.html`, which is served at `/en/about/` while `/en/about` redirects to it, so
+the canonical names the URL that answers 200 rather than the redirect. `/pricing` likewise 301s to
+`/en/pricing/` (`config/astro/redirects.ts`), so its canonical is the localized page.
+
 The canonical URL must always reference the production domain for SEO purposes, even when the page is accessed from staging or other domains.
 
 ## Prerequisites
@@ -52,17 +57,17 @@ curl -s https://onetimesecret.dev/ | grep 'rel="canonical"'
 2. View page source and locate the canonical link tag
 
 **Expected Result**:
-- Canonical: `<link rel="canonical" href="https://onetimesecret.com/en/about">`
-- Path `/en/about` must be preserved
+- Canonical: `<link rel="canonical" href="https://onetimesecret.com/en/about/">`
+- Path `/en/about/` must be preserved
 - Domain must be production
 
 **Test Paths**:
 | Staging URL | Expected Canonical |
 |-------------|-------------------|
 | `https://onetimesecret.dev/` | `https://onetimesecret.com/` |
-| `https://onetimesecret.dev/en/about` | `https://onetimesecret.com/en/about` |
-| `https://onetimesecret.dev/fr/privacy` | `https://onetimesecret.com/fr/privacy` |
-| `https://onetimesecret.dev/pricing` | `https://onetimesecret.com/pricing` |
+| `https://onetimesecret.dev/en/about` | `https://onetimesecret.com/en/about/` |
+| `https://onetimesecret.dev/privacy` | `https://onetimesecret.com/privacy/` |
+| `https://onetimesecret.dev/pricing` | `https://onetimesecret.com/en/pricing/` |
 
 ---
 
@@ -94,7 +99,7 @@ curl -s https://onetimesecret.dev/ | grep 'rel="canonical"'
 2. View page source and locate `<meta property="og:url" ...>`
 
 **Expected Result**:
-- `<meta property="og:url" content="https://onetimesecret.com/en/about">`
+- `<meta property="og:url" content="https://onetimesecret.com/en/about/">`
 - Domain must be production
 - Path must match the current page path
 
@@ -117,11 +122,11 @@ curl -s https://onetimesecret.dev/en/about | grep 'og:url'
 **Expected Result**:
 All alternate language links should use the production domain:
 ```html
-<link rel="alternate" hreflang="en" href="https://onetimesecret.com/en/about">
-<link rel="alternate" hreflang="fr" href="https://onetimesecret.com/fr/about">
-<link rel="alternate" hreflang="de" href="https://onetimesecret.com/de/about">
-<link rel="alternate" hreflang="es" href="https://onetimesecret.com/es/about">
-<link rel="alternate" hreflang="x-default" href="https://onetimesecret.com/about">
+<link rel="alternate" hreflang="en" href="https://onetimesecret.com/en/about/">
+<link rel="alternate" hreflang="fr" href="https://onetimesecret.com/fr/about/">
+<link rel="alternate" hreflang="de" href="https://onetimesecret.com/de/about/">
+<link rel="alternate" hreflang="es" href="https://onetimesecret.com/es/about/">
+<link rel="alternate" hreflang="x-default" href="https://onetimesecret.com/about/">
 ```
 
 **Verification**:
@@ -153,11 +158,11 @@ curl -s https://onetimesecret.dev/en/about | grep 'hreflang'
 **Category**: SEO
 
 **Steps**:
-1. Navigate to `https://onetimesecret.com/en/about` (production)
+1. Navigate to `https://onetimesecret.com/en/about/` (production)
 2. View page source and verify canonical link
 
 **Expected Result**:
-- Canonical: `<link rel="canonical" href="https://onetimesecret.com/en/about">`
+- Canonical: `<link rel="canonical" href="https://onetimesecret.com/en/about/">`
 - Production pages should self-reference correctly
 
 ---
@@ -185,8 +190,8 @@ curl -s https://onetimesecret.dev/en/about | grep 'hreflang'
 **Steps**:
 1. Test with various path depths:
    - `/en/about`
-   - `/en/info/security`
-   - `/secret/abc123` (if applicable)
+   - `/en/security`
+   - `/info/security`
 
 **Expected Result**:
 - All paths should be correctly appended to production domain
@@ -221,7 +226,7 @@ curl -s https://onetimesecret.dev/en/about | grep 'hreflang'
 
 **Expected Result**:
 - Hash fragments are typically NOT included in canonical URLs
-- Expected: `<link rel="canonical" href="https://onetimesecret.com/en/about">`
+- Expected: `<link rel="canonical" href="https://onetimesecret.com/en/about/">`
 
 ---
 
@@ -236,8 +241,9 @@ curl -s https://onetimesecret.dev/en/about | grep 'hreflang'
    - `https://onetimesecret.dev/about/`
 
 **Expected Result**:
-- Both should produce the same canonical URL
-- Trailing slash handling should be consistent with site convention
+- `/about` redirects to `/about/`, and both end up serving the same document
+- Both produce `https://onetimesecret.com/about/`: the canonical carries the trailing slash
+  because that is the URL that answers 200
 
 ---
 

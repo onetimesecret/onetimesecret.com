@@ -8,16 +8,47 @@
  *   - Hero section structure and accessibility
  *   - Secret form anchor present
  *   - CTA section button hrefs
- *   - Footer 3-column structure
+ *   - Footer column structure and legal links
  *   - Nav Docs link target and rel
  *   - Badge-dot element presence in DOM (animation is CSS-only)
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Locator, type Page } from '@playwright/test';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Resolves the Docs nav link for the viewport under test.
+ *
+ * LayoutHeader.astro renders the desktop nav as `hidden md:flex` and keeps the
+ * mobile menu panel hidden until the hamburger is tapped, so the link lives in a
+ * different place in each project. On mobile we tap the hamburger rather than
+ * skip: the toggle is wired up by the inline script in LayoutHeader.astro, so
+ * opening the panel also gates that the menu still works — the kind of
+ * JavaScript-dependent control the mobile project exists to cover.
+ */
+async function docsNavLink(page: Page, isMobile: boolean | undefined): Promise<Locator> {
+  // Scoped to the header so this cannot silently start matching a docs link
+  // elsewhere on the page if the nav one is ever removed.
+  if (!isMobile) {
+    return page.locator('#site-header').getByRole('link', { name: /^docs$/i });
+  }
+
+  const panel = page.locator('#mobile-navigation-menu');
+  const toggle = page.locator('#mobile-menu-button');
+
+  // Asserting the aria-expanded flip gates the ARIA contract and makes a dead
+  // toggle report itself, rather than surfacing as "panel not visible".
+  await expect(panel).toBeHidden();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(panel).toBeVisible();
+
+  return panel.getByRole('link', { name: /^docs$/i });
+}
 
 /** Collect all browser console errors emitted during a page load. */
 async function collectConsoleErrors(
@@ -156,14 +187,16 @@ test.describe('Homepage redesign — footer columns', () => {
     await page.goto('/');
   });
 
-  test('footer renders exactly 3 column headings (Product, Company, Legals)', async ({
+  test('footer renders exactly 2 column headings (Product, Company)', async ({
     page,
   }) => {
     // FooterLinkLists.vue renders h3 elements for each column
     const footer = page.locator('footer');
     const columnHeadings = footer.locator('h3');
-    // There are 3 columns: Product, Company, Legals
-    await expect(columnHeadings).toHaveCount(3);
+    // Count moved 3 -> 2: FooterLinkLists.vue has only ever rendered Product
+    // and Company. The legal links live in the copyright row of
+    // LayoutFooter.astro, not in a third column.
+    await expect(columnHeadings).toHaveCount(2);
   });
 
   test('footer has a "Product" column heading', async ({ page }) => {
@@ -176,10 +209,14 @@ test.describe('Homepage redesign — footer columns', () => {
     await expect(footer.getByRole('heading', { name: /company/i })).toBeVisible();
   });
 
-  test('footer has a "Legals" column heading', async ({ page }) => {
+  // Replaces a test for a "Legals" column heading that no component renders:
+  // the legal links sit in the copyright row of LayoutFooter.astro instead, so
+  // this asserts the links themselves are reachable from the footer.
+  test('footer links to the privacy policy and terms', async ({ page }) => {
     const footer = page.locator('footer');
-    // The column header uses t("LABELS.legals") which maps to "Legals" in en.json
-    await expect(footer.getByRole('heading', { name: /legals/i })).toBeVisible();
+
+    await expect(footer.getByRole('link', { name: /^privacy$/i })).toBeVisible();
+    await expect(footer.getByRole('link', { name: /^terms$/i })).toBeVisible();
   });
 });
 
@@ -192,28 +229,22 @@ test.describe('Homepage redesign — nav Docs link', () => {
     await page.goto('/');
   });
 
-  test('Docs link is present in desktop navigation', async ({ page }) => {
-    // The nav renders on desktop viewport; Playwright uses desktop Chrome by default
-    const docsLink = page.getByRole('link', { name: /^docs$/i }).first();
-    await expect(docsLink).toBeAttached();
+  test('Docs link is reachable from the navigation', async ({ page, isMobile }) => {
+    const docsLink = await docsNavLink(page, isMobile);
+
+    // Visible, not merely attached: on mobile the panel's links are in the DOM
+    // the whole time, so attachment alone would pass with the menu stuck shut.
+    await expect(docsLink).toBeVisible();
   });
 
-  test('Docs link has target="_blank"', async ({ page }) => {
-    const docsLink = page.getByRole('link', { name: /^docs$/i }).first();
-    const target = await docsLink.getAttribute('target');
-    expect(target).toBe('_blank');
-  });
+  // Folded into one test because each mobile run re-opens the menu to reach the
+  // link; three separate attribute tests paid for that three times over.
+  test('Docs link opens the docs site safely in a new tab', async ({ page, isMobile }) => {
+    const docsLink = await docsNavLink(page, isMobile);
 
-  test('Docs link has rel containing "noopener"', async ({ page }) => {
-    const docsLink = page.getByRole('link', { name: /^docs$/i }).first();
-    const rel = await docsLink.getAttribute('rel');
-    expect(rel).toContain('noopener');
-  });
-
-  test('Docs link href points to docs.onetimesecret.com', async ({ page }) => {
-    const docsLink = page.getByRole('link', { name: /^docs$/i }).first();
-    const href = await docsLink.getAttribute('href');
-    expect(href).toContain('docs.onetimesecret.com');
+    await expect(docsLink).toHaveAttribute('href', /docs\.onetimesecret\.com/);
+    await expect(docsLink).toHaveAttribute('target', '_blank');
+    await expect(docsLink).toHaveAttribute('rel', /noopener/);
   });
 });
 
