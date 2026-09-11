@@ -181,6 +181,13 @@ jobs:
       - name: Verify client bundle
         run: pnpm build:verify
 
+      # Every hreflang target the build advertises has to be a page that exists
+      # and claims that URL as its canonical, and every cluster has to agree on
+      # one x-default (see scripts/verify-hreflang.mjs). Before #211 the site
+      # advertised 124 annotations that named something other than the page.
+      - name: Verify hreflang targets
+        run: pnpm build:verify:hreflang
+
       # The BIMI logo is hashed into the Verified Mark Certificate. Anything
       # that rewrites it on the way to dist/ invalidates the certificate.
       - name: Verify BIMI assets ship byte-identical

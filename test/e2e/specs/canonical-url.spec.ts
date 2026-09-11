@@ -367,12 +367,19 @@ test.describe('Canonical URL - HTML Output Verification', () => {
       }
     });
 
-    test('every advertised hreflang target resolves in the build', async ({
+    test('advertised hreflang targets resolve, across a sample of page shapes', async ({
       page,
     }) => {
-      // The gate for #211, and the one assertion the other cases here cannot make.
-      // The dead annotations were perfectly well-formed; they named pages that do
-      // not exist, 20 URLs across 5 pages. Only fetching the target catches that.
+      // One route of each shape that got this wrong, checked through the served
+      // HTTP layer: locale-prefixed and not, content-collection and not, a
+      // changelog entry, and a path that merely begins with a locale code.
+      //
+      // Deliberately a sample. The rule #211 fixed is structural, so the whole
+      // build is audited by scripts/verify-hreflang.mjs (`pnpm
+      // build:verify:hreflang`, wired into the Production Build job), which walks
+      // every built page and checks every annotation. A nine-route sample cannot
+      // gate a site-wide invariant; what it adds over the script is the served
+      // response rather than the file on disk.
       //
       // Requests go to the preview server under test rather than to production:
       // the hrefs are absolute on the canonical origin, so only the pathname is
