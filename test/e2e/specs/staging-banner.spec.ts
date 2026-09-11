@@ -205,8 +205,8 @@ test.describe('StagingBanner - Accessibility', () => {
     await gotoStaging(page, baseURL);
 
     const banner = page.locator(BANNER_SELECTOR);
-    expect(await banner.getAttribute('role')).toBe('alert');
-    expect(await banner.getAttribute('aria-live')).toBe('polite');
+    await expect(banner).toHaveAttribute('role', 'alert');
+    await expect(banner).toHaveAttribute('aria-live', 'polite');
   });
 });
 

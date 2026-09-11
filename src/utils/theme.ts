@@ -81,14 +81,18 @@ export const ThemeManager = {
       return; // Early return for SSR
     }
 
-    try {
-      // Store in localStorage
-      localStorage.setItem("theme", theme);
+    // Apply first, persist second. Persisting is best effort; applying is not.
+    // With the write inside the same try, a browser that denies site data (or a
+    // full quota) threw before the theme was applied, so clicking the colour-mode
+    // toggle changed nothing on screen and the control was inert for the session.
+    this.applyTheme(theme);
 
-      // Apply to document
-      this.applyTheme(theme);
+    try {
+      localStorage.setItem("theme", theme);
     } catch (error) {
-      console.error("Failed to set theme:", error);
+      // Not throttled like the read path: a write happens only on an explicit
+      // click, so the message count is bounded by the user.
+      console.warn("Failed to persist theme preference:", error);
     }
   },
 

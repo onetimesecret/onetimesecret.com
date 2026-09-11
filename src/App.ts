@@ -4,6 +4,14 @@ import type { App } from "vue";
 import i18n, { setLanguage } from "./i18n";
 
 /**
+ * Whether the unreachable-storage warning has already been reported.
+ *
+ * Astro calls setupVue once per island — six times on the homepage — so a browser
+ * that denies site data would otherwise log the same message for each of them.
+ */
+let storageWarningReported = false;
+
+/**
  * Setup Vue application with i18n
  *
  * This function is meant to be called by Astro's Vue integration
@@ -33,11 +41,19 @@ export default function setupVue(app: App) {
         preferredLanguage =
           window.localStorage?.getItem("preferredLanguage") ?? null;
       } catch (error) {
-        console.warn("Failed to read preferred language:", error);
+        if (!storageWarningReported) {
+          storageWarningReported = true;
+          console.warn("Failed to read preferred language:", error);
+        }
       }
 
       if (preferredLanguage) {
-        setLanguage(preferredLanguage);
+        // Fire and forget, but not unhandled: setLanguage resolves its own
+        // failures by falling back to English, and a rejection escaping here
+        // would surface as an unhandled rejection during hydration.
+        setLanguage(preferredLanguage).catch((error: unknown) => {
+          console.warn("Failed to apply preferred language:", error);
+        });
       }
     }
   } else {

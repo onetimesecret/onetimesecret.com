@@ -14,7 +14,8 @@
 
 import { test, expect } from '@playwright/test';
 
-// The same constant LayoutHead.astro builds these tags from.
+// The same constants the site builds these tags from.
+import { SUPPORTED_LANGUAGES } from '../../../config/astro/i18n';
 import { CANONICAL_ORIGIN } from '../../../config/domains';
 
 const PRODUCTION_DOMAIN = CANONICAL_ORIGIN;
@@ -29,9 +30,6 @@ const PRODUCTION_DOMAIN = CANONICAL_ORIGIN;
 const PRODUCTION_ORIGIN_PATTERN = new RegExp(
   `^${PRODUCTION_DOMAIN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`
 );
-
-/** Locales LayoutHead.astro emits an hreflang tag for, alongside x-default. */
-const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'es'];
 
 /** One tag per locale, plus x-default. */
 const EXPECTED_HREFLANG_COUNT = SUPPORTED_LANGUAGES.length + 1;

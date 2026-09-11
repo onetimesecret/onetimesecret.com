@@ -27,6 +27,9 @@ import { test, expect, type Page } from '@playwright/test';
 
 const BANNER_WRAPPER_SELECTOR = '[data-testid="staging-banner-wrapper"]';
 
+/** The colour-mode cycle button in the footer (ColorModeToggle.astro). */
+const THEME_TOGGLE_SELECTOR = '#theme-cycler-button';
+
 /** Eager islands that still carry Astro's pre-hydration marker. See island-hydration.spec.ts. */
 const UNHYDRATED_EAGER_ISLANDS =
   'astro-island[ssr][client="load"], astro-island[ssr][client="only"]';
@@ -70,10 +73,11 @@ async function expectHomepageIntact(page: Page, faults: PageFaults): Promise<voi
   await expect(page.locator('#hero-heading')).toBeVisible();
 
   expect(faults.uncaught).toEqual([]);
-  // Scoped rather than "no console errors at all": ThemeManager reports the
-  // unreachable preference through console.error on this path by design, and
-  // that diagnostic is not the regression. An island that fails to mount is.
-  expect(faults.consoleErrors.filter((text) => text.includes('Error hydrating'))).toEqual([]);
+  // Unfiltered: every storage guard now reports at warn level, so a denied
+  // browser produces no console errors at all. That makes this the most sensitive
+  // form of the hydration gate — it catches an island that throws with any
+  // message, not only Astro's `Error hydrating`.
+  expect(faults.consoleErrors).toEqual([]);
 }
 
 /**
@@ -96,6 +100,22 @@ async function expectSchemeChangeSurvives(page: Page, faults: PageFaults): Promi
   await expect(page.locator('html')).toHaveClass(/\bdark\b/);
 
   expect(faults.uncaught).toEqual([]);
+}
+
+/**
+ * Asserts the colour-mode toggle still works when the theme cannot be persisted.
+ *
+ * ThemeManager.setTheme() applies the theme before it writes, because the write is
+ * the part allowed to fail. With both inside one try, the write threw first and
+ * the click changed nothing on screen: the control was inert for the whole
+ * session, in exactly the browsers this file is about.
+ */
+async function expectThemeToggleWorks(page: Page): Promise<void> {
+  await expect(page.locator('html')).toHaveClass(/\blight\b/);
+
+  await page.locator(THEME_TOGGLE_SELECTOR).click();
+
+  await expect(page.locator('html')).toHaveClass(/\bdark\b/);
 }
 
 test.describe('Web Storage unavailable', () => {
@@ -132,6 +152,22 @@ test.describe('Web Storage unavailable', () => {
 
     await expectHomepageIntact(page, faults);
     await expectSchemeChangeSurvives(page, faults);
+  });
+
+  test('colour-mode toggle still applies a theme it cannot persist', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.addInitScript(() => {
+      Object.defineProperty(window, 'localStorage', {
+        configurable: true,
+        get() {
+          throw new DOMException('localStorage is not available', 'SecurityError');
+        },
+      });
+    });
+
+    await page.goto('/');
+
+    await expectThemeToggleWorks(page);
   });
 
   test('theme is painted once, with no flash, when storage is denied', async ({ page }) => {
@@ -176,6 +212,7 @@ test.describe('Web Storage unavailable', () => {
   });
 
   test('page survives a write that exceeds the storage quota', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' });
     await page.addInitScript(() => {
       Storage.prototype.setItem = function () {
         throw new DOMException('quota exceeded', 'QuotaExceededError');
@@ -186,5 +223,8 @@ test.describe('Web Storage unavailable', () => {
     await page.goto('/');
 
     await expectHomepageIntact(page, faults);
+    // Storage reads fine here; only the write fails, which is the other way the
+    // toggle used to go inert.
+    await expectThemeToggleWorks(page);
   });
 });
