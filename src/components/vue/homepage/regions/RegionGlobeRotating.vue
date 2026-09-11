@@ -332,29 +332,37 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
+/* A zero-size anchor point: the projected coordinate is the box origin, so the
+   dot and the label are both placed relative to it and neither can displace
+   the other. */
 .globe-marker {
   position: absolute;
   top: 0;
   left: 0;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+  width: 0;
+  height: 0;
   transition: opacity 120ms linear;
   will-change: transform, opacity;
 }
 
 .globe-marker-dot {
+  position: absolute;
+  left: -3.25px;
+  top: -3.25px;
   width: 6.5px;
   height: 6.5px;
-  margin-left: -3.25px;
-  margin-top: -3.25px;
   border-radius: 9999px;
   background: var(--color-brand-500);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand-500) 18%, transparent);
   flex-shrink: 0;
 }
 
+/* 3.25px (dot radius) + 5px gap. */
 .globe-marker-label {
+  position: absolute;
+  top: 0;
+  left: 8.25px;
+  transform: translateY(-50%);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -364,9 +372,11 @@ onUnmounted(() => {
 }
 
 /* UK (London) and EU (Nuremberg) are ~9 degrees apart, so their labels collide
-   at some rotation phases. Trail UK's label on the opposite side of its dot. */
-.globe-marker[data-code="UK"] {
-  flex-direction: row-reverse;
+   at some rotation phases. Trail UK's label on the opposite side of its dot —
+   the dot itself stays on the projected coordinate. */
+.globe-marker[data-code="UK"] .globe-marker-label {
+  left: auto;
+  right: 8.25px;
 }
 
 @media (prefers-reduced-motion: reduce) {
