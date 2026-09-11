@@ -19,8 +19,22 @@ import { CANONICAL_ORIGIN } from '../../../config/domains';
 
 const PRODUCTION_DOMAIN = CANONICAL_ORIGIN;
 
+/**
+ * Matches hrefs that start on the production origin.
+ *
+ * The origin is escaped before it becomes a pattern: unescaped, its dots match
+ * any character, so `https://onetimesecretXcom` would have satisfied these
+ * assertions.
+ */
+const PRODUCTION_ORIGIN_PATTERN = new RegExp(
+  `^${PRODUCTION_DOMAIN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`
+);
+
 /** Locales LayoutHead.astro emits an hreflang tag for, alongside x-default. */
 const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'es'];
+
+/** One tag per locale, plus x-default. */
+const EXPECTED_HREFLANG_COUNT = SUPPORTED_LANGUAGES.length + 1;
 
 /**
  * Existence is asserted with `expect(locator).toHaveAttribute()` rather than
@@ -110,7 +124,7 @@ test.describe('Canonical URL - HTML Output Verification', () => {
         .locator('meta[property="og:url"]')
         .getAttribute('content');
 
-      expect(ogUrl).toMatch(new RegExp(`^${PRODUCTION_DOMAIN}`));
+      expect(ogUrl).toMatch(PRODUCTION_ORIGIN_PATTERN);
     });
   });
 
@@ -123,7 +137,7 @@ test.describe('Canonical URL - HTML Output Verification', () => {
       for (const lang of SUPPORTED_LANGUAGES) {
         await expect(
           page.locator(`link[rel="alternate"][hreflang="${lang}"]`)
-        ).toHaveAttribute('href', new RegExp(`^${PRODUCTION_DOMAIN}`));
+        ).toHaveAttribute('href', PRODUCTION_ORIGIN_PATTERN);
       }
     });
 
@@ -133,11 +147,12 @@ test.describe('Canonical URL - HTML Output Verification', () => {
       const hreflangLinks = page.locator('link[rel="alternate"][hreflang]');
 
       // Guard the loop: deleting every hreflang tag would otherwise iterate an
-      // empty list and pass. One tag per locale, plus x-default.
-      expect(await hreflangLinks.count()).toBeGreaterThan(SUPPORTED_LANGUAGES.length);
+      // empty list and pass. The count is exact, so a duplicated or missing tag
+      // fails here too.
+      expect(await hreflangLinks.count()).toBe(EXPECTED_HREFLANG_COUNT);
 
       for (const link of await hreflangLinks.all()) {
-        await expect(link).toHaveAttribute('href', new RegExp(`^${PRODUCTION_DOMAIN}`));
+        await expect(link).toHaveAttribute('href', PRODUCTION_ORIGIN_PATTERN);
       }
     });
 
@@ -146,7 +161,7 @@ test.describe('Canonical URL - HTML Output Verification', () => {
 
       await expect(
         page.locator('link[rel="alternate"][hreflang="x-default"]')
-      ).toHaveAttribute('href', new RegExp(`^${PRODUCTION_DOMAIN}`));
+      ).toHaveAttribute('href', PRODUCTION_ORIGIN_PATTERN);
     });
 
     test('hreflang should have correct language-prefixed paths', async ({
@@ -204,8 +219,9 @@ test.describe('Canonical URL - HTML Output Verification', () => {
         .locator('link[rel="canonical"]')
         .getAttribute('href');
 
-      // Check that root path is handled (either / or without)
-      expect(canonical).toMatch(new RegExp(`^${PRODUCTION_DOMAIN}/?$`));
+      // Exact rather than `/?$`: directory-format output makes the root canonical
+      // the origin plus a slash, and the loose form also accepted the other.
+      expect(canonical).toBe(`${PRODUCTION_DOMAIN}/`);
     });
 
     test('pages without language prefix should work', async ({ page }) => {
@@ -213,7 +229,7 @@ test.describe('Canonical URL - HTML Output Verification', () => {
 
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
         'href',
-        new RegExp(`^${PRODUCTION_DOMAIN}`)
+        PRODUCTION_ORIGIN_PATTERN
       );
     });
   });
@@ -247,7 +263,7 @@ test.describe('Canonical URL - HTML Output Verification', () => {
       const hreflangLinks = page.locator('link[rel="alternate"][hreflang]');
 
       // Guard the loop: with no hreflang tags at all there is nothing to assert.
-      expect(await hreflangLinks.count()).toBeGreaterThan(SUPPORTED_LANGUAGES.length);
+      expect(await hreflangLinks.count()).toBe(EXPECTED_HREFLANG_COUNT);
 
       for (const link of await hreflangLinks.all()) {
         const href = await link.getAttribute('href');
@@ -271,14 +287,13 @@ test.describe('Canonical URL - Cross-Page Consistency', () => {
       await page.goto(path);
 
       // Both tags must exist and name the production domain
-      const productionUrl = new RegExp(`^${PRODUCTION_DOMAIN}`);
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
         'href',
-        productionUrl
+        PRODUCTION_ORIGIN_PATTERN
       );
       await expect(page.locator('meta[property="og:url"]')).toHaveAttribute(
         'content',
-        productionUrl
+        PRODUCTION_ORIGIN_PATTERN
       );
 
       // ...and agree with each other

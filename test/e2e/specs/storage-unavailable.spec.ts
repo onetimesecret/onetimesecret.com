@@ -86,9 +86,15 @@ async function expectHomepageIntact(page: Page, faults: PageFaults): Promise<voi
  * nothing catches it.
  */
 async function expectSchemeChangeSurvives(page: Page, faults: PageFaults): Promise<void> {
-  await page.emulateMedia({ colorScheme: 'dark' });
+  // Both directions, and the class is asserted rather than just the absence of an
+  // error: with storage denied the listener always acts, since no explicit theme
+  // can be read, so the page must follow the OS.
+  await page.emulateMedia({ colorScheme: 'light' });
+  await expect(page.locator('html')).toHaveClass(/\blight\b/);
 
+  await page.emulateMedia({ colorScheme: 'dark' });
   await expect(page.locator('html')).toHaveClass(/\bdark\b/);
+
   expect(faults.uncaught).toEqual([]);
 }
 
@@ -126,6 +132,47 @@ test.describe('Web Storage unavailable', () => {
 
     await expectHomepageIntact(page, faults);
     await expectSchemeChangeSurvives(page, faults);
+  });
+
+  test('theme is painted once, with no flash, when storage is denied', async ({ page }) => {
+    // The inline anti-FOUC script in LayoutHead.astro and ThemeManager must reach
+    // the same answer, or the page paints one theme and flips after hydration.
+    // They diverged on this path while the script consulted the OS preference
+    // inside the same try as the storage read: that threw first, so it painted
+    // dark and then flipped to light for anyone preferring light.
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.addInitScript(() => {
+      const writes: string[] = [];
+      (window as unknown as { __themeClassWrites: string[] }).__themeClassWrites = writes;
+
+      const add = DOMTokenList.prototype.add;
+      DOMTokenList.prototype.add = function (...tokens: string[]) {
+        for (const token of tokens) {
+          if (token === 'light' || token === 'dark') {
+            writes.push(token);
+          }
+        }
+        return add.apply(this, tokens);
+      };
+    });
+    await page.addInitScript(() => {
+      Object.defineProperty(window, 'localStorage', {
+        configurable: true,
+        get() {
+          throw new DOMException('localStorage is not available', 'SecurityError');
+        },
+      });
+    });
+
+    await page.goto('/');
+    await expect(page.locator(BANNER_WRAPPER_SELECTOR)).toBeAttached();
+
+    const writes = await page.evaluate(
+      () => (window as unknown as { __themeClassWrites: string[] }).__themeClassWrites
+    );
+
+    expect(writes.length).toBeGreaterThan(0);
+    expect([...new Set(writes)]).toEqual(['light']);
   });
 
   test('page survives a write that exceeds the storage quota', async ({ page }) => {
