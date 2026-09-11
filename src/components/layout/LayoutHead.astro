@@ -106,14 +106,20 @@ const basePathForAlternates = stripLocalePrefix(currentPath);
 //
 // `??` rather than `||`: a page that passes an empty array is saying it has no
 // alternates, and that has to survive rather than fall through to the default.
-const pageAlternateLanguages =
-  propsAlternateLanguages ??
-  (hasLocalizedVariants(currentPath)
-    ? SUPPORTED_LANGUAGES.map((lang) => ({
-        code: lang,
-        url: `${siteOrigin}/${lang}${basePathForAlternates}`,
-      }))
-    : []);
+// A page asking not to be indexed has nothing to gain from hreflang, and being
+// in a cluster it cannot join costs its siblings their reciprocity, so it
+// advertises nothing at all. src/pages/500.astro is the case: Astro writes it to
+// dist/500.html while its path is /500/, so its x-default named a URL that is
+// never built.
+const pageAlternateLanguages = pageNoindex
+  ? []
+  : (propsAlternateLanguages ??
+    (hasLocalizedVariants(currentPath)
+      ? SUPPORTED_LANGUAGES.map((lang) => ({
+          code: lang,
+          url: `${siteOrigin}/${lang}${basePathForAlternates}`,
+        }))
+      : []));
 
 // The rule, and why it is three cases rather than one, is in
 // resolveXDefaultPath()'s docstring. Built from currentPath, whose consecutive
@@ -195,12 +201,17 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
     rel="sitemap"
     href="/sitemap-index.xml"
   />
-  {/* x-default stays on every page, with or without per-locale alternates. */}
-  <link
-    rel="alternate"
-    hreflang="x-default"
-    href={xDefaultUrl}
-  />
+  {/* x-default stays on every indexable page, with or without per-locale
+      alternates. A noindex page emits no annotations: see pageAlternateLanguages. */}
+  {
+    !pageNoindex && (
+      <link
+        rel="alternate"
+        hreflang="x-default"
+        href={xDefaultUrl}
+      />
+    )
+  }
   <OptimizedFonts />
   <meta
     http-equiv="Content-Security-Policy"

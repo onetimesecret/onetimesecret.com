@@ -298,10 +298,38 @@ test.describe('Canonical URL - HTML Output Verification', () => {
           .locator('link[rel="alternate"][hreflang="x-default"]')
           .getAttribute('href')) ?? '';
 
-      expect(href).toBe(
-        `${PRODUCTION_DOMAIN}${entryPath.replace('/fr/', '/en/')}/`
-      );
+      // Slash normalized off the path read from the index before adding the one
+      // the tag carries: the index links entries unslashed today, and assuming
+      // that would make this fail with "...//" for a reason unrelated to hreflang
+      // if it ever changes, which is the fragility firstChangelogEntryPath() was
+      // written to remove.
+      const enPath = entryPath.replace('/fr/', '/en/').replace(/\/$/, '');
+
+      expect(href).toBe(`${PRODUCTION_DOMAIN}${enPath}/`);
       await expectTargetIsCanonical(page, href, entryPath);
+    });
+
+    test('a noindex page advertises no hreflang at all', async ({ page }) => {
+      // /{lang}/changelog/guide/ is locale-prefixed and its four siblings exist,
+      // so the structural rule would give it a full cluster. It sets
+      // noindex={true}, which wins: annotations on a page that asks not to be
+      // indexed are ignored by Google, and a noindex member costs an indexable
+      // cluster its reciprocity. src/pages/500.astro is the case that forced the
+      // rule, since Astro writes it to dist/500.html while its path is /500/, so
+      // its x-default named a URL that is never built.
+      for (const path of ['/en/changelog/guide', '/500.html']) {
+        await page.goto(path);
+
+        await expect(
+          page.locator('meta[name="robots"]'),
+          `${path} should be noindex`
+        ).toHaveAttribute('content', /noindex/);
+
+        await expect(
+          page.locator('link[rel="alternate"][hreflang]'),
+          `${path} should advertise no hreflang`
+        ).toHaveCount(0);
+      }
     });
 
     test('every member of a cluster names the same x-default', async ({
