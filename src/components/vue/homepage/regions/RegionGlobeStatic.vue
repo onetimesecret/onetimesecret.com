@@ -2,6 +2,7 @@
 <!-- Decorative orthographic globe, fully pre-projected at build time. -->
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { globeStatic } from "@/data/product/regionGeometry.globeStatic";
@@ -10,9 +11,16 @@ import { globeStaticLabelOffset, regionNameKey } from "./regionLabels";
 
 const { t } = useI18n();
 
-/** Four markers, not five: NZ is on the far side of this hemisphere and is
- *  simply absent. The badge list carries the full region set. */
 const geometry = globeStatic;
+
+/** All five regions are represented. The four on the visible hemisphere are
+ *  solid brand dots at their true projected position. NZ is nearly antipodal
+ *  to this sub-point, so it gets a hollow dashed ring OUTSIDE the limb on its
+ *  great-circle bearing: it encodes direction, never position. Four separate
+ *  cues keep the two readings apart — outside the disc vs inside, hollow vs
+ *  filled, dashed vs solid, muted vs brand. */
+const frontMarkers = computed(() => geometry.markers.filter((m) => !m.farSide));
+const farMarkers = computed(() => geometry.markers.filter((m) => m.farSide));
 </script>
 
 <template>
@@ -49,7 +57,7 @@ const geometry = globeStatic;
         :r="geometry.r" />
 
       <g
-        v-for="marker in geometry.markers"
+        v-for="marker in frontMarkers"
         :key="marker.code"
         class="region"
         :data-code="marker.code">
@@ -61,6 +69,32 @@ const geometry = globeStatic;
           :x="marker.x + globeStaticLabelOffset(marker.code).dx"
           :y="marker.y + globeStaticLabelOffset(marker.code).dy"
           :text-anchor="globeStaticLabelOffset(marker.code).anchor">
+          {{ marker.code }}
+        </text>
+      </g>
+
+      <!-- Far side: bearing markers, drawn beyond the limb. -->
+      <g
+        v-for="marker in farMarkers"
+        :key="marker.code"
+        class="region region--far"
+        data-far-side="true"
+        :data-code="marker.code">
+        <title>{{ t(regionNameKey(marker.code)) }}</title>
+        <line
+          v-if="marker.leader"
+          class="region-far-leader"
+          :x1="marker.leader[0]"
+          :y1="marker.leader[1]"
+          :x2="marker.leader[2]"
+          :y2="marker.leader[3]" />
+        <circle class="region-far-ring" :cx="marker.x" :cy="marker.y" r="6.5" />
+        <text
+          v-if="marker.label"
+          class="region-label region-far-label"
+          :x="marker.label.x"
+          :y="marker.label.y"
+          :text-anchor="marker.label.anchor">
           {{ marker.code }}
         </text>
       </g>
@@ -120,5 +154,25 @@ const geometry = globeStatic;
   stroke: var(--color-surface-1);
   stroke-width: 3px;
   stroke-linejoin: round;
+}
+
+.region-far-ring {
+  fill: none;
+  stroke: var(--color-text-secondary);
+  stroke-width: 2;
+  stroke-dasharray: 3.6 3;
+  stroke-opacity: 0.95;
+}
+
+.region-far-leader {
+  stroke: var(--color-text-secondary);
+  stroke-width: 1.5;
+  stroke-dasharray: 2.5 3;
+  stroke-linecap: round;
+  stroke-opacity: 0.8;
+}
+
+.region-far-label {
+  fill: var(--color-text-secondary);
 }
 </style>

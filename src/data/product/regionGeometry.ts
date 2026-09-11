@@ -14,6 +14,8 @@ export type {
   DotMatrixGeometry,
   GlobeRotatingGeometry,
   GlobeStaticGeometry,
+  GlobeStaticLabel,
+  GlobeStaticMarker,
   RegionMarker2D,
 } from "./regionGeometry.types";
 export { dotMatrixCoarse, dotMatrixFine } from "./regionGeometry.dotMatrix";

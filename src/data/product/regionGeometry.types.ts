@@ -20,7 +20,28 @@ export interface DotMatrixGeometry {
   readonly markers: readonly RegionMarker2D[];
 }
 
-/** Fully pre-projected orthographic globe. Far-side regions are absent. */
+/** Where a far-side label sits, and how it aligns against that point. */
+export interface GlobeStaticLabel {
+  readonly x: number;
+  readonly y: number;
+  readonly anchor: "start" | "middle" | "end";
+}
+
+/** A static-globe marker. Front-facing markers are plain `RegionMarker2D`s
+ *  whose x/y is a real projected position. A `farSide` marker's x/y is NOT a
+ *  position: the region lies on the hidden hemisphere, so the point encodes
+ *  only the great-circle BEARING towards it, placed outside the limb. */
+export interface GlobeStaticMarker extends RegionMarker2D {
+  readonly farSide?: boolean;
+  /** Dashed leader stub `[x1, y1, x2, y2]` crossing the limb. Far side only. */
+  readonly leader?: readonly [number, number, number, number];
+  /** Explicit label placement. Far side only; front markers use offsets. */
+  readonly label?: GlobeStaticLabel;
+}
+
+/** Fully pre-projected orthographic globe. Every region is represented: those
+ *  on the hidden hemisphere appear as `farSide` bearing markers, never
+ *  dropped. */
 export interface GlobeStaticGeometry {
   readonly viewBox: string;
   readonly cx: number;
@@ -28,8 +49,7 @@ export interface GlobeStaticGeometry {
   readonly r: number;
   readonly landPath: string;
   readonly graticulePath: string;
-  /** Front-facing regions only. */
-  readonly markers: readonly RegionMarker2D[];
+  readonly markers: readonly GlobeStaticMarker[];
 }
 
 /** Unprojected rings of [lon, lat], projected per frame at runtime. */

@@ -134,14 +134,48 @@ function buildDotMatrix(stepDeg, dotRadius) {
 // --- Variant 2: static globe ----------------------------------------------
 
 // Mid-Atlantic sub-point (~25N 40W) puts CA / EU / UK / US comfortably inside
-// the visible disc. NZ is ~154 degrees away — nearly antipodal — so it is
-// simply absent. (An earlier prototype drew a dashed "far side" rim marker for
-// it; that was rejected. Do not reintroduce it.)
+// the visible disc. NZ is ~147 degrees away — nearly antipodal — so it cannot
+// be plotted. It is NOT dropped: it is emitted as a `farSide` marker whose
+// coordinates encode the great-circle BEARING from the sub-point, drawn
+// outside the limb as a hollow dashed ring. Silently omitting a live region
+// reads as a broken render, not as honest projection geometry.
 const GLOBE_ROTATE = [40, -25];
 const GLOBE_SIZE = 480;
-const GLOBE_MARGIN = 16;
+// The margin is wide enough to hold the far-side ring and its label OUTSIDE
+// the sphere. Nothing else in this composition sits outside the disc, which
+// is the primary cue that the ring is a direction, not a position.
+const GLOBE_MARGIN = 38;
 const GLOBE_R = GLOBE_SIZE / 2 - GLOBE_MARGIN;
 const GLOBE_C = GLOBE_SIZE / 2;
+
+// Radii along the far-side bearing, as offsets from the limb.
+const FAR_RING_OFFSET = 16;
+// The leader starts INSIDE the disc and crosses the limb, which is what reads
+// as "this one continues around the back".
+const FAR_LEADER_INNER = -17;
+const FAR_LEADER_OUTER = 8;
+const FAR_LABEL_OFFSET = 31;
+
+const DEG = Math.PI / 180;
+
+/** Initial great-circle bearing from `from` to `to`, in radians clockwise
+ *  from north. In an orthographic projection this azimuth is preserved at the
+ *  sub-point, so it is the correct screen direction for a far-side region. */
+function bearing(from, to) {
+  const f1 = from.lat * DEG;
+  const f2 = to.lat * DEG;
+  const dl = (to.lon - from.lon) * DEG;
+  return Math.atan2(
+    Math.sin(dl) * Math.cos(f2),
+    Math.cos(f1) * Math.sin(f2) - Math.sin(f1) * Math.cos(f2) * Math.cos(dl),
+  );
+}
+
+function labelAnchor(ux) {
+  if (ux < -0.3) return "end";
+  if (ux > 0.3) return "start";
+  return "middle";
+}
 
 function buildGlobeStatic() {
   const projection = geoOrthographic()
@@ -153,12 +187,36 @@ function buildGlobeStatic() {
   const path = geoPath(projection).digits(1);
   const center = [-GLOBE_ROTATE[0], -GLOBE_ROTATE[1]];
 
+  // REGIONS is a fixed, ordered literal, so marker order is stable across runs.
   const markers = [];
   for (const r of REGIONS) {
     const point = [r.lon, r.lat];
-    if (geoDistance(point, center) >= Math.PI / 2) continue; // far side: omit
-    const [x, y] = projection(point);
-    markers.push({ code: r.code, x: round(x, 1), y: round(y, 1) });
+    if (geoDistance(point, center) < Math.PI / 2) {
+      const [x, y] = projection(point);
+      markers.push({ code: r.code, x: round(x, 1), y: round(y, 1) });
+      continue;
+    }
+
+    const theta = bearing({ lat: center[1], lon: center[0] }, { ...r });
+    // Screen-space unit vector for that bearing (SVG y grows downward).
+    const ux = Math.sin(theta);
+    const uy = -Math.cos(theta);
+    const at = (offset) => [
+      round(GLOBE_C + (GLOBE_R + offset) * ux, 1),
+      round(GLOBE_C + (GLOBE_R + offset) * uy, 1),
+    ];
+    const [rx, ry] = at(FAR_RING_OFFSET);
+    const [lx1, ly1] = at(FAR_LEADER_INNER);
+    const [lx2, ly2] = at(FAR_LEADER_OUTER);
+    const [tx, ty] = at(FAR_LABEL_OFFSET);
+    markers.push({
+      code: r.code,
+      x: rx,
+      y: ry,
+      farSide: true,
+      leader: [lx1, ly1, lx2, ly2],
+      label: { x: tx, y: round(ty + 4, 1), anchor: labelAnchor(ux) },
+    });
   }
 
   return {
@@ -232,6 +290,20 @@ const jsonMarkers = (markers) =>
     .map((m) => `    { code: "${m.code}", x: ${m.x}, y: ${m.y} },`)
     .join("\n")}\n  ]`;
 
+const jsonGlobeMarkers = (markers) =>
+  `[\n${markers
+    .map((m) => {
+      const head = `    { code: "${m.code}", x: ${m.x}, y: ${m.y}`;
+      if (!m.farSide) return `${head} },`;
+      return (
+        `${head}, farSide: true,\n` +
+        `      leader: [${m.leader.join(", ")}],\n` +
+        `      label: { x: ${m.label.x}, y: ${m.label.y}, ` +
+        `anchor: "${m.label.anchor}" } },`
+      );
+    })
+    .join("\n")}\n  ]`;
+
 const BANNER = `/**
  * GENERATED FILE — DO NOT EDIT BY HAND.
  *
@@ -262,7 +334,28 @@ export interface DotMatrixGeometry {
   readonly markers: readonly RegionMarker2D[];
 }
 
-/** Fully pre-projected orthographic globe. Far-side regions are absent. */
+/** Where a far-side label sits, and how it aligns against that point. */
+export interface GlobeStaticLabel {
+  readonly x: number;
+  readonly y: number;
+  readonly anchor: "start" | "middle" | "end";
+}
+
+/** A static-globe marker. Front-facing markers are plain \`RegionMarker2D\`s
+ *  whose x/y is a real projected position. A \`farSide\` marker's x/y is NOT a
+ *  position: the region lies on the hidden hemisphere, so the point encodes
+ *  only the great-circle BEARING towards it, placed outside the limb. */
+export interface GlobeStaticMarker extends RegionMarker2D {
+  readonly farSide?: boolean;
+  /** Dashed leader stub \`[x1, y1, x2, y2]\` crossing the limb. Far side only. */
+  readonly leader?: readonly [number, number, number, number];
+  /** Explicit label placement. Far side only; front markers use offsets. */
+  readonly label?: GlobeStaticLabel;
+}
+
+/** Fully pre-projected orthographic globe. Every region is represented: those
+ *  on the hidden hemisphere appear as \`farSide\` bearing markers, never
+ *  dropped. */
 export interface GlobeStaticGeometry {
   readonly viewBox: string;
   readonly cx: number;
@@ -270,8 +363,7 @@ export interface GlobeStaticGeometry {
   readonly r: number;
   readonly landPath: string;
   readonly graticulePath: string;
-  /** Front-facing regions only. */
-  readonly markers: readonly RegionMarker2D[];
+  readonly markers: readonly GlobeStaticMarker[];
 }
 
 /** Unprojected rings of [lon, lat], projected per frame at runtime. */
@@ -318,7 +410,7 @@ export const globeStatic: GlobeStaticGeometry = {
     "${globe.landPath}",
   graticulePath:
     "${globe.graticulePath}",
-  markers: ${jsonMarkers(globe.markers)},
+  markers: ${jsonGlobeMarkers(globe.markers)},
 };
 `;
 }
@@ -352,6 +444,8 @@ export type {
   DotMatrixGeometry,
   GlobeRotatingGeometry,
   GlobeStaticGeometry,
+  GlobeStaticLabel,
+  GlobeStaticMarker,
   RegionMarker2D,
 } from "./regionGeometry.types";
 export { dotMatrixCoarse, dotMatrixFine } from "./regionGeometry.dotMatrix";
