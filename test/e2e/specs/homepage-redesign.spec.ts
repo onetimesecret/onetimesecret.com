@@ -13,11 +13,34 @@
  *   - Badge-dot element presence in DOM (animation is CSS-only)
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Locator, type Page } from '@playwright/test';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Resolves the Docs nav link for the viewport under test.
+ *
+ * LayoutHeader.astro renders the desktop nav as `hidden md:flex` and keeps the
+ * mobile menu panel hidden until the hamburger is tapped, so the link lives in a
+ * different place in each project. On mobile we tap the hamburger rather than
+ * skip: the toggle is wired up by the inline script in LayoutHeader.astro, so
+ * opening the panel also gates that the menu still works — the kind of
+ * JavaScript-dependent control the mobile project exists to cover.
+ */
+async function docsNavLink(page: Page, isMobile: boolean | undefined): Promise<Locator> {
+  if (!isMobile) {
+    return page.getByRole('link', { name: /^docs$/i }).first();
+  }
+
+  const panel = page.locator('#mobile-navigation-menu');
+  await expect(panel).toBeHidden();
+  await page.locator('#mobile-menu-button').click();
+  await expect(panel).toBeVisible();
+
+  return panel.getByRole('link', { name: /^docs$/i });
+}
 
 /** Collect all browser console errors emitted during a page load. */
 async function collectConsoleErrors(
@@ -194,37 +217,29 @@ test.describe('Homepage redesign — footer columns', () => {
 // ---------------------------------------------------------------------------
 
 test.describe('Homepage redesign — nav Docs link', () => {
-  // LayoutHeader.astro renders the desktop nav as `hidden md:flex` and keeps the
-  // mobile menu panel hidden until the hamburger is tapped, so at mobile widths
-  // no nav link is in the accessibility tree for getByRole to find.
-  test.skip(({ isMobile }) => !!isMobile, 'desktop navigation only');
-
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
   });
 
-  test('Docs link is present in desktop navigation', async ({ page }) => {
-    // The nav renders on desktop viewport; Playwright uses desktop Chrome by default
-    const docsLink = page.getByRole('link', { name: /^docs$/i }).first();
-    await expect(docsLink).toBeAttached();
+  test('Docs link is reachable from the navigation', async ({ page, isMobile }) => {
+    // Visible, not merely attached: on mobile the panel's links are in the DOM
+    // the whole time, so attachment alone would pass with the menu stuck shut.
+    await expect(await docsNavLink(page, isMobile)).toBeVisible();
   });
 
-  test('Docs link has target="_blank"', async ({ page }) => {
-    const docsLink = page.getByRole('link', { name: /^docs$/i }).first();
-    const target = await docsLink.getAttribute('target');
-    expect(target).toBe('_blank');
+  test('Docs link has target="_blank"', async ({ page, isMobile }) => {
+    await expect(await docsNavLink(page, isMobile)).toHaveAttribute('target', '_blank');
   });
 
-  test('Docs link has rel containing "noopener"', async ({ page }) => {
-    const docsLink = page.getByRole('link', { name: /^docs$/i }).first();
-    const rel = await docsLink.getAttribute('rel');
-    expect(rel).toContain('noopener');
+  test('Docs link has rel containing "noopener"', async ({ page, isMobile }) => {
+    await expect(await docsNavLink(page, isMobile)).toHaveAttribute('rel', /noopener/);
   });
 
-  test('Docs link href points to docs.onetimesecret.com', async ({ page }) => {
-    const docsLink = page.getByRole('link', { name: /^docs$/i }).first();
-    const href = await docsLink.getAttribute('href');
-    expect(href).toContain('docs.onetimesecret.com');
+  test('Docs link href points to docs.onetimesecret.com', async ({ page, isMobile }) => {
+    await expect(await docsNavLink(page, isMobile)).toHaveAttribute(
+      'href',
+      /docs\.onetimesecret\.com/
+    );
   });
 });
 

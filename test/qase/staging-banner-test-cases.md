@@ -2,6 +2,9 @@
 
 ## Suite: UI-001 Staging Banner
 
+The dismiss control was removed in commit 630ff03, so TC-UI-004 through TC-UI-010 and TC-UI-014
+are retired; see **Retired Cases** at the end. Their IDs are not reused.
+
 ### TC-UI-001: Banner Visible on Staging
 
 **Title**: Staging banner should be visible on onetimesecret.dev
@@ -9,12 +12,11 @@
 **Severity**: Critical
 **Type**: Functional
 **Automation**: Automated
-**Preconditions**: localStorage cleared, accessing staging domain
+**Preconditions**: accessing staging domain
 
 **Steps**:
-1. Clear browser localStorage
-2. Navigate to https://onetimesecret.dev/
-3. Observe top of page
+1. Navigate to https://onetimesecret.dev/
+2. Observe top of page
 
 **Expected Result**:
 - Staging banner is visible
@@ -55,139 +57,6 @@
 
 **Expected Result**:
 - No staging banner visible
-
----
-
-### TC-UI-004: Dismiss Button Functionality
-
-**Title**: Clicking dismiss should hide the banner
-**Priority**: High
-**Severity**: Critical
-**Type**: Functional
-**Automation**: Automated
-**Preconditions**: Banner is visible
-
-**Steps**:
-1. Navigate to staging with cleared localStorage
-2. Observe banner is visible
-3. Click dismiss/close button
-
-**Expected Result**:
-- Banner hides immediately
-- Page content adjusts smoothly
-- No console errors
-
----
-
-### TC-UI-005: Dismiss Persists to localStorage
-
-**Title**: Dismiss state should be saved to localStorage
-**Priority**: High
-**Severity**: Critical
-**Type**: Functional
-**Automation**: Automated
-
-**Steps**:
-1. Dismiss the staging banner
-2. Open DevTools > Application > Local Storage
-3. Inspect stored values
-
-**Expected Result**:
-- Key `stagingBannerDismissedAt` exists
-- Value is valid ISO 8601 timestamp
-
----
-
-### TC-UI-006: Dismiss Persists After Refresh
-
-**Title**: Banner should stay hidden after page refresh
-**Priority**: High
-**Severity**: Critical
-**Type**: Functional
-**Automation**: Automated
-
-**Steps**:
-1. Dismiss the banner
-2. Refresh the page (F5)
-3. Observe page
-
-**Expected Result**:
-- Banner remains hidden after refresh
-
----
-
-### TC-UI-007: Dismiss Persists Across Navigation
-
-**Title**: Banner should stay hidden when navigating
-**Priority**: High
-**Severity**: Major
-**Type**: Functional
-**Automation**: Automated
-
-**Steps**:
-1. Dismiss banner on homepage
-2. Click link to another page (e.g., /about)
-3. Observe page
-
-**Expected Result**:
-- Banner remains hidden on all pages
-
----
-
-### TC-UI-008: 7-Day Expiration - Banner Returns
-
-**Title**: Banner should reappear after 7 days
-**Priority**: High
-**Severity**: Critical
-**Type**: Functional
-**Automation**: Manual/Automated
-
-**Steps**:
-1. Dismiss banner
-2. Modify localStorage timestamp to 8 days ago
-3. Refresh page
-
-**Expected Result**:
-- Banner reappears
-- User can dismiss again
-
----
-
-### TC-UI-009: Within 7 Days - Banner Stays Hidden
-
-**Title**: Banner should stay hidden within 7-day window
-**Priority**: Medium
-**Severity**: Major
-**Type**: Functional
-**Automation**: Automated
-
-**Steps**:
-1. Dismiss banner
-2. Modify localStorage timestamp to 6 days ago
-3. Refresh page
-
-**Expected Result**:
-- Banner remains hidden
-
----
-
-### TC-UI-010: localStorage Unavailable
-
-**Title**: Component should handle localStorage errors gracefully
-**Priority**: Medium
-**Severity**: Major
-**Type**: Error Handling
-**Automation**: Automated
-
-**Steps**:
-1. Block localStorage access (incognito mode or script)
-2. Navigate to staging
-3. Attempt to dismiss banner
-
-**Expected Result**:
-- No console errors thrown
-- Banner hides for current session
-- May reappear on refresh (expected)
 
 ---
 
@@ -247,26 +116,6 @@
 
 ---
 
-### TC-UI-014: Accessibility - Dismiss Button
-
-**Title**: Dismiss button should have proper accessibility attributes
-**Priority**: Medium
-**Severity**: Major
-**Type**: Accessibility
-**Automation**: Automated
-
-**Steps**:
-1. Inspect dismiss button with accessibility tools
-2. Check for aria-label
-3. Test keyboard navigation
-
-**Expected Result**:
-- aria-label is present and descriptive
-- Button is keyboard focusable
-- Focus state is visible
-
----
-
 ### TC-UI-015: Accessibility - Keyboard Navigation
 
 **Title**: Banner should be fully keyboard accessible
@@ -277,12 +126,11 @@
 
 **Steps**:
 1. Tab through banner elements
-2. Activate dismiss with Enter/Space
-3. Activate production link with Enter
+2. Activate production link with Enter
 
 **Expected Result**:
-- All interactive elements reachable via keyboard
-- Enter/Space activates buttons
+- The production link, the banner's only interactive element, is reachable via keyboard
+- Enter follows the link
 - Logical tab order
 
 ---
@@ -370,37 +218,32 @@
 **Automation**: Manual
 
 **Steps**:
-1. Load page with banner
-2. Dismiss banner
+1. Load a staging page and watch the top of the document as it hydrates
+2. Load the same page on production, where the banner does not render
 3. Observe layout
 
 **Expected Result**:
-- Content adjusts smoothly
-- No jarring layout shift (CLS)
+- No jarring layout shift (CLS): the wrapper reserves its space before the `client:only` island
+  mounts, and collapses to zero height off staging
 
 ---
 
 ## Automation Coverage
 
+The Playwright cases no longer skip: the spec serves the local preview build under
+`https://onetimesecret.dev` via request interception, so the staging hostname branch runs in CI.
+
 | Test Case | Vitest | Playwright | Manual |
 |-----------|--------|------------|--------|
-| TC-UI-001 | No | Yes (skip) | Yes |
+| TC-UI-001 | No | Yes | No |
 | TC-UI-002 | Yes | Yes | No |
 | TC-UI-003 | Yes | Yes | No |
-| TC-UI-004 | Yes | Yes (skip) | Yes |
-| TC-UI-005 | Yes | Yes (skip) | Yes |
-| TC-UI-006 | Yes | Yes (skip) | Yes |
-| TC-UI-007 | Yes | Yes (skip) | Yes |
-| TC-UI-008 | Yes | Yes (skip) | Yes |
-| TC-UI-009 | Yes | Yes (skip) | No |
-| TC-UI-010 | Yes | Yes | No |
-| TC-UI-011 | Yes | Yes (skip) | Yes |
-| TC-UI-012 | No | No | Yes |
-| TC-UI-013 | No | Yes (skip) | Yes |
-| TC-UI-014 | Yes | Yes (skip) | Yes |
-| TC-UI-015 | Yes | Yes (skip) | Yes |
-| TC-UI-016 | No | No | Yes |
-| TC-UI-017 | No | Yes (skip) | Yes |
+| TC-UI-011 | Yes | Yes | No |
+| TC-UI-012 | No | Yes | Yes |
+| TC-UI-013 | No | Yes | Yes |
+| TC-UI-015 | Yes | No | Yes |
+| TC-UI-016 | No | Yes | Yes |
+| TC-UI-017 | No | Yes | Yes |
 | TC-UI-018 | No | No | Yes |
 | TC-UI-019 | No | No | Yes |
 | TC-UI-020 | No | No | Yes |
@@ -413,17 +256,16 @@
 
 ## Component Requirements
 
-The StagingBanner.vue component should include:
+The data-testid attributes the E2E spec selects on:
 
 ```vue
-<!-- Required data-testid attributes for E2E testing -->
-<div data-testid="staging-banner">
-  <button data-testid="staging-banner-dismiss" aria-label="Dismiss staging banner">
-    <!-- X icon -->
-  </button>
-  <a data-testid="staging-banner-production-link" href="https://onetimesecret.com">
-    Go to live site
-  </a>
+<!-- Wrapper always renders so it can reserve space before hydration -->
+<div data-testid="staging-banner-wrapper">
+  <div data-testid="staging-banner" role="alert" aria-live="polite">
+    <a data-testid="staging-banner-production-link" href="https://onetimesecret.com">
+      Go to onetimesecret.com
+    </a>
+  </div>
 </div>
 ```
 
@@ -431,9 +273,19 @@ The StagingBanner.vue component should include:
 
 ```json
 {
-  "banner.staging.message": "You are viewing the staging environment",
-  "banner.staging.go-to-production": "Go to live site",
-  "banner.staging.dismiss": "Dismiss",
-  "banner.staging.aria-dismiss": "Dismiss staging banner"
+  "banner.staging-warning": "You are viewing our official staging environment",
+  "banner.staging-description": "Content here is for testing and may differ from production.",
+  "banner.go-to-production": "Go to onetimesecret.com"
 }
 ```
+
+## Retired Cases
+
+Removed with the dismiss control in commit 630ff03 ("Remove dismiss functionality from staging
+banner"). The IDs stay retired so Qase history keeps pointing at the right thing:
+
+- TC-UI-004 through TC-UI-007: the dismiss button and the persistence of its state
+- TC-UI-008, TC-UI-009: the 7-day expiration window
+- TC-UI-010: localStorage unavailable. The page-level version now runs automatically in
+  `test/e2e/specs/storage-unavailable.spec.ts`
+- TC-UI-014: accessibility of the dismiss button

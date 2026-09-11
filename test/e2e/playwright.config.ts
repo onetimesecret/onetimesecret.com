@@ -48,11 +48,26 @@ export default defineConfig({
     url: 'http://localhost:4321',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
-    // Astro 7 detaches `astro preview` into a background process when it
-    // detects an AI-agent environment, which makes Playwright see the command
-    // exit immediately and give up ("webServer exited early"). This opts out of
-    // that detection so the server stays in the foreground under Playwright's
-    // control. Unset environments (CI, a normal shell) are unaffected.
+    // Astro 7 detaches `astro preview` into a background process when it detects
+    // an AI-agent environment (`am-i-vibing`), which makes Playwright see the
+    // command exit immediately and give up ("webServer exited early").
+    //
+    // The variable name reads backwards here. It is the marker Astro sets on the
+    // child it spawns — `env: { ...process.env, [config.envVar]: "1" }` in
+    // node_modules/astro/dist/cli/server.js — and its presence is what stops the
+    // CLI detecting an agent a second time:
+    //
+    //   agentDetected = !process.env.ASTRO_PREVIEW_BACKGROUND && isRunByAgent()
+    //   wantsBackground = !!flags.background || agentDetected
+    //
+    // (node_modules/astro/dist/cli/preview/index.js). Only the `--background` flag
+    // asks for a detached server, so setting this means "already the server, do
+    // not re-spawn" and preview stays in the foreground under Playwright's
+    // control. Where nothing is detected (CI, a normal shell) behaviour is
+    // identical with or without it.
+    //
+    // If a future Astro release renames or drops the flag, the symptom is
+    // "webServer exited early" again when the suite runs under an agent.
     env: { ASTRO_PREVIEW_BACKGROUND: '1' },
   },
 });

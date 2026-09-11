@@ -16,6 +16,17 @@ import { test, expect } from '@playwright/test';
 
 const PRODUCTION_DOMAIN = 'https://onetimesecret.com';
 
+/** Locales LayoutHead.astro emits an hreflang tag for, alongside x-default. */
+const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'es'];
+
+/**
+ * Existence is asserted with `expect(locator).toHaveAttribute()` rather than
+ * `expect(await locator.getAttribute())`: getAttribute() resolves to
+ * `string | null`, so the `expect(value).toBeDefined()` these tests used to open
+ * with passed when the tag was missing entirely. toHaveAttribute fails on a
+ * missing element or attribute, and auto-waits.
+ */
+
 test.describe('Canonical URL - HTML Output Verification', () => {
   test.describe('Canonical Link Tag', () => {
     test('homepage should have canonical pointing to production', async ({ page }) => {
@@ -106,38 +117,33 @@ test.describe('Canonical URL - HTML Output Verification', () => {
     }) => {
       await page.goto('/en/about');
 
-      const languages = ['en', 'fr', 'de', 'es'];
-
-      for (const lang of languages) {
-        const hreflang = await page
-          .locator(`link[rel="alternate"][hreflang="${lang}"]`)
-          .getAttribute('href');
-
-        expect(hreflang).toBeDefined();
-        expect(hreflang).toMatch(new RegExp(`^${PRODUCTION_DOMAIN}`));
+      for (const lang of SUPPORTED_LANGUAGES) {
+        await expect(
+          page.locator(`link[rel="alternate"][hreflang="${lang}"]`)
+        ).toHaveAttribute('href', new RegExp(`^${PRODUCTION_DOMAIN}`));
       }
     });
 
     test('hreflang links should use production domain', async ({ page }) => {
       await page.goto('/en/about');
 
-      const hreflangLinks = await page.locator('link[rel="alternate"][hreflang]').all();
+      const hreflangLinks = page.locator('link[rel="alternate"][hreflang]');
 
-      for (const link of hreflangLinks) {
-        const href = await link.getAttribute('href');
-        expect(href).toMatch(new RegExp(`^${PRODUCTION_DOMAIN}`));
+      // Guard the loop: deleting every hreflang tag would otherwise iterate an
+      // empty list and pass. One tag per locale, plus x-default.
+      expect(await hreflangLinks.count()).toBeGreaterThan(SUPPORTED_LANGUAGES.length);
+
+      for (const link of await hreflangLinks.all()) {
+        await expect(link).toHaveAttribute('href', new RegExp(`^${PRODUCTION_DOMAIN}`));
       }
     });
 
     test('x-default hreflang should use production domain', async ({ page }) => {
       await page.goto('/en/about');
 
-      const xDefault = await page
-        .locator('link[rel="alternate"][hreflang="x-default"]')
-        .getAttribute('href');
-
-      expect(xDefault).toBeDefined();
-      expect(xDefault).toMatch(new RegExp(`^${PRODUCTION_DOMAIN}`));
+      await expect(
+        page.locator('link[rel="alternate"][hreflang="x-default"]')
+      ).toHaveAttribute('href', new RegExp(`^${PRODUCTION_DOMAIN}`));
     });
 
     test('hreflang should have correct language-prefixed paths', async ({
@@ -162,34 +168,28 @@ test.describe('Canonical URL - HTML Output Verification', () => {
     test('og:image should have absolute URL', async ({ page }) => {
       await page.goto('/');
 
-      const ogImage = await page
-        .locator('meta[property="og:image"]')
-        .getAttribute('content');
-
-      expect(ogImage).toBeDefined();
-      expect(ogImage).toMatch(/^https?:\/\//);
+      await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+        'content',
+        /^https?:\/\//
+      );
     });
 
     test('twitter:image should have absolute URL', async ({ page }) => {
       await page.goto('/');
 
-      const twitterImage = await page
-        .locator('meta[name="twitter:image"]')
-        .getAttribute('content');
-
-      expect(twitterImage).toBeDefined();
-      expect(twitterImage).toMatch(/^https?:\/\//);
+      await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute(
+        'content',
+        /^https?:\/\//
+      );
     });
 
     test('description meta tag should exist', async ({ page }) => {
       await page.goto('/');
 
-      const description = await page
-        .locator('meta[name="description"]')
-        .getAttribute('content');
-
-      expect(description).toBeDefined();
-      expect(description?.length).toBeGreaterThan(0);
+      await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+        'content',
+        /\S/
+      );
     });
   });
 
@@ -208,12 +208,10 @@ test.describe('Canonical URL - HTML Output Verification', () => {
     test('pages without language prefix should work', async ({ page }) => {
       await page.goto('/pricing');
 
-      const canonical = await page
-        .locator('link[rel="canonical"]')
-        .getAttribute('href');
-
-      expect(canonical).toBeDefined();
-      expect(canonical).toMatch(new RegExp(`^${PRODUCTION_DOMAIN}`));
+      await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+        'href',
+        new RegExp(`^${PRODUCTION_DOMAIN}`)
+      );
     });
   });
 
@@ -243,9 +241,12 @@ test.describe('Canonical URL - HTML Output Verification', () => {
     test('all hreflang should not contain staging domain', async ({ page }) => {
       await page.goto('/en/about');
 
-      const hreflangLinks = await page.locator('link[rel="alternate"][hreflang]').all();
+      const hreflangLinks = page.locator('link[rel="alternate"][hreflang]');
 
-      for (const link of hreflangLinks) {
+      // Guard the loop: with no hreflang tags at all there is nothing to assert.
+      expect(await hreflangLinks.count()).toBeGreaterThan(SUPPORTED_LANGUAGES.length);
+
+      for (const link of await hreflangLinks.all()) {
         const href = await link.getAttribute('href');
         expect(href).not.toContain('onetimesecret.dev');
         expect(href).not.toContain('localhost');
@@ -266,23 +267,25 @@ test.describe('Canonical URL - Cross-Page Consistency', () => {
     test(`${name} should have valid canonical structure`, async ({ page }) => {
       await page.goto(path);
 
-      // Check canonical exists
+      // Both tags must exist and name the production domain
+      const productionUrl = new RegExp(`^${PRODUCTION_DOMAIN}`);
+      await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+        'href',
+        productionUrl
+      );
+      await expect(page.locator('meta[property="og:url"]')).toHaveAttribute(
+        'content',
+        productionUrl
+      );
+
+      // ...and agree with each other
       const canonical = await page
         .locator('link[rel="canonical"]')
         .getAttribute('href');
-      expect(canonical).toBeDefined();
-
-      // Check og:url exists
       const ogUrl = await page
         .locator('meta[property="og:url"]')
         .getAttribute('content');
-      expect(ogUrl).toBeDefined();
-
-      // Check they match
       expect(ogUrl).toBe(canonical);
-
-      // Check production domain
-      expect(canonical).toMatch(new RegExp(`^${PRODUCTION_DOMAIN}`));
     });
   }
 });

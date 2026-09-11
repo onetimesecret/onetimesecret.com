@@ -11,6 +11,9 @@
  * The banner has no dismiss control. It was removed in commit 630ff03 ("Remove
  * dismiss functionality from staging banner"), along with the localStorage
  * dismissal state and its 7-day expiry, so there are no tests for those here.
+ * The component touches no storage at all now; the two tests that covered the
+ * page surviving an unusable localStorage moved to storage-unavailable.spec.ts,
+ * where the code that does read storage lives.
  */
 
 import { test, expect, Page } from '@playwright/test';
@@ -35,6 +38,23 @@ async function serveBuildAsStaging(
   baseURL: string,
   origin: string = STAGING_ORIGIN
 ): Promise<void> {
+  // Tests that measure both colour schemes load twice; clear first so handlers
+  // do not stack up across loads within one test.
+  await page.unrouteAll({ behavior: 'ignoreErrors' });
+
+  // Registered first, so it is the fallback: Playwright runs handlers in reverse
+  // registration order. The build is self-contained today, and aborting anything
+  // off-origin keeps it that way — a third-party script added later fails here
+  // instead of making CI depend on the network.
+  await page.route('**/*', async (route) => {
+    const url = route.request().url();
+    if (url.startsWith(origin) || url.startsWith(baseURL)) {
+      await route.fallback();
+      return;
+    }
+    await route.abort();
+  });
+
   await page.route(`${origin}/**`, async (route) => {
     const requested = new URL(route.request().url());
     const local = new URL(requested.pathname + requested.search, baseURL);
@@ -55,17 +75,51 @@ test.afterEach(async ({ page }) => {
   await page.unrouteAll({ behavior: 'ignoreErrors' }).catch(() => {});
 });
 
-/** Loads a path on the staging origin with the local build behind it. */
+/** Loads a path on a staging origin with the local build behind it. */
 async function gotoStaging(
   page: Page,
   baseURL: string | undefined,
-  path = '/'
+  path = '/',
+  origin: string = STAGING_ORIGIN
 ): Promise<void> {
   if (!baseURL) {
     throw new Error('baseURL is required; set it in playwright.config.ts');
   }
-  await serveBuildAsStaging(page, baseURL);
-  await page.goto(`${STAGING_ORIGIN}${path}`);
+  await serveBuildAsStaging(page, baseURL, origin);
+  await page.goto(`${origin}${path}`);
+}
+
+/**
+ * Colours the banner resolves to under the given colour scheme.
+ *
+ * tailwind.css declares `dark` as a class variant
+ * (`@custom-variant dark (&:where(.dark, .dark *))`), so the emulated scheme only
+ * reaches the banner through the inline theme script in LayoutHead.astro, which
+ * reads prefers-color-scheme and sets the class on <html>. Both steps are
+ * asserted here before the colours are read.
+ */
+async function bannerColoursUnder(
+  page: Page,
+  baseURL: string | undefined,
+  colorScheme: 'light' | 'dark'
+): Promise<Record<string, string>> {
+  await page.emulateMedia({ colorScheme });
+  await gotoStaging(page, baseURL);
+
+  const banner = page.locator(BANNER_SELECTOR);
+  await expect(banner).toBeVisible();
+  await expect(page.locator('html')).toHaveClass(new RegExp(`\\b${colorScheme}\\b`));
+
+  return banner.evaluate((element) => {
+    const box = getComputedStyle(element);
+    const headline = element.querySelector('p');
+    if (!headline) throw new Error('banner headline paragraph is missing');
+    return {
+      backgroundColor: box.backgroundColor,
+      borderBottomColor: box.borderBottomColor,
+      headlineColor: getComputedStyle(headline).color,
+    };
+  });
 }
 
 test.describe('StagingBanner - Visibility', () => {
@@ -93,10 +147,7 @@ test.describe('StagingBanner - Visibility', () => {
 
   test('banner should be visible on a staging subdomain', async ({ page, baseURL }) => {
     // isStagingHostname() matches subdomains of the staging apex too
-    const subdomain = 'https://web.onetimesecret.dev';
-    if (!baseURL) throw new Error('baseURL is required; set it in playwright.config.ts');
-    await serveBuildAsStaging(page, baseURL, subdomain);
-    await page.goto(`${subdomain}/`);
+    await gotoStaging(page, baseURL, '/', 'https://web.onetimesecret.dev');
 
     await expect(page.locator(BANNER_SELECTOR)).toBeVisible();
   });
@@ -126,19 +177,20 @@ test.describe('StagingBanner - Content', () => {
 
     const link = page.locator(PRODUCTION_LINK_SELECTOR);
     await expect(link).toBeVisible();
-    expect(await link.getAttribute('href')).toBe(PRODUCTION_ORIGIN);
+    await expect(link).toHaveAttribute('href', PRODUCTION_ORIGIN);
   });
 
-  test('production link opening a new tab must carry rel="noopener"', async ({
-    page,
-    baseURL,
-  }) => {
+  test('production link stays in the same tab', async ({ page, baseURL }) => {
     await gotoStaging(page, baseURL);
 
-    const link = page.locator(PRODUCTION_LINK_SELECTOR);
-    if ((await link.getAttribute('target')) === '_blank') {
-      expect(await link.getAttribute('rel')).toContain('noopener');
-    }
+    // Replaces a `if (target === '_blank') expect(rel).toContain('noopener')`
+    // guard that never ran, because the component renders no target and so
+    // reported green having asserted nothing. Pinning the current contract means
+    // adding target="_blank" later fails here until rel="noopener" is decided on.
+    await expect(page.locator(PRODUCTION_LINK_SELECTOR)).not.toHaveAttribute(
+      'target',
+      '_blank'
+    );
   });
 });
 
@@ -153,24 +205,37 @@ test.describe('StagingBanner - Accessibility', () => {
 });
 
 test.describe('StagingBanner - Styling', () => {
-  test('banner should be visible in light mode', async ({ page, baseURL }) => {
-    await page.emulateMedia({ colorScheme: 'light' });
-    await gotoStaging(page, baseURL);
+  test('banner colours track the active colour scheme', async ({ page, baseURL }) => {
+    const light = await bannerColoursUnder(page, baseURL, 'light');
+    const dark = await bannerColoursUnder(page, baseURL, 'dark');
 
-    await expect(page.locator(BANNER_SELECTOR)).toBeVisible();
-  });
-
-  test('banner should adapt to dark mode', async ({ page, baseURL }) => {
-    await page.emulateMedia({ colorScheme: 'dark' });
-    await gotoStaging(page, baseURL);
-
-    await expect(page.locator(BANNER_SELECTOR)).toBeVisible();
+    // This replaces a pair of tests that only asserted the banner was visible in
+    // each scheme, which would have passed with every `dark:` utility stripped
+    // off the component. The banner carries bg-amber-50/dark:bg-amber-950,
+    // border-amber-300/dark:border-amber-800 and text-amber-900/dark:text-amber-100,
+    // so none of the three may resolve to the same value in both schemes.
+    // Comparing the two schemes against each other rather than against palette
+    // literals keeps this honest across a Tailwind palette bump.
+    for (const property of Object.keys(dark)) {
+      expect(
+        dark[property],
+        `${property} should differ between light and dark`
+      ).not.toBe(light[property]);
+    }
   });
 });
 
 test.describe('StagingBanner - Responsive Design', () => {
-  test('banner should be visible on mobile viewport', async ({ page, baseURL }) => {
-    await page.setViewportSize({ width: 375, height: 667 });
+  test('banner should be visible on mobile viewport', async ({
+    page,
+    baseURL,
+    isMobile,
+  }) => {
+    // Mobile Chrome already runs at a phone viewport; only the desktop project
+    // needs one set here.
+    if (!isMobile) {
+      await page.setViewportSize({ width: 375, height: 667 });
+    }
     await gotoStaging(page, baseURL);
 
     await expect(page.locator(BANNER_SELECTOR)).toBeVisible();
@@ -179,35 +244,5 @@ test.describe('StagingBanner - Responsive Design', () => {
     const bodyScrollWidth = await page.evaluate(() => document.body.scrollWidth);
     const viewportWidth = await page.evaluate(() => window.innerWidth);
     expect(bodyScrollWidth).toBeLessThanOrEqual(viewportWidth + 1);
-  });
-});
-
-test.describe('StagingBanner - localStorage Error Handling', () => {
-  test('should handle localStorage being unavailable', async ({ page }) => {
-    // Block localStorage
-    await page.addInitScript(() => {
-      Object.defineProperty(window, 'localStorage', {
-        value: null,
-        configurable: true,
-      });
-    });
-
-    // This should not throw errors
-    await page.goto('/');
-
-    // Page should load successfully
-    expect(await page.title()).toBeTruthy();
-  });
-
-  test('should handle localStorage quota exceeded', async ({ page }) => {
-    await page.addInitScript(() => {
-      Storage.prototype.setItem = function () {
-        throw new Error('QuotaExceededError');
-      };
-    });
-
-    // Page should load successfully even with storage errors
-    await page.goto('/');
-    expect(await page.title()).toBeTruthy();
   });
 });
