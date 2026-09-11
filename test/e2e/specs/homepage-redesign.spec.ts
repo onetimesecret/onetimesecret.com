@@ -8,7 +8,7 @@
  *   - Hero section structure and accessibility
  *   - Secret form anchor present
  *   - CTA section button hrefs
- *   - Footer 3-column structure
+ *   - Footer column structure and legal links
  *   - Nav Docs link target and rel
  *   - Badge-dot element presence in DOM (animation is CSS-only)
  */
@@ -156,14 +156,16 @@ test.describe('Homepage redesign — footer columns', () => {
     await page.goto('/');
   });
 
-  test('footer renders exactly 3 column headings (Product, Company, Legals)', async ({
+  test('footer renders exactly 2 column headings (Product, Company)', async ({
     page,
   }) => {
     // FooterLinkLists.vue renders h3 elements for each column
     const footer = page.locator('footer');
     const columnHeadings = footer.locator('h3');
-    // There are 3 columns: Product, Company, Legals
-    await expect(columnHeadings).toHaveCount(3);
+    // Count moved 3 -> 2: FooterLinkLists.vue has only ever rendered Product
+    // and Company. The legal links live in the copyright row of
+    // LayoutFooter.astro, not in a third column.
+    await expect(columnHeadings).toHaveCount(2);
   });
 
   test('footer has a "Product" column heading', async ({ page }) => {
@@ -176,10 +178,14 @@ test.describe('Homepage redesign — footer columns', () => {
     await expect(footer.getByRole('heading', { name: /company/i })).toBeVisible();
   });
 
-  test('footer has a "Legals" column heading', async ({ page }) => {
+  // Replaces a test for a "Legals" column heading that no component renders:
+  // the legal links sit in the copyright row of LayoutFooter.astro instead, so
+  // this asserts the links themselves are reachable from the footer.
+  test('footer links to the privacy policy and terms', async ({ page }) => {
     const footer = page.locator('footer');
-    // The column header uses t("LABELS.legals") which maps to "Legals" in en.json
-    await expect(footer.getByRole('heading', { name: /legals/i })).toBeVisible();
+
+    await expect(footer.getByRole('link', { name: /^privacy$/i })).toBeVisible();
+    await expect(footer.getByRole('link', { name: /^terms$/i })).toBeVisible();
   });
 });
 
@@ -188,6 +194,11 @@ test.describe('Homepage redesign — footer columns', () => {
 // ---------------------------------------------------------------------------
 
 test.describe('Homepage redesign — nav Docs link', () => {
+  // LayoutHeader.astro renders the desktop nav as `hidden md:flex` and keeps the
+  // mobile menu panel hidden until the hamburger is tapped, so at mobile widths
+  // no nav link is in the accessibility tree for getByRole to find.
+  test.skip(({ isMobile }) => !!isMobile, 'desktop navigation only');
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
   });

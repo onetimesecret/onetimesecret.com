@@ -2,68 +2,77 @@
  * @file staging-banner.spec.ts
  * @description E2E tests for the StagingBanner Vue component
  *
- * Note: These tests need to run against a staging environment
- * or with hostname mocking to fully test visibility logic.
- * For local testing, the banner visibility logic can be tested
- * by modifying the component's hostname detection or using
- * environment variables.
+ * StagingBanner.vue decides whether to render from window.location.hostname
+ * via isStagingHostname() in config/domains.ts. To exercise that branch these
+ * tests serve the local preview build under the staging origin: every request
+ * to https://onetimesecret.dev is fulfilled from the Playwright baseURL, so the
+ * page really does run on a staging hostname in the browser.
+ *
+ * The banner has no dismiss control. It was removed in commit 630ff03 ("Remove
+ * dismiss functionality from staging banner"), along with the localStorage
+ * dismissal state and its 7-day expiry, so there are no tests for those here.
  */
 
 import { test, expect, Page } from '@playwright/test';
 
-// Storage key used by the component
-const STORAGE_KEY = 'stagingBannerDismissedAt';
+const STAGING_ORIGIN = 'https://onetimesecret.dev';
+const PRODUCTION_ORIGIN = 'https://onetimesecret.com';
+
 const BANNER_SELECTOR = '[data-testid="staging-banner"]';
-const DISMISS_BUTTON_SELECTOR = '[data-testid="staging-banner-dismiss"]';
+const WRAPPER_SELECTOR = '[data-testid="staging-banner-wrapper"]';
 const PRODUCTION_LINK_SELECTOR = '[data-testid="staging-banner-production-link"]';
 
 /**
- * Helper to clear the staging banner dismissal state
+ * Serves the locally built site under the staging origin.
+ *
+ * Requests the browser makes to STAGING_ORIGIN (the document and every
+ * same-origin asset) are fetched from the preview server at baseURL and
+ * fulfilled as-is, so the document origin — and therefore
+ * window.location.hostname — is the staging hostname.
  */
-async function clearBannerDismissal(page: Page) {
-  await page.evaluate((key) => {
-    localStorage.removeItem(key);
-  }, STORAGE_KEY);
+async function serveBuildAsStaging(
+  page: Page,
+  baseURL: string,
+  origin: string = STAGING_ORIGIN
+): Promise<void> {
+  await page.route(`${origin}/**`, async (route) => {
+    const requested = new URL(route.request().url());
+    const local = new URL(requested.pathname + requested.search, baseURL);
+    try {
+      await route.fulfill({ response: await route.fetch({ url: local.toString() }) });
+    } catch {
+      // A request can still be in flight when the test ends and the page goes
+      // away. Nothing is asserted on those, so drop them instead of failing the
+      // worker with an unhandled route error.
+      await route.abort().catch(() => {});
+    }
+  });
 }
 
-/**
- * Helper to set a dismissal timestamp
- */
-async function setDismissalTimestamp(page: Page, daysAgo: number) {
-  await page.evaluate(
-    ({ key, days }) => {
-      const date = new Date();
-      date.setDate(date.getDate() - days);
-      localStorage.setItem(key, date.toISOString());
-    },
-    { key: STORAGE_KEY, days: daysAgo }
-  );
-}
+// Routes can outlive the test that registered them (late asset requests); stop
+// serving them before the page closes.
+test.afterEach(async ({ page }) => {
+  await page.unrouteAll({ behavior: 'ignoreErrors' }).catch(() => {});
+});
 
-/**
- * Helper to get dismissal timestamp from localStorage
- */
-async function getDismissalTimestamp(page: Page): Promise<string | null> {
-  return await page.evaluate((key) => {
-    return localStorage.getItem(key);
-  }, STORAGE_KEY);
+/** Loads a path on the staging origin with the local build behind it. */
+async function gotoStaging(
+  page: Page,
+  baseURL: string | undefined,
+  path = '/'
+): Promise<void> {
+  if (!baseURL) {
+    throw new Error('baseURL is required; set it in playwright.config.ts');
+  }
+  await serveBuildAsStaging(page, baseURL);
+  await page.goto(`${STAGING_ORIGIN}${path}`);
 }
 
 test.describe('StagingBanner - Visibility', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await clearBannerDismissal(page);
-  });
+  test('banner should be visible on staging domain', async ({ page, baseURL }) => {
+    await gotoStaging(page, baseURL);
 
-  test.skip('banner should be visible on staging domain', async ({ page }) => {
-    // This test requires running against staging domain
-    // Skip for local testing
-    await page.goto('https://onetimesecret.dev/');
-    await clearBannerDismissal(page);
-    await page.reload();
-
-    const banner = page.locator(BANNER_SELECTOR);
-    await expect(banner).toBeVisible();
+    await expect(page.locator(BANNER_SELECTOR)).toBeVisible();
   });
 
   test('banner should NOT be visible on localhost/production', async ({ page }) => {
@@ -73,256 +82,103 @@ test.describe('StagingBanner - Visibility', () => {
     // Banner should not exist or be hidden on non-staging
     await expect(banner).not.toBeVisible();
   });
-});
 
-test.describe('StagingBanner - Dismiss Functionality', () => {
-  // These tests assume a way to force-show the banner for testing
-  // In practice, this might require a test mode or mock
+  test('wrapper collapses on non-staging so it reserves no space', async ({ page }) => {
+    await page.goto('/');
 
-  test.skip('clicking dismiss should hide the banner', async ({ page }) => {
-    // Navigate to staging
-    await page.goto('https://onetimesecret.dev/');
-    await clearBannerDismissal(page);
-    await page.reload();
-
-    const banner = page.locator(BANNER_SELECTOR);
-    const dismissButton = page.locator(DISMISS_BUTTON_SELECTOR);
-
-    // Banner should be visible initially
-    await expect(banner).toBeVisible();
-
-    // Click dismiss
-    await dismissButton.click();
-
-    // Banner should be hidden
-    await expect(banner).not.toBeVisible();
+    const wrapper = page.locator(WRAPPER_SELECTOR);
+    await expect(wrapper).toBeAttached();
+    expect((await wrapper.boundingBox())?.height ?? 0).toBe(0);
   });
 
-  test.skip('dismiss should persist to localStorage', async ({ page }) => {
-    await page.goto('https://onetimesecret.dev/');
-    await clearBannerDismissal(page);
-    await page.reload();
+  test('banner should be visible on a staging subdomain', async ({ page, baseURL }) => {
+    // isStagingHostname() matches subdomains of the staging apex too
+    const subdomain = 'https://web.onetimesecret.dev';
+    if (!baseURL) throw new Error('baseURL is required; set it in playwright.config.ts');
+    await serveBuildAsStaging(page, baseURL, subdomain);
+    await page.goto(`${subdomain}/`);
 
-    const dismissButton = page.locator(DISMISS_BUTTON_SELECTOR);
-    await dismissButton.click();
-
-    // Check localStorage
-    const timestamp = await getDismissalTimestamp(page);
-    expect(timestamp).not.toBeNull();
-
-    // Verify it's a valid ISO date
-    expect(new Date(timestamp!).toISOString()).toBe(timestamp);
+    await expect(page.locator(BANNER_SELECTOR)).toBeVisible();
   });
 
-  test.skip('banner should remain hidden after page refresh', async ({ page }) => {
-    await page.goto('https://onetimesecret.dev/');
-    await clearBannerDismissal(page);
-    await page.reload();
+  test('banner should stay visible across navigation', async ({ page, baseURL }) => {
+    await gotoStaging(page, baseURL);
+    await expect(page.locator(BANNER_SELECTOR)).toBeVisible();
 
-    // Dismiss the banner
-    const dismissButton = page.locator(DISMISS_BUTTON_SELECTOR);
-    await dismissButton.click();
+    await page.goto(`${STAGING_ORIGIN}/en/about/`);
 
-    // Refresh the page
-    await page.reload();
-
-    // Banner should still be hidden
-    const banner = page.locator(BANNER_SELECTOR);
-    await expect(banner).not.toBeVisible();
-  });
-
-  test.skip('banner should remain hidden across navigation', async ({ page }) => {
-    await page.goto('https://onetimesecret.dev/');
-    await clearBannerDismissal(page);
-    await page.reload();
-
-    // Dismiss on homepage
-    await page.locator(DISMISS_BUTTON_SELECTOR).click();
-
-    // Navigate to another page
-    await page.goto('https://onetimesecret.dev/en/about');
-
-    // Banner should still be hidden
-    await expect(page.locator(BANNER_SELECTOR)).not.toBeVisible();
-  });
-});
-
-test.describe('StagingBanner - 7-Day Expiration', () => {
-  test.skip('banner should reappear after 7 days', async ({ page }) => {
-    await page.goto('https://onetimesecret.dev/');
-
-    // Set dismissal to 8 days ago
-    await setDismissalTimestamp(page, 8);
-
-    // Reload to check expiration
-    await page.reload();
-
-    // Banner should be visible again
-    const banner = page.locator(BANNER_SELECTOR);
-    await expect(banner).toBeVisible();
-  });
-
-  test.skip('banner should stay hidden within 7 days', async ({ page }) => {
-    await page.goto('https://onetimesecret.dev/');
-
-    // Set dismissal to 6 days ago
-    await setDismissalTimestamp(page, 6);
-
-    // Reload to check
-    await page.reload();
-
-    // Banner should still be hidden
-    const banner = page.locator(BANNER_SELECTOR);
-    await expect(banner).not.toBeVisible();
-  });
-});
-
-test.describe('StagingBanner - Accessibility', () => {
-  test.skip('dismiss button should be keyboard accessible', async ({ page }) => {
-    await page.goto('https://onetimesecret.dev/');
-    await clearBannerDismissal(page);
-    await page.reload();
-
-    // Tab to dismiss button
-    await page.keyboard.press('Tab');
-    // Keep tabbing until we reach the dismiss button
-    for (let i = 0; i < 10; i++) {
-      const focused = await page.locator(':focus');
-      const testId = await focused.getAttribute('data-testid');
-      if (testId === 'staging-banner-dismiss') {
-        break;
-      }
-      await page.keyboard.press('Tab');
-    }
-
-    // Press Enter to dismiss
-    await page.keyboard.press('Enter');
-
-    // Banner should be hidden
-    await expect(page.locator(BANNER_SELECTOR)).not.toBeVisible();
-  });
-
-  test.skip('dismiss button should have aria-label', async ({ page }) => {
-    await page.goto('https://onetimesecret.dev/');
-    await clearBannerDismissal(page);
-    await page.reload();
-
-    const dismissButton = page.locator(DISMISS_BUTTON_SELECTOR);
-    const ariaLabel = await dismissButton.getAttribute('aria-label');
-
-    expect(ariaLabel).toBeDefined();
-    expect(ariaLabel?.length).toBeGreaterThan(0);
-  });
-
-  test.skip('production link should have appropriate attributes', async ({ page }) => {
-    await page.goto('https://onetimesecret.dev/');
-    await clearBannerDismissal(page);
-    await page.reload();
-
-    const productionLink = page.locator(PRODUCTION_LINK_SELECTOR);
-
-    const href = await productionLink.getAttribute('href');
-    expect(href).toBe('https://onetimesecret.com');
-
-    // Check for security attribute if opening in new tab
-    const target = await productionLink.getAttribute('target');
-    if (target === '_blank') {
-      const rel = await productionLink.getAttribute('rel');
-      expect(rel).toContain('noopener');
-    }
-  });
-});
-
-test.describe('StagingBanner - Styling', () => {
-  test.skip('banner should have amber/warning styling in light mode', async ({ page }) => {
-    await page.goto('https://onetimesecret.dev/');
-    await clearBannerDismissal(page);
-    await page.reload();
-
-    // Force light mode
-    await page.emulateMedia({ colorScheme: 'light' });
-    await page.reload();
-
-    const banner = page.locator(BANNER_SELECTOR);
-
-    // Check background color is amber-ish
-    const bgColor = await banner.evaluate(
-      (el) => window.getComputedStyle(el).backgroundColor
-    );
-
-    // Amber colors in RGB should have high red/green, low blue
-    // This is a rough check; exact values depend on Tailwind config
-    expect(bgColor).toBeTruthy();
-  });
-
-  test.skip('banner should adapt to dark mode', async ({ page }) => {
-    await page.goto('https://onetimesecret.dev/');
-    await clearBannerDismissal(page);
-
-    // Force dark mode
-    await page.emulateMedia({ colorScheme: 'dark' });
-    await page.reload();
-
-    const banner = page.locator(BANNER_SELECTOR);
-
-    // Just verify banner exists and is visible in dark mode
-    await expect(banner).toBeVisible();
-  });
-});
-
-test.describe('StagingBanner - Responsive Design', () => {
-  test.skip('banner should be visible on mobile viewport', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto('https://onetimesecret.dev/');
-    await clearBannerDismissal(page);
-    await page.reload();
-
-    const banner = page.locator(BANNER_SELECTOR);
-    await expect(banner).toBeVisible();
-
-    // Check banner doesn't cause horizontal scroll
-    const bodyScrollWidth = await page.evaluate(() => document.body.scrollWidth);
-    const viewportWidth = await page.evaluate(() => window.innerWidth);
-    expect(bodyScrollWidth).toBeLessThanOrEqual(viewportWidth + 1);
-  });
-
-  test.skip('dismiss button should be easily tappable on mobile', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto('https://onetimesecret.dev/');
-    await clearBannerDismissal(page);
-    await page.reload();
-
-    const dismissButton = page.locator(DISMISS_BUTTON_SELECTOR);
-    const boundingBox = await dismissButton.boundingBox();
-
-    // Minimum tap target should be 44x44 pixels
-    expect(boundingBox?.width).toBeGreaterThanOrEqual(44);
-    expect(boundingBox?.height).toBeGreaterThanOrEqual(44);
+    await expect(page.locator(BANNER_SELECTOR)).toBeVisible();
   });
 });
 
 test.describe('StagingBanner - Content', () => {
-  test.skip('banner should contain staging environment message', async ({ page }) => {
-    await page.goto('https://onetimesecret.dev/');
-    await clearBannerDismissal(page);
-    await page.reload();
+  test('banner should contain staging environment message', async ({ page, baseURL }) => {
+    await gotoStaging(page, baseURL);
 
-    const banner = page.locator(BANNER_SELECTOR);
-    const text = await banner.textContent();
+    const text = await page.locator(BANNER_SELECTOR).textContent();
 
     // Should mention staging or preview environment
     expect(text?.toLowerCase()).toMatch(/staging|preview|test/);
   });
 
-  test.skip('production link should point to correct URL', async ({ page }) => {
-    await page.goto('https://onetimesecret.dev/');
-    await clearBannerDismissal(page);
-    await page.reload();
+  test('production link should point to the canonical origin', async ({ page, baseURL }) => {
+    await gotoStaging(page, baseURL);
 
     const link = page.locator(PRODUCTION_LINK_SELECTOR);
-    const href = await link.getAttribute('href');
+    await expect(link).toBeVisible();
+    expect(await link.getAttribute('href')).toBe(PRODUCTION_ORIGIN);
+  });
 
-    expect(href).toBe('https://onetimesecret.com');
+  test('production link opening a new tab must carry rel="noopener"', async ({
+    page,
+    baseURL,
+  }) => {
+    await gotoStaging(page, baseURL);
+
+    const link = page.locator(PRODUCTION_LINK_SELECTOR);
+    if ((await link.getAttribute('target')) === '_blank') {
+      expect(await link.getAttribute('rel')).toContain('noopener');
+    }
+  });
+});
+
+test.describe('StagingBanner - Accessibility', () => {
+  test('banner announces itself as an alert', async ({ page, baseURL }) => {
+    await gotoStaging(page, baseURL);
+
+    const banner = page.locator(BANNER_SELECTOR);
+    expect(await banner.getAttribute('role')).toBe('alert');
+    expect(await banner.getAttribute('aria-live')).toBe('polite');
+  });
+});
+
+test.describe('StagingBanner - Styling', () => {
+  test('banner should be visible in light mode', async ({ page, baseURL }) => {
+    await page.emulateMedia({ colorScheme: 'light' });
+    await gotoStaging(page, baseURL);
+
+    await expect(page.locator(BANNER_SELECTOR)).toBeVisible();
+  });
+
+  test('banner should adapt to dark mode', async ({ page, baseURL }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await gotoStaging(page, baseURL);
+
+    await expect(page.locator(BANNER_SELECTOR)).toBeVisible();
+  });
+});
+
+test.describe('StagingBanner - Responsive Design', () => {
+  test('banner should be visible on mobile viewport', async ({ page, baseURL }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await gotoStaging(page, baseURL);
+
+    await expect(page.locator(BANNER_SELECTOR)).toBeVisible();
+
+    // Check banner doesn't cause horizontal scroll
+    const bodyScrollWidth = await page.evaluate(() => document.body.scrollWidth);
+    const viewportWidth = await page.evaluate(() => window.innerWidth);
+    expect(bodyScrollWidth).toBeLessThanOrEqual(viewportWidth + 1);
   });
 });
 
@@ -345,7 +201,6 @@ test.describe('StagingBanner - localStorage Error Handling', () => {
 
   test('should handle localStorage quota exceeded', async ({ page }) => {
     await page.addInitScript(() => {
-      const originalSetItem = Storage.prototype.setItem;
       Storage.prototype.setItem = function () {
         throw new Error('QuotaExceededError');
       };

@@ -5,6 +5,11 @@
  * These tests verify that the built HTML output contains correct
  * canonical URLs, Open Graph URLs, and alternate language links
  * that all point to the production domain.
+ *
+ * Trailing slashes: Astro's default `build.format: 'directory'` emits
+ * dist/en/about/index.html, which is served at /en/about/ while /en/about
+ * redirects to it. Canonical, og:url and hreflang therefore carry the
+ * trailing slash so they name the 200 URL rather than the redirect.
  */
 
 import { test, expect } from '@playwright/test';
@@ -26,7 +31,8 @@ test.describe('Canonical URL - HTML Output Verification', () => {
 
       const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
 
-      expect(canonical).toBe(`${PRODUCTION_DOMAIN}/en/about`);
+      // Trailing slash: /en/about/ is the page that exists; see file header.
+      expect(canonical).toBe(`${PRODUCTION_DOMAIN}/en/about/`);
     });
 
     test('localized page should have canonical with language prefix', async ({ page }) => {
@@ -34,7 +40,8 @@ test.describe('Canonical URL - HTML Output Verification', () => {
 
       const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
 
-      expect(canonical).toBe(`${PRODUCTION_DOMAIN}/fr/about`);
+      // Trailing slash: /fr/about/ is the page that exists; see file header.
+      expect(canonical).toBe(`${PRODUCTION_DOMAIN}/fr/about/`);
     });
 
     test('pricing page should have correct canonical', async ({ page }) => {
@@ -42,7 +49,9 @@ test.describe('Canonical URL - HTML Output Verification', () => {
 
       const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
 
-      expect(canonical).toBe(`${PRODUCTION_DOMAIN}/pricing`);
+      // /pricing 301s to the localized page (config/astro/redirects.ts), so the
+      // canonical names /en/pricing/ rather than the unlocalized entry point.
+      expect(canonical).toBe(`${PRODUCTION_DOMAIN}/en/pricing/`);
     });
 
     test('only one canonical link should exist per page', async ({ page }) => {
@@ -76,7 +85,8 @@ test.describe('Canonical URL - HTML Output Verification', () => {
         .getAttribute('href');
 
       expect(ogUrl).toBe(canonical);
-      expect(ogUrl).toBe(`${PRODUCTION_DOMAIN}/en/about`);
+      // Trailing slash: /en/about/ is the page that exists; see file header.
+      expect(ogUrl).toBe(`${PRODUCTION_DOMAIN}/en/about/`);
     });
 
     test('og:url should use production domain', async ({ page }) => {
@@ -142,8 +152,9 @@ test.describe('Canonical URL - HTML Output Verification', () => {
         .locator('link[rel="alternate"][hreflang="fr"]')
         .getAttribute('href');
 
-      expect(enHreflang).toBe(`${PRODUCTION_DOMAIN}/en/about`);
-      expect(frHreflang).toBe(`${PRODUCTION_DOMAIN}/fr/about`);
+      // Trailing slash: hreflang mirrors the canonical form; see file header.
+      expect(enHreflang).toBe(`${PRODUCTION_DOMAIN}/en/about/`);
+      expect(frHreflang).toBe(`${PRODUCTION_DOMAIN}/fr/about/`);
     });
   });
 

@@ -48,5 +48,11 @@ export default defineConfig({
     url: 'http://localhost:4321',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
+    // Astro 7 detaches `astro preview` into a background process when it
+    // detects an AI-agent environment, which makes Playwright see the command
+    // exit immediately and give up ("webServer exited early"). This opts out of
+    // that detection so the server stays in the foreground under Playwright's
+    // control. Unset environments (CI, a normal shell) are unaffected.
+    env: { ASTRO_PREVIEW_BACKGROUND: '1' },
   },
 });

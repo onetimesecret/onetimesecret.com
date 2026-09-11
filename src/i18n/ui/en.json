@@ -100,7 +100,7 @@
       "learn-more-about-data-sovereignty": "Learn more about data sovereignty"
     },
     "pricing": {
-      "title": "Pricing Plans | Onetime Secret",
+      "title": "Pricing Plans {'|'} Onetime Secret",
       "description": "Choose the perfect plan for your secure information sharing needs. From basic free plans to premium options with custom domains and dedicated infrastructure.",
       "includes-all-features-and-unlimited-sharing-capa": "All plans include privacy features and unlimited sharing capacity",
       "includes-all-data-locality-options": "All plans include choice of data locality: {0} regions",
@@ -359,7 +359,7 @@
       }
     },
     "homepage": {
-      "title": "Share Secrets Securely | Onetime Secret",
+      "title": "Share Secrets Securely {'|'} Onetime Secret",
       "description": "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever",
       "a-trusted-way-to-share-sensitive-information-etc": "A trusted way to share sensitive information that self-destructs after being viewed.",
       "hero": {
