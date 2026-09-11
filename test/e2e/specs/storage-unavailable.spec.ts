@@ -76,7 +76,10 @@ async function expectHomepageIntact(page: Page, faults: PageFaults): Promise<voi
   // Unfiltered: every storage guard now reports at warn level, so a denied
   // browser produces no console errors at all. That makes this the most sensitive
   // form of the hydration gate — it catches an island that throws with any
-  // message, not only Astro's `Error hydrating`.
+  // message, not only Astro's `Error hydrating`. Deliberately stricter than
+  // homepage-redesign.spec.ts, which filters blocked-request and Sentry noise; if
+  // preview builds ever initialise Sentry, this assertion is where that shows up
+  // first and the filter list there is what to reuse.
   expect(faults.consoleErrors).toEqual([]);
 }
 
@@ -103,19 +106,32 @@ async function expectSchemeChangeSurvives(page: Page, faults: PageFaults): Promi
 }
 
 /**
- * Asserts the colour-mode toggle still works when the theme cannot be persisted.
+ * Asserts the colour-mode toggle cycles when the theme cannot be persisted.
  *
- * ThemeManager.setTheme() applies the theme before it writes, because the write is
- * the part allowed to fail. With both inside one try, the write threw first and
- * the click changed nothing on screen: the control was inert for the whole
- * session, in exactly the browsers this file is about.
+ * Two ways this used to fail. ThemeManager.setTheme() wrote before it applied, so
+ * the write threw and nothing changed on screen. And the toggle took its current
+ * theme from getPreferredTheme(), which without storage always answers the OS
+ * preference rather than what is on <html> — so the second click computed the
+ * same "next" theme as the first and the control looked dead after one press.
+ *
+ * The whole cycle is therefore asserted, not its first step: clicking once per
+ * available theme must come back to where it started.
  */
-async function expectThemeToggleWorks(page: Page): Promise<void> {
-  await expect(page.locator('html')).toHaveClass(/\blight\b/);
+async function expectThemeToggleCycles(page: Page): Promise<void> {
+  const html = page.locator('html');
+  const toggle = page.locator(THEME_TOGGLE_SELECTOR);
 
-  await page.locator(THEME_TOGGLE_SELECTOR).click();
+  await expect(html).toHaveClass(/\blight\b/);
 
-  await expect(page.locator('html')).toHaveClass(/\bdark\b/);
+  await toggle.click();
+  await expect(html).toHaveClass(/\bdark\b/);
+
+  // AVAILABLE_THEMES is ["light", "dark"], so one more click closes the cycle.
+  await toggle.click();
+  await expect(html).toHaveClass(/\blight\b/);
+
+  await toggle.click();
+  await expect(html).toHaveClass(/\bdark\b/);
 }
 
 test.describe('Web Storage unavailable', () => {
@@ -154,7 +170,7 @@ test.describe('Web Storage unavailable', () => {
     await expectSchemeChangeSurvives(page, faults);
   });
 
-  test('colour-mode toggle still applies a theme it cannot persist', async ({ page }) => {
+  test('colour-mode toggle cycles without being able to persist', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
     await page.addInitScript(() => {
       Object.defineProperty(window, 'localStorage', {
@@ -167,7 +183,7 @@ test.describe('Web Storage unavailable', () => {
 
     await page.goto('/');
 
-    await expectThemeToggleWorks(page);
+    await expectThemeToggleCycles(page);
   });
 
   test('theme is painted once, with no flash, when storage is denied', async ({ page }) => {
@@ -225,6 +241,6 @@ test.describe('Web Storage unavailable', () => {
     await expectHomepageIntact(page, faults);
     // Storage reads fine here; only the write fails, which is the other way the
     // toggle used to go inert.
-    await expectThemeToggleWorks(page);
+    await expectThemeToggleCycles(page);
   });
 });

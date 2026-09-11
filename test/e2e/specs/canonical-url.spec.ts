@@ -162,6 +162,29 @@ test.describe('Canonical URL - HTML Output Verification', () => {
       ).toHaveAttribute('href', PRODUCTION_ORIGIN_PATTERN);
     });
 
+    test('hreflang on a Spanish page does not double the locale prefix', async ({
+      page,
+    }) => {
+      await page.goto('/es/about');
+
+      // languagePrefixes in LayoutHead.astro omitted "es", so no Spanish path
+      // counted as prefixed, the prefix was never stripped, and every alternate
+      // came out doubled (/en/es/about/, /es/es/about/) — all 404s, on every page
+      // under /es/. The other locales were unaffected, which is why only loading
+      // /en/ and /fr/ pages missed it.
+      await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveAttribute(
+        'href',
+        `${PRODUCTION_DOMAIN}/en/about/`
+      );
+      await expect(page.locator('link[rel="alternate"][hreflang="es"]')).toHaveAttribute(
+        'href',
+        `${PRODUCTION_DOMAIN}/es/about/`
+      );
+      await expect(
+        page.locator('link[rel="alternate"][hreflang="x-default"]')
+      ).toHaveAttribute('href', `${PRODUCTION_DOMAIN}/about/`);
+    });
+
     test('hreflang should have correct language-prefixed paths', async ({
       page,
     }) => {
@@ -277,6 +300,7 @@ test.describe('Canonical URL - Cross-Page Consistency', () => {
     { path: '/', name: 'Homepage' },
     { path: '/en/about', name: 'About (English)' },
     { path: '/fr/about', name: 'About (French)' },
+    { path: '/es/about', name: 'About (Spanish)' },
     { path: '/pricing', name: 'Pricing' },
   ];
 

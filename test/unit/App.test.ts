@@ -11,10 +11,20 @@
 import { afterEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import type { App } from 'vue';
 
-import setupVue from '@/App';
-
 /** Descriptor for the environment's own localStorage, restored after each test. */
 const ORIGINAL_STORAGE = Object.getOwnPropertyDescriptor(window, 'localStorage');
+
+/**
+ * Loads a fresh copy of the module under test.
+ *
+ * App.ts keeps its warn-once flag at module scope, so a single import shared
+ * across cases would let the first storage failure silence the assertion in the
+ * next one — the test would keep passing while gating nothing.
+ */
+async function freshSetupVue() {
+  vi.resetModules();
+  return (await import('@/App')).default;
+}
 
 /** Minimal stand-in for the Vue app instance Astro passes in. */
 function fakeApp(): { app: App; use: MockInstance } {
@@ -32,14 +42,15 @@ describe('setupVue', () => {
     vi.restoreAllMocks();
   });
 
-  it('installs i18n when storage is readable', () => {
+  it('installs i18n when storage is readable', async () => {
+    const setupVue = await freshSetupVue();
     const { app, use } = fakeApp();
 
     expect(() => setupVue(app)).not.toThrow();
     expect(use).toHaveBeenCalledTimes(1);
   });
 
-  it('installs i18n when reading localStorage throws', () => {
+  it('installs i18n when reading localStorage throws', async () => {
     // Blocked site data raises SecurityError from the property getter itself, so
     // even a `window.localStorage` truthiness check throws.
     Object.defineProperty(window, 'localStorage', {
@@ -49,6 +60,7 @@ describe('setupVue', () => {
       },
     });
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const setupVue = await freshSetupVue();
     const { app, use } = fakeApp();
 
     expect(() => setupVue(app)).not.toThrow();
@@ -59,11 +71,12 @@ describe('setupVue', () => {
     );
   });
 
-  it('installs i18n when localStorage is absent', () => {
+  it('installs i18n when localStorage is absent', async () => {
     Object.defineProperty(window, 'localStorage', {
       configurable: true,
       value: null,
     });
+    const setupVue = await freshSetupVue();
     const { app, use } = fakeApp();
 
     // `?.` short-circuits on null, so this path reads no key and warns about

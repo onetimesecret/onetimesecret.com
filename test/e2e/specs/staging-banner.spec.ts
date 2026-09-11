@@ -162,7 +162,7 @@ test.describe('StagingBanner - Visibility', () => {
     await gotoStaging(page, baseURL);
     await expect(page.locator(BANNER_SELECTOR)).toBeVisible();
 
-    await page.goto(`${STAGING_ORIGIN}/en/about/`);
+    await gotoStaging(page, baseURL, '/en/about/');
 
     await expect(page.locator(BANNER_SELECTOR)).toBeVisible();
   });

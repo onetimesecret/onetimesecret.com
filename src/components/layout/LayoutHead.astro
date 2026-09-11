@@ -78,8 +78,14 @@ const pageNoindex =
       currentPath.startsWith("/private/") ||
       currentPath.startsWith("/receipt/");
 
-// Generate alternate language links
-const languagePrefixes = ["/en", "/fr", "/de"];
+// Generate alternate language links.
+//
+// Derived from SUPPORTED_LANGUAGES rather than listed by hand: "es" was missing,
+// so no Spanish path counted as prefixed and the prefix was never stripped before
+// the alternates were built. Every /es/ page emitted doubled hrefs that 404 —
+// /en/es/about/, /fr/es/about/, /es/es/about/ — on a quarter of the localized
+// site. Gated by test/e2e/specs/canonical-url.spec.ts.
+const languagePrefixes = SUPPORTED_LANGUAGES.map((lang) => `/${lang}`);
 const hasLangPrefix = languagePrefixes.some((prefix) =>
   currentPath.startsWith(prefix),
 );

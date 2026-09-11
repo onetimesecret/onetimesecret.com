@@ -109,15 +109,11 @@ export const ThemeManager = {
       document.documentElement.classList.remove(t);
     });
 
-    // Add the selected theme class
+    // Add the selected theme class. This is also what drives Tailwind's `dark:`
+    // utilities, which tailwind.css declares as a class variant
+    // (`@custom-variant dark (&:where(.dark, .dark *))`) — "dark" is already in
+    // AVAILABLE_THEMES, so no separate special case is needed here.
     document.documentElement.classList.add(theme);
-
-    // Special case for dark mode (for Tailwind)
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
   },
 
   /**

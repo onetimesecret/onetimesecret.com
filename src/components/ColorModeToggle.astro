@@ -35,10 +35,25 @@ const translations = enTranslations;
   } from "@/utils/theme";
 
   /**
+   * The theme currently on <html>, which is the only reliable "current".
+   *
+   * getPreferredTheme() answers "what would this visitor get on a fresh load",
+   * and when storage is unreachable that is always the OS preference — so cycling
+   * from it moved one step and then returned the same answer forever, leaving the
+   * toggle apparently dead after a single click. Covered by
+   * test/e2e/specs/storage-unavailable.spec.ts.
+   */
+  function appliedTheme(): ThemeOption {
+    const classes = document.documentElement.classList;
+    return (AVAILABLE_THEMES.find((theme) => classes.contains(theme)) ??
+      ThemeManager.getPreferredTheme()) as ThemeOption;
+  }
+
+  /**
    * Cycles to the next theme in the available themes and applies it
    */
   function cycleTheme() {
-    const currentTheme = ThemeManager.getPreferredTheme();
+    const currentTheme = appliedTheme();
     const currentIndex = AVAILABLE_THEMES.indexOf(currentTheme);
     const nextIndex = (currentIndex + 1) % AVAILABLE_THEMES.length;
     const nextTheme = AVAILABLE_THEMES[nextIndex] as ThemeOption;

@@ -75,6 +75,9 @@ describe('ThemeManager', () => {
       Reflect.deleteProperty(window, 'matchMedia');
     }
     document.documentElement.classList.remove('light', 'dark');
+    // In afterEach, not after each assertion: a failing expectation would skip
+    // inline cleanup and leak a stored theme into the next case.
+    window.localStorage.clear();
     vi.restoreAllMocks();
   });
 
@@ -85,8 +88,6 @@ describe('ThemeManager', () => {
 
     // An explicit choice wins over the system preference.
     expect(themeManager.getPreferredTheme()).toBe('light');
-
-    window.localStorage.removeItem('theme');
   });
 
   it('ignores a stored value that is not a known theme', async () => {
@@ -95,8 +96,6 @@ describe('ThemeManager', () => {
     const themeManager = await freshThemeManager();
 
     expect(themeManager.getPreferredTheme()).toBe('dark');
-
-    window.localStorage.removeItem('theme');
   });
 
   it.each([
