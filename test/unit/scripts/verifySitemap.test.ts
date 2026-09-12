@@ -25,6 +25,7 @@ import {
   MINIMUM_URL_COUNT,
   MUST_BE_PRESENT,
   canonicalOf,
+  read,
   decodePath,
   declaredSitemaps,
   htmlFiles,
@@ -80,6 +81,8 @@ type FixtureOptions = {
   extraPages?: Record<string, string>;
   /** The origin the sitemap is built for. Differs from ORIGIN on a staging build. */
   origin?: string;
+  /** Create dist inside this directory, so a `..` traversal has a real target. */
+  parent?: string;
   robots?: string | null;
   xsl?: boolean;
   staleStub?: "file" | "directory" | false;
@@ -114,8 +117,11 @@ function redirectStub() {
 }
 
 function fixture(options: FixtureOptions = {}) {
-  const dir = mkdtempSync(join(tmpdir(), "verify-sitemap-"));
-  created.push(dir);
+  const dir = options.parent
+    ? join(options.parent, "dist")
+    : mkdtempSync(join(tmpdir(), "verify-sitemap-"));
+  if (options.parent) mkdirSync(dir, { recursive: true });
+  else created.push(dir);
 
   const paths = options.paths ?? defaultPaths();
   const noindex = new Set(options.noindex ?? []);
@@ -274,11 +280,26 @@ describe("verifySitemap", () => {
     expect(run(fixture({ paths }))).toEqual([]);
   });
 
+  // The traversal target is built for real outside dist, so this fails if the
+  // containment check is removed rather than because the file is absent.
   it("refuses a sitemap URL whose path escapes dist", () => {
+    const parent = mkdtempSync(join(tmpdir(), "verify-sitemap-escape-"));
+    created.push(parent);
+    mkdirSync(join(parent, "elsewhere"), { recursive: true });
+    writeFileSync(join(parent, "elsewhere", "index.html"), "<html>outside dist</html>");
+    writeFileSync(join(parent, "elsewhere.html"), "<html>outside dist</html>");
+
     const paths = defaultPaths();
-    const locs = [...paths.map((p) => `${ORIGIN}${p}`), `${ORIGIN}/%2e%2e/%2e%2e/README.md`];
-    const problems = text(run(fixture({ paths, locs })));
+    const locs = [
+      ...paths.map((p) => `${ORIGIN}${p}`),
+      `${ORIGIN}/%2e%2e/elsewhere/`,
+      `${ORIGIN}/%2e%2e/elsewhere.html`,
+    ];
+    const problems = text(run(fixture({ parent, paths, locs })));
+
     expect(problems).toContain("no built page in dist");
+    expect(problems).toContain("/elsewhere/");
+    expect(problems).toContain("/elsewhere.html");
   });
 
   it("flags a noindex page even when the meta attributes are reversed", () => {
@@ -587,6 +608,16 @@ describe("isExcludedFromSitemap", () => {
     expect(isExcludedFromSitemap("/example/")).toBe(true);
   });
 
+  it("excludes a page nested under an excluded route", () => {
+    expect(isExcludedFromSitemap("/example/detail/")).toBe(true);
+    expect(isExcludedFromSitemap("/en/signin/callback/")).toBe(true);
+  });
+
+  it("does not let a route prefix match a sibling whose name extends it", () => {
+    expect(isExcludedFromSitemap("/example-gallery/")).toBe(false);
+    expect(isExcludedFromSitemap("/signing/")).toBe(false);
+  });
+
   it("keeps real content pages", () => {
     expect(isExcludedFromSitemap("/en/about/")).toBe(false);
     expect(isExcludedFromSitemap("/")).toBe(false);
@@ -679,14 +710,45 @@ describe("htmlFiles", () => {
 });
 
 describe("readWithin", () => {
+  /** A dist directory with a readable file sitting outside it. */
+  function nested() {
+    const parent = mkdtempSync(join(tmpdir(), "verify-sitemap-outside-"));
+    created.push(parent);
+    const dist = join(parent, "dist");
+    mkdirSync(dist);
+    writeFileSync(join(parent, "secret.txt"), "outside dist");
+    return { parent, dist };
+  }
+
   // An encoded %2e%2e%2f survives URL normalisation and decodes to ../ later,
   // so the probe has to be confined explicitly.
+  //
+  // The escape target has to exist, or the assertion is satisfied by the file
+  // being absent and holds with the containment check deleted.
   it("refuses a path that escapes the dist directory", () => {
-    expect(readWithin("dist", "dist/../../etc/hosts")).toBeUndefined();
+    const { parent, dist } = nested();
+    const outside = join(parent, "secret.txt");
+
+    expect(read(outside)).toBe("outside dist");
+    expect(readWithin(dist, join(dist, "..", "secret.txt"))).toBeUndefined();
   });
 
+  it("refuses a sibling directory whose name extends dist's", () => {
+    const { parent, dist } = nested();
+    const sibling = `${dist}-backup`;
+    mkdirSync(sibling);
+    writeFileSync(join(sibling, "secret.txt"), "next door");
+
+    // The separator in `root + sep` is what stops a prefix test matching this.
+    expect(read(join(sibling, "secret.txt"))).toBe("next door");
+    expect(readWithin(dist, join(sibling, "secret.txt"))).toBeUndefined();
+  });
+
+  // Asserts the boundary is exclusive. A directory read fails anyway, so unlike
+  // the two above this one cannot distinguish the guard from readFileSync.
   it("refuses the dist directory itself", () => {
-    expect(readWithin("dist", "dist")).toBeUndefined();
+    const { dist } = nested();
+    expect(readWithin(dist, dist)).toBeUndefined();
   });
 
   it("reads a file inside dist", () => {

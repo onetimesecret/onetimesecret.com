@@ -34,7 +34,7 @@ import { pathToFileURL } from "node:url";
 import { CANONICAL_ORIGIN } from "../config/domains.ts";
 import { resolveSite } from "../config/site.ts";
 import { SUPPORTED_LANGUAGES } from "../config/astro/i18n.ts";
-import { isExcludedFromSitemap } from "../config/astro/sitemap.ts";
+import { isExcludedFromSitemap, normalizePath } from "../config/astro/sitemap.ts";
 
 // Below this, something is badly wrong: the sitemap carried 107 URLs when
 // this check was written and only grows as content is added. Set well below
@@ -325,7 +325,11 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
     if (hasRobots && isDisallowed(decodePath(pathname), rules)) continue;
 
     audited += 1;
-    if (!advertised.has(pathname)) missing.push(pathname);
+    // Normalized on both sides, because these are two independently produced
+    // strings: this one from the page's canonical, the set from the sitemap's
+    // <loc> values. They agree on a trailing slash today; flipping
+    // `trailingSlash` should not be able to report all 107 pages as missing.
+    if (!advertised.has(normalizePath(pathname))) missing.push(pathname);
   }
 
   return { missing, audited };
@@ -550,8 +554,10 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
     );
   }
 
-  const pathnames = new Set(urls.map((url) => parseUrl(url)?.pathname).filter(Boolean));
-  const missingRequired = MUST_BE_PRESENT.filter((path) => !pathnames.has(path));
+  const pathnames = new Set(
+    urls.map((url) => parseUrl(url)?.pathname).filter(Boolean).map(normalizePath),
+  );
+  const missingRequired = MUST_BE_PRESENT.filter((path) => !pathnames.has(normalizePath(path)));
 
   if (missingRequired.length > 0) {
     problems.push(
@@ -656,8 +662,9 @@ export function main(argv = process.argv.slice(2), env = process.env) {
 
   // The audited count is printed rather than only asserted, so a drop is
   // visible in the build log before it is large enough to trip a check.
+  const distinct = new Set(urls).size;
   console.log(
-    `[verify-sitemap] OK: ${urls.length} URLs across ${childHrefs.length} sitemap file(s), ` +
+    `[verify-sitemap] OK: ${distinct} distinct URLs across ${childHrefs.length} sitemap file(s), ` +
       `all on ${expectedOrigin.replace(/\/+$/, "")}, each resolving to an indexable ` +
       "built page that robots.txt allows, robots.txt points at sitemap-index.xml, " +
       `and all ${audited} indexable built page(s) are advertised.`,

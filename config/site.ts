@@ -61,14 +61,21 @@ export function resolveSite(env: NodeJS.ProcessEnv = process.env, cwd = process.
  * running it happens to export VITE_BASE_URL. The exported-variable case is
  * already answered above, so the files are all that is wanted here.
  *
- * process.env is swapped rather than filtered because loadEnv reads it
- * directly and takes no environment argument. The call is synchronous and the
- * original is restored in a finally, so nothing else observes the swap.
+ * process.env is swapped rather than filtered because loadEnv reads it directly
+ * and takes no environment argument. The swap is global while it is in place,
+ * so this is only safe because loadEnv is synchronous: nothing else runs
+ * between the assignment and the finally. If it ever becomes async, or this is
+ * called from more than one thread, the swap has to go rather than be widened.
+ *
+ * A copy is passed so that anything loadEnv writes into process.env during
+ * dotenv expansion lands on the copy instead of the caller's object. Vite does
+ * not do that today (verified against the installed version), which is exactly
+ * why it should not be depended on.
  */
 function envFiles(env: NodeJS.ProcessEnv, cwd: string): Record<string, string> {
   const ambient = process.env;
   try {
-    process.env = env;
+    process.env = { ...env };
     return loadEnv(resolveEnvMode(env), cwd, "");
   } finally {
     process.env = ambient;

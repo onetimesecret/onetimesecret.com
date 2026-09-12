@@ -24,7 +24,20 @@ export const EXCLUDED_SITEMAP_PATHS = new Set([
 ]);
 
 /**
- * Excluded in every locale, with or without a language prefix.
+ * True when `path` is one of `routes` or anything beneath it.
+ *
+ * Every entry names a route subtree rather than a single URL, so a page added
+ * under one is excluded without anybody remembering to list it. Exact matching
+ * would advertise /example/detail/ while /example/ stayed hidden, which reads
+ * as a bug to anyone who looks at the list. Both sides are normalized to a
+ * trailing slash, so /example/ cannot match /example-other/.
+ */
+const isUnder = (path: string, routes: Set<string>) =>
+  [...routes].some((route) => path.startsWith(route));
+
+/**
+ * Excluded in every locale, with or without a language prefix. Subtrees, as
+ * above.
  *
  * The four /{lang}/changelog/guide/ pages are noindex, nofollow. The auth
  * interstitials are noindex and Disallow-ed in public/robots.txt; they live
@@ -49,8 +62,12 @@ const LOCALE_PREFIXED = new RegExp(
  * `trailingSlash` and `build.format` options. Flipping either would otherwise
  * stop every exclusion matching, silently and in both the build and the gate
  * that is supposed to catch the build.
+ *
+ * Exported because scripts/verify-sitemap.mjs compares sitemap <loc> paths with
+ * page canonical paths, two independently produced strings that need the same
+ * guarantee this gives the exclusion sets.
  */
-function normalize(pathname: string): string {
+export function normalizePath(pathname: string): string {
   const withLeading = pathname.startsWith("/") ? pathname : `/${pathname}`;
   return withLeading.endsWith("/") ? withLeading : `${withLeading}/`;
 }
@@ -61,11 +78,12 @@ function normalize(pathname: string): string {
  * build and the gate that checks it cannot disagree.
  */
 export function isExcludedFromSitemap(pathname: string): boolean {
-  const path = normalize(pathname);
+  const path = normalizePath(pathname);
 
-  if (EXCLUDED_SITEMAP_PATHS.has(path)) return true;
-  if (EXCLUDED_SITEMAP_PATHS_EVERY_LOCALE.has(path)) return true;
+  if (isUnder(path, EXCLUDED_SITEMAP_PATHS)) return true;
+  if (isUnder(path, EXCLUDED_SITEMAP_PATHS_EVERY_LOCALE)) return true;
 
   const unprefixed = LOCALE_PREFIXED.exec(path)?.[1];
-  return unprefixed !== undefined && EXCLUDED_SITEMAP_PATHS_EVERY_LOCALE.has(normalize(unprefixed));
+  if (unprefixed === undefined) return false;
+  return isUnder(normalizePath(unprefixed), EXCLUDED_SITEMAP_PATHS_EVERY_LOCALE);
 }
