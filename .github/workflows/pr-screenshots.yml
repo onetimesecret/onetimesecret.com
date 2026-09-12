@@ -7,8 +7,18 @@
 # - Only runs when UI code changes (src/**)
 # - Only runs on ready_for_review or with 'screenshots' label
 # - Uses shallow clones for faster checkout
-# - Caches Playwright browser binaries for speed
+# - Caches the Playwright browser build the screenshot action uses, so the
+#   action's own `playwright install` finds it and skips the download
 # - Randomly selects one language to balance coverage vs. speed
+#
+# Node versions:
+# - The site is built and served with Node 26 (the engines floor).
+# - The screenshot action installs browsers with its own pinned
+#   `npx playwright@1.56.0 install`, using whatever Node is on PATH. Playwright
+#   before 1.60 hangs forever while extracting the Chromium zip on Node 26 and
+#   on Node 24.16+ (microsoft/playwright#40724, #41000), and the action has no
+#   input to skip that install. So PATH is switched to Node 22 after the preview
+#   server is up and before any Playwright install runs. See #217.
 #
 # Security:
 # - Screenshots stored only in GitHub (gh-screenshots branch)
@@ -34,6 +44,18 @@ jobs:
   screenshots:
     name: Capture UI Screenshots
     runs-on: ubuntu-latest
+
+    # A healthy run finishes in about two minutes. Without a bound, a hung
+    # capture step holds a runner until GitHub's six-hour default kills it,
+    # and the job's logs stay unreadable until then (#217).
+    timeout-minutes: 15
+
+    env:
+      # Must match the version yoavf/auto-pr-screenshots-action pins in its own
+      # `npx playwright@<version> install` call. Update it when bumping the
+      # action. The browser build this version needs is what gets cached and
+      # pre-installed below, which makes the action's install a no-op.
+      ACTION_PLAYWRIGHT_VERSION: "1.56.0"
 
     # Explicit permissions for GITHUB_TOKEN
     permissions:
@@ -96,27 +118,8 @@ jobs:
           echo "📝 Generated config for language: ${{ steps.lang.outputs.selected }}"
           cat .github/screenshots.config.processed.yml
 
-      # Cache Playwright browsers to speed up subsequent runs
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            playwright-${{ runner.os }}-
-
-      # Install Playwright browsers (will use cache if available)
-      - name: Install Playwright browsers
-        run: |
-          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" != "true" ]; then
-            echo "📦 Installing Playwright browsers..."
-            npx playwright install chromium --with-deps
-          else
-            echo "✅ Using cached Playwright browsers"
-          fi
-
-      # Start the preview server in the background
+      # Start the preview server in the background. This runs under Node 26 and
+      # keeps running after PATH is switched below.
       - name: Start preview server
         run: |
           pnpm preview &
@@ -126,8 +129,36 @@ jobs:
           timeout 60 bash -c 'until curl -s http://localhost:4321 > /dev/null; do sleep 2; done'
           echo "✅ Server is ready"
 
-      # Capture screenshots using the action (pinned to specific commit)
+      # Playwright 1.56 cannot extract browser archives on Node 26 (see the
+      # header comment). Everything from here on that runs Playwright's
+      # installer does so on Node 22.
+      - name: Use Node 22 for Playwright browser installs
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # Cache the browser build the screenshot action's pinned Playwright uses.
+      # The key is that Playwright version, not the lockfile: the project's own
+      # Playwright is a different version with a different browser build.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ env.ACTION_PLAYWRIGHT_VERSION }}
+
+      # Pre-install the exact build the action expects, so the action's own
+      # `playwright install` finds it already present and skips the download.
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: |
+          echo "📦 Installing Chromium for Playwright ${ACTION_PLAYWRIGHT_VERSION}..."
+          npx -y "playwright@${ACTION_PLAYWRIGHT_VERSION}" install --with-deps chromium
+
+      # Capture screenshots using the action (pinned to specific commit).
+      # Bounded so a hang fails visibly instead of holding the runner.
       - name: Capture screenshots
+        timeout-minutes: 8
         uses: yoavf/auto-pr-screenshots-action@74e4d55a87b1fd6bfc3cfbeefeb2831a04f0851c  # v1.4.0-beta
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
