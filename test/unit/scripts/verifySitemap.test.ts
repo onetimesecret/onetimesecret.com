@@ -437,6 +437,14 @@ describe("verifySitemap", () => {
     expect(text(problems)).toContain("redirect stubs, not pages");
   });
 
+  // Keyed on origin + normalized path, so a trailing-slash variant is the same
+  // URL rather than two that each clear the floor.
+  it("treats a trailing-slash variant as the same URL, not a distinct one", () => {
+    const paths = defaultPaths();
+    const locs = [...paths.map((p) => `${ORIGIN}${p}`), `${ORIGIN}${paths[1]!.replace(/\/$/, "")}`];
+    expect(text(run(fixture({ paths, locs })))).toContain("appear more than once");
+  });
+
   it("flags a duplicated URL, which would also inflate the count floor", () => {
     const paths = defaultPaths();
     const locs = [...paths.map((p) => `${ORIGIN}${p}`), `${ORIGIN}${paths[0]}`];
@@ -460,9 +468,26 @@ describe("verifySitemap", () => {
     expect(text(run(fixture({ paths, locs })))).toContain("are not on");
   });
 
+  // The index stays on the expected origin so this exercises the page-URL
+  // truncation rather than the child-sitemap check, which now stops the run.
   it("truncates a systemic fault rather than printing one line per URL", () => {
-    const problems = run(fixture(), "https://elsewhere.test");
-    expect(text(problems)).toContain(`and ${defaultPaths().length - MAX_EXAMPLES} more`);
+    const paths = defaultPaths();
+    const locs = paths.map((path) => `https://elsewhere.test${path}`);
+    const problems = run(fixture({ paths, locs }));
+    expect(text(problems)).toContain(`and ${paths.length - MAX_EXAMPLES} more`);
+  });
+
+  // The cause is already in the list; the count floor, the required paths and
+  // all 107 built pages piled on top would bury it.
+  it("stops after a child sitemap fault rather than cascading", () => {
+    const problems = run(fixture({ childSitemaps: ["https://elsewhere.test/sitemap-0.xml"] }));
+    expect(problems).toHaveLength(1);
+    expect(text(problems)).toContain(`is not on ${ORIGIN}`);
+  });
+
+  it("still reports an empty but well-formed sitemap against the floor", () => {
+    const problems = text(run(fixture({ paths: [], locs: [] })));
+    expect(problems).toContain(`fewer than the ${MINIMUM_URL_COUNT} floor`);
   });
 
   // Every check above asks whether an advertised URL is legitimate. These ask

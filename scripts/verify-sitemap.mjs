@@ -371,6 +371,10 @@ export function canonicalOf(html) {
  */
 export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, hasRobots }) {
   const canonical = parseUrl(canonicalOrigin);
+  // verifySitemap validates this before calling, so this is unreachable through
+  // the gate. Guarded because the function is exported: an audit of nothing is
+  // reported by the caller's floor rather than thrown from here.
+  if (!canonical) return { missing: [], audited: 0, sitemapLinks: [] };
   // A Set because the key is the canonical, not the file: two pages declaring
   // the same one would otherwise be counted twice, and the number an operator
   // reads would be a file count rather than a URL count.
@@ -406,10 +410,13 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
     const { pathname } = parsed;
     if (isExcludedFromSitemap(pathname)) continue;
     // A Disallow-ed page is deliberately hidden, so not advertising it is
-    // correct. Note the blast radius: an over-broad rule shrinks what this
-    // audits rather than failing anything, and if the same paths are also in
-    // EXCLUDED_SITEMAP_PATHS both defences go quiet together. The audited count
-    // is the signal for that, which is why it is printed and floored.
+    // correct. Note the blast radius, which runs both ways (#224). Quietly: an
+    // over-broad rule shrinks what this audits rather than failing anything,
+    // and if the same paths are also in EXCLUDED_SITEMAP_PATHS both defences go
+    // quiet together, with the audited count as the only signal — which is why
+    // it is printed and floored. Loudly: the rules here are unanchored
+    // prefixes, so a new /shared-links/ page would be advertised and then fail
+    // the disallowedPage check above, whose message names this file second.
     if (hasRobots && isDisallowed(decodePath(pathname), rules)) continue;
 
     seen.add(pathname);
@@ -527,13 +534,31 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
     urls.push(...locs(xml));
   }
 
+  // A child sitemap that is missing, off-origin or malformed leaves nothing to
+  // check, and the cause is already in `problems`. Returning here rather than
+  // adding the count floor, the required paths and all 107 built pages on top
+  // of it: the same preference applied to the off-origin case, where one
+  // accurate line beats four with the cause buried at the top.
+  if (urls.length === 0 && problems.length > 0) {
+    return { problems, urls, childHrefs, audited: 0 };
+  }
+
+  // Keyed on origin + normalized path, like every other comparison here.
+  // Raw strings would count https://x/a and https://x/a/ as two distinct URLs:
+  // one page clearing the floor twice and reported as no duplicate at all.
+  //
   // Linear rather than urls.indexOf inside a filter: a sitemap file may hold
   // up to 50k URLs, where the quadratic form stops being free.
+  const urlKey = (url) => {
+    const parsed = parseUrl(url);
+    return parsed ? `${parsed.origin}${normalizePath(parsed.pathname)}` : url;
+  };
   const seen = new Set();
   const repeated = new Set();
   for (const url of urls) {
-    if (seen.has(url)) repeated.add(url);
-    else seen.add(url);
+    const key = urlKey(url);
+    if (seen.has(key)) repeated.add(url);
+    else seen.add(key);
   }
   const duplicates = [...repeated];
 
@@ -544,7 +569,7 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
     );
   }
 
-  const distinct = new Set(urls).size;
+  const distinct = seen.size;
   if (distinct < MINIMUM_URL_COUNT) {
     problems.push(
       `Only ${distinct} distinct URL(s), fewer than the ${MINIMUM_URL_COUNT} floor. ` +
