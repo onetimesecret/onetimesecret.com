@@ -77,7 +77,8 @@ export function read(path) {
 // here, so this has nothing to decode today, and if one ever carried an `&amp;`
 // the URL would be reported as having no built page rather than passing — the
 // safe direction for a gate.
-export const locs = (xml) => [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, href]) => href);
+export const locs = (xml) =>
+  [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, href]) => href.trim());
 
 /** True when `url` is nothing but an origin: no base path, query or fragment. */
 export function isBareOrigin(url) {
@@ -322,7 +323,10 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
   // the same one would otherwise be counted twice, and the number an operator
   // reads would be a file count rather than a URL count.
   const missing = new Set();
-  let audited = 0;
+  // Counted as distinct canonicals for the same reason `missing` is deduped:
+  // this number is printed as a page count, and two files can declare one
+  // canonical.
+  const seen = new Set();
 
   for (const file of htmlFiles(distDir)) {
     const html = read(file);
@@ -341,7 +345,7 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
     if (isExcludedFromSitemap(pathname)) continue;
     if (hasRobots && isDisallowed(decodePath(pathname), rules)) continue;
 
-    audited += 1;
+    seen.add(pathname);
     // Normalized on both sides, because these are two independently produced
     // strings: this one from the page's canonical, the set from the sitemap's
     // <loc> values. They agree on a trailing slash today; flipping
@@ -349,7 +353,7 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
     if (!advertised.has(normalizePath(pathname))) missing.add(pathname);
   }
 
-  return { missing: [...missing], audited };
+  return { missing: [...missing], audited: seen.size };
 }
 
 /**
@@ -625,11 +629,14 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
         "advertised. Under-advertising is what #214 was filed about; exclude them deliberately " +
         "if that is the intent.",
     );
-  } else if (coverage.audited === 0) {
+  } else if (coverage.audited < MINIMUM_URL_COUNT) {
     problems.push(
-      `No page under ${distDir} declares an absolute canonical on ${canonicalOrigin}, so the ` +
-        "coverage check passed without examining anything. LayoutHead.astro emits one on every " +
-        "page it renders; if that markup changed, canonicalOf in this script has to follow.",
+      `Only ${coverage.audited} page(s) under ${distDir} declare an absolute canonical on ` +
+        `${canonicalOrigin}, fewer than the ${MINIMUM_URL_COUNT} floor, so the coverage check ` +
+        "above examined almost nothing and passed. LayoutHead.astro emits one on every page it " +
+        "renders; if that markup changed, canonicalOf here has to follow. The floor rather than " +
+        "zero: a markup change that breaks the match on some routes leaves this just as blind " +
+        "as one that breaks it on all of them.",
     );
   }
 
@@ -637,6 +644,11 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
   // substring test would accept "Sitemap: https://example.com/sitemap-index.xml"
   // and hand the site's crawl budget to someone else's origin.
   const declared = declaredSitemaps(robots);
+  // Compared as parsed hrefs, not raw strings. URL lowercases the host and
+  // drops a default port, so "https://ONETIMESECRET.com/..." and "...:443/..."
+  // are recognised as the same resource. The origin check below already does
+  // that, and this comparison used to contradict it two lines away.
+  const declaredHrefs = declared.map((url) => parseUrl(url)?.href).filter(Boolean);
   // Built through URL rather than concatenated, so a trailing slash on
   // canonicalOrigin cannot produce "https://x//sitemap-index.xml", which no
   // declaration could ever match. Symmetric with the origin normalization above.
@@ -651,7 +663,7 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
     problems.push(`${join(distDir, "robots.txt")} does not exist.`);
   } else if (declared.length === 0) {
     problems.push(`${join(distDir, "robots.txt")} declares no Sitemap: line.`);
-  } else if (!declared.includes(canonicalSitemap)) {
+  } else if (!declaredHrefs.includes(canonicalSitemap)) {
     problems.push(
       `robots.txt declares ${declared.map((u) => `"${u}"`).join(", ")}, none of which is ` +
         `${canonicalSitemap} — the file @astrojs/sitemap generates, not the deleted ` +

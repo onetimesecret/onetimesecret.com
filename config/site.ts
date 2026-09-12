@@ -8,6 +8,22 @@ import { loadEnv } from "vite";
 import { CANONICAL_ORIGIN } from "./domains.ts";
 
 /**
+ * The vite mode to resolve .env files in.
+ *
+ * Both astro commands set NODE_ENV, verified by printing it at config-load
+ * time: `astro dev` gives "development" and `astro build` gives "production".
+ * So this only decides for a caller that is not an astro command, which means
+ * scripts/verify-*.mjs running after a build — and there the build's own mode,
+ * production, is the answer that keeps the gate validating what shipped.
+ *
+ * Exported so astro.config.ts resolves the same mode for its vite env. Two
+ * loadEnv calls in one file defaulting differently is the shape #214 was about.
+ */
+export function resolveEnvMode(env: NodeJS.ProcessEnv = process.env): string {
+  return env.NODE_ENV || "production";
+}
+
+/**
  * The origin the site is built for, used as Astro's `site` option.
  *
  * Single source of truth on purpose. astro.config.ts and the build gate in
@@ -26,22 +42,6 @@ import { CANONICAL_ORIGIN } from "./domains.ts";
  * Falls back to the canonical production origin because @astrojs/sitemap
  * silently skips generating a sitemap when `site` is unset (#214).
  */
-/**
- * The vite mode to resolve .env files in.
- *
- * Both astro commands set NODE_ENV, verified by printing it at config-load
- * time: `astro dev` gives "development" and `astro build` gives "production".
- * So this only decides for a caller that is not an astro command, which means
- * scripts/verify-*.mjs running after a build — and there the build's own mode,
- * production, is the answer that keeps the gate validating what shipped.
- *
- * Exported so astro.config.ts resolves the same mode for its vite env. Two
- * loadEnv calls in one file defaulting differently is the shape #214 was about.
- */
-export function resolveEnvMode(env: NodeJS.ProcessEnv = process.env): string {
-  return env.NODE_ENV || "production";
-}
-
 export function resolveSite(env: NodeJS.ProcessEnv = process.env, cwd = process.cwd()): string {
   if (env.VITE_BASE_URL) return env.VITE_BASE_URL;
 

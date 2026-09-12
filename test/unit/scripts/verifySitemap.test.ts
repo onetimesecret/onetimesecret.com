@@ -25,20 +25,22 @@ import {
   MINIMUM_URL_COUNT,
   MUST_BE_PRESENT,
   canonicalOf,
-  read,
   decodePath,
   declaredSitemaps,
   htmlFiles,
   isDisallowed,
   isNoindex,
   isRedirectStub,
+  locs,
   main,
+  read,
   readWithin,
   resolveOrigin,
   starRules,
+  summarize,
   verifySitemap,
 } from "../../../scripts/verify-sitemap.mjs";
-import { isExcludedFromSitemap } from "../../../config/astro/sitemap";
+import { isExcludedFromSitemap, normalizePath } from "../../../config/astro/sitemap";
 import { CANONICAL_ORIGIN } from "../../../config/domains";
 
 const ORIGIN = CANONICAL_ORIGIN;
@@ -436,13 +438,18 @@ describe("verifySitemap", () => {
       expect(problems).toContain("40 built page(s) are missing from the sitemap");
     });
 
-    it("reports a canonical two pages share only once", () => {
+    // Both the reported list and the audited count key on the canonical, so two
+    // files sharing one must count once in each. Otherwise the numbers an
+    // operator reads are file counts dressed as page counts.
+    it("counts a canonical two pages share only once", () => {
       const orphan = withCanonical(`${ORIGIN}/en/orphan/`);
       const dir = fixture({
         extraPages: { "en/orphan/index.html": orphan, "en/orphan-copy/index.html": orphan },
       });
-      const problems = text(run(dir));
-      expect(problems).toContain("1 built page(s) are missing from the sitemap");
+      const { problems, audited } = verifySitemap({ distDir: dir, expectedOrigin: ORIGIN });
+
+      expect(text(problems)).toContain("1 built page(s) are missing from the sitemap");
+      expect(audited).toBe(defaultPaths().length + 1);
     });
 
     it("ignores a document with no canonical, as the CDN error pages have none", () => {
@@ -480,7 +487,22 @@ describe("verifySitemap", () => {
     it("refuses to pass vacuously when no page declares a canonical", () => {
       const paths = defaultPaths();
       const problems = text(run(fixture({ paths, noCanonical: paths })));
-      expect(problems).toContain("passed without examining anything");
+      expect(problems).toContain("examined almost nothing and passed");
+    });
+
+    // The blindness does not have to be total: a markup change that breaks the
+    // match on most routes leaves the check just as unable to see an omission.
+    it("refuses to pass when only a handful of pages are identifiable", () => {
+      const paths = defaultPaths();
+      const problems = text(run(fixture({ paths, noCanonical: paths.slice(5) })));
+      expect(problems).toContain("examined almost nothing and passed");
+      expect(problems).toContain(`fewer than the ${MINIMUM_URL_COUNT} floor`);
+    });
+
+    it("counts distinct canonicals rather than files", () => {
+      const dir = fixture();
+      const { audited } = verifySitemap({ distDir: dir, expectedOrigin: ORIGIN });
+      expect(audited).toBe(defaultPaths().length);
     });
   });
 
@@ -512,6 +534,21 @@ describe("verifySitemap", () => {
         `Sitemap: ${ORIGIN}/sitemap-index.xml  # generated, see #214`,
       );
       expect(run(fixture({ robots }))).toEqual([]);
+    });
+
+    // Every other origin comparison in the gate parses; this one compared raw
+    // strings, so the same resource spelled differently failed a sound file.
+    it("accepts a declaration whose host casing or explicit port differ", () => {
+      for (const spelling of [
+        ORIGIN.replace("onetimesecret", "ONETIMESECRET"),
+        `${ORIGIN}:443`,
+      ]) {
+        const robots = ROBOTS.replace(
+          `Sitemap: ${ORIGIN}/sitemap-index.xml`,
+          `Sitemap: ${spelling}/sitemap-index.xml`,
+        );
+        expect(text(run(fixture({ robots })))).not.toContain("none of which is");
+      }
     });
 
     it("flags robots.txt with no Sitemap line at all", () => {
@@ -664,6 +701,16 @@ describe("isExcludedFromSitemap", () => {
     expect(isExcludedFromSitemap("/signing/")).toBe(false);
   });
 
+  // The entries are hand-written literals. Normalizing only the path would make
+  // the sibling guarantee depend on whoever edits the Set remembering a slash,
+  // and both directions of the gate share this predicate, so they would go
+  // blind together.
+  it("normalizes the route entry, not just the path", () => {
+    expect(normalizePath("/example")).toBe("/example/");
+    expect("/example-gallery/".startsWith(normalizePath("/example"))).toBe(false);
+    expect("/example/detail/".startsWith(normalizePath("/example"))).toBe(true);
+  });
+
   it("keeps real content pages", () => {
     expect(isExcludedFromSitemap("/en/about/")).toBe(false);
     expect(isExcludedFromSitemap("/")).toBe(false);
@@ -733,6 +780,28 @@ describe("starRules grouping", () => {
   it("starts a new group after a rule line", () => {
     const robots = "User-agent: *\nDisallow: /a\nUser-agent: GPTBot\nDisallow: /b\n";
     expect(starRules(robots).disallow).toEqual(["/a"]);
+  });
+});
+
+describe("locs", () => {
+  // A pretty-printed sitemap would otherwise yield hrefs parseUrl rejects, and
+  // the FAIL block would accuse a well-formed sitemap of malformed URLs.
+  it("trims whitespace inside a <loc>", () => {
+    expect(locs("<loc>\n  https://x.test/a/\n</loc>")).toEqual(["https://x.test/a/"]);
+  });
+});
+
+describe("summarize", () => {
+  const describeCount = (n: number) => `${n} thing(s)`;
+
+  it("omits the suffix at exactly MAX_EXAMPLES", () => {
+    const offenders = Array.from({ length: MAX_EXAMPLES }, (_, i) => `/p${i}/`);
+    expect(summarize(offenders, describeCount)).not.toContain("more");
+  });
+
+  it("counts the remainder past MAX_EXAMPLES", () => {
+    const offenders = Array.from({ length: MAX_EXAMPLES + 3 }, (_, i) => `/p${i}/`);
+    expect(summarize(offenders, describeCount)).toContain("and 3 more");
   });
 });
 
