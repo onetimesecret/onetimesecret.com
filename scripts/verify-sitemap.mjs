@@ -218,9 +218,11 @@ export function isRedirectStub(html) {
 
 export function isNoindex(html) {
   for (const tag of html.match(/<meta\b[^>]*>/gi) ?? []) {
-    if (!/\bname\s*=\s*["']robots["']/i.test(tag)) continue;
+    // Google honours a googlebot-specific directive the same way.
+    if (!/\bname\s*=\s*["'](?:robots|googlebot)["']/i.test(tag)) continue;
     const content = /\bcontent\s*=\s*["']([^"']*)["']/i.exec(tag)?.[1];
-    if (content && /\bnoindex\b/i.test(content)) return true;
+    // `none` is defined as `noindex, nofollow`, so it has to count.
+    if (content && /\b(?:noindex|none)\b/i.test(content)) return true;
   }
   return false;
 }
@@ -284,8 +286,8 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
       continue;
     }
 
-    const file = join(distDir, parsed.pathname.replace(/^\//, ""));
-    const xml = read(file);
+    const file = join(distDir, decodePath(parsed.pathname).replace(/^\//, ""));
+    const xml = readWithin(distDir, file);
 
     if (!xml) {
       problems.push(`${indexPath} names ${href}, but ${file} does not exist.`);
@@ -355,7 +357,9 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
       continue;
     }
 
-    if (robots !== undefined && isDisallowed(pathname, rules)) {
+    // Decoded so this agrees with the disk probe below; a non-ASCII Disallow
+    // rule would otherwise never match.
+    if (robots !== undefined && isDisallowed(decodePath(pathname), rules)) {
       disallowedPage.push(pathname);
       continue;
     }
@@ -437,7 +441,11 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
   // and hand the site's crawl budget to someone else's origin.
   const declared = declaredSitemaps(robots);
   const canonicalSitemap = `${canonicalOrigin}/sitemap-index.xml`;
-  const offOrigin = declared.filter((url) => parseUrl(url)?.origin !== canonical?.origin);
+  const notAbsolute = declared.filter((url) => parseUrl(url) === undefined);
+  const offOrigin = declared.filter((url) => {
+    const parsed = parseUrl(url);
+    return parsed !== undefined && parsed.origin !== canonical?.origin;
+  });
 
   if (robots === undefined) {
     problems.push(`${join(distDir, "robots.txt")} does not exist.`);
@@ -448,6 +456,13 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
       `robots.txt declares ${declared.map((u) => `"${u}"`).join(", ")}, none of which is ` +
         `${canonicalSitemap} — the file @astrojs/sitemap generates, not the deleted ` +
         "hand-written sitemap.xml (#209).",
+    );
+  }
+
+  if (notAbsolute.length > 0) {
+    problems.push(
+      summarize(notAbsolute, (n) => `${n} Sitemap: declaration(s) are not absolute URLs`) +
+        ". The sitemap protocol requires a full URL, not a site-relative path.",
     );
   }
 

@@ -212,6 +212,13 @@ describe("verifySitemap", () => {
     expect(run(fixture({ paths }))).toEqual([]);
   });
 
+  it("refuses a sitemap URL whose path escapes dist", () => {
+    const paths = defaultPaths();
+    const locs = [...paths.map((p) => `${ORIGIN}${p}`), `${ORIGIN}/%2e%2e/%2e%2e/README.md`];
+    const problems = text(run(fixture({ paths, locs })));
+    expect(problems).toContain("no built page in dist");
+  });
+
   it("flags a noindex page even when the meta attributes are reversed", () => {
     const paths = defaultPaths();
     const target = paths.at(-1)!;
@@ -318,6 +325,16 @@ describe("verifySitemap", () => {
       expect(problems).not.toContain("off-origin");
     });
 
+    it("calls a site-relative declaration not-absolute rather than off-origin", () => {
+      const robots = ROBOTS.replace(
+        `Sitemap: ${ORIGIN}/sitemap-index.xml`,
+        "Sitemap: /sitemap-index.xml",
+      );
+      const problems = text(run(fixture({ robots })));
+      expect(problems).toContain("not absolute URLs");
+      expect(problems).not.toContain("off-origin");
+    });
+
     it("flags a missing robots.txt", () => {
       expect(text(run(fixture({ robots: null })))).toContain("robots.txt does not exist");
     });
@@ -351,6 +368,11 @@ describe("isDisallowed", () => {
     expect(isDisallowed("/", rules)).toBe(false);
   });
 
+  // Google's spec: on an equal-length tie the Allow wins.
+  it("lets an equal-length Allow win the tie", () => {
+    expect(isDisallowed("/x/y", { allow: ["/x/"], disallow: ["/x/"] })).toBe(false);
+  });
+
   it("lets a longer Allow beat a shorter Disallow", () => {
     const custom = { allow: ["/info/public"], disallow: ["/info"] };
     expect(isDisallowed("/info/public/x", custom)).toBe(false);
@@ -364,9 +386,20 @@ describe("isNoindex", () => {
     expect(isNoindex('<meta content="noindex, nofollow" name="robots">')).toBe(true);
   });
 
+  // `none` is defined as `noindex, nofollow`, so a substring test for
+  // "noindex" alone would let such a page into the sitemap.
+  it('treats content="none" as noindex', () => {
+    expect(isNoindex('<meta name="robots" content="none">')).toBe(true);
+  });
+
+  it("honours a googlebot-specific directive", () => {
+    expect(isNoindex('<meta name="googlebot" content="noindex">')).toBe(true);
+  });
+
   it("ignores an indexable page and a non-robots meta", () => {
     expect(isNoindex('<meta name="robots" content="index, follow">')).toBe(false);
     expect(isNoindex('<meta name="description" content="noindex is discussed here">')).toBe(false);
+    expect(isNoindex('<meta name="description" content="none of this matters">')).toBe(false);
   });
 });
 
