@@ -93,6 +93,100 @@ export function stripLocalePrefix(path: string): string {
 }
 
 /**
+ * Is this path served by a route under src/pages/[lang]/, i.e. does it carry a
+ * locale segment?
+ *
+ * Separate from hasLocalizedVariants() because the two answer different
+ * questions about the same strip, and the root answers them differently. This
+ * one decides where hreflang x-default points: see LayoutHead.astro.
+ */
+export function isLocalePrefixed(path: string): boolean {
+  return !!path && stripLocalePrefix(path) !== path;
+}
+
+/**
+ * Does this path belong to a locale cluster, i.e. does a localized counterpart
+ * exist at /{lang}{path} for every supported language?
+ *
+ * hreflang annotations are only useful when they resolve: Google requires them
+ * to be reciprocal, and discards a cluster whose targets 404. LayoutHead.astro
+ * used to assume every page had a twin at /{lang}{path} and emit one alternate
+ * per language unconditionally, which put four dead URLs each on /privacy/,
+ * /terms/, /example/, /env-debug/ and /test-layout/, twenty in total. The first
+ * two of those are footer-linked from every page on the site (issue #211).
+ *
+ * The test is the site's own structure rather than a list to maintain. Pages
+ * with translations live under src/pages/[lang]/ and are served at /{lang}/...,
+ * so their paths carry a locale segment. A page that renders from
+ * src/pages/*.astro, like privacy.astro, serves one document at one URL and has
+ * no cluster to annotate. Adding another top-level page therefore cannot
+ * reintroduce the defect, and translating /privacy/ later (moving it under
+ * [lang]/, as /about/ already is) restores its alternates without touching this
+ * code.
+ *
+ * The root is the one path that is not locale-prefixed and still has twins:
+ * src/pages/index.astro serves "/" as a language-neutral entry point while
+ * src/pages/[lang]/index.astro serves /en/, /fr/, /de/ and /es/. Those
+ * alternates resolve and are worth keeping, so "/" is admitted explicitly.
+ *
+ * One dependency the rule rests on: every route under [lang]/ emits a path for
+ * all four locales even where only one translation exists, either by iterating
+ * getLanguagePaths() (createContentPage, about, security, pricing) or by looping
+ * SUPPORTED_LANGUAGES directly (changelog, use-cases). A route that generated
+ * locale paths conditionally would put dead alternates back, which is why
+ * scripts/verify-hreflang.mjs audits the whole build rather than a sample.
+ *
+ * [lang]/[...slug].astro is not part of that: every path it generates is
+ * shadowed by a higher-priority route, so it renders nothing (16 "Could not
+ * render" warnings per build). The `pages` collection holds only about.md and
+ * security.md per language, both of which have explicit routes, plus privacy.md
+ * and terms.md at the collection root, which it turns into empty-slug paths that
+ * collide with [lang]/index.astro.
+ *
+ * A page that knows better than this rule can still pass `alternateLanguages`
+ * to LayoutHead and override it in either direction.
+ */
+export function hasLocalizedVariants(path: string): boolean {
+  return !path || path === "/" || isLocalePrefixed(path);
+}
+
+/**
+ * The path hreflang x-default should name for a page served at `path`.
+ *
+ * x-default names the version served to a visitor whose language none of the
+ * alternates match, under two constraints that have each been violated once:
+ *
+ *   1. It has to be a page that exists and claims that URL as its canonical.
+ *      Naming the unprefixed path satisfied this only where a top-level redirect
+ *      happened to cover it, and where one did the target was a meta-refresh stub
+ *      rather than a page. 104 of the 124 dead annotations in #211 were this.
+ *   2. Every member of a cluster has to name the same one. Deriving it from the
+ *      default locale everywhere left "/" naming itself while /en/, /fr/, /de/
+ *      and /es/ named /en/, and "/" is in no page's alternate list, so the
+ *      disagreement cost the language-neutral entry point its tie to the cluster.
+ *
+ * Hence three cases:
+ *
+ *   /privacy/                -> /privacy/        (already the neutral URL)
+ *   /, /en/, /fr/, /de/, /es/ -> /               (the homepage cluster)
+ *   /es/about/               -> /en/about/       (the default-locale sibling)
+ *
+ * Kept here rather than inline in LayoutHead.astro so the rule is reachable from
+ * a unit test: it is the newest rule in this file and the one that regressed.
+ */
+export function resolveXDefaultPath(path: string): string {
+  if (!isLocalePrefixed(path)) return path || "/";
+
+  const basePath = stripLocalePrefix(path);
+
+  // The root is a page in its own right, served language-neutrally by
+  // src/pages/index.astro, so the cluster defers to it rather than to /en/.
+  if (basePath === "/") return "/";
+
+  return `/${DEFAULT_LANGUAGE}${basePath}`;
+}
+
+/**
  * Generate a localized URL
  *
  * @param path - The path to localize (without locale prefix)
@@ -201,6 +295,9 @@ export default {
   getLocaleFromUrl,
   getPathWithoutLocale,
   stripLocalePrefix,
+  isLocalePrefixed,
+  hasLocalizedVariants,
+  resolveXDefaultPath,
   localizeUrl,
   createLanguageSwitcherUrl,
   isLocalizedUrlActive,

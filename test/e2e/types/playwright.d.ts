@@ -4,8 +4,15 @@
  * @playwright/test is installed as a devDependency. These ambient declarations
  * provide a lightweight type surface for E2E spec files so that TypeScript can
  * type-check them even when node_modules is absent (e.g. in CI lint-only
- * steps). When @playwright/test is installed, the real package types take
- * precedence.
+ * steps).
+ *
+ * The real package types do NOT take precedence when @playwright/test is
+ * installed, contrary to what this comment used to claim: `declare module`
+ * shadows them. Anything a spec uses has to be declared here or tsc reports it
+ * missing, and several already are (baseURL, isMobile, toHaveClass). Nothing
+ * runs this tsconfig today, which is why those went unnoticed: `pnpm check`
+ * passes --tsconfig tsconfig.json, whose `include` covers test/unit but not
+ * test/e2e.
  */
 
 declare module '@playwright/test' {
@@ -21,6 +28,14 @@ declare module '@playwright/test' {
   interface Response {
     status(): number;
     url(): string;
+    text(): Promise<string>;
+  }
+
+  interface APIRequestContext {
+    get(
+      url: string,
+      options?: { timeout?: number; maxRedirects?: number }
+    ): Promise<Response>;
   }
 
   interface Locator {
@@ -70,6 +85,10 @@ declare module '@playwright/test' {
       colorScheme?: 'light' | 'dark' | 'no-preference';
     }): Promise<void>;
     keyboard: { press(key: string): Promise<void> };
+    // Relative URLs resolve against the `baseURL` in playwright.config.ts, which
+    // is how canonical-url.spec.ts fetches an advertised hreflang target from the
+    // preview server under test rather than from production.
+    request: APIRequestContext;
   }
 
   // -------------------------------------------------------------------------

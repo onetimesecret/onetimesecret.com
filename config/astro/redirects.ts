@@ -41,6 +41,24 @@ export function createConfig(): AstroUserConfig["redirects"] {
       status: 301,
       destination: "/en/pricing",
     },
+    // Unprefixed entry points for the two remaining localized sections. /about,
+    // /pricing and /security have had one for a while; /changelog and /use-cases
+    // did not, so both 404d when typed or followed from an external link
+    // (dist/changelog/ holds only rss.xml, and dist/use-cases/ did not exist).
+    // The site's own navigation links the locale-prefixed URLs either way.
+    //
+    // Destination without the trailing slash, matching the entries above, so each
+    // is two hops: /changelog -> /en/changelog -> /en/changelog/. Naming
+    // /en/changelog/ directly would save one, but only for these two of the five,
+    // and no hreflang annotation points here any more.
+    "/changelog": {
+      status: 301,
+      destination: "/en/changelog",
+    },
+    "/use-cases": {
+      status: 301,
+      destination: "/en/use-cases",
+    },
     "/plans/identity": {
       status: 302,
       destination: "https://eu.onetimesecret.com/plans/identity",

@@ -13,7 +13,11 @@ import {
   defaultSeoValues,
   getDefaultWebApplicationLd,
 } from "@/utils/seo";
-import { stripLocalePrefix } from "@/i18n/utils";
+import {
+  hasLocalizedVariants,
+  resolveXDefaultPath,
+  stripLocalePrefix,
+} from "@/i18n/utils";
 import { SUPPORTED_LANGUAGES } from "@config/astro/i18n";
 
 export interface Props {
@@ -92,12 +96,37 @@ const pageNoindex =
 // test/e2e/specs/canonical-url.spec.ts and test/unit/i18n/locale-paths.test.ts.
 const basePathForAlternates = stripLocalePrefix(currentPath);
 
-const pageAlternateLanguages =
-  propsAlternateLanguages ||
-  SUPPORTED_LANGUAGES.map((lang) => ({
-    code: lang,
-    url: `${siteOrigin}/${lang}${basePathForAlternates}`,
-  }));
+// Only annotate a page that actually has localized counterparts. Emitting one
+// alternate per language unconditionally assumed every page had a twin at
+// /{lang}{path}; pages rendered from src/pages/*.astro have none, so they
+// advertised URLs that 404, and Google discards a cluster whose targets do not
+// resolve. hasLocalizedVariants() reads the site's structure rather than a list:
+// see its docstring in src/i18n/utils.ts. Issue #211, audited over the whole
+// build by scripts/verify-hreflang.mjs.
+//
+// `??` rather than `||`: a page that passes an empty array is saying it has no
+// alternates, and that has to survive rather than fall through to the default.
+// A page asking not to be indexed has nothing to gain from hreflang, and being
+// in a cluster it cannot join costs its siblings their reciprocity, so it
+// advertises nothing at all. src/pages/500.astro is the case: Astro writes it to
+// dist/500.html while its path is /500/, so its x-default named a URL that is
+// never built.
+const pageAlternateLanguages = pageNoindex
+  ? []
+  : (propsAlternateLanguages ??
+    (hasLocalizedVariants(currentPath)
+      ? SUPPORTED_LANGUAGES.map((lang) => ({
+          code: lang,
+          url: `${siteOrigin}/${lang}${basePathForAlternates}`,
+        }))
+      : []));
+
+// The rule, and why it is three cases rather than one, is in
+// resolveXDefaultPath()'s docstring. Built from currentPath, whose consecutive
+// slashes are collapsed above, so the CWE-601 guard covers x-default too. A page
+// passing its own `canonicalUrl` does not steer this: the override covers
+// `alternateLanguages` only, and no caller passes either today.
+const xDefaultUrl = `${siteOrigin}${resolveXDefaultPath(currentPath)}`;
 
 const pageStructuredData =
   propsStructuredData ||
@@ -172,11 +201,17 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
     rel="sitemap"
     href="/sitemap-index.xml"
   />
-  <link
-    rel="alternate"
-    hreflang="x-default"
-    href={`${siteOrigin}${basePathForAlternates}`}
-  />
+  {/* x-default stays on every indexable page, with or without per-locale
+      alternates. A noindex page emits no annotations: see pageAlternateLanguages. */}
+  {
+    !pageNoindex && (
+      <link
+        rel="alternate"
+        hreflang="x-default"
+        href={xDefaultUrl}
+      />
+    )
+  }
   <OptimizedFonts />
   <meta
     http-equiv="Content-Security-Policy"

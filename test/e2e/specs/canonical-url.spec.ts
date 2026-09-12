@@ -12,7 +12,7 @@
  * trailing slash so they name the 200 URL rather than the redirect.
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 // The same constants the site builds these tags from.
 import { SUPPORTED_LANGUAGES } from '../../../config/astro/i18n';
@@ -23,16 +23,108 @@ const PRODUCTION_DOMAIN = CANONICAL_ORIGIN;
 /**
  * Matches hrefs that start on the production origin.
  *
- * The origin is escaped before it becomes a pattern: unescaped, its dots match
- * any character, so `https://onetimesecretXcom` would have satisfied these
- * assertions.
+ * Two things the obvious version gets wrong. The origin is escaped before it
+ * becomes a pattern: unescaped, its dots match any character, so
+ * `https://onetimesecretXcom` satisfied these assertions. And the pattern ends
+ * at a path separator: CANONICAL_ORIGIN carries no trailing slash
+ * (config/domains.ts), so `^https://onetimesecret\.com` also matched
+ * `https://onetimesecret.comv-debug/`, the mangled value from #210, on a host
+ * nobody owns. Every legitimate value here is an origin followed by a path, so
+ * requiring the slash costs nothing and makes the ~8 assertions that use this
+ * pattern reject that host rather than only the one that parses the URL.
  */
 const PRODUCTION_ORIGIN_PATTERN = new RegExp(
-  `^${PRODUCTION_DOMAIN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`
+  `^${PRODUCTION_DOMAIN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/`
 );
 
 /** One tag per locale, plus x-default. */
 const EXPECTED_HREFLANG_COUNT = SUPPORTED_LANGUAGES.length + 1;
+
+/**
+ * Fetches an advertised hreflang target from the preview server under test and
+ * asserts the page that answers claims that exact URL as its canonical.
+ *
+ * A status check alone is not enough, and `maxRedirects: 0` does not rescue it:
+ * `astro preview` serves 200 for every path in the build, including the
+ * meta-refresh stubs the `redirects` config emits and the slash-less form of a
+ * directory URL. Measured against this build:
+ *
+ *   /en/about/  200, canonical https://onetimesecret.com/en/about/
+ *   /en/about   200, canonical https://onetimesecret.com/en/about/   <- not itself
+ *   /about/     200, canonical /en/about                             <- refresh stub
+ *
+ * So the two ways an annotation can name a URL that exists without naming the
+ * page both report 200. Comparing the canonical is what separates them, and it is
+ * the reciprocity Google checks: the URL advertised for a locale has to be the URL
+ * that locale's page claims. It rejects the old x-default of /about/, and it would
+ * reject a stripLocalePrefix() that ever dropped the trailing slash, which is the
+ * mistake this file's header is most careful about.
+ *
+ * `maxRedirects: 0` stays for the case where BASE_URL points at a host that does
+ * issue real 3xx, where a followed redirect would otherwise report the target's
+ * destination.
+ *
+ * Only the pathname is reused: the hrefs are absolute on the canonical production
+ * origin, and a relative path resolves against the baseURL in
+ * playwright.config.ts.
+ */
+async function expectTargetIsCanonical(
+  page: Page,
+  target: string,
+  advertisedBy: string
+): Promise<void> {
+  const response = await page.request.get(new URL(target).pathname, {
+    maxRedirects: 0,
+  });
+
+  expect(response.status(), `${advertisedBy} advertises ${target}`).toBe(200);
+
+  // Matched across the whole tag rather than on adjacent attributes in one order.
+  // SeoMeta.astro writes rel and href on separate lines and Astro collapses them,
+  // so an adjacency-sensitive pattern would start reporting every target in the
+  // suite as canonicalising elsewhere the moment that markup is reformatted or
+  // gains an attribute, which is a false answer rather than a failed assertion.
+  const tag = /<link\b[^>]*\brel="canonical"[^>]*>/.exec(await response.text());
+
+  // Split from the comparison so "no canonical tag" and "canonical names
+  // something else" are different failures.
+  expect(tag?.[0], `${target} has no canonical tag`).toBeTruthy();
+
+  expect(
+    /\bhref="([^"]*)"/.exec(tag?.[0] ?? '')?.[1],
+    `${advertisedBy} advertises ${target}, which is served by a page that ` +
+      `canonicalises somewhere else`
+  ).toBe(target);
+}
+
+/**
+ * The path of the newest changelog entry, read off the locale's index page.
+ *
+ * Naming a slug inline ties the test to one post surviving: prune or rename it
+ * and the test fails for a reason that has nothing to do with hreflang.
+ */
+async function firstChangelogEntryPath(
+  page: Page,
+  locale: string
+): Promise<string> {
+  await page.goto(`/${locale}/changelog`);
+
+  const href = await page
+    .locator(`a[href^="/${locale}/changelog/"]`)
+    .first()
+    .getAttribute('href');
+
+  // Entries are date-prefixed. [lang]/changelog/guide.astro is a sibling under
+  // the same prefix, so without this a "read the guide" link added to the index
+  // would make this return /{locale}/changelog/guide: the x-default assertion
+  // would still pass and would quietly stop covering a content-collection entry.
+  expect(
+    href,
+    `${locale} changelog index should link a dated entry, got ${href}`
+  ).toMatch(new RegExp(`^/${locale}/changelog/\\d{4}-\\d{2}-\\d{2}-`));
+
+  return href ?? '';
+}
 
 /**
  * Existence is asserted with `expect(locator).toHaveAttribute()` rather than
@@ -180,9 +272,89 @@ test.describe('Canonical URL - HTML Output Verification', () => {
         'href',
         `${PRODUCTION_DOMAIN}/es/about/`
       );
+      // x-default names the default-locale sibling, not the unprefixed path: see
+      // the x-default case below for why.
       await expect(
         page.locator('link[rel="alternate"][hreflang="x-default"]')
-      ).toHaveAttribute('href', `${PRODUCTION_DOMAIN}/about/`);
+      ).toHaveAttribute('href', `${PRODUCTION_DOMAIN}/en/about/`);
+    });
+
+    test('x-default on a localized page names a URL that exists', async ({
+      page,
+    }) => {
+      // x-default used to be the unprefixed path, which exists only where a
+      // top-level redirect happens to cover it. /about, /pricing and /security
+      // have one; the 21 changelog entries and the use-cases index do not, so 84
+      // pages named an x-default that 404s. A changelog entry is the case to pin:
+      // a redirect per entry would need a new one with every post.
+      //
+      // The entry is read off the index rather than named here, so pruning or
+      // renaming a changelog post cannot fail this test for an unrelated reason.
+      const entryPath = await firstChangelogEntryPath(page, 'fr');
+      await page.goto(entryPath);
+
+      const href =
+        (await page
+          .locator('link[rel="alternate"][hreflang="x-default"]')
+          .getAttribute('href')) ?? '';
+
+      // Slash normalized off the path read from the index before adding the one
+      // the tag carries: the index links entries unslashed today, and assuming
+      // that would make this fail with "...//" for a reason unrelated to hreflang
+      // if it ever changes, which is the fragility firstChangelogEntryPath() was
+      // written to remove.
+      const enPath = entryPath.replace('/fr/', '/en/').replace(/\/$/, '');
+
+      expect(href).toBe(`${PRODUCTION_DOMAIN}${enPath}/`);
+      await expectTargetIsCanonical(page, href, entryPath);
+    });
+
+    test('a noindex page advertises no hreflang at all', async ({ page }) => {
+      // /{lang}/changelog/guide/ is locale-prefixed and its four siblings exist,
+      // so the structural rule would give it a full cluster. It sets
+      // noindex={true}, which wins: annotations on a page that asks not to be
+      // indexed are ignored by Google, and a noindex member costs an indexable
+      // cluster its reciprocity. src/pages/500.astro is the case that forced the
+      // rule, since Astro writes it to dist/500.html while its path is /500/, so
+      // its x-default named a URL that is never built.
+      for (const path of ['/en/changelog/guide', '/500.html']) {
+        await page.goto(path);
+
+        await expect(
+          page.locator('meta[name="robots"]'),
+          `${path} should be noindex`
+        ).toHaveAttribute('content', /noindex/);
+
+        await expect(
+          page.locator('link[rel="alternate"][hreflang]'),
+          `${path} should advertise no hreflang`
+        ).toHaveCount(0);
+      }
+    });
+
+    test('every member of a cluster names the same x-default', async ({
+      page,
+    }) => {
+      // All five homepage pages advertise the same four alternates, so they are
+      // one cluster and have to agree on its x-default. Deriving it from the
+      // default locale everywhere broke that: "/" named itself while /en/, /fr/,
+      // /de/ and /es/ named /en/, and "/" is in no page's alternate list, so the
+      // disagreement cost the neutral entry point its only tie to the cluster.
+      const seen = new Map<string, string>();
+
+      for (const path of ['/', '/en/', '/fr/', '/de/', '/es/']) {
+        await page.goto(path);
+        seen.set(
+          path,
+          (await page
+            .locator('link[rel="alternate"][hreflang="x-default"]')
+            .getAttribute('href')) ?? ''
+        );
+      }
+
+      expect([...new Set(seen.values())], JSON.stringify([...seen])).toEqual([
+        `${PRODUCTION_DOMAIN}/`,
+      ]);
     });
 
     test('hreflang is not mangled on a path that merely begins with a locale code', async ({
@@ -197,29 +369,114 @@ test.describe('Canonical URL - HTML Output Verification', () => {
       // covers the boundary cases, this covers the built page.
       await page.goto('/env-debug');
 
-      await expect(
-        page.locator('link[rel="alternate"][hreflang="x-default"]')
-      ).toHaveAttribute('href', `${PRODUCTION_DOMAIN}/env-debug/`);
+      const xDefault = page.locator('link[rel="alternate"][hreflang="x-default"]');
+      await expect(xDefault).toHaveAttribute(
+        'href',
+        `${PRODUCTION_DOMAIN}/env-debug/`
+      );
 
-      const hreflangLinks = page.locator('link[rel="alternate"][hreflang]');
-      expect(await hreflangLinks.count()).toBe(EXPECTED_HREFLANG_COUNT);
+      // Parsed, not pattern-matched: PRODUCTION_ORIGIN_PATTERN is a prefix test,
+      // so "https://onetimesecret.comv-debug/" satisfies it while resolving to a
+      // different host entirely. Comparing the parsed origin is what rejects it.
+      const href = (await xDefault.getAttribute('href')) ?? '';
+      expect(new URL(href).origin).toBe(PRODUCTION_DOMAIN);
+      // ...and the page's own path survives the strip intact.
+      expect(new URL(href).pathname).toBe('/env-debug/');
 
-      for (const link of await hreflangLinks.all()) {
-        const href = (await link.getAttribute('href')) ?? '';
+      // x-default is the only annotation here: /en/env-debug/ and its siblings do
+      // not exist, so the page advertises no per-locale alternates (#211).
+      expect(await page.locator('link[rel="alternate"][hreflang]').count()).toBe(1);
+    });
 
-        // Parsed, not pattern-matched: PRODUCTION_ORIGIN_PATTERN is a prefix test,
-        // so "https://onetimesecret.comv-debug/" satisfies it while resolving to a
-        // different host entirely. Comparing the parsed origin is what rejects it.
-        expect(new URL(href).origin).toBe(PRODUCTION_DOMAIN);
-        // ...and the page's own path survives the strip intact.
-        expect(new URL(href).pathname).toMatch(/\/env-debug\/$/);
+    test('a page with no localized twin advertises no per-locale alternates', async ({
+      page,
+    }) => {
+      // /privacy/ and /terms/ render from src/pages/privacy.astro and terms.astro
+      // rather than from src/pages/[lang]/, so nothing exists at /{lang}/privacy/.
+      // Every page on the site used to advertise four alternates for each of them
+      // anyway, reachable from the footer links that appear sitewide, and Google
+      // discards a cluster whose targets 404 (#211).
+      for (const { path, servedAt } of [
+        { path: '/privacy', servedAt: '/privacy/' },
+        { path: '/terms', servedAt: '/terms/' },
+      ]) {
+        await page.goto(path);
+
+        for (const lang of SUPPORTED_LANGUAGES) {
+          await expect(
+            page.locator(`link[rel="alternate"][hreflang="${lang}"]`),
+            `${path} should not advertise a ${lang} alternate`
+          ).toHaveCount(0);
+        }
+
+        // x-default stays and is self-referential: this page is the version for
+        // every language, which is both true and resolvable.
+        await expect(
+          page.locator('link[rel="alternate"][hreflang="x-default"]')
+        ).toHaveAttribute('href', `${PRODUCTION_DOMAIN}${servedAt}`);
       }
+    });
 
-      // Deliberately not asserted: that those per-locale targets resolve. They do
-      // not. No page without a localized twin has them, which also puts four dead
-      // alternates on /privacy/ and /terms/ — footer-linked from every page. That
-      // is issue #211: a wider defect than the mangling gated here, and one that
-      // needs a decision about which pages form a locale cluster, not a fix.
+    test('advertised hreflang targets resolve, across a sample of page shapes', async ({
+      page,
+    }) => {
+      // One route of each shape that got this wrong, checked through the served
+      // HTTP layer: locale-prefixed and not, content-collection and not, a
+      // changelog entry, and a path that merely begins with a locale code.
+      //
+      // Deliberately a sample. The rule #211 fixed is structural, so the whole
+      // build is audited by scripts/verify-hreflang.mjs (`pnpm
+      // build:verify:hreflang`, wired into the Production Build job), which walks
+      // every built page and checks every annotation. A nine-route sample cannot
+      // gate a site-wide invariant; what it adds over the script is the served
+      // response rather than the file on disk.
+      //
+      // Requests go to the preview server under test rather than to production:
+      // the hrefs are absolute on the canonical origin, so only the pathname is
+      // reused, and a relative path resolves against Playwright's baseURL.
+      const checked = new Set<string>();
+
+      for (const path of [
+        '/',
+        '/en/about',
+        '/es/about',
+        '/de/changelog',
+        await firstChangelogEntryPath(page, 'fr'),
+        '/es/use-cases',
+        '/privacy',
+        '/terms',
+        '/env-debug',
+      ]) {
+        await page.goto(path);
+
+        const hreflangLinks = page.locator('link[rel="alternate"][hreflang]');
+        // Guard the loop: a page with its annotations deleted would otherwise
+        // iterate nothing and pass. Every page keeps at least x-default.
+        expect(
+          await hreflangLinks.count(),
+          `${path} should advertise at least x-default`
+        ).toBeGreaterThan(0);
+
+        const targets = await Promise.all(
+          (await hreflangLinks.all()).map((link) => link.getAttribute('href'))
+        );
+
+        // Deduplicated across pages: every member of a cluster advertises the
+        // same set, so /en/about and /es/about name the identical four URLs.
+        const unchecked = targets
+          .map((target) => target ?? '')
+          .filter((target) => {
+            if (checked.has(target)) return false;
+            checked.add(target);
+            return true;
+          });
+
+        await Promise.all(
+          unchecked.map((target) =>
+            expectTargetIsCanonical(page, target, path)
+          )
+        );
+      }
     });
 
     test('hreflang should have correct language-prefixed paths', async ({
