@@ -145,8 +145,18 @@ export function isDisallowed(pathname, { allow, disallow }) {
  * .html file (500.astro -> dist/500.html); probing both keeps the failure
  * message honest about which problem it found.
  */
+export function decodePath(pathname) {
+  try {
+    return decodeURIComponent(pathname);
+  } catch {
+    return pathname;
+  }
+}
+
 export function findPage(distDir, pathname) {
-  const rel = pathname.replace(/^\//, "");
+  // URL.pathname stays percent-encoded; the file on disk is not. A slug with a
+  // non-ASCII or reserved character would otherwise read as an unbuilt page.
+  const rel = decodePath(pathname).replace(/^\//, "");
   const bare = rel.replace(/\/$/, "");
   const asDirectory = read(join(distDir, rel, "index.html"));
   if (asDirectory !== undefined) return asDirectory;
@@ -380,7 +390,16 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
  */
 export function resolveOrigin(explicit, env = process.env) {
   if (explicit) return explicit;
-  const loaded = loadEnv(env.NODE_ENV || "development", process.cwd(), "");
+  // `astro build` sets NODE_ENV=production before loading astro.config.ts, so
+  // the build resolves env in production mode (verified by probing the config
+  // during a build). This step runs afterwards with NODE_ENV unset, so it must
+  // default to the same mode or a .env.production would make the gate check an
+  // origin the build never used.
+  // An exported variable wins over a .env file, which is vite's own precedence
+  // and how CI and both deploy workflows pass VITE_BASE_URL.
+  if (env.VITE_BASE_URL) return env.VITE_BASE_URL;
+
+  const loaded = loadEnv(env.NODE_ENV || "production", process.cwd(), "");
   return loaded.VITE_BASE_URL || CANONICAL_ORIGIN;
 }
 

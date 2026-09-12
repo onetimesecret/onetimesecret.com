@@ -35,7 +35,12 @@ export const EXCLUDED_SITEMAP_PATHS = new Set([
  */
 export const EXCLUDED_SITEMAP_PATHS_EVERY_LOCALE = new Set(["/changelog/guide/"]);
 
-const LOCALE_PREFIXED = new RegExp(`^/(?:${SUPPORTED_LANGUAGES.join("|")})(/.*)$`);
+/** Escaped so a future locale code containing regex metacharacters is literal. */
+const escapeForRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const LOCALE_PREFIXED = new RegExp(
+  `^/(?:${SUPPORTED_LANGUAGES.map(escapeForRegExp).join("|")})(/.*)$`,
+);
 
 /**
  * True when `pathname` must be kept out of the sitemap. Shared by the

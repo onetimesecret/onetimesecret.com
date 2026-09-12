@@ -23,12 +23,15 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   MINIMUM_URL_COUNT,
   MUST_BE_PRESENT,
+  decodePath,
   declaredSitemaps,
   isDisallowed,
   isNoindex,
+  resolveOrigin,
   starRules,
   verifySitemap,
 } from "../../../scripts/verify-sitemap.mjs";
+import { isExcludedFromSitemap } from "../../../config/astro/sitemap";
 import { CANONICAL_ORIGIN } from "../../../config/domains";
 
 const ORIGIN = CANONICAL_ORIGIN;
@@ -189,6 +192,12 @@ describe("verifySitemap", () => {
     expect(run(fixture({ paths, bareHtml: [paths.at(-1)!] }))).toEqual([]);
   });
 
+  // URL.pathname is percent-encoded; the directory on disk is not.
+  it("resolves a page whose path needs percent-decoding", () => {
+    const paths = [...defaultPaths(), "/en/caf\u00e9/"];
+    expect(run(fixture({ paths }))).toEqual([]);
+  });
+
   it("flags a noindex page even when the meta attributes are reversed", () => {
     const paths = defaultPaths();
     const target = paths.at(-1)!;
@@ -321,5 +330,48 @@ describe("declaredSitemaps", () => {
 
   it("returns nothing for robots.txt without one", () => {
     expect(declaredSitemaps("User-agent: *\nAllow: /")).toEqual([]);
+  });
+});
+
+describe("decodePath", () => {
+  it("decodes a percent-encoded pathname", () => {
+    expect(decodePath("/en/caf%C3%A9/")).toBe("/en/caf\u00e9/");
+  });
+
+  it("returns the input unchanged rather than throwing on a bad sequence", () => {
+    expect(decodePath("/en/%ZZ/")).toBe("/en/%ZZ/");
+  });
+});
+
+describe("resolveOrigin", () => {
+  it("prefers an explicit origin over the environment", () => {
+    expect(resolveOrigin("https://explicit.test", { VITE_BASE_URL: "https://env.test" })).toBe(
+      "https://explicit.test",
+    );
+  });
+
+  // astro build sets NODE_ENV=production before loading astro.config.ts, so
+  // the default here has to match or a .env.production would diverge.
+  it("reads VITE_BASE_URL from the environment when no origin is given", () => {
+    expect(resolveOrigin(undefined, { VITE_BASE_URL: "https://env.test" })).toBe(
+      "https://env.test",
+    );
+  });
+});
+
+describe("isExcludedFromSitemap", () => {
+  it("excludes a locale-prefixed path and its unprefixed form", () => {
+    expect(isExcludedFromSitemap("/de/changelog/guide/")).toBe(true);
+    expect(isExcludedFromSitemap("/changelog/guide/")).toBe(true);
+  });
+
+  it("excludes the robots.txt-disallowed interstitials and the debug routes", () => {
+    expect(isExcludedFromSitemap("/signin/")).toBe(true);
+    expect(isExcludedFromSitemap("/example/")).toBe(true);
+  });
+
+  it("keeps real content pages", () => {
+    expect(isExcludedFromSitemap("/en/about/")).toBe(false);
+    expect(isExcludedFromSitemap("/")).toBe(false);
   });
 });
