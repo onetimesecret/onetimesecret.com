@@ -79,6 +79,11 @@ export function read(path) {
 // safe direction for a gate.
 export const locs = (xml) => [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, href]) => href);
 
+/** True when `url` is nothing but an origin: no base path, query or fragment. */
+export function isBareOrigin(url) {
+  return url.pathname === "/" && url.search === "" && url.hash === "";
+}
+
 /** `new URL` that yields undefined instead of throwing on a malformed <loc>. */
 export function parseUrl(href) {
   try {
@@ -99,7 +104,10 @@ export function summarize(offenders, describe) {
 export function declaredSitemaps(robots) {
   return (robots ?? "")
     .split("\n")
-    .map((line) => line.trim())
+    // Comments stripped as starRules does. A trailing "# see #214" would
+    // otherwise be parsed as part of the URL and reported as "not an absolute
+    // URL", which sends the reader after the wrong thing.
+    .map((line) => line.replace(/#.*$/, "").trim())
     .filter((line) => line.toLowerCase().startsWith("sitemap:"))
     .map((line) => line.slice(line.indexOf(":") + 1).trim())
     .filter(Boolean);
@@ -310,7 +318,10 @@ export function canonicalOf(html) {
  */
 export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, hasRobots }) {
   const canonical = parseUrl(canonicalOrigin);
-  const missing = [];
+  // A Set because the key is the canonical, not the file: two pages declaring
+  // the same one would otherwise be counted twice, and the number an operator
+  // reads would be a file count rather than a URL count.
+  const missing = new Set();
   let audited = 0;
 
   for (const file of htmlFiles(distDir)) {
@@ -335,10 +346,10 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
     // strings: this one from the page's canonical, the set from the sitemap's
     // <loc> values. They agree on a trailing slash today; flipping
     // `trailingSlash` should not be able to report all 107 pages as missing.
-    if (!advertised.has(normalizePath(pathname))) missing.push(pathname);
+    if (!advertised.has(normalizePath(pathname))) missing.add(pathname);
   }
 
-  return { missing, audited };
+  return { missing: [...missing], audited };
 }
 
 /**
@@ -359,6 +370,17 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
 
   if (!expected) {
     const problem = `Expected origin "${expectedOrigin}" is not a valid URL.`;
+    return { problems: [problem], urls: [], childHrefs: [], audited: 0 };
+  }
+
+  // Base paths are not supported, and every URL comparison here is by origin,
+  // so `https://x/base` would silently accept every URL on `https://x`. Say so
+  // instead. Supporting one properly means the sitemap, the canonicals and the
+  // hreflang gate all change together, which is not this check's call to make.
+  if (!isBareOrigin(expected)) {
+    const problem =
+      `Expected origin "${expectedOrigin}" has a path, query or fragment. ` +
+      "This check compares origins, so it cannot verify a site served under a base path.";
     return { problems: [problem], urls: [], childHrefs: [], audited: 0 };
   }
 

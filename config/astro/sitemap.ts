@@ -29,11 +29,16 @@ export const EXCLUDED_SITEMAP_PATHS = new Set([
  * Every entry names a route subtree rather than a single URL, so a page added
  * under one is excluded without anybody remembering to list it. Exact matching
  * would advertise /example/detail/ while /example/ stayed hidden, which reads
- * as a bug to anyone who looks at the list. Both sides are normalized to a
- * trailing slash, so /example/ cannot match /example-other/.
+ * as a bug to anyone who looks at the list.
+ *
+ * Both sides are normalized, so /example/ cannot match /example-other/. The
+ * route side matters as much as the path side: the entries are hand-written
+ * literals, so normalizing only the path would make the guarantee hold by
+ * everyone remembering a trailing slash, and an entry spelled "/example"
+ * would silently turn subtree matching back into prefix matching.
  */
 const isUnder = (path: string, routes: Set<string>) =>
-  [...routes].some((route) => path.startsWith(route));
+  [...routes].some((route) => path.startsWith(normalizePath(route)));
 
 /**
  * Excluded in every locale, with or without a language prefix. Subtrees, as

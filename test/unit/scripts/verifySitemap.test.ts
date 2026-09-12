@@ -238,6 +238,21 @@ describe("verifySitemap", () => {
     expect(problems).toEqual([]);
   });
 
+  // Base paths are unsupported. The failure mode without this was silent:
+  // every comparison is by origin, so /base would accept every URL on the host.
+  it("refuses an expected origin carrying a base path", () => {
+    const dir = fixture();
+    const problems = verifySitemap({
+      distDir: dir,
+      expectedOrigin: `${ORIGIN}/base/`,
+    }).problems;
+    expect(text(problems)).toContain("has a path, query or fragment");
+  });
+
+  it("accepts an expected origin that is only an origin", () => {
+    expect(run(fixture(), `${ORIGIN}/`)).toEqual([]);
+  });
+
   it("reports an unparseable canonical origin rather than an empty audit", () => {
     const dir = fixture();
     const problems = verifySitemap({
@@ -421,6 +436,15 @@ describe("verifySitemap", () => {
       expect(problems).toContain("40 built page(s) are missing from the sitemap");
     });
 
+    it("reports a canonical two pages share only once", () => {
+      const orphan = withCanonical(`${ORIGIN}/en/orphan/`);
+      const dir = fixture({
+        extraPages: { "en/orphan/index.html": orphan, "en/orphan-copy/index.html": orphan },
+      });
+      const problems = text(run(dir));
+      expect(problems).toContain("1 built page(s) are missing from the sitemap");
+    });
+
     it("ignores a document with no canonical, as the CDN error pages have none", () => {
       const body = "<!doctype html><html><head></head><body>404</body></html>";
       expect(run(fixture({ extraPages: { "bunnycdn_errors/404.html": body } }))).toEqual([]);
@@ -477,6 +501,17 @@ describe("verifySitemap", () => {
     it("flags the deleted stub filename on the right origin", () => {
       const robots = ROBOTS.replace("/sitemap-index.xml", "/sitemap.xml");
       expect(text(run(fixture({ robots })))).toContain("none of which is");
+    });
+
+    // Legal robots.txt, and starRules already strips these. Without the same
+    // handling the declaration parses as one opaque value and is reported as
+    // not being an absolute URL.
+    it("reads a declaration carrying a trailing comment", () => {
+      const robots = ROBOTS.replace(
+        `Sitemap: ${ORIGIN}/sitemap-index.xml`,
+        `Sitemap: ${ORIGIN}/sitemap-index.xml  # generated, see #214`,
+      );
+      expect(run(fixture({ robots }))).toEqual([]);
     });
 
     it("flags robots.txt with no Sitemap line at all", () => {
