@@ -33,6 +33,7 @@ import { createConfig as createIntegrations } from "./config/astro/integrations"
 import { createConfig as createMarkdownConfig } from "./config/astro/markdown";
 import { createConfig as createRedirectsConfig } from "./config/astro/redirects";
 import { createConfig as createViteConfig } from "./config/astro/vite";
+import { CANONICAL_ORIGIN } from "./config/domains";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -59,8 +60,12 @@ export default defineConfig({
    *
    * Avoid using `process.env.VARIABLE_NAME` as it's Node.js specific, unreliable across
    * different runtimes Astro might support, and doesn't work client-side without polyfills.
+   *
+   * Falls back to the canonical production origin when VITE_BASE_URL is unset
+   * (CI and a plain local build both leave it unset today). Without a `site`,
+   * @astrojs/sitemap silently skips generating a sitemap entirely - see #214.
    */
-  site: env.VITE_BASE_URL,
+  site: env.VITE_BASE_URL || CANONICAL_ORIGIN,
 
   // Astro build configuration
   build: {
