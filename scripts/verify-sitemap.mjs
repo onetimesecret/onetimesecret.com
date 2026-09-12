@@ -43,9 +43,13 @@ import { isExcludedFromSitemap, normalizePath } from "../config/astro/sitemap.ts
 export const MINIMUM_URL_COUNT = 50;
 
 // The floor for how many pages the coverage walk manages to identify as this
-// site's own. A different quantity from the URL count above, comparable to it
-// only because the sitemap advertises every such page; aliased rather than
-// reused so moving one floor does not silently move the other.
+// site's own, and for how many link a sitemap.
+//
+// Deliberately the same value as the URL count, not independent of it: every
+// page this identifies is advertised, so the two track each other, and a second
+// literal would be a number to keep in sync by hand. Named separately because
+// the quantities are different and the failure messages say different things;
+// moving MINIMUM_URL_COUNT does move this too.
 export const MINIMUM_AUDITED_PAGES = MINIMUM_URL_COUNT;
 
 // Real content pages that must always be advertised. Not exhaustive — the
@@ -374,7 +378,7 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
   // verifySitemap validates this before calling, so this is unreachable through
   // the gate. Guarded because the function is exported: an audit of nothing is
   // reported by the caller's floor rather than thrown from here.
-  if (!canonical) return { missing: [], audited: 0, sitemapLinks: [] };
+  if (!canonical) return { missing: [], audited: 0, sitemapLinks: [], linkedPages: 0 };
   // A Set because the key is the canonical, not the file: two pages declaring
   // the same one would otherwise be counted twice, and the number an operator
   // reads would be a file count rather than a URL count.
@@ -386,6 +390,7 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
   // drifting apart puts a 404 behind every page's <link rel="sitemap">, which
   // is #209 exactly.
   const sitemapLinks = new Set();
+  let linkedPages = 0;
   // Counted as distinct canonicals for the same reason `missing` is deduped:
   // this number is printed as a page count, and two files can declare one
   // canonical.
@@ -396,7 +401,10 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
     if (html === undefined) continue;
 
     const linked = sitemapLinkOf(html);
-    if (linked !== undefined) sitemapLinks.add(linked);
+    if (linked !== undefined) {
+      sitemapLinks.add(linked);
+      linkedPages += 1;
+    }
 
     const href = canonicalOf(html);
     const parsed = href === undefined ? undefined : parseUrl(href);
@@ -427,7 +435,12 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
     if (!advertised.has(normalizePath(pathname))) missing.add(pathname);
   }
 
-  return { missing: [...missing], audited: seen.size, sitemapLinks: [...sitemapLinks] };
+  return {
+    missing: [...missing],
+    audited: seen.size,
+    sitemapLinks: [...sitemapLinks],
+    linkedPages,
+  };
 }
 
 /**
@@ -751,10 +764,37 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
   // What the pages link, against what this gate actually verified. Both were
   // the literal "sitemap-index.xml" in two files until now, and nothing
   // connected them.
+  // Resolved against the canonical origin and compared whole. Not through
+  // normalizePath: that adds a trailing slash, which would make a page linking
+  // the directory-shaped "/sitemap-index.xml/" — a URL that 404s — compare
+  // equal to the file. It is a route normalizer, and this is a filename; the
+  // same distinction findPage was taught for /500/ against /500.html.
+  //
+  // The origin is compared too, so an absolute href on another host cannot
+  // clear the check on its path alone.
+  const expectedPath = `/${relative(distDir, indexPath).split(sep).join("/")}`;
   const unlinked = coverage.sitemapLinks.filter((href) => {
-    const path = parseUrl(href) ? parseUrl(href).pathname : href;
-    return normalizePath(path) !== normalizePath(`/${relative(distDir, indexPath)}`);
+    let link;
+    try {
+      link = new URL(href, canonical);
+    } catch {
+      return true;
+    }
+    return link.origin !== canonical.origin || link.pathname !== expectedPath;
   });
+
+  // Floored, not merely filtered: an empty set means nothing linked a sitemap,
+  // and a filter over nothing reports nothing. Every page LayoutHead.astro
+  // renders carries the link, so a count below the floor means either that
+  // markup changed or sitemapLinkOf stopped matching it — and this check would
+  // otherwise pass having examined nothing, which is what it exists to catch.
+  if (coverage.linkedPages < MINIMUM_AUDITED_PAGES) {
+    problems.push(
+      `Only ${coverage.linkedPages} built page(s) carry a <link rel="sitemap">, fewer than ` +
+        `the ${MINIMUM_AUDITED_PAGES} floor. LayoutHead.astro emits one on every page it ` +
+        "renders, so either it stopped or sitemapLinkOf here has to follow the markup.",
+    );
+  }
 
   if (unlinked.length > 0) {
     problems.push(

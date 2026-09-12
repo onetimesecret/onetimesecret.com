@@ -15,13 +15,14 @@
  * @vitest-environment node
  */
 
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   MAX_EXAMPLES,
+  MINIMUM_AUDITED_PAGES,
   MINIMUM_URL_COUNT,
   MUST_BE_PRESENT,
   canonicalOf,
@@ -44,6 +45,7 @@ import { isExcludedFromSitemap, normalizePath } from "../../../config/astro/site
 import { CANONICAL_ORIGIN } from "../../../config/domains";
 
 const ORIGIN = CANONICAL_ORIGIN;
+const SITEMAP_LINK = "/sitemap-index.xml";
 
 const ROBOTS = [
   "User-agent: *",
@@ -83,6 +85,8 @@ type FixtureOptions = {
   extraPages?: Record<string, string>;
   /** The origin the sitemap is built for. Differs from ORIGIN on a staging build. */
   origin?: string;
+  /** What every page links as its rel=sitemap. null omits the link entirely. */
+  sitemapLink?: string | null;
   /** Create dist inside this directory, so a `..` traversal has a real target. */
   parent?: string;
   robots?: string | null;
@@ -104,12 +108,29 @@ function write(dir: string, relative: string, body: string) {
  * origin, even in a staging build, and it is what the coverage check uses to tell a
  * route of this site from a CDN error document.
  */
-function page(path: string, { noindex = false, reversed = false, canonical = true } = {}) {
+type PageOptions = {
+  noindex?: boolean;
+  reversed?: boolean;
+  canonical?: boolean;
+  /** null omits the rel=sitemap link, as a page LayoutHead did not render would. */
+  sitemap?: string | null;
+};
+
+function page(
+  path: string,
+  { noindex = false, reversed = false, canonical = true, sitemap = SITEMAP_LINK }: PageOptions = {},
+) {
   const meta = reversed
     ? '<meta content="noindex, nofollow" name="robots">'
     : '<meta name="robots" content="noindex">';
   const link = canonical ? `<link rel="canonical" href="${ORIGIN}${path}">` : "";
-  return `<!doctype html><html><head>${link}${noindex ? meta : ""}</head><body>x</body></html>`;
+  // LayoutHead.astro emits this on every page it renders. The fixture omitting
+  // it is what let the sitemap-link check look sound while examining nothing.
+  const sitemapLink = sitemap === null ? "" : `<link rel="sitemap" href="${sitemap}">`;
+  return (
+    `<!doctype html><html><head>${sitemapLink}${link}` +
+    `${noindex ? meta : ""}</head><body>x</body></html>`
+  );
 }
 
 /** What Astro emits for a static redirect route: a stub canonicalising to its target. */
@@ -137,7 +158,11 @@ function fixture(options: FixtureOptions = {}) {
     const relative = path.replace(/^\//, "");
     const body = redirect.has(path)
       ? redirectStub()
-      : page(path, { noindex: noindex.has(path), canonical: !noCanonical.has(path) });
+      : page(path, {
+          noindex: noindex.has(path),
+          canonical: !noCanonical.has(path),
+          sitemap: options.sitemapLink === undefined ? SITEMAP_LINK : options.sitemapLink,
+        });
     // A path naming a .html file is written as that file, as Astro writes
     // 500.astro to dist/500.html; everything else is directory format.
     write(dir, relative.endsWith(".html") ? relative : join(relative, "index.html"), body);
@@ -294,32 +319,35 @@ describe("verifySitemap", () => {
   // literals. Drifting apart puts a 404 behind every page's <link rel=sitemap>,
   // which is #209 exactly, and nothing connected the two until now.
   it("flags pages linking a sitemap this check did not verify", () => {
-    const paths = defaultPaths();
-    const dir = fixture({ paths });
-    const target = join(paths[1]!.replace(/^\//, ""), "index.html");
-    const body = readFileSync(join(dir, target), "utf8").replace(
-      "</head>",
-      '<link rel="sitemap" href="/sitemap-renamed.xml"></head>',
-    );
-    writeFileSync(join(dir, target), body);
-
-    const problems = text(run(dir));
+    const problems = text(run(fixture({ sitemapLink: "/sitemap-renamed.xml" })));
     expect(problems).toContain("page sitemap link(s) name a file this did not verify");
     expect(problems).toContain("/sitemap-renamed.xml");
   });
 
+  // The href resolves to the right path on the wrong host. Comparing the
+  // pathname alone would let it through, which every other URL comparison here
+  // was moved off doing.
+  it("flags a sitemap link that is absolute on another origin", () => {
+    const link = "https://elsewhere.test/sitemap-index.xml";
+    expect(text(run(fixture({ sitemapLink: link })))).toContain("did not verify");
+  });
+
+  // normalizePath would make this equal to the file. It is a route normalizer
+  // and this is a filename, the /500/ against /500.html distinction again.
+  it("flags a sitemap link written as a directory path", () => {
+    const problems = text(run(fixture({ sitemapLink: "/sitemap-index.xml/" })));
+    expect(problems).toContain("did not verify");
+  });
+
+  // Filtering an empty set reports nothing, so without the floor this check
+  // passes hardest in the case it exists to catch.
+  it("flags the sitemap link disappearing from every page", () => {
+    const problems = text(run(fixture({ sitemapLink: null })));
+    expect(problems).toContain('carry a <link rel="sitemap">');
+  });
+
   it("accepts pages linking the sitemap index this check verified", () => {
-    const paths = defaultPaths();
-    const dir = fixture({ paths });
-    for (const path of paths) {
-      const target = join(path.replace(/^\//, ""), "index.html");
-      const body = readFileSync(join(dir, target), "utf8").replace(
-        "</head>",
-        '<link rel="sitemap" href="/sitemap-index.xml"></head>',
-      );
-      writeFileSync(join(dir, target), body);
-    }
-    expect(run(dir)).toEqual([]);
+    expect(run(fixture())).toEqual([]);
   });
 
   it("flags a child sitemap on another origin", () => {
@@ -580,7 +608,7 @@ describe("verifySitemap", () => {
       const paths = defaultPaths();
       const problems = text(run(fixture({ paths, noCanonical: paths.slice(5) })));
       expect(problems).toContain("examined almost nothing");
-      expect(problems).toContain(`fewer than the ${MINIMUM_URL_COUNT} floor`);
+      expect(problems).toContain(`fewer than the ${MINIMUM_AUDITED_PAGES} floor`);
     });
 
     // Reported independently, not as an else: otherwise a run that identified
@@ -992,7 +1020,7 @@ describe("readWithin", () => {
   });
 
   it("refuses a sibling directory whose name extends dist's", () => {
-    const { parent, dist } = nested();
+    const { dist } = nested();
     const sibling = `${dist}-backup`;
     mkdirSync(sibling);
     writeFileSync(join(sibling, "secret.txt"), "next door");
