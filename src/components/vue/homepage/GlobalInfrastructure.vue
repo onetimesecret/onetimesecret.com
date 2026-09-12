@@ -1,10 +1,17 @@
 <!-- src/components/vue/homepage/GlobalInfrastructure.vue -->
-<!-- Trust/infrastructure section with CSS globe visualization -->
+<!-- Trust/infrastructure section with an interchangeable region graphic -->
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 
-import { regionDots, trustBadges } from "@/data/product/infrastructure";
+import RegionVisualization, {
+  type RegionVisualizationVariant,
+} from "@/components/vue/homepage/regions/RegionVisualization.vue";
+import { trustBadges } from "@/data/product/infrastructure";
+
+withDefaults(defineProps<{ variant?: RegionVisualizationVariant }>(), {
+  variant: "dot-matrix",
+});
 
 const { t } = useI18n();
 </script>
@@ -14,9 +21,9 @@ const { t } = useI18n();
     aria-labelledby="infrastructure-heading"
     class="border-y border-surface-3 bg-surface-1 py-16 sm:py-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div class="grid gap-12 items-center" data-infrastructure-grid>
         <!-- Left: text + badges -->
-        <div>
+        <div class="min-w-0">
           <p class="section-label mb-3">{{ t("web.homepage.infrastructure.label") }}</p>
           <h2
             id="infrastructure-heading"
@@ -36,46 +43,40 @@ const { t } = useI18n();
               v-for="badge in trustBadges"
               :key="badge.key"
               role="listitem"
-              class="rounded-full border border-surface-3 bg-surface-2 px-4 py-1.5 text-sm font-medium text-text-secondary">
-              {{ t(badge.key) }}
+              class="inline-flex items-center gap-2 rounded-full border border-surface-3 bg-surface-2 px-4 py-1.5 text-sm text-text-secondary">
+              <span
+                aria-hidden="true"
+                class="size-1.5 shrink-0 rounded-full bg-brand-500"></span>
+              <span class="font-semibold text-text-primary">{{ badge.code }}</span>
+              <span>{{ t(badge.key) }}</span>
             </span>
           </div>
         </div>
 
-        <!-- Right: CSS globe (decorative, hidden on small screens) -->
-        <div
-          class="hidden lg:flex items-center justify-center"
-          role="presentation"
-          aria-hidden="true">
-          <div class="relative size-80">
-            <!-- Concentric circles -->
-            <div
-              class="absolute inset-0 rounded-full border border-surface-3 opacity-60"></div>
-            <div
-              class="absolute inset-[15%] rounded-full border border-surface-3 opacity-70"></div>
-            <div
-              class="absolute inset-[32%] rounded-full border border-surface-3 opacity-80"></div>
-
-            <!-- Region dots with labels positioned to avoid overlap -->
-            <div
-              v-for="dot in regionDots"
-              :key="dot.label"
-              class="absolute"
-              :style="{ top: dot.top, left: dot.left }">
-              <span
-                class="block size-3 rounded-full bg-brand-500/80 dot-glow"></span>
-              <span
-                class="absolute top-1/2 -translate-y-1/2 whitespace-nowrap text-xs font-medium text-text-secondary"
-                :class="
-                  dot.labelSide === 'left'
-                    ? 'right-full mr-1.5'
-                    : 'left-full ml-1.5'
-                "
-                >{{ dot.label }}</span>
-            </div>
-          </div>
+        <!-- Right: decorative region graphic; the badge list carries the meaning -->
+        <div class="min-w-0 flex items-center justify-center">
+          <RegionVisualization :variant="variant" />
         </div>
       </div>
     </div>
   </section>
 </template>
+
+<style scoped>
+/* An SVG or canvas grid child defaults to min-width:auto and blows the track
+   out, which overflows the page at narrow widths. minmax(0, 1fr) on the track
+   plus min-width:0 on the children is the fix. */
+[data-infrastructure-grid] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+[data-infrastructure-grid] > * {
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  [data-infrastructure-grid] {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+</style>

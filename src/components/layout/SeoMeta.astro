@@ -124,7 +124,9 @@ const absoluteOgImageUrl = ogImage ? new URL(ogImage, ogImageBaseUrl).href : "";
     />
   ))
 }
-{/* x-default is handled in Layout.astro as it depends on currentPath */}
+{/* x-default is emitted by LayoutHead.astro: it depends on currentPath, and
+    which URL it names depends on whether this page is in a locale cluster.
+    See resolveXDefaultPath() in src/i18n/utils.ts. */}
 
 <!-- Structured Data -->
 {

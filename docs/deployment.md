@@ -13,7 +13,7 @@ For local validation, use:
 
 - Node.js 26 or later, as required by `package.json`
 - the pnpm version in the `packageManager` field of `package.json`
-- installed Playwright Chromium browsers when running the hydration test
+- installed Playwright Chromium browsers when running the browser tests
 
 Run all local commands from the repository root.
 
@@ -51,7 +51,7 @@ Each deployment workflow:
 
 CI runs on pull requests to `main` and `develop`, and on pushes to `develop`. Its build job runs
 the same frozen install, production build, and bundle verification. A separate required job runs
-the browser hydration test described below.
+the browser tests described below.
 
 ## Validate a production build
 
@@ -101,24 +101,30 @@ pnpm build:verify
 A successful check prints a `[verify-dist] OK` summary. CI and both deployment workflows run this
 command directly after `pnpm build`.
 
-### Test island hydration in a browser
+### Test the built site in a browser
 
 Run:
 
 ```bash
-pnpm test:e2e island-hydration --project=chromium --project="Mobile Chrome"
+pnpm test:e2e --project=chromium --project="Mobile Chrome"
 ```
 
 The Playwright configuration starts `pnpm preview`; run `pnpm build` first so that `dist/` exists.
-The test loads `/` and `/en/pricing` and verifies that:
+The specs in `test/e2e/specs/` cover island hydration, canonical URLs and hreflang, the homepage
+redesign, the grouped pricing comparison, the staging banner, and the page surviving an unusable
+`localStorage`. Pass a spec name to run one of them, for example
+`pnpm test:e2e island-hydration`.
+
+`island-hydration.spec.ts` is the one that exists because of the incident above. It loads `/` and
+`/en/pricing` and verifies that:
 
 - every `client:load` and `client:only` island removes its `ssr` attribute;
 - no `Error hydrating` message reaches the browser console;
 - entering text in the secret field enables the Create Link button; and
 - clicking the region selector opens its listbox.
 
-The `e2e-hydration` job in `.github/workflows/ci.yml` runs this test with desktop and mobile
-Chromium. The job must pass for `ci-success` to pass.
+The `e2e` job ("End-to-End Tests") in `.github/workflows/ci.yml` runs the whole suite with desktop
+and mobile Chromium. The job must pass for `ci-success` to pass.
 
 ### Verify the served bundle
 

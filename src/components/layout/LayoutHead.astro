@@ -6,12 +6,18 @@ import OptimizedFonts from "./OptimizedFonts.astro";
 // Utilities
 import { generateCspConnectSrc } from "@/utils/security";
 import { generateCanonicalUrl } from "@/utils/canonical-url";
+import { AVAILABLE_THEMES } from "@/utils/theme";
 import {
   getRouteSeoConfig,
   generateBreadcrumbsLd,
   defaultSeoValues,
   getDefaultWebApplicationLd,
 } from "@/utils/seo";
+import {
+  hasLocalizedVariants,
+  resolveXDefaultPath,
+  stripLocalePrefix,
+} from "@/i18n/utils";
 import { SUPPORTED_LANGUAGES } from "@config/astro/i18n";
 
 export interface Props {
@@ -77,21 +83,50 @@ const pageNoindex =
       currentPath.startsWith("/private/") ||
       currentPath.startsWith("/receipt/");
 
-// Generate alternate language links
-const languagePrefixes = ["/en", "/fr", "/de"];
-const hasLangPrefix = languagePrefixes.some((prefix) =>
-  currentPath.startsWith(prefix),
-);
-const basePathForAlternates = hasLangPrefix
-  ? currentPath.substring(3)
-  : currentPath;
+// Generate alternate language links.
+//
+// The locale-prefix strip lives in stripLocalePrefix() so it is unit-testable
+// rather than only reachable through a built page. The hand-rolled version here
+// got it wrong twice: its prefix list omitted "es", so no Spanish path counted as
+// prefixed and every /es/ page emitted doubled hrefs that 404 (/en/es/about/,
+// /es/es/about/) across a quarter of the localized site; and its `startsWith`
+// test had no segment boundary, so "/env-debug/" matched "/en" and the fixed
+// three-character strip turned it into "/frv-debug/" and x-default
+// "https://onetimesecret.comv-debug/". Gated by
+// test/e2e/specs/canonical-url.spec.ts and test/unit/i18n/locale-paths.test.ts.
+const basePathForAlternates = stripLocalePrefix(currentPath);
 
-const pageAlternateLanguages =
-  propsAlternateLanguages ||
-  SUPPORTED_LANGUAGES.map((lang) => ({
-    code: lang,
-    url: `${siteOrigin}/${lang}${basePathForAlternates}`,
-  }));
+// Only annotate a page that actually has localized counterparts. Emitting one
+// alternate per language unconditionally assumed every page had a twin at
+// /{lang}{path}; pages rendered from src/pages/*.astro have none, so they
+// advertised URLs that 404, and Google discards a cluster whose targets do not
+// resolve. hasLocalizedVariants() reads the site's structure rather than a list:
+// see its docstring in src/i18n/utils.ts. Issue #211, audited over the whole
+// build by scripts/verify-hreflang.mjs.
+//
+// `??` rather than `||`: a page that passes an empty array is saying it has no
+// alternates, and that has to survive rather than fall through to the default.
+// A page asking not to be indexed has nothing to gain from hreflang, and being
+// in a cluster it cannot join costs its siblings their reciprocity, so it
+// advertises nothing at all. src/pages/500.astro is the case: Astro writes it to
+// dist/500.html while its path is /500/, so its x-default named a URL that is
+// never built.
+const pageAlternateLanguages = pageNoindex
+  ? []
+  : (propsAlternateLanguages ??
+    (hasLocalizedVariants(currentPath)
+      ? SUPPORTED_LANGUAGES.map((lang) => ({
+          code: lang,
+          url: `${siteOrigin}/${lang}${basePathForAlternates}`,
+        }))
+      : []));
+
+// The rule, and why it is three cases rather than one, is in
+// resolveXDefaultPath()'s docstring. Built from currentPath, whose consecutive
+// slashes are collapsed above, so the CWE-601 guard covers x-default too. A page
+// passing its own `canonicalUrl` does not steer this: the override covers
+// `alternateLanguages` only, and no caller passes either today.
+const xDefaultUrl = `${siteOrigin}${resolveXDefaultPath(currentPath)}`;
 
 const pageStructuredData =
   propsStructuredData ||
@@ -166,49 +201,57 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
     rel="sitemap"
     href="/sitemap-index.xml"
   />
-  <link
-    rel="alternate"
-    hreflang="x-default"
-    href={`${siteOrigin}${basePathForAlternates}`}
-  />
+  {/* x-default stays on every indexable page, with or without per-locale
+      alternates. A noindex page emits no annotations: see pageAlternateLanguages. */}
+  {
+    !pageNoindex && (
+      <link
+        rel="alternate"
+        hreflang="x-default"
+        href={xDefaultUrl}
+      />
+    )
+  }
   <OptimizedFonts />
   <meta
     http-equiv="Content-Security-Policy"
     content={`default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src ${connectSrcDirective}; worker-src 'self' blob:;`}
   />
-  <script is:inline>
-    // Minimal inline script to prevent FOUC - matches ThemeManager utility implementation
-    const AVAILABLE_THEMES = ["light", "dark"]; // TODO: How to import from utils/themes here?
-    let themeToApply = "dark"; // Default theme
+  <script is:inline define:vars={{ AVAILABLE_THEMES }}>
+    // Minimal inline script to prevent FOUC - matches ThemeManager utility
+    // implementation. AVAILABLE_THEMES comes from utils/theme.ts via define:vars,
+    // so the list cannot drift; the resolution order below still has to match
+    // ThemeManager.getPreferredTheme() by hand.
+
+    // Honor system preference — must match ThemeManager.getPreferredTheme() to
+    // avoid a dark→light flip on hydration (which causes CLS). Read outside the
+    // try: a browser that denies site data throws from the `localStorage`
+    // property itself, and with this read inside the try that threw before the
+    // preference was consulted, so the page painted dark and then flipped to
+    // light once ThemeManager resolved the same preference after hydration.
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    let themeToApply = prefersDark ? "dark" : "light";
 
     try {
       const storedTheme = localStorage.getItem("theme");
       if (storedTheme && AVAILABLE_THEMES.includes(storedTheme)) {
         themeToApply = storedTheme;
-      } else {
-        // Honor system preference — must match ThemeManager.getPreferredTheme()
-        // to avoid a dark→light flip on hydration (which causes CLS)
-        const prefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)",
-        ).matches;
-        themeToApply = prefersDark ? "dark" : "light";
       }
     } catch (e) {
-      // localStorage might be unavailable
+      // localStorage might be unavailable; the system preference above stands
     }
 
     // Apply theme classes
     AVAILABLE_THEMES.forEach((t) =>
       document.documentElement.classList.remove(t),
     );
+    // This is also what drives Tailwind's `dark:` utilities, which tailwind.css
+    // declares as a class variant: `@custom-variant dark (&:where(.dark, .dark
+    // *))`. "dark" is in AVAILABLE_THEMES, so the loop above already cleared it
+    // and this covers re-adding it — the separate `if (themeToApply === "dark")`
+    // branch that used to sit here was a no-op in both directions. Kept in step
+    // with ThemeManager.applyTheme(), which says the same thing.
     document.documentElement.classList.add(themeToApply);
-
-    // Special case for dark mode (for Tailwind)
-    if (themeToApply === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
   </script>
   <title>{pageTitle}</title>
 </head>

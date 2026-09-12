@@ -38,15 +38,19 @@
 2. Inspect canonical link tag
 
 **Expected Result**:
-- Canonical: `https://onetimesecret.com/en/about`
-- Path `/en/about` is preserved
+- Canonical: `https://onetimesecret.com/en/about/`
+- Path `/en/about/` is preserved
 
 **Test Data**:
+
+Trailing slashes are the site's served form: `build.format: 'directory'` means `/en/about/` is the
+200 and `/en/about` redirects to it. `/pricing` 301s to the localized page.
+
 | Input URL | Expected Canonical |
 |-----------|-------------------|
-| /en/about | https://onetimesecret.com/en/about |
-| /fr/privacy | https://onetimesecret.com/fr/privacy |
-| /pricing | https://onetimesecret.com/pricing |
+| /en/about | https://onetimesecret.com/en/about/ |
+| /privacy | https://onetimesecret.com/privacy/ |
+| /pricing | https://onetimesecret.com/en/pricing/ |
 
 ---
 
@@ -118,7 +122,7 @@
 2. Locate x-default hreflang link
 
 **Expected Result**:
-- x-default href is https://onetimesecret.com/about
+- x-default href is https://onetimesecret.com/about/
 - No language prefix in x-default URL
 
 ---
@@ -174,7 +178,7 @@
 
 **Expected Result**:
 - Canonical does not include #team
-- Canonical: https://onetimesecret.com/en/about
+- Canonical: https://onetimesecret.com/en/about/
 
 ---
 
@@ -187,7 +191,7 @@
 **Automation**: Automated
 
 **Steps**:
-1. Navigate to https://onetimesecret.com/en/about
+1. Navigate to https://onetimesecret.com/en/about/
 2. Inspect canonical link
 
 **Expected Result**:

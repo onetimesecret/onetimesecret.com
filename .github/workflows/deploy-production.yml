@@ -118,6 +118,18 @@ jobs:
       - name: Verify client bundle
         run: pnpm build:verify
 
+      # Also step 7: refuse to ship a sitemap that advertises nothing, the
+      # deleted 8-URL stub, or URLs that are noindex, robots.txt-disallowed or
+      # not built at all (see scripts/verify-sitemap.mjs). #214/#209.
+      #
+      # This build is the one that ships, and it resolves `site` from
+      # VITE_BASE_URL rather than the canonical origin CI's build job uses, so
+      # it is the build most worth gating. The origin is passed explicitly so
+      # the check cannot resolve the environment differently than the build
+      # just did.
+      - name: Verify sitemap
+        run: pnpm build:verify:sitemap dist "$VITE_BASE_URL"
+
       # Step 8: Deploy to BunnyCDN Storage
       # Note: We separate upload and cache purge to allow BunnyCDN storage
       # replication to complete before purging. See: https://github.com/ayeressian/bunnycdn-storage-deploy/issues/47

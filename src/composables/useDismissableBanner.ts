@@ -102,8 +102,16 @@ export function useDismissableBanner(
   // Default state when storage is not available
   const defaultState: BannerState = { dismissed: false, timestamp: null };
 
-  // Check if localStorage is supported
-  const isStorageSupported = useSupported(() => typeof window !== 'undefined' && !!window.localStorage);
+  // Check if localStorage is supported. The probe runs inside a try because
+  // reading the property throws SecurityError when the browser denies site data,
+  // which would otherwise propagate out of setup() and stop the island hydrating.
+  const isStorageSupported = useSupported(() => {
+    try {
+      return typeof window !== 'undefined' && !!window.localStorage;
+    } catch {
+      return false;
+    }
+  });
 
   // Create reactive state that updates from localStorage when bannerId changes
   const getStorageKey = computed(() => `banner-${bannerId.value}`);

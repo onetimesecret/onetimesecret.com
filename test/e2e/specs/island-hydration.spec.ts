@@ -6,8 +6,8 @@
  * had been transpiled below Vite's target. The module preload helper threw
  * before any island mounted, so every interactive control on the site was
  * inert while the page itself looked fine. Unit tests and the build were
- * green; only a browser noticed. The `e2e-hydration` job in ci.yml runs this
- * spec so that regression fails CI instead of shipping.
+ * green; only a browser noticed. The `e2e` job in ci.yml runs this spec, with
+ * the rest of test/e2e/specs/, so that regression fails CI instead of shipping.
  *
  * Astro renders every <astro-island> with an `ssr` attribute and removes it
  * once the island has hydrated. Only `client:load` and `client:only` islands

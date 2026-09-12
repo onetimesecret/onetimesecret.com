@@ -4,12 +4,14 @@
   "engines": {
     "node": ">=26.0.0"
   },
-  "packageManager": "pnpm@11.24.0",
+  "packageManager": "pnpm@12.4.1",
   "scripts": {
     "astro": "astro",
     "build": "astro build",
     "build:verify": "node scripts/verify-dist.mjs",
     "build:verify:live": "node scripts/verify-live.mjs",
+    "build:verify:hreflang": "node scripts/verify-hreflang.mjs",
+    "build:verify:sitemap": "node scripts/verify-sitemap.mjs",
     "check": "astro check --tsconfig tsconfig.json",
     "clean": "rm -rf dist/ .astro/ node_modules/.vite/",
     "reinstall": "pnpm clean && pnpm install",
@@ -20,6 +22,7 @@
     "edge:error-page:verify": "node edge/error-page/cli.mjs verify",
     "edge:error-page:deploy": "node edge/error-page/cli.mjs deploy",
     "edge:error-page:probe": "node edge/error-page/cli.mjs probe",
+    "geometry:regions": "node scripts/generate-region-geometry.mjs",
     "lint": "pnpm run lint:base --cache-location ./node_modules/.cache/eslint --cache 'src/**/*.{mjs,ts,d.ts,vue}' 'edge/**/*.{ts,mjs}' 'scripts/**/*.mjs' './*.{mjs,ts,js}'",
     "lint:base": "eslint --quiet --config eslint.config.ts",
     "lint:fix": "pnpm run lint:base --fix 'src/**/*.{mjs,ts,vue}' 'edge/**/*.{ts,mjs}' 'scripts/**/*.mjs' './*.{mjs,ts,d.ts,vue}'",
@@ -29,7 +32,8 @@
     "preview": "astro preview --host",
     "type-check:base": "vue-tsc --noEmit",
     "type-check:edge": "vue-tsc --noEmit -p tsconfig.edge.json",
-    "type-check": "pnpm run type-check:base && pnpm run type-check:edge",
+    "type-check:e2e": "tsc --noEmit -p test/e2e/tsconfig.json",
+    "type-check": "pnpm run type-check:base && pnpm run type-check:edge && pnpm run type-check:e2e",
     "type-check:watch": "pnpm run type-check:base --watch",
     "i18n:scan": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/i18n/ui/*.json\"",
     "i18n:add": "vue-i18n-extract --vueFiles \"./src/**/*.?(js|ts|vue|astro|mdx|jsx)\" --languageFiles \"./src/i18n/ui/*.json\" --add",
@@ -58,6 +62,7 @@
     "@typescript-eslint/parser": "8.70.0",
     "@vueuse/core": "^14.4.0",
     "astro": "^7.3.1",
+    "d3-geo": "^3.1.1",
     "eslint-plugin-vue": "10.11.0",
     "i18next": "^26.4.2",
     "i18next-fs-backend": "^2.6.7",
@@ -80,8 +85,10 @@
     "@spotlightjs/astro": "^3.2.6",
     "@spotlightjs/sidecar": "^2.5.0",
     "@spotlightjs/spotlight": "^4.11.8",
+    "@types/d3-geo": "^3.1.1",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vue/devtools-kit": "^8.2.1",
+    "@vue/test-utils": "^2.5.0",
     "eslint": "10.10.0",
     "eslint-config-prettier": "10.1.8",
     "glob": "^13.0.6",
@@ -91,10 +98,13 @@
     "prettier-plugin-astro": "0.14.1",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "prettier-plugin-vue": "1.1.6",
+    "topojson-client": "^3.1.0",
+    "topojson-simplify": "^3.0.3",
     "vite": "^8.2.2",
     "vitest": "^5.0.0",
     "vue-eslint-parser": "^10.4.1",
     "vue-i18n-extract": "^2.0.7",
-    "vue-tsc": "^3.3.11"
+    "vue-tsc": "^3.3.11",
+    "world-atlas": "^2.0.2"
   }
 }
