@@ -26,6 +26,32 @@ import { CANONICAL_ORIGIN } from "./domains.ts";
 export function resolveSite(env: NodeJS.ProcessEnv = process.env, cwd = process.cwd()): string {
   if (env.VITE_BASE_URL) return env.VITE_BASE_URL;
 
-  const loaded = loadEnv(env.NODE_ENV || "production", cwd, "");
-  return loaded.VITE_BASE_URL || CANONICAL_ORIGIN;
+  return envFiles(env, cwd).VITE_BASE_URL || CANONICAL_ORIGIN;
+}
+
+/**
+ * What the .env files under `cwd` say, read as `env` rather than as the
+ * ambient environment.
+ *
+ * vite's loadEnv merges process.env over the file values, and with an empty
+ * prefix that means every variable. A caller passing an explicit `env` is
+ * asking what that environment resolves to, so an ambient VITE_BASE_URL
+ * leaking in would make the parameter a half-truth: resolveSite({}, dir)
+ * would answer with a value the caller deliberately withheld, and any test of
+ * the CANONICAL_ORIGIN fallback would pass or fail on whether the developer
+ * running it happens to export VITE_BASE_URL. The exported-variable case is
+ * already answered above, so the files are all that is wanted here.
+ *
+ * process.env is swapped rather than filtered because loadEnv reads it
+ * directly and takes no environment argument. The call is synchronous and the
+ * original is restored in a finally, so nothing else observes the swap.
+ */
+function envFiles(env: NodeJS.ProcessEnv, cwd: string): Record<string, string> {
+  const ambient = process.env;
+  try {
+    process.env = env;
+    return loadEnv(env.NODE_ENV || "production", cwd, "");
+  } finally {
+    process.env = ambient;
+  }
 }

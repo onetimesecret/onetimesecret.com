@@ -24,8 +24,10 @@ import {
   MAX_EXAMPLES,
   MINIMUM_URL_COUNT,
   MUST_BE_PRESENT,
+  canonicalOf,
   decodePath,
   declaredSitemaps,
+  htmlFiles,
   isDisallowed,
   isNoindex,
   isRedirectStub,
@@ -74,6 +76,12 @@ type FixtureOptions = {
   bareHtml?: string[];
   /** Paths whose page is an Astro static-redirect stub. */
   redirect?: string[];
+  /** Paths whose page omits the canonical, as the bunnycdn_errors/ documents do. */
+  noCanonical?: string[];
+  /** Extra files written under dist but never advertised, as `relative path -> body`. */
+  extraPages?: Record<string, string>;
+  /** The origin the sitemap is built for. Differs from ORIGIN on a staging build. */
+  origin?: string;
   robots?: string | null;
   xsl?: boolean;
   staleStub?: "file" | "directory" | false;
@@ -88,17 +96,23 @@ function write(dir: string, relative: string, body: string) {
   writeFileSync(target, body);
 }
 
-function page(noindex: boolean, reversedAttributes = false) {
-  const meta = reversedAttributes
+/**
+ * A page as LayoutHead.astro renders it. The canonical is always on the canonical
+ * origin, even in a staging build, and it is what the coverage check uses to tell a
+ * route of this site from a CDN error document.
+ */
+function page(path: string, { noindex = false, reversed = false, canonical = true } = {}) {
+  const meta = reversed
     ? '<meta content="noindex, nofollow" name="robots">'
     : '<meta name="robots" content="noindex">';
-  return `<!doctype html><html><head>${noindex ? meta : ""}</head><body>x</body></html>`;
+  const link = canonical ? `<link rel="canonical" href="${ORIGIN}${path}">` : "";
+  return `<!doctype html><html><head>${link}${noindex ? meta : ""}</head><body>x</body></html>`;
 }
 
-/** What Astro emits for a static redirect route. */
+/** What Astro emits for a static redirect route: a stub canonicalising to its target. */
 function redirectStub() {
   return '<!doctype html><html><head><meta http-equiv="refresh" content="0;url=/en/about/">' +
-    "</head><body>Redirecting</body></html>";
+    `<link rel="canonical" href="${ORIGIN}/en/about/"></head><body>Redirecting</body></html>`;
 }
 
 function fixture(options: FixtureOptions = {}) {
@@ -110,11 +124,15 @@ function fixture(options: FixtureOptions = {}) {
   const unbuilt = new Set(options.unbuilt ?? []);
   const bareHtml = new Set(options.bareHtml ?? []);
   const redirect = new Set(options.redirect ?? []);
+  const noCanonical = new Set(options.noCanonical ?? []);
+  const origin = options.origin ?? ORIGIN;
 
   for (const path of paths) {
     if (unbuilt.has(path)) continue;
     const relative = path.replace(/^\//, "");
-    const body = redirect.has(path) ? redirectStub() : page(noindex.has(path));
+    const body = redirect.has(path)
+      ? redirectStub()
+      : page(path, { noindex: noindex.has(path), canonical: !noCanonical.has(path) });
     if (bareHtml.has(path)) {
       write(dir, `${relative.replace(/\/$/, "")}.html`, body);
     } else {
@@ -122,12 +140,16 @@ function fixture(options: FixtureOptions = {}) {
     }
   }
 
-  const locs = options.locs ?? paths.map((path) => `${ORIGIN}${path}`);
+  for (const [relative, body] of Object.entries(options.extraPages ?? {})) {
+    write(dir, relative, body);
+  }
+
+  const locs = options.locs ?? paths.map((path) => `${origin}${path}`);
   const body = locs.map((loc) => `<url><loc>${loc}</loc></url>`).join("");
   write(dir, "sitemap-0.xml", `<urlset>${body}</urlset>`);
 
   const children =
-    options.childSitemaps === undefined ? [`${ORIGIN}/sitemap-0.xml`] : options.childSitemaps;
+    options.childSitemaps === undefined ? [`${origin}/sitemap-0.xml`] : options.childSitemaps;
   if (children !== null) {
     const entries = children.map((href) => `<sitemap><loc>${href}</loc></sitemap>`).join("");
     write(dir, "sitemap-index.xml", `<sitemapindex>${entries}</sitemapindex>`);
@@ -190,9 +212,25 @@ describe("verifySitemap", () => {
   });
 
   it("flags URLs that are not on the expected origin", () => {
-    const dir = fixture();
-    const problems = run(dir, "https://onetimesecret.dev");
-    expect(text(problems)).toContain("are not on https://onetimesecret.dev");
+    // The index stays on the expected origin, so this reaches the page-URL
+    // check rather than being caught by the child-sitemap one below.
+    const paths = defaultPaths();
+    const locs = paths.map((path) => `https://onetimesecret.dev${path}`);
+    expect(text(run(fixture({ paths, locs })))).toContain(`are not on ${ORIGIN}`);
+  });
+
+  it("flags a child sitemap on another origin", () => {
+    const problems = run(fixture({ childSitemaps: ["https://elsewhere.test/sitemap-0.xml"] }));
+    expect(text(problems)).toContain(`is not on ${ORIGIN}`);
+  });
+
+  // The whole reason canonicalOrigin is a separate parameter: a staging build
+  // sets VITE_BASE_URL, so its sitemap is on the staging origin while
+  // public/robots.txt is a static file still naming production and
+  // LayoutHead.astro still emits production canonicals.
+  it("reports nothing for a staging build, whose sitemap is on another origin", () => {
+    const staging = "https://onetimesecret.dev";
+    expect(run(fixture({ origin: staging }), staging)).toEqual([]);
   });
 
   it("flags a URL with no built page", () => {
@@ -223,7 +261,8 @@ describe("verifySitemap", () => {
     const paths = defaultPaths();
     const target = paths.at(-1)!;
     const dir = fixture({ paths, unbuilt: [target] });
-    write(dir, join(target.replace(/^\//, ""), "index.html"), page(true, true));
+    const body = page(target, { noindex: true, reversed: true });
+    write(dir, join(target.replace(/^\//, ""), "index.html"), body);
     expect(text(run(dir))).toContain("marked noindex");
   });
 
@@ -292,6 +331,77 @@ describe("verifySitemap", () => {
   it("truncates a systemic fault rather than printing one line per URL", () => {
     const problems = run(fixture(), "https://elsewhere.test");
     expect(text(problems)).toContain(`and ${defaultPaths().length - MAX_EXAMPLES} more`);
+  });
+
+  // Every check above asks whether an advertised URL is legitimate. These ask
+  // the other half: whether a real page is advertised at all. That is the
+  // direction #214 was actually filed about, and no amount of inspecting the
+  // sitemap's own contents can see it.
+  describe("coverage of built pages", () => {
+    const indexable = '<!doctype html><html><head><link rel="canonical" href="URL">' +
+      "</head><body>x</body></html>";
+    const withCanonical = (href: string) => indexable.replace("URL", href);
+
+    it("flags a built page that is not in the sitemap", () => {
+      const dir = fixture({
+        extraPages: { "en/orphan/index.html": withCanonical(`${ORIGIN}/en/orphan/`) },
+      });
+      const problems = text(run(dir));
+      expect(problems).toContain("built page(s) are missing from the sitemap");
+      expect(problems).toContain("/en/orphan/");
+    });
+
+    // The scenario the count floor and MUST_BE_PRESENT are both blind to: an
+    // over-broad `filter` drops 40 pages, 55 remain, every named path survives.
+    it("flags an over-broad filter that neither the floor nor MUST_BE_PRESENT catches", () => {
+      const advertised = defaultPaths();
+      const dropped = Array.from({ length: 40 }, (_, i) => `/en/dropped-${i}/`);
+      const locs = advertised.map((path) => `${ORIGIN}${path}`);
+      const problems = text(run(fixture({ paths: [...advertised, ...dropped], locs })));
+
+      expect(advertised.length).toBeGreaterThanOrEqual(MINIMUM_URL_COUNT);
+      expect(problems).not.toContain("fewer than the");
+      expect(problems).not.toContain("required page(s) missing");
+      expect(problems).toContain("40 built page(s) are missing from the sitemap");
+    });
+
+    it("ignores a document with no canonical, as the CDN error pages have none", () => {
+      const body = "<!doctype html><html><head></head><body>404</body></html>";
+      expect(run(fixture({ extraPages: { "bunnycdn_errors/404.html": body } }))).toEqual([]);
+    });
+
+    it("ignores a page canonicalising to another origin, as the plans/ pages do", () => {
+      const body = withCanonical("https://eu.onetimesecret.com/plans/free");
+      expect(run(fixture({ extraPages: { "plans/free/index.html": body } }))).toEqual([]);
+    });
+
+    it("ignores an unadvertised page that is noindex or a redirect stub", () => {
+      const advertised = defaultPaths();
+      const locs = advertised.map((path) => `${ORIGIN}${path}`);
+      const paths = [...advertised, "/en/hidden/", "/moved/"];
+      const dir = fixture({ paths, locs, noindex: ["/en/hidden/"], redirect: ["/moved/"] });
+      expect(run(dir)).toEqual([]);
+    });
+
+    it("ignores an unadvertised page that config/astro/sitemap.ts excludes", () => {
+      const advertised = defaultPaths();
+      const locs = advertised.map((path) => `${ORIGIN}${path}`);
+      expect(run(fixture({ paths: [...advertised, "/example/"], locs }))).toEqual([]);
+    });
+
+    it("ignores an unadvertised page that robots.txt Disallows", () => {
+      const advertised = defaultPaths();
+      const locs = advertised.map((path) => `${ORIGIN}${path}`);
+      expect(run(fixture({ paths: [...advertised, "/account/settings/"], locs }))).toEqual([]);
+    });
+
+    // Without this the check fails open: a canonical markup change would skip
+    // every page and report nothing, which is the shape #214 shipped in.
+    it("refuses to pass vacuously when no page declares a canonical", () => {
+      const paths = defaultPaths();
+      const problems = text(run(fixture({ paths, noCanonical: paths })));
+      expect(problems).toContain("passed without examining anything");
+    });
   });
 
   describe("robots.txt Sitemap declarations", () => {
@@ -510,6 +620,40 @@ describe("starRules grouping", () => {
   });
 });
 
+describe("canonicalOf", () => {
+  it("reads the href whichever order the attributes are in", () => {
+    const href = `${ORIGIN}/en/about/`;
+    expect(canonicalOf(`<link rel="canonical" href="${href}">`)).toBe(href);
+    expect(canonicalOf(`<link href="${href}" rel="canonical">`)).toBe(href);
+  });
+
+  it("ignores other link tags and pages that declare none", () => {
+    expect(canonicalOf(`<link rel="alternate" href="${ORIGIN}/fr/">`)).toBeUndefined();
+    expect(canonicalOf("<!doctype html><html><head></head></html>")).toBeUndefined();
+  });
+});
+
+describe("htmlFiles", () => {
+  it("finds nested pages and skips everything that is not HTML", () => {
+    const dir = mkdtempSync(join(tmpdir(), "verify-sitemap-walk-"));
+    created.push(dir);
+    writeFileSync(join(dir, "index.html"), "<html/>");
+    writeFileSync(join(dir, "robots.txt"), "User-agent: *");
+    mkdirSync(join(dir, "en", "about"), { recursive: true });
+    writeFileSync(join(dir, "en", "about", "index.html"), "<html/>");
+
+    const found = htmlFiles(dir).map((file: string) => file.slice(dir.length));
+    expect(found.sort()).toEqual([
+      "/en/about/index.html",
+      "/index.html",
+    ]);
+  });
+
+  it("reads a directory that does not exist as empty rather than throwing", () => {
+    expect(htmlFiles(join(tmpdir(), "verify-sitemap-does-not-exist"))).toEqual([]);
+  });
+});
+
 describe("readWithin", () => {
   // An encoded %2e%2e%2f survives URL normalisation and decodes to ../ later,
   // so the probe has to be confined explicitly.
@@ -585,5 +729,22 @@ describe("resolveOrigin env-file resolution", () => {
 
   it("falls back to the canonical origin with no env file", () => {
     expect(resolveOrigin(undefined, {}, envDir({}))).toBe(CANONICAL_ORIGIN);
+  });
+
+  // vite's loadEnv merges process.env over the file values, and with an empty
+  // prefix that is every variable. Without resolveSite reading the files as the
+  // env it was handed, this test would answer with whatever the developer
+  // running it happens to export, and the caller's `env` would be a half-truth.
+  it("ignores an ambient VITE_BASE_URL the caller did not pass", () => {
+    const ambient = process.env.VITE_BASE_URL;
+    process.env.VITE_BASE_URL = "https://ambient.test";
+    try {
+      expect(resolveOrigin(undefined, {}, envDir({}))).toBe(CANONICAL_ORIGIN);
+      const fromFile = envDir({ ".env": "VITE_BASE_URL=https://file.test" });
+      expect(resolveOrigin(undefined, {}, fromFile)).toBe("https://file.test");
+    } finally {
+      if (ambient === undefined) delete process.env.VITE_BASE_URL;
+      else process.env.VITE_BASE_URL = ambient;
+    }
   });
 });
