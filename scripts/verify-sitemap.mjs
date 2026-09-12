@@ -105,7 +105,7 @@ export function declaredSitemaps(robots) {
     .filter(Boolean);
 }
 
-/** Allow/Disallow rules from the `User-agent: *` group only. */
+/** Allow/Disallow rules from the `User-agent: *` group only, percent-decoded. */
 export function starRules(robots) {
   const allow = [];
   const disallow = [];
@@ -136,8 +136,14 @@ export function starRules(robots) {
     }
     collectingAgents = false;
     if (!agents.includes("*") || !value) continue;
-    if (key === "allow") allow.push(value);
-    if (key === "disallow") disallow.push(value);
+    // Decoded, because the pathname these are matched against is. RFC 9309
+    // 2.2.2 says a rule path should percent-encode anything outside US-ASCII,
+    // so `Disallow: /caf%C3%A9/` is the spec-recommended spelling and would
+    // otherwise compile to a pattern that can never match `/café/` — the same
+    // silently-matches-nothing shape as a wildcard rule taken literally.
+    // decodePath leaves a literal `%` alone, so `/100%off/` survives intact.
+    if (key === "allow") allow.push(decodePath(value));
+    if (key === "disallow") disallow.push(decodePath(value));
   }
 
   return { allow, disallow };
@@ -313,7 +319,7 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
 
     const href = canonicalOf(html);
     const parsed = href === undefined ? undefined : parseUrl(href);
-    if (!parsed || parsed.origin !== canonical?.origin) continue;
+    if (!parsed || parsed.origin !== canonical.origin) continue;
 
     // A redirect stub canonicalises to its target and a noindex page asks not
     // to be indexed, so neither belongs in the sitemap. Both are flagged by the
@@ -353,7 +359,16 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
 
   if (!expected) {
     const problem = `Expected origin "${expectedOrigin}" is not a valid URL.`;
-    return { problems: [problem], urls: [], childHrefs: [] };
+    return { problems: [problem], urls: [], childHrefs: [], audited: 0 };
+  }
+
+  // Symmetric with the guard above. Without it a bad canonicalOrigin makes
+  // every page fail the coverage origin comparison, and the run reports
+  // "passed without examining anything" — which blames canonicalOf for a bad
+  // argument.
+  if (!canonical) {
+    const problem = `Canonical origin "${canonicalOrigin}" is not a valid URL.`;
+    return { problems: [problem], urls: [], childHrefs: [], audited: 0 };
   }
 
   // The hand-written stub this fix replaces. isFile() rather than existsSync()
@@ -377,14 +392,14 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
         'page to "/sitemap-index.xml"; with no file there that link 404s on every page ' +
         "(#209). The usual cause is the `site` astro.config option being unset.",
     );
-    return { problems, urls: [], childHrefs: [] };
+    return { problems, urls: [], childHrefs: [], audited: 0 };
   }
 
   const childHrefs = locs(index);
 
   if (childHrefs.length === 0) {
     problems.push(`${indexPath} names no child sitemap.`);
-    return { problems, urls: [], childHrefs };
+    return { problems, urls: [], childHrefs, audited: 0 };
   }
 
   const urls = [];
@@ -596,13 +611,11 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
   // Built through URL rather than concatenated, so a trailing slash on
   // canonicalOrigin cannot produce "https://x//sitemap-index.xml", which no
   // declaration could ever match. Symmetric with the origin normalization above.
-  const canonicalSitemap = canonical
-    ? new URL("/sitemap-index.xml", canonical).href
-    : `${canonicalOrigin}/sitemap-index.xml`;
+  const canonicalSitemap = new URL("/sitemap-index.xml", canonical).href;
   const notAbsolute = declared.filter((url) => parseUrl(url) === undefined);
   const offOrigin = declared.filter((url) => {
     const parsed = parseUrl(url);
-    return parsed !== undefined && parsed.origin !== canonical?.origin;
+    return parsed !== undefined && parsed.origin !== canonical.origin;
   });
 
   if (robots === undefined) {

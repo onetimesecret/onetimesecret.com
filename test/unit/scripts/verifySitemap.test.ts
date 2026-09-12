@@ -238,6 +238,17 @@ describe("verifySitemap", () => {
     expect(problems).toEqual([]);
   });
 
+  it("reports an unparseable canonical origin rather than an empty audit", () => {
+    const dir = fixture();
+    const problems = verifySitemap({
+      distDir: dir,
+      expectedOrigin: ORIGIN,
+      canonicalOrigin: "not-a-url",
+    }).problems;
+    expect(text(problems)).toContain('Canonical origin "not-a-url" is not a valid URL');
+    expect(text(problems)).not.toContain("passed without examining anything");
+  });
+
   it("flags a child sitemap on another origin", () => {
     const problems = run(fixture({ childSitemaps: ["https://elsewhere.test/sitemap-0.xml"] }));
     expect(text(problems)).toContain(`is not on ${ORIGIN}`);
@@ -639,6 +650,21 @@ describe("robots.txt wildcard rules", () => {
 
   it("matches a wildcard in the middle of a rule", () => {
     expect(isDisallowed("/api/v1/debug", rules)).toBe(true);
+  });
+
+  // RFC 9309 2.2.2 recommends percent-encoding a rule path, and the pathname
+  // it is matched against is decoded, so a rule spelled that way would compile
+  // to a pattern matching nothing at all.
+  it("matches a percent-encoded rule against the decoded path", () => {
+    const encoded = starRules("User-agent: *\nAllow: /\nDisallow: /caf%C3%A9/");
+    expect(encoded.disallow).toEqual(["/café/"]);
+    expect(isDisallowed(decodePath(new URL("https://x.test/café/").pathname), encoded)).toBe(true);
+  });
+
+  it("leaves a literal percent in a rule alone rather than throwing", () => {
+    const literal = starRules("User-agent: *\nDisallow: /100%off/");
+    expect(literal.disallow).toEqual(["/100%off/"]);
+    expect(isDisallowed("/100%off/", literal)).toBe(true);
   });
 
   it("leaves unrelated paths alone", () => {
