@@ -392,7 +392,7 @@
       "infrastructure": {
         "label": "Infrastructure mondiale",
         "heading": "Vos données, votre juridiction.",
-        "description": "Choisissez où vos secrets sont stockés et traités. Les instances régionales garantissent que vos données ne quittent jamais la zone géographique que vous avez choisie.",
+        "description": "Chaque secret est stocké et traité dans la région que vous choisissez — aucune réplication transfrontalière, aucun basculement silencieux vers un centre de données que vous n'avez pas choisi. Vos données restent exactement là où vous les avez placées, jusqu'à leur disparition.",
         "regions": {
           "ca": "Toronto, Canada",
           "eu": "Nuremberg, Allemagne",

@@ -9,7 +9,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { trustBadges, regionDots } from '@/data/product/infrastructure';
+import { REGION_COORDS, trustBadges } from '@/data/product/infrastructure';
+import {
+  dotMatrixCoarse,
+  dotMatrixFine,
+  globeStatic,
+} from '@/data/product/regionGeometry';
 
 // ---------------------------------------------------------------------------
 // Suite: trust badges
@@ -73,27 +78,53 @@ describe('GlobalInfrastructure — globe accessibility contract', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Suite: region dots
+// Suite: region markers (pre-projected geometry)
 // ---------------------------------------------------------------------------
 
-describe('GlobalInfrastructure — region dots', () => {
-  it('has exactly 5 region dots (CA, US, EU, UK, NZ)', () => {
-    expect(regionDots).toHaveLength(5);
+describe('GlobalInfrastructure — region markers', () => {
+  const codes = ['CA', 'EU', 'NZ', 'UK', 'US'];
+
+  it('REGION_COORDS still lists all 5 datacenter regions', () => {
+    expect(REGION_COORDS.map(r => r.label).sort()).toEqual(codes);
   });
 
-  it('region dot labels are CA, US, EU, UK, NZ', () => {
-    const labels = regionDots.map(d => d.label);
-    expect(labels).toContain('CA');
-    expect(labels).toContain('US');
-    expect(labels).toContain('EU');
-    expect(labels).toContain('UK');
-    expect(labels).toContain('NZ');
+  it('both dot-matrix grids carry all 5 markers', () => {
+    for (const grid of [dotMatrixFine, dotMatrixCoarse]) {
+      expect(grid.markers.map(m => m.code).sort()).toEqual(codes);
+    }
   });
 
-  it('all region dots have percentage-based top/left positioning', () => {
-    for (const dot of regionDots) {
-      expect(dot.top).toMatch(/^\d+(\.\d+)?%$/);
-      expect(dot.left).toMatch(/^\d+(\.\d+)?%$/);
+  it('the static globe carries all 5 markers, NZ flagged as far side', () => {
+    expect(globeStatic.markers.map(m => m.code).sort()).toEqual(codes);
+
+    const far = globeStatic.markers.filter(m => m.farSide);
+    expect(far.map(m => m.code)).toEqual(['NZ']);
+    // A far-side marker is a bearing, not a position, so it must sit OUTSIDE
+    // the limb and carry the leader + label geometry the component needs.
+    for (const m of far) {
+      const dist = Math.hypot(m.x - globeStatic.cx, m.y - globeStatic.cy);
+      expect(dist).toBeGreaterThan(globeStatic.r);
+      expect(m.leader).toHaveLength(4);
+      expect(m.label).toBeDefined();
+    }
+
+    // Front-facing markers are inside the limb and carry no far-side extras.
+    for (const m of globeStatic.markers.filter(n => !n.farSide)) {
+      const dist = Math.hypot(m.x - globeStatic.cx, m.y - globeStatic.cy);
+      expect(dist).toBeLessThan(globeStatic.r);
+      expect(m.leader).toBeUndefined();
+    }
+  });
+
+  it('every marker falls inside its own viewBox', () => {
+    for (const geom of [dotMatrixFine, dotMatrixCoarse, globeStatic]) {
+      const [, , w, h] = geom.viewBox.split(' ').map(Number);
+      for (const m of geom.markers) {
+        expect(m.x).toBeGreaterThanOrEqual(0);
+        expect(m.x).toBeLessThanOrEqual(w);
+        expect(m.y).toBeGreaterThanOrEqual(0);
+        expect(m.y).toBeLessThanOrEqual(h);
+      }
     }
   });
 });

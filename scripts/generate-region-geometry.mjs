@@ -1,0 +1,538 @@
+// scripts/generate-region-geometry.mjs
+//
+// Build-time generator for `src/data/product/regionGeometry.ts`, the geometry
+// backing the three region-visualization variants (dot matrix, static globe,
+// rotating globe).
+//
+// Run: pnpm geometry:regions
+//
+// The output is committed. Nothing here runs in the browser and no geometry
+// library is shipped for the two SVG variants — only the rotating globe
+// imports d3-geo at runtime (geoOrthographic + geoPath against a canvas
+// context), which is why d3-geo is a regular dependency and topojson-* /
+// world-atlas are devDependencies.
+//
+// Determinism: the emitted file contains no timestamps, no version stamps and
+// no iteration over unordered structures, so re-running on unchanged inputs
+// produces a byte-identical file. Keep it that way — a churning diff on every
+// regen destroys the value of committing the output.
+
+import { Buffer } from "node:buffer";
+import { readFileSync, writeFileSync } from "node:fs";
+import { gzipSync } from "node:zlib";
+
+import {
+  geoArea,
+  geoContains,
+  geoDistance,
+  geoEqualEarth,
+  geoGraticule,
+  geoGraticule10,
+  geoOrthographic,
+  geoPath,
+} from "d3-geo";
+import { feature } from "topojson-client";
+import { presimplify, simplify } from "topojson-simplify";
+
+// --- Shared inputs ---------------------------------------------------------
+
+/** Datacenter cities, not country centroids. `REGION_COORDS` in
+ *  `src/data/product/infrastructure.ts` is the source of truth — it is the
+ *  list the rotating globe projects at runtime. This copy exists only because
+ *  a build script cannot import a TypeScript module directly; it is checked
+ *  against the source below, so the two cannot silently diverge. */
+const REGIONS = [
+  { code: "CA", lat: 43.65, lon: -79.38 },
+  { code: "EU", lat: 49.45, lon: 11.08 },
+  { code: "NZ", lat: -41.13, lon: 174.84 },
+  { code: "UK", lat: 51.51, lon: -0.13 },
+  { code: "US", lat: 45.52, lon: -122.99 },
+];
+
+/** Parses the `REGION_COORDS` literal out of `infrastructure.ts` and fails the
+ *  build if it disagrees with `REGIONS` above. A regex rather than a TS loader
+ *  keeps this script dependency-free; the literal is a flat array of object
+ *  literals and is expected to stay that way. */
+function assertRegionParity() {
+  const srcUrl = new URL(
+    "../src/data/product/infrastructure.ts",
+    import.meta.url,
+  );
+  const src = readFileSync(srcUrl, "utf8");
+  const block = src.match(/REGION_COORDS[^=]*=\s*\[([\s\S]*?)\];/);
+  if (!block) {
+    throw new Error(
+      "Could not find the REGION_COORDS array in infrastructure.ts — the " +
+        "parity check needs updating.",
+    );
+  }
+
+  const entry =
+    /\{\s*label:\s*"([A-Z]+)",\s*lat:\s*(-?[\d.]+),\s*lon:\s*(-?[\d.]+)\s*\}/g;
+  const source = [...block[1].matchAll(entry)].map(([, code, lat, lon]) => ({
+    code,
+    lat: Number(lat),
+    lon: Number(lon),
+  }));
+
+  const fmt = (rs) =>
+    rs.map((r) => `${r.code}(${r.lat},${r.lon})`).join(" ");
+  const mine = fmt(REGIONS);
+  const theirs = fmt(source);
+  if (source.length !== REGIONS.length || mine !== theirs) {
+    throw new Error(
+      "REGIONS in this script has drifted from REGION_COORDS in " +
+        "src/data/product/infrastructure.ts — update both together.\n" +
+        `  generator: ${mine}\n` +
+        `  source:    ${theirs}`,
+    );
+  }
+}
+
+assertRegionParity();
+
+const landTopoUrl = new URL(
+  "../node_modules/world-atlas/land-110m.json",
+  import.meta.url,
+);
+const landTopo = JSON.parse(readFileSync(landTopoUrl, "utf8"));
+const land = feature(landTopo, landTopo.objects.land);
+
+const round = (n, dec = 0) => {
+  const f = 10 ** dec;
+  return Math.round(n * f) / f;
+};
+
+// --- Variant 1: dot matrix (Equal Earth halftone) --------------------------
+
+const DOT_WIDTH = 960;
+const DOT_HEIGHT = 460;
+// Antarctica is dropped and the high Arctic trimmed by fitting the projection
+// to this clipped sphere rather than to the whole world.
+const LAT_MIN = -55;
+const LAT_MAX = 75;
+
+const clipSphere = {
+  type: "Polygon",
+  coordinates: [
+    [
+      [-180, LAT_MIN],
+      [180, LAT_MIN],
+      [180, LAT_MAX],
+      [-180, LAT_MAX],
+      [-180, LAT_MIN],
+    ],
+  ],
+};
+
+function equalEarthProjection() {
+  return geoEqualEarth().fitExtent(
+    [
+      [8, 8],
+      [DOT_WIDTH - 8, DOT_HEIGHT - 8],
+    ],
+    clipSphere,
+  );
+}
+
+// One <path> of disjoint move+arc pairs rather than N <circle> elements: same
+// rendering, far less markup, and the repeated arc tokens gzip extremely well.
+function circlesToPath(points, r) {
+  const d = [];
+  const dia = round(r * 2);
+  for (const [x, y] of points) {
+    d.push(
+      `M${round(x - r)},${round(y)}` +
+        `a${r},${r} 0 1,0 ${dia},0` +
+        `a${r},${r} 0 1,0 ${-dia},0`,
+    );
+  }
+  return d.join("");
+}
+
+function buildDotMatrix(stepDeg, dotRadius) {
+  const projection = equalEarthProjection();
+  const points = [];
+  // Integer lat/lon loop bounds are fixed constants, so iteration order — and
+  // therefore the emitted path — is stable across runs.
+  for (let lat = LAT_MIN; lat <= LAT_MAX; lat += stepDeg) {
+    for (let lon = -180; lon < 180; lon += stepDeg) {
+      if (!geoContains(land, [lon, lat])) continue;
+      const p = projection([lon, lat]);
+      if (p) points.push(p);
+    }
+  }
+
+  const markers = REGIONS.map((r) => {
+    const [x, y] = projection([r.lon, r.lat]);
+    return { code: r.code, x: round(x), y: round(y) };
+  });
+
+  return {
+    viewBox: `0 0 ${DOT_WIDTH} ${DOT_HEIGHT}`,
+    landPath: circlesToPath(points, dotRadius),
+    markers,
+    dotCount: points.length,
+  };
+}
+
+// --- Variant 2: static globe ----------------------------------------------
+
+// Mid-Atlantic sub-point (~25N 40W) puts CA / EU / UK / US comfortably inside
+// the visible disc. NZ is ~147 degrees away — nearly antipodal — so it cannot
+// be plotted. It is NOT dropped: it is emitted as a `farSide` marker whose
+// coordinates encode the great-circle BEARING from the sub-point, drawn
+// outside the limb as a hollow dashed ring. Silently omitting a live region
+// reads as a broken render, not as honest projection geometry.
+const GLOBE_ROTATE = [40, -25];
+const GLOBE_SIZE = 480;
+// The margin is wide enough to hold the far-side ring and its label OUTSIDE
+// the sphere. Nothing else in this composition sits outside the disc, which
+// is the primary cue that the ring is a direction, not a position.
+const GLOBE_MARGIN = 38;
+const GLOBE_R = GLOBE_SIZE / 2 - GLOBE_MARGIN;
+const GLOBE_C = GLOBE_SIZE / 2;
+
+// Radii along the far-side bearing, as offsets from the limb.
+const FAR_RING_OFFSET = 16;
+// The leader starts INSIDE the disc and crosses the limb, which is what reads
+// as "this one continues around the back".
+const FAR_LEADER_INNER = -17;
+const FAR_LEADER_OUTER = 8;
+const FAR_LABEL_OFFSET = 31;
+
+const DEG = Math.PI / 180;
+
+/** Initial great-circle bearing from `from` to `to`, in radians clockwise
+ *  from north. In an orthographic projection this azimuth is preserved at the
+ *  sub-point, so it is the correct screen direction for a far-side region. */
+function bearing(from, to) {
+  const f1 = from.lat * DEG;
+  const f2 = to.lat * DEG;
+  const dl = (to.lon - from.lon) * DEG;
+  return Math.atan2(
+    Math.sin(dl) * Math.cos(f2),
+    Math.cos(f1) * Math.sin(f2) - Math.sin(f1) * Math.cos(f2) * Math.cos(dl),
+  );
+}
+
+function labelAnchor(ux) {
+  if (ux < -0.3) return "end";
+  if (ux > 0.3) return "start";
+  return "middle";
+}
+
+function buildGlobeStatic() {
+  const projection = geoOrthographic()
+    .rotate([GLOBE_ROTATE[0], GLOBE_ROTATE[1], 0])
+    .translate([GLOBE_C, GLOBE_C])
+    .scale(GLOBE_R)
+    .clipAngle(90);
+  // 1 decimal is sub-pixel at a 480px globe and roughly halves the path payload.
+  const path = geoPath(projection).digits(1);
+  const center = [-GLOBE_ROTATE[0], -GLOBE_ROTATE[1]];
+
+  // REGIONS is a fixed, ordered literal, so marker order is stable across runs.
+  const markers = [];
+  for (const r of REGIONS) {
+    const point = [r.lon, r.lat];
+    if (geoDistance(point, center) < Math.PI / 2) {
+      const [x, y] = projection(point);
+      markers.push({ code: r.code, x: round(x, 1), y: round(y, 1) });
+      continue;
+    }
+
+    const theta = bearing({ lat: center[1], lon: center[0] }, { ...r });
+    // Screen-space unit vector for that bearing (SVG y grows downward).
+    const ux = Math.sin(theta);
+    const uy = -Math.cos(theta);
+    const at = (offset) => [
+      round(GLOBE_C + (GLOBE_R + offset) * ux, 1),
+      round(GLOBE_C + (GLOBE_R + offset) * uy, 1),
+    ];
+    const [rx, ry] = at(FAR_RING_OFFSET);
+    const [lx1, ly1] = at(FAR_LEADER_INNER);
+    const [lx2, ly2] = at(FAR_LEADER_OUTER);
+    const [tx, ty] = at(FAR_LABEL_OFFSET);
+    markers.push({
+      code: r.code,
+      x: rx,
+      y: ry,
+      farSide: true,
+      leader: [lx1, ly1, lx2, ly2],
+      label: { x: tx, y: round(ty + 4, 1), anchor: labelAnchor(ux) },
+    });
+  }
+
+  return {
+    viewBox: `0 0 ${GLOBE_SIZE} ${GLOBE_SIZE}`,
+    cx: GLOBE_C,
+    cy: GLOBE_C,
+    r: GLOBE_R,
+    landPath: path(land),
+    graticulePath: path(geoGraticule10()),
+    markers,
+  };
+}
+
+// --- Variant 3: rotating globe (raw rings, projected at runtime) -----------
+
+// Dropping points below a visual-effect weight is the dominant size lever
+// here — worth far more than coordinate rounding (5123 -> ~2520 points).
+const SIMPLIFY_MIN_WEIGHT = 0.2;
+const RING_DECIMALS = 1; // ~11km; invisible at this globe's display size
+
+const roundRing = (ring) =>
+  ring.map(([x, y]) => [round(x, RING_DECIMALS), round(y, RING_DECIMALS)]);
+
+/** The rotating variant emits a FLAT list of rings, so polygon nesting is
+ *  lost and every ring is drawn as a standalone exterior ring. d3-geo's
+ *  spherical clipping reads a ring with the wrong winding as "the whole globe
+ *  except this", which floods the sphere with land fill. Winding is measured
+ *  with geoArea rather than assumed: anything covering more than half the
+ *  sphere is inverted and gets reversed.
+ *
+ *  Consequence of dropping the nesting: inner rings (lakes such as the
+ *  Caspian) render as land. Accepted — they are invisible at this scale. */
+const orientRing = (ring) =>
+  geoArea({ type: "Polygon", coordinates: [ring] }) > 2 * Math.PI
+    ? [...ring].reverse()
+    : ring;
+
+function buildGlobeRotating() {
+  const simplified = simplify(presimplify(landTopo), SIMPLIFY_MIN_WEIGHT);
+  const simplifiedLand = feature(simplified, simplified.objects.land);
+
+  const rings = [];
+  for (const f of simplifiedLand.features) {
+    const g = f.geometry;
+    if (!g) continue;
+    const polys = g.type === "Polygon" ? [g.coordinates] : g.coordinates;
+    for (const poly of polys) {
+      // Simplification can collapse a tiny island below the 4 points a closed
+      // ring needs; those are dropped rather than emitted degenerate.
+      for (const ring of poly) {
+        if (ring.length >= 4) rings.push(orientRing(roundRing(ring)));
+      }
+    }
+  }
+
+  const graticule = geoGraticule()
+    .step([20, 20])
+    .precision(5)()
+    .coordinates.map(roundRing);
+
+  return { land: rings, graticule };
+}
+
+// --- Emit ------------------------------------------------------------------
+
+const jsonRings = (rings) =>
+  `[\n${rings.map((r) => `  [${r.map(([x, y]) => `[${x},${y}]`).join(",")}],`).join("\n")}\n]`;
+
+const jsonMarkers = (markers) =>
+  `[\n${markers
+    .map((m) => `    { code: "${m.code}", x: ${m.x}, y: ${m.y} },`)
+    .join("\n")}\n  ]`;
+
+const jsonGlobeMarkers = (markers) =>
+  `[\n${markers
+    .map((m) => {
+      const head = `    { code: "${m.code}", x: ${m.x}, y: ${m.y}`;
+      if (!m.farSide) return `${head} },`;
+      return (
+        `${head}, farSide: true,\n` +
+        `      leader: [${m.leader.join(", ")}],\n` +
+        `      label: { x: ${m.label.x}, y: ${m.label.y}, ` +
+        `anchor: "${m.label.anchor}" } },`
+      );
+    })
+    .join("\n")}\n  ]`;
+
+const BANNER = `/**
+ * GENERATED FILE — DO NOT EDIT BY HAND.
+ *
+ * Produced by \`scripts/generate-region-geometry.mjs\` (\`pnpm geometry:regions\`).
+ * Re-run that script and commit the result; hand edits will be overwritten.
+ */
+`;
+
+/** The geometry is emitted as one module PER VARIANT, not as a single module.
+ *  Rollup/Rolldown assign a whole module to exactly one chunk, so a combined
+ *  module would drag all ~42 KB gzip of globe geometry into whichever chunk
+ *  the default dot-matrix variant loads. Separate modules let the two globe
+ *  variants be split behind their own dynamic imports. Do not re-merge these. */
+function renderTypes() {
+  return `${BANNER}
+/** A region marker already projected into the variant's 2D viewBox space. */
+export interface RegionMarker2D {
+  readonly code: string;
+  readonly x: number;
+  readonly y: number;
+}
+
+/** Equal Earth halftone map: one path of disjoint dots, latitude clipped. */
+export interface DotMatrixGeometry {
+  readonly viewBox: string;
+  /** Single path containing every land dot as a move+arc pair. */
+  readonly landPath: string;
+  readonly markers: readonly RegionMarker2D[];
+}
+
+/** Where a far-side label sits, and how it aligns against that point. */
+export interface GlobeStaticLabel {
+  readonly x: number;
+  readonly y: number;
+  readonly anchor: "start" | "middle" | "end";
+}
+
+/** A static-globe marker. Front-facing markers are plain \`RegionMarker2D\`s
+ *  whose x/y is a real projected position. A \`farSide\` marker's x/y is NOT a
+ *  position: the region lies on the hidden hemisphere, so the point encodes
+ *  only the great-circle BEARING towards it, placed outside the limb. */
+export interface GlobeStaticMarker extends RegionMarker2D {
+  readonly farSide?: boolean;
+  /** Dashed leader stub \`[x1, y1, x2, y2]\` crossing the limb. Far side only. */
+  readonly leader?: readonly [number, number, number, number];
+  /** Explicit label placement. Far side only; front markers use offsets. */
+  readonly label?: GlobeStaticLabel;
+}
+
+/** Fully pre-projected orthographic globe. Every region is represented: those
+ *  on the hidden hemisphere appear as \`farSide\` bearing markers, never
+ *  dropped. */
+export interface GlobeStaticGeometry {
+  readonly viewBox: string;
+  readonly cx: number;
+  readonly cy: number;
+  readonly r: number;
+  readonly landPath: string;
+  readonly graticulePath: string;
+  readonly markers: readonly GlobeStaticMarker[];
+}
+
+/** Unprojected rings of [lon, lat], projected per frame at runtime. */
+export interface GlobeRotatingGeometry {
+  readonly land: readonly (readonly (readonly [number, number])[])[];
+  readonly graticule: readonly (readonly (readonly [number, number])[])[];
+}
+`;
+}
+
+function renderDotMatrix({ fine, coarse }) {
+  return `${BANNER}
+import type { DotMatrixGeometry } from "./regionGeometry.types";
+
+/** Dot matrix at a ${fine.step}-degree grid (${fine.dotCount} dots) — default. */
+export const dotMatrixFine: DotMatrixGeometry = {
+  viewBox: "${fine.viewBox}",
+  landPath:
+    "${fine.landPath}",
+  markers: ${jsonMarkers(fine.markers)},
+};
+
+/** Dot matrix at a ${coarse.step}-degree grid (${coarse.dotCount} dots) for small viewports. */
+export const dotMatrixCoarse: DotMatrixGeometry = {
+  viewBox: "${coarse.viewBox}",
+  landPath:
+    "${coarse.landPath}",
+  markers: ${jsonMarkers(coarse.markers)},
+};
+`;
+}
+
+function renderGlobeStatic({ globe }) {
+  return `${BANNER}
+import type { GlobeStaticGeometry } from "./regionGeometry.types";
+
+/** Orthographic globe, sub-point ~25N 40W. */
+export const globeStatic: GlobeStaticGeometry = {
+  viewBox: "${globe.viewBox}",
+  cx: ${globe.cx},
+  cy: ${globe.cy},
+  r: ${globe.r},
+  landPath:
+    "${globe.landPath}",
+  graticulePath:
+    "${globe.graticulePath}",
+  markers: ${jsonGlobeMarkers(globe.markers)},
+};
+`;
+}
+
+function renderGlobeRotating({ rotating }) {
+  return `${BANNER}
+import type { GlobeRotatingGeometry } from "./regionGeometry.types";
+
+const rotatingLand: readonly (readonly (readonly [number, number])[])[] =
+  ${jsonRings(rotating.land)};
+
+const rotatingGraticule: readonly (readonly (readonly [number, number])[])[] =
+  ${jsonRings(rotating.graticule)};
+
+/** Raw geometry for runtime projection (${rotating.land.length} land rings). */
+export const globeRotating: GlobeRotatingGeometry = {
+  land: rotatingLand,
+  graticule: rotatingGraticule,
+};
+`;
+}
+
+function renderBarrel() {
+  return `${BANNER}
+/**
+ * Convenience barrel. Importing this pulls in EVERY variant's geometry
+ * (~42 KB gzip) — fine for tests and tooling, never for a component. Runtime
+ * code must import the specific \`regionGeometry.<variant>\` module instead.
+ */
+export type {
+  DotMatrixGeometry,
+  GlobeRotatingGeometry,
+  GlobeStaticGeometry,
+  GlobeStaticLabel,
+  GlobeStaticMarker,
+  RegionMarker2D,
+} from "./regionGeometry.types";
+export { dotMatrixCoarse, dotMatrixFine } from "./regionGeometry.dotMatrix";
+export { globeRotating } from "./regionGeometry.globeRotating";
+export { globeStatic } from "./regionGeometry.globeStatic";
+`;
+}
+
+const fine = { ...buildDotMatrix(3.2, 1.15), step: 3.2 };
+const coarse = { ...buildDotMatrix(5.5, 1.5), step: 5.5 };
+const globe = buildGlobeStatic();
+const rotating = buildGlobeRotating();
+
+const outputs = [
+  ["regionGeometry.types.ts", renderTypes()],
+  ["regionGeometry.dotMatrix.ts", renderDotMatrix({ fine, coarse })],
+  ["regionGeometry.globeStatic.ts", renderGlobeStatic({ globe })],
+  ["regionGeometry.globeRotating.ts", renderGlobeRotating({ rotating })],
+  ["regionGeometry.ts", renderBarrel()],
+];
+
+for (const [name, body] of outputs) {
+  writeFileSync(new URL(`../src/data/product/${name}`, import.meta.url), body);
+}
+
+const kb = (n) => `${(n / 1024).toFixed(1)} KB`;
+const report = (label, value) => {
+  const text = typeof value === "string" ? value : JSON.stringify(value);
+  console.log(
+    `  ${label.padEnd(18)} ${kb(Buffer.byteLength(text, "utf8")).padStart(9)} raw  ` +
+      `${kb(gzipSync(Buffer.from(text, "utf8")).length).padStart(9)} gzip`,
+  );
+};
+
+console.log(`Wrote ${outputs.length} modules to src/data/product/`);
+console.log(`  dots: fine=${fine.dotCount} coarse=${coarse.dotCount}`);
+console.log(
+  `  rotating: ${rotating.land.length} rings, ` +
+    `${rotating.land.reduce((n, r) => n + r.length, 0)} points`,
+);
+for (const [name, body] of outputs) report(name.replace(/\.ts$/, ""), body);
+report("dotMatrixFine", fine);
+report("dotMatrixCoarse", coarse);
+report("globeStatic", globe);
+report("globeRotating", rotating);
