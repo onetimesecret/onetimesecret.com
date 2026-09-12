@@ -108,9 +108,15 @@ export function parseUrl(href) {
 export function summarize(offenders, describe) {
   // Sorted so the same fault prints the same examples every run: coverage
   // offenders arrive in readdir order, which is not stable across machines.
-  const shown = [...offenders].sort().slice(0, MAX_EXAMPLES).join(", ");
-  const rest = offenders.length - MAX_EXAMPLES;
-  return `${describe(offenders.length)}: ${shown}${rest > 0 ? `, and ${rest} more` : ""}`;
+  // Materialized once and counted from that, rather than spread for the
+  // examples and counted through `.length`: a Set has no `.length`, so the
+  // second reading would describe `undefined` offenders and compute a NaN
+  // remainder that silently stops truncating. `missing` and `seen` in
+  // findUnadvertised are Sets that only become arrays at the return boundary.
+  const items = [...offenders];
+  const shown = items.sort().slice(0, MAX_EXAMPLES).join(", ");
+  const rest = items.length - MAX_EXAMPLES;
+  return `${describe(items.length)}: ${shown}${rest > 0 ? `, and ${rest} more` : ""}`;
 }
 
 /** Every `Sitemap:` value in robots.txt, in order. */
@@ -318,27 +324,64 @@ export function htmlFiles(dir) {
 }
 
 /**
- * The href of the first <link> carrying `rel`, if the page has one.
+ * The href of every <link> carrying `rel`, in document order.
  *
  * One matcher for both callers below, which were byte-identical apart from the
  * rel value. A future fix to how the tag is recognised has to land in both, and
  * this is the same reason `within` holds the containment rule once.
+ *
+ * All of them rather than the first: a page emitting two rel=sitemap links
+ * would otherwise have the second unexamined, and this is the function that
+ * exists to stop the gate and LayoutHead.astro holding the filename as two
+ * independent literals. A check that inspects one of two links is back to
+ * assuming.
  */
-export function linkHref(html, rel) {
+export function linkHrefs(html, rel) {
   const wanted = new RegExp(`\\brel\\s*=\\s*["']${rel}["']`, "i");
+  const found = [];
   for (const tag of html.match(/<link\b[^>]*>/gi) ?? []) {
     if (!wanted.test(tag)) continue;
     const href = /\bhref\s*=\s*["']([^"']*)["']/i.exec(tag)?.[1];
-    if (href) return href;
+    if (href) found.push(href);
   }
-  return undefined;
+  return found;
 }
 
-/** The href a page links as its rel=sitemap, if it links one. */
-export const sitemapLinkOf = (html) => linkHref(html, "sitemap");
+/** Every href a page links as a rel=sitemap. */
+export const sitemapLinksOf = (html) => linkHrefs(html, "sitemap");
 
-/** The href a page declares as its rel=canonical, if it declares one. */
-export const canonicalOf = (html) => linkHref(html, "canonical");
+/**
+ * The href a page declares as its rel=canonical, if it declares one.
+ *
+ * The first, deliberately: a second canonical is not a second answer, and
+ * search engines ignore the tag entirely when a page emits conflicting ones.
+ * Nothing here needs to distinguish those cases.
+ */
+export const canonicalOf = (html) => linkHrefs(html, "canonical")[0];
+
+/**
+ * True when `html` claims `pathname` on `canonical` as its own canonical URL.
+ *
+ * A page with no canonical passes: nothing is claimed, so nothing contradicts
+ * the sitemap, and demanding one here would duplicate a check the coverage
+ * audit already floors.
+ *
+ * Compared against the canonical origin rather than the sitemap's own, because
+ * LayoutHead.astro pins canonicals to production even in a staging build whose
+ * <loc> values are on VITE_BASE_URL. Pathname alone would not do: a page
+ * canonicalising to eu.onetimesecret.com/pricing/ while /pricing/ is
+ * advertised is exactly the case worth catching, and its pathname matches.
+ */
+export function canonicalisesToSelf(html, canonical, pathname) {
+  const href = canonicalOf(html);
+  if (href === undefined) return true;
+  const declared = parseUrl(href);
+  if (!declared) return false;
+  return (
+    declared.origin === canonical.origin &&
+    normalizePath(declared.pathname) === normalizePath(pathname)
+  );
+}
 
 /**
  * Built pages that belong in the sitemap but are not in `advertised`.
@@ -403,9 +446,9 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
     const html = read(file);
     if (html === undefined) continue;
 
-    const linked = sitemapLinkOf(html);
-    if (linked !== undefined) {
-      sitemapLinks.add(linked);
+    const linked = sitemapLinksOf(html);
+    if (linked.length > 0) {
+      for (const href of linked) sitemapLinks.add(href);
       linkedPages += 1;
     }
 
@@ -621,6 +664,7 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
   const noindexPage = [];
   const redirectPage = [];
   const disallowedPage = [];
+  const elsewherePage = [];
 
   for (const url of urls) {
     const parsed = parseUrl(url);
@@ -656,6 +700,7 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
     if (html !== undefined) {
       if (isRedirectStub(html)) redirectPage.push(pathname);
       else if (isNoindex(html)) noindexPage.push(pathname);
+      else if (!canonicalisesToSelf(html, canonical, pathname)) elsewherePage.push(pathname);
       continue;
     }
 
@@ -687,6 +732,21 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
     problems.push(
       summarize(excludedPresent, (n) => `${n} excluded path(s) are in the sitemap anyway`) +
         ". Check the `filter` callback in config/astro/integrations.ts.",
+    );
+  }
+
+  if (elsewherePage.length > 0) {
+    problems.push(
+      summarize(
+        elsewherePage,
+        (n) => `${n} sitemap URL(s) name a page that canonicalises somewhere else`,
+      ) +
+        ". Advertising a URL its own page disowns is the same defect as advertising a " +
+        "noindex one: Search Console reports it as \"Alternate page with proper canonical " +
+        "tag\" and the entry is wasted. findUnadvertised already treats such a page as " +
+        "covered by its target, so this is that rule in the other direction. Either drop " +
+        "the canonicalUrl override (LayoutHead.astro) or the `canonical` frontmatter " +
+        "(src/content.config.ts), or exclude the route in config/astro/sitemap.ts.",
     );
   }
 
@@ -797,13 +857,13 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
   // Floored, not merely filtered: an empty set means nothing linked a sitemap,
   // and a filter over nothing reports nothing. Every page LayoutHead.astro
   // renders carries the link, so a count below the floor means either that
-  // markup changed or sitemapLinkOf stopped matching it — and this check would
+  // markup changed or sitemapLinksOf stopped matching it — and this check would
   // otherwise pass having examined nothing, which is what it exists to catch.
   if (coverage.linkedPages < MINIMUM_AUDITED_PAGES) {
     problems.push(
       `Only ${coverage.linkedPages} built page(s) carry a <link rel="sitemap">, fewer than ` +
         `the ${MINIMUM_AUDITED_PAGES} floor. LayoutHead.astro emits one on every page it ` +
-        "renders, so either it stopped or sitemapLinkOf here has to follow the markup.",
+        "renders, so either it stopped or sitemapLinksOf here has to follow the markup.",
     );
   }
 
