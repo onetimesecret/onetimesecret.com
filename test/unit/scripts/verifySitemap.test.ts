@@ -219,6 +219,24 @@ describe("verifySitemap", () => {
     expect(text(run(fixture({ paths, locs })))).toContain(`are not on ${ORIGIN}`);
   });
 
+  it("reports an absent expected origin rather than throwing", () => {
+    const dir = fixture();
+    const problems = verifySitemap({ distDir: dir, expectedOrigin: undefined }).problems;
+    expect(text(problems)).toContain("is not a valid URL");
+  });
+
+  // Concatenating this would give "https://…//sitemap-index.xml", which no
+  // declaration can match, so the robots check would fail on a sound build.
+  it("matches the robots.txt declaration when canonicalOrigin has a trailing slash", () => {
+    const dir = fixture();
+    const problems = verifySitemap({
+      distDir: dir,
+      expectedOrigin: ORIGIN,
+      canonicalOrigin: `${ORIGIN}/`,
+    }).problems;
+    expect(problems).toEqual([]);
+  });
+
   it("flags a child sitemap on another origin", () => {
     const problems = run(fixture({ childSitemaps: ["https://elsewhere.test/sitemap-0.xml"] }));
     expect(text(problems)).toContain(`is not on ${ORIGIN}`);

@@ -20,6 +20,13 @@ import { CANONICAL_ORIGIN } from "./domains.ts";
  * to production because `astro build` sets NODE_ENV=production before loading
  * the config, so anything resolving this after a build must agree.
  *
+ * That default differs from the `loadEnv` call in astro.config.ts, which falls
+ * back to "development", and the difference is deliberate: both astro commands
+ * set NODE_ENV (verified: `astro dev` development, `astro build` production),
+ * so the two agree whenever astro is what loaded the config. The fallback only
+ * decides for a caller with NODE_ENV unset, which means scripts/verify-*.mjs
+ * running after a build — and there production is the right answer.
+ *
  * Falls back to the canonical production origin because @astrojs/sitemap
  * silently skips generating a sitemap when `site` is unset (#214).
  */

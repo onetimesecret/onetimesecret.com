@@ -73,6 +73,10 @@ export function read(path) {
   }
 }
 
+// XML entities in a <loc> are not unescaped. @astrojs/sitemap only emits paths
+// here, so this has nothing to decode today, and if one ever carried an `&amp;`
+// the URL would be reported as having no built page rather than passing — the
+// safe direction for a gate.
 export const locs = (xml) => [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, href]) => href);
 
 /** `new URL` that yields undefined instead of throwing on a malformed <loc>. */
@@ -324,7 +328,9 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
  */
 export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANONICAL_ORIGIN }) {
   const problems = [];
-  const origin = expectedOrigin.replace(/\/+$/, "");
+  // Coerced before trimming: the guard below is defensive about a bad origin,
+  // so this line must not throw on undefined ahead of it.
+  const origin = String(expectedOrigin ?? "").replace(/\/+$/, "");
   const expected = parseUrl(origin);
   const canonical = parseUrl(canonicalOrigin);
 
@@ -560,7 +566,12 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
   // substring test would accept "Sitemap: https://example.com/sitemap-index.xml"
   // and hand the site's crawl budget to someone else's origin.
   const declared = declaredSitemaps(robots);
-  const canonicalSitemap = `${canonicalOrigin}/sitemap-index.xml`;
+  // Built through URL rather than concatenated, so a trailing slash on
+  // canonicalOrigin cannot produce "https://x//sitemap-index.xml", which no
+  // declaration could ever match. Symmetric with the origin normalization above.
+  const canonicalSitemap = canonical
+    ? new URL("/sitemap-index.xml", canonical).href
+    : `${canonicalOrigin}/sitemap-index.xml`;
   const notAbsolute = declared.filter((url) => parseUrl(url) === undefined);
   const offOrigin = declared.filter((url) => {
     const parsed = parseUrl(url);
