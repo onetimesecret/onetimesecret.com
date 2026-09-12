@@ -12,15 +12,16 @@
     "allowJs": true,
     "esModuleInterop": true,
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "typeRoots": [
-      "./types",
-      "../../node_modules/@types"
-    ]
+    "baseUrl": "../..",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@config/*": ["./config/*"],
+      "@root/*": ["./*"]
+    }
   },
   "include": [
     "./**/*.spec.ts",
-    "./**/*.test.ts",
-    "./types/**/*.d.ts"
+    "./**/*.test.ts"
   ],
   "exclude": [
     "./playwright.config.ts",
