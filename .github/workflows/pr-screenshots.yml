@@ -5,20 +5,30 @@
 #
 # Optimizations:
 # - Only runs when UI code changes (src/**)
-# - Only runs on ready_for_review or with 'screenshots' label
+# - Only runs on ready_for_review, or when the 'screenshots' label is added
 # - Uses shallow clones for faster checkout
-# - Caches the Playwright browser build the screenshot action uses, so the
-#   action's own `playwright install` finds it and skips the download
+# - Pre-installs the Playwright browser build the screenshot action uses, so the
+#   action's own `playwright install` finds it and skips its download
 # - Randomly selects one language to balance coverage vs. speed
 #
-# Node versions:
+# Node versions (workaround for #217):
 # - The site is built and served with Node 26 (the engines floor).
 # - The screenshot action installs browsers with its own pinned
 #   `npx playwright@1.56.0 install`, using whatever Node is on PATH. Playwright
 #   before 1.60 hangs forever while extracting the Chromium zip on Node 26 and
 #   on Node 24.16+ (microsoft/playwright#40724, #41000), and the action has no
 #   input to skip that install. So PATH is switched to Node 22 after the preview
-#   server is up and before any Playwright install runs. See #217.
+#   server is up and before any Playwright install runs.
+# - Two independent layers keep that install harmless, because the PATH switch
+#   alone is fragile: the action's own JavaScript runs on the runner's bundled
+#   Node (`runs: using: node24`), so switching PATH only helps while the action
+#   shells out to `npx`. Pre-installing the browser build it looks for makes its
+#   install a no-op even if a future version installs in-process.
+# - Anything added between the Node 22 switch and the end of the job must stay
+#   pnpm-free: package.json requires Node >= 26, so pnpm would refuse to run.
+# - REMOVE the Node 22 switch once the action ships Playwright >= 1.60. The
+#   action is unmaintained (no release since Oct 2025); capturing with the
+#   project's own Playwright would retire this whole workaround.
 #
 # Security:
 # - Screenshots stored only in GitHub (gh-screenshots branch)
@@ -65,9 +75,13 @@ jobs:
     # Only run if:
     # 1. PR is ready for review (not draft), OR
     # 2. PR has the 'screenshots' label
-    if: |
-      github.event.pull_request.draft == false ||
-      contains(github.event.pull_request.labels.*.name, 'screenshots')
+    # The second clause ignores `labeled` events for any other label, which
+    # would otherwise rebuild the site every time an unrelated label is added.
+    if: >-
+      (github.event.pull_request.draft == false ||
+      contains(github.event.pull_request.labels.*.name, 'screenshots')) &&
+      (github.event.action != 'labeled' ||
+      github.event.label.name == 'screenshots')
 
     steps:
       # Use shallow clone for faster checkout
@@ -137,26 +151,63 @@ jobs:
         with:
           node-version: "22"
 
+      # `ImageOS`/`ImageVersion` are set in the runner's process environment, not
+      # in a workflow `env:` block, so they are not reachable through the `env`
+      # context and have to be read in a shell step to be usable in a cache key.
+      - name: Identify runner image
+        id: runner-image
+        # ImageOS only, e.g. "ubuntu24". ImageVersion would add nothing but a
+        # cache miss every time the image gets a weekly patch bump.
+        run: echo "id=${ImageOS:-unknown}" >> "$GITHUB_OUTPUT"
+
       # Cache the browser build the screenshot action's pinned Playwright uses.
       # The key is that Playwright version, not the lockfile: the project's own
-      # Playwright is a different version with a different browser build.
+      # Playwright is a different version with a different browser build. The
+      # runner image and arch are in the key because browser binaries are built
+      # per platform: an `ubuntu-latest` roll can change the C library under a
+      # cached Chromium.
+      #
+      # Expect this to miss on the first run of each new PR branch: the workflow
+      # only triggers on `pull_request`, so no run ever writes a cache on the
+      # base branch for later runs to restore. The pre-install below is what
+      # makes the action's own install safe; the cache only makes it faster.
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ env.ACTION_PLAYWRIGHT_VERSION }}
+          key: playwright-${{ runner.arch }}-${{ steps.runner-image.outputs.id }}-${{ env.ACTION_PLAYWRIGHT_VERSION }}
 
-      # Pre-install the exact build the action expects, so the action's own
-      # `playwright install` finds it already present and skips the download.
+      # Chromium's shared libraries are apt packages under /usr/lib, which the
+      # cache above does not cover, so they have to be installed on every
+      # runner. Keeping this separate from the cached browser download means a
+      # cache hit cannot leave Chromium present but unable to launch.
+      #
+      # The action's own `install --with-deps` covers these too, so this repeats
+      # a few seconds of apt on purpose: it keeps the job correct on its own
+      # rather than relying on a third-party action's internals.
+      - name: Install Playwright system dependencies
+        timeout-minutes: 5
+        run: npx -y "playwright@${ACTION_PLAYWRIGHT_VERSION}" install-deps chromium
+
+      # Pre-install the exact browser build the action looks for, so its own
+      # `playwright install` finds it and skips the download. Bounded because
+      # this is the step that hung for six hours at a time (#217).
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 5
         run: |
           echo "📦 Installing Chromium for Playwright ${ACTION_PLAYWRIGHT_VERSION}..."
-          npx -y "playwright@${ACTION_PLAYWRIGHT_VERSION}" install --with-deps chromium
+          npx -y "playwright@${ACTION_PLAYWRIGHT_VERSION}" install chromium
 
       # Capture screenshots using the action (pinned to specific commit).
-      # Bounded so a hang fails visibly instead of holding the runner.
+      # Bounded so a hang fails visibly instead of holding the runner (#217).
+      #
+      # `fail-on-error: false` below keeps a screenshot problem from blocking
+      # the PR, but it also means the action exits 0 when capture fails, and it
+      # declares no outputs, so this job cannot tell success from failure. The
+      # PR comment at the end is therefore worded to claim only what is known.
+      # Flip it to true if a silent capture failure is worse than a red check.
       - name: Capture screenshots
         timeout-minutes: 8
         uses: yoavf/auto-pr-screenshots-action@74e4d55a87b1fd6bfc3cfbeefeb2831a04f0851c  # v1.4.0-beta
@@ -173,8 +224,12 @@ jobs:
         if: always()
         run: |
           if [ -f preview.pid ]; then
-            kill $(cat preview.pid) || true
-            rm preview.pid
+            PID="$(cat preview.pid)"
+            # `pnpm preview` is a wrapper process; kill its children too so the
+            # underlying `astro preview` actually exits.
+            pkill -P "$PID" 2>/dev/null || true
+            kill "$PID" 2>/dev/null || true
+            rm -f preview.pid
           fi
 
       # Add a custom comment with language info
@@ -192,18 +247,22 @@ jobs:
               es: 'Español'
             };
 
-            const comment = `## 📸 Visual Snapshot
-
-            Screenshots captured in **${langNames[lang]}** (${lang})
-
-            These screenshots show how the UI looks after your changes. Review them to catch unintended visual regressions.
-
-            ---
-            💡 **Note:** We test one randomly selected language per PR to balance coverage with speed. Screenshots are captured for:
-            - 🏠 Homepage (desktop + mobile)
-            - 💰 Pricing page (desktop + mobile)
-
-            🔍 Check the screenshot comments above for visual comparisons.`;
+            // Built as an array because a template literal would keep this
+            // file's indentation, and markdown renders indented lines as code.
+            const comment = [
+              '## 📸 Visual Snapshot',
+              '',
+              `Language selected for this run: **${langNames[lang]}** (${lang})`,
+              '',
+              'The screenshots themselves are posted as a separate comment. If none',
+              'appears, capture produced nothing: the capture step is non-blocking,',
+              'so check the workflow log rather than assuming the UI is unchanged.',
+              '',
+              '---',
+              '💡 **Note:** We test one randomly selected language per PR to balance coverage with speed. Screenshots cover:',
+              '- 🏠 Homepage (desktop + mobile)',
+              '- 💰 Pricing page (desktop + mobile)',
+            ].join('\n');
 
             // Find existing bot comments
             const { data: comments } = await github.rest.issues.listComments({
