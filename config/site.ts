@@ -20,16 +20,28 @@ import { CANONICAL_ORIGIN } from "./domains.ts";
  * to production because `astro build` sets NODE_ENV=production before loading
  * the config, so anything resolving this after a build must agree.
  *
- * That default differs from the `loadEnv` call in astro.config.ts, which falls
- * back to "development", and the difference is deliberate: both astro commands
- * set NODE_ENV (verified: `astro dev` development, `astro build` production),
- * so the two agree whenever astro is what loaded the config. The fallback only
- * decides for a caller with NODE_ENV unset, which means scripts/verify-*.mjs
- * running after a build — and there production is the right answer.
+ * astro.config.ts loads its own env for the vite config and now shares this
+ * mode, so the two cannot default differently in the same file.
  *
  * Falls back to the canonical production origin because @astrojs/sitemap
  * silently skips generating a sitemap when `site` is unset (#214).
  */
+/**
+ * The vite mode to resolve .env files in.
+ *
+ * Both astro commands set NODE_ENV, verified by printing it at config-load
+ * time: `astro dev` gives "development" and `astro build` gives "production".
+ * So this only decides for a caller that is not an astro command, which means
+ * scripts/verify-*.mjs running after a build — and there the build's own mode,
+ * production, is the answer that keeps the gate validating what shipped.
+ *
+ * Exported so astro.config.ts resolves the same mode for its vite env. Two
+ * loadEnv calls in one file defaulting differently is the shape #214 was about.
+ */
+export function resolveEnvMode(env: NodeJS.ProcessEnv = process.env): string {
+  return env.NODE_ENV || "production";
+}
+
 export function resolveSite(env: NodeJS.ProcessEnv = process.env, cwd = process.cwd()): string {
   if (env.VITE_BASE_URL) return env.VITE_BASE_URL;
 
@@ -57,7 +69,7 @@ function envFiles(env: NodeJS.ProcessEnv, cwd: string): Record<string, string> {
   const ambient = process.env;
   try {
     process.env = env;
-    return loadEnv(env.NODE_ENV || "production", cwd, "");
+    return loadEnv(resolveEnvMode(env), cwd, "");
   } finally {
     process.env = ambient;
   }

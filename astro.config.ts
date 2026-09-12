@@ -33,7 +33,7 @@ import { createConfig as createIntegrations } from "./config/astro/integrations"
 import { createConfig as createMarkdownConfig } from "./config/astro/markdown";
 import { createConfig as createRedirectsConfig } from "./config/astro/redirects";
 import { createConfig as createViteConfig } from "./config/astro/vite";
-import { resolveSite } from "./config/site";
+import { resolveEnvMode, resolveSite } from "./config/site";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -43,7 +43,7 @@ const __dirname = dirname(__filename);
 
 // Load environment variables (this works in astro.config.ts)
 // The empty string means it will load all variables regardless of prefix
-const env = loadEnv(process.env.NODE_ENV || "development", process.cwd(), "");
+const env = loadEnv(resolveEnvMode(), process.cwd(), "");
 
 // https://astro.build/config
 export default defineConfig({

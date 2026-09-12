@@ -192,10 +192,18 @@ export function readWithin(distDir, candidate) {
 }
 
 /**
- * The built page for `pathname`. `build.format` is "directory", so /en/about/
- * is dist/en/about/index.html, but Astro special-cases a few routes to a bare
- * .html file (500.astro -> dist/500.html); probing both keeps the failure
- * message honest about which problem it found.
+ * The built page for `pathname`, or undefined if a static host would 404 it.
+ *
+ * `build.format` is "directory", so /en/about/ is dist/en/about/index.html.
+ * Astro writes a few routes to a bare .html file instead (500.astro ->
+ * dist/500.html), and such a file is served at /500.html — NOT at /500/, as
+ * LayoutHead.astro notes in its own words.
+ *
+ * So the second probe matches the pathname's own shape rather than stripping a
+ * trailing slash. Doing the latter resolved /500/ to dist/500.html and called
+ * it built, passing a URL that 404s in production, which is the #209 shape this
+ * gate exists to catch; and it looked for dist/500.html.html when a <loc>
+ * genuinely named /500.html.
  */
 export function findPage(distDir, pathname) {
   // URL.pathname stays percent-encoded; the file on disk is not. A slug with a
@@ -205,10 +213,9 @@ export function findPage(distDir, pathname) {
   // survives it and becomes `../` here. readWithin keeps the probe inside dist
   // rather than reading an arbitrary file.
   const rel = decodePath(pathname).replace(/^\//, "");
-  const bare = rel.replace(/\/$/, "");
   const asDirectory = readWithin(distDir, join(distDir, rel, "index.html"));
   if (asDirectory !== undefined) return asDirectory;
-  return bare ? readWithin(distDir, join(distDir, `${bare}.html`)) : undefined;
+  return rel.endsWith(".html") ? readWithin(distDir, join(distDir, rel)) : undefined;
 }
 
 /**
@@ -284,6 +291,12 @@ export function canonicalOf(html) {
  *
  * Note the canonical is on the canonical origin even in a staging build, where
  * the sitemap is on VITE_BASE_URL, so the comparison is by pathname.
+ *
+ * That pathname is the canonical's, not the file's, so this asks whether every
+ * canonical is advertised rather than whether every file is. A page that
+ * deliberately canonicalises elsewhere (LayoutHead takes a canonicalUrl prop)
+ * counts as covered by its target, which is the right answer for a duplicate
+ * and the reason no file-path-to-URL mapping is needed here.
  *
  * `audited` is returned so the count can be printed: if the canonical markup
  * ever changes shape this check would skip every page and pass without having
@@ -399,7 +412,15 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
     urls.push(...locs(xml));
   }
 
-  const duplicates = [...new Set(urls.filter((url, i) => urls.indexOf(url) !== i))];
+  // Linear rather than urls.indexOf inside a filter: a sitemap file may hold
+  // up to 50k URLs, where the quadratic form stops being free.
+  const seen = new Set();
+  const repeated = new Set();
+  for (const url of urls) {
+    if (seen.has(url)) repeated.add(url);
+    else seen.add(url);
+  }
+  const duplicates = [...repeated];
 
   if (duplicates.length > 0) {
     problems.push(
@@ -628,7 +649,9 @@ export function main(argv = process.argv.slice(2), env = process.env) {
   if (problems.length > 0) {
     const lines = [`${problems.length} problem(s):`, ...problems];
     console.error(`\n[verify-sitemap] FAIL:\n${lines.map((l) => `  - ${l}`).join("\n")}\n`);
-    process.exit(1);
+    // Returned, not just called: process.exit is mocked under test, so falling
+    // through would print the OK line right after a FAIL block.
+    return process.exit(1);
   }
 
   // The audited count is printed rather than only asserted, so a drop is

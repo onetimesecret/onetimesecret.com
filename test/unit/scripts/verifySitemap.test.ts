@@ -72,8 +72,6 @@ type FixtureOptions = {
   noindex?: string[];
   /** Paths listed in the sitemap but with no page written to disk. */
   unbuilt?: string[];
-  /** Paths written as `<path>.html` rather than `<path>/index.html`. */
-  bareHtml?: string[];
   /** Paths whose page is an Astro static-redirect stub. */
   redirect?: string[];
   /** Paths whose page omits the canonical, as the bunnycdn_errors/ documents do. */
@@ -122,7 +120,6 @@ function fixture(options: FixtureOptions = {}) {
   const paths = options.paths ?? defaultPaths();
   const noindex = new Set(options.noindex ?? []);
   const unbuilt = new Set(options.unbuilt ?? []);
-  const bareHtml = new Set(options.bareHtml ?? []);
   const redirect = new Set(options.redirect ?? []);
   const noCanonical = new Set(options.noCanonical ?? []);
   const origin = options.origin ?? ORIGIN;
@@ -133,11 +130,9 @@ function fixture(options: FixtureOptions = {}) {
     const body = redirect.has(path)
       ? redirectStub()
       : page(path, { noindex: noindex.has(path), canonical: !noCanonical.has(path) });
-    if (bareHtml.has(path)) {
-      write(dir, `${relative.replace(/\/$/, "")}.html`, body);
-    } else {
-      write(dir, join(relative, "index.html"), body);
-    }
+    // A path naming a .html file is written as that file, as Astro writes
+    // 500.astro to dist/500.html; everything else is directory format.
+    write(dir, relative.endsWith(".html") ? relative : join(relative, "index.html"), body);
   }
 
   for (const [relative, body] of Object.entries(options.extraPages ?? {})) {
@@ -257,9 +252,20 @@ describe("verifySitemap", () => {
     expect(text(problems)).toContain("no built page in dist");
   });
 
-  it("accepts a page Astro wrote as <path>.html rather than <path>/index.html", () => {
+  it("accepts a <loc> naming a .html file Astro wrote directly", () => {
+    expect(run(fixture({ paths: [...defaultPaths(), "/500.html"] }))).toEqual([]);
+  });
+
+  // dist/500.html is served at /500.html, not at /500/. Resolving a directory
+  // path to a bare .html file called such a URL built while it 404s in
+  // production, which is the #209 shape.
+  it("refuses a directory <loc> that exists only as a bare .html file", () => {
     const paths = defaultPaths();
-    expect(run(fixture({ paths, bareHtml: [paths.at(-1)!] }))).toEqual([]);
+    const locs = [...paths.map((path) => `${ORIGIN}${path}`), `${ORIGIN}/orphan/`];
+    const dir = fixture({ paths, locs, extraPages: { "orphan.html": "<html/>" } });
+    const problems = text(run(dir));
+    expect(problems).toContain("no built page in dist");
+    expect(problems).toContain("/orphan/");
   });
 
   // URL.pathname is percent-encoded; the directory on disk is not.
@@ -708,12 +714,29 @@ describe("main", () => {
   it("prints a FAIL block and exits non-zero when a check fails", () => {
     const dir = fixture({ xsl: false });
     const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
     const exit = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
 
     main([dir, ORIGIN]);
 
     expect(exit).toHaveBeenCalledWith(1);
     expect(error.mock.calls.join(" ")).toContain("[verify-sitemap] FAIL");
+    // process.exit is mocked here, so without an explicit return main would
+    // fall through and report OK on the same run that just failed.
+    expect(log).not.toHaveBeenCalled();
+  });
+
+  // How ci.yml:195 invokes it: no origin argument, so resolveOrigin falls
+  // through to resolveSite and the env decides.
+  it("resolves the origin from the environment when argv names none", () => {
+    const dir = fixture();
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const exit = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
+
+    main([dir], { VITE_BASE_URL: ORIGIN });
+
+    expect(exit).not.toHaveBeenCalled();
+    expect(log.mock.calls.join(" ")).toContain("[verify-sitemap] OK");
   });
 });
 
