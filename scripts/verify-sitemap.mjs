@@ -569,6 +569,13 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
     );
   }
 
+  // Every URL, including any the origin check just rejected. Deliberate: a URL
+  // on the wrong host is still an advertised path, and the origin problem above
+  // already names the fault. Filtering here would add a 15-line and a 107-line
+  // cascade to that one failure and bury the cause under truncated path lists.
+  //
+  // Normalized because these are compared against page canonicals, which are
+  // produced independently. See findUnadvertised.
   const pathnames = new Set(
     urls.map((url) => parseUrl(url)?.pathname).filter(Boolean).map(normalizePath),
   );
