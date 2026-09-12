@@ -27,6 +27,7 @@ import {
   declaredSitemaps,
   isDisallowed,
   isNoindex,
+  isRedirectStub,
   resolveOrigin,
   starRules,
   verifySitemap,
@@ -68,6 +69,8 @@ type FixtureOptions = {
   unbuilt?: string[];
   /** Paths written as `<path>.html` rather than `<path>/index.html`. */
   bareHtml?: string[];
+  /** Paths whose page is an Astro static-redirect stub. */
+  redirect?: string[];
   robots?: string | null;
   xsl?: boolean;
   staleStub?: "file" | "directory" | false;
@@ -89,6 +92,12 @@ function page(noindex: boolean, reversedAttributes = false) {
   return `<!doctype html><html><head>${noindex ? meta : ""}</head><body>x</body></html>`;
 }
 
+/** What Astro emits for a static redirect route. */
+function redirectStub() {
+  return '<!doctype html><html><head><meta http-equiv="refresh" content="0;url=/en/about/">' +
+    "</head><body>Redirecting</body></html>";
+}
+
 function fixture(options: FixtureOptions = {}) {
   const dir = mkdtempSync(join(tmpdir(), "verify-sitemap-"));
   created.push(dir);
@@ -97,14 +106,16 @@ function fixture(options: FixtureOptions = {}) {
   const noindex = new Set(options.noindex ?? []);
   const unbuilt = new Set(options.unbuilt ?? []);
   const bareHtml = new Set(options.bareHtml ?? []);
+  const redirect = new Set(options.redirect ?? []);
 
   for (const path of paths) {
     if (unbuilt.has(path)) continue;
     const relative = path.replace(/^\//, "");
+    const body = redirect.has(path) ? redirectStub() : page(noindex.has(path));
     if (bareHtml.has(path)) {
-      write(dir, `${relative.replace(/\/$/, "")}.html`, page(noindex.has(path)));
+      write(dir, `${relative.replace(/\/$/, "")}.html`, body);
     } else {
-      write(dir, join(relative, "index.html"), page(noindex.has(path)));
+      write(dir, join(relative, "index.html"), body);
     }
   }
 
@@ -239,6 +250,35 @@ describe("verifySitemap", () => {
     expect(text(run(fixture({ locs })))).toContain("not valid URLs");
   });
 
+  it("flags a redirect stub, the shape #209 was filed about", () => {
+    const paths = defaultPaths();
+    const problems = run(fixture({ paths, redirect: [paths.at(-1)!] }));
+    expect(text(problems)).toContain("redirect stubs, not pages");
+  });
+
+  it("flags a duplicated URL, which would also inflate the count floor", () => {
+    const paths = defaultPaths();
+    const locs = [...paths.map((p) => `${ORIGIN}${p}`), `${ORIGIN}${paths[0]}`];
+    expect(text(run(fixture({ paths, locs })))).toContain("appear more than once");
+  });
+
+  it("accepts an expected origin written with a trailing slash", () => {
+    expect(run(fixture(), `${ORIGIN}/`)).toEqual([]);
+  });
+
+  it("treats an explicit default port as the same origin", () => {
+    const paths = defaultPaths();
+    // A string-prefix test would call every one of these foreign.
+    const locs = paths.map((path) => `https://onetimesecret.com:443${path}`);
+    expect(run(fixture({ paths, locs }))).toEqual([]);
+  });
+
+  it("still flags a genuinely different host", () => {
+    const paths = defaultPaths();
+    const locs = paths.map((path) => `https://evil.example.com${path}`);
+    expect(text(run(fixture({ paths, locs })))).toContain("are not on");
+  });
+
   it("truncates a systemic fault rather than printing one line per URL", () => {
     const problems = run(fixture(), "https://elsewhere.test");
     expect(text(problems)).toContain("and 50 more");
@@ -266,6 +306,13 @@ describe("verifySitemap", () => {
     it("flags robots.txt with no Sitemap line at all", () => {
       const robots = ROBOTS.split("\n").filter((l) => !l.startsWith("Sitemap:")).join("\n");
       expect(text(run(fixture({ robots })))).toContain("declares no Sitemap: line");
+    });
+
+    it("does not call a bare same-origin declaration off-origin", () => {
+      const robots = ROBOTS.replace(`Sitemap: ${ORIGIN}/sitemap-index.xml`, `Sitemap: ${ORIGIN}`);
+      const problems = text(run(fixture({ robots })));
+      expect(problems).toContain("none of which is");
+      expect(problems).not.toContain("off-origin");
     });
 
     it("flags a missing robots.txt", () => {
@@ -373,5 +420,37 @@ describe("isExcludedFromSitemap", () => {
   it("keeps real content pages", () => {
     expect(isExcludedFromSitemap("/en/about/")).toBe(false);
     expect(isExcludedFromSitemap("/")).toBe(false);
+  });
+});
+
+describe("robots.txt wildcard rules", () => {
+  // A rule like this treated as literal prefix text would match nothing, and
+  // the whole Disallow cross-check would fail open.
+  const rules = { allow: ["/"], disallow: ["/*.json$", "/api/*/debug"] };
+
+  it("matches a wildcard rule anchored with $", () => {
+    expect(isDisallowed("/data.json", rules)).toBe(true);
+  });
+
+  it("respects the $ anchor rather than matching a longer path", () => {
+    expect(isDisallowed("/data.json.html", rules)).toBe(false);
+  });
+
+  it("matches a wildcard in the middle of a rule", () => {
+    expect(isDisallowed("/api/v1/debug", rules)).toBe(true);
+  });
+
+  it("leaves unrelated paths alone", () => {
+    expect(isDisallowed("/en/about/", rules)).toBe(false);
+  });
+});
+
+describe("isRedirectStub", () => {
+  it("detects a meta refresh independently of any noindex meta", () => {
+    expect(isRedirectStub('<meta http-equiv="refresh" content="0;url=/x/">')).toBe(true);
+  });
+
+  it("does not flag a real page", () => {
+    expect(isRedirectStub('<meta name="robots" content="index">')).toBe(false);
   });
 });

@@ -126,13 +126,31 @@ export function starRules(robots) {
 }
 
 /**
+ * A robots.txt rule as a regex. `*` matches any run of characters and a
+ * trailing `$` anchors the end, per Google's syntax. Treating those as literal
+ * prefix text would make a rule like `Disallow: /*.json$` match nothing and
+ * the check fail open, which is the failure mode this gate exists to prevent.
+ */
+export function ruleToRegExp(rule) {
+  const anchored = rule.endsWith("$");
+  const body = anchored ? rule.slice(0, -1) : rule;
+  const pattern = body
+    .split("*")
+    .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join(".*");
+
+  return new RegExp(`^${pattern}${anchored ? "$" : ""}`);
+}
+
+/**
  * Standard longest-match resolution: the most specific rule wins, so a broad
- * `Allow: /` does not rescue a path an explicit Disallow names.
+ * `Allow: /` does not rescue a path an explicit Disallow names. Specificity is
+ * the rule's length, as in the spec, not the length of what it matched.
  */
 export function isDisallowed(pathname, { allow, disallow }) {
   const longest = (rules) =>
     rules
-      .filter((rule) => pathname.startsWith(rule))
+      .filter((rule) => ruleToRegExp(rule).test(pathname))
       .reduce((max, rule) => Math.max(max, rule.length), -1);
 
   const blocked = longest(disallow);
@@ -168,6 +186,16 @@ export function findPage(distDir, pathname) {
  * this tag could reorder it, so match the tag and inspect its attributes
  * rather than requiring name= before content=.
  */
+/**
+ * An Astro static redirect page. Detected independently of the noindex meta
+ * that Astro's redirect template happens to emit today, so a template change
+ * on a version bump cannot quietly let redirect stubs back into the sitemap.
+ * That shape is what #209 was filed about.
+ */
+export function isRedirectStub(html) {
+  return /<meta[^>]+http-equiv\s*=\s*["']refresh["']/i.test(html);
+}
+
 export function isNoindex(html) {
   for (const tag of html.match(/<meta\b[^>]*>/gi) ?? []) {
     if (!/\bname\s*=\s*["']robots["']/i.test(tag)) continue;
@@ -188,6 +216,13 @@ export function isNoindex(html) {
 export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANONICAL_ORIGIN }) {
   const problems = [];
   const origin = expectedOrigin.replace(/\/+$/, "");
+  const expected = parseUrl(origin);
+  const canonical = parseUrl(canonicalOrigin);
+
+  if (!expected) {
+    const problem = `Expected origin "${expectedOrigin}" is not a valid URL.`;
+    return { problems: [problem], urls: [], childHrefs: [] };
+  }
 
   // The hand-written stub this fix replaces. isFile() rather than existsSync()
   // so that adding a /sitemap.xml -> /sitemap-index.xml redirect, which makes
@@ -240,6 +275,15 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
     urls.push(...locs(xml));
   }
 
+  const duplicates = [...new Set(urls.filter((url, i) => urls.indexOf(url) !== i))];
+
+  if (duplicates.length > 0) {
+    problems.push(
+      summarize(duplicates, (n) => `${n} URL(s) appear more than once in the sitemap`) +
+        ". Duplicates also inflate the count floor below, so it stops meaning what it says.",
+    );
+  }
+
   if (urls.length < MINIMUM_URL_COUNT) {
     problems.push(
       `Only ${urls.length} URL(s) in the sitemap, fewer than the ${MINIMUM_URL_COUNT} floor. ` +
@@ -265,6 +309,7 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
   const excludedPresent = [];
   const missingPage = [];
   const noindexPage = [];
+  const redirectPage = [];
   const disallowedPage = [];
 
   for (const url of urls) {
@@ -275,7 +320,9 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
       continue;
     }
 
-    if (!url.startsWith(`${origin}/`)) {
+    // Compared as origins rather than string prefixes, so casing, an explicit
+    // :443 and a bare origin with no path are all judged correctly.
+    if (parsed.origin !== expected.origin) {
       wrongOrigin.push(url);
       continue;
     }
@@ -296,6 +343,8 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
 
     if (html === undefined) {
       missingPage.push(pathname);
+    } else if (isRedirectStub(html)) {
+      redirectPage.push(pathname);
     } else if (isNoindex(html)) {
       noindexPage.push(pathname);
     }
@@ -337,6 +386,14 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
     );
   }
 
+  if (redirectPage.length > 0) {
+    problems.push(
+      summarize(redirectPage, (n) => `${n} sitemap URL(s) are redirect stubs, not pages`) +
+        ". The deleted public/sitemap.xml advertised exactly these, which is what #209 " +
+        "was filed about.",
+    );
+  }
+
   if (noindexPage.length > 0) {
     problems.push(
       summarize(noindexPage, (n) => `${n} sitemap URL(s) are marked noindex by their own page`) +
@@ -359,7 +416,7 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
   // and hand the site's crawl budget to someone else's origin.
   const declared = declaredSitemaps(robots);
   const canonicalSitemap = `${canonicalOrigin}/sitemap-index.xml`;
-  const offOrigin = declared.filter((url) => !url.startsWith(`${canonicalOrigin}/`));
+  const offOrigin = declared.filter((url) => parseUrl(url)?.origin !== canonical?.origin);
 
   if (robots === undefined) {
     problems.push(`${join(distDir, "robots.txt")} does not exist.`);

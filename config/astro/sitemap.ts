@@ -21,19 +21,21 @@ export const EXCLUDED_SITEMAP_PATHS = new Set([
   "/example/",
   "/env-debug/",
   "/test-layout/",
-
-  // AuthRedirect interstitials. Both carry <meta name="robots" content=
-  // "noindex"> and both are Disallow-ed in public/robots.txt; their only job
-  // is to bounce the visitor to a regional domain.
-  "/signin/",
-  "/signup/",
 ]);
 
 /**
- * Excluded in every locale, with or without a language prefix. The four
- * /{lang}/changelog/guide/ pages are noindex, nofollow.
+ * Excluded in every locale, with or without a language prefix.
+ *
+ * The four /{lang}/changelog/guide/ pages are noindex, nofollow. The auth
+ * interstitials are noindex and Disallow-ed in public/robots.txt; they live
+ * here rather than in the exact-path set above because those robots.txt rules
+ * are unprefixed, so a localized /en/signin/ would be caught by neither.
  */
-export const EXCLUDED_SITEMAP_PATHS_EVERY_LOCALE = new Set(["/changelog/guide/"]);
+export const EXCLUDED_SITEMAP_PATHS_EVERY_LOCALE = new Set([
+  "/changelog/guide/",
+  "/signin/",
+  "/signup/",
+]);
 
 /** Escaped so a future locale code containing regex metacharacters is literal. */
 const escapeForRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -43,14 +45,27 @@ const LOCALE_PREFIXED = new RegExp(
 );
 
 /**
+ * One leading and one trailing slash, so the sets above are not coupled to the
+ * `trailingSlash` and `build.format` options. Flipping either would otherwise
+ * stop every exclusion matching, silently and in both the build and the gate
+ * that is supposed to catch the build.
+ */
+function normalize(pathname: string): string {
+  const withLeading = pathname.startsWith("/") ? pathname : `/${pathname}`;
+  return withLeading.endsWith("/") ? withLeading : `${withLeading}/`;
+}
+
+/**
  * True when `pathname` must be kept out of the sitemap. Shared by the
  * @astrojs/sitemap `filter` callback and scripts/verify-sitemap.mjs so the
  * build and the gate that checks it cannot disagree.
  */
 export function isExcludedFromSitemap(pathname: string): boolean {
-  if (EXCLUDED_SITEMAP_PATHS.has(pathname)) return true;
-  if (EXCLUDED_SITEMAP_PATHS_EVERY_LOCALE.has(pathname)) return true;
+  const path = normalize(pathname);
 
-  const unprefixed = LOCALE_PREFIXED.exec(pathname)?.[1];
-  return unprefixed !== undefined && EXCLUDED_SITEMAP_PATHS_EVERY_LOCALE.has(unprefixed);
+  if (EXCLUDED_SITEMAP_PATHS.has(path)) return true;
+  if (EXCLUDED_SITEMAP_PATHS_EVERY_LOCALE.has(path)) return true;
+
+  const unprefixed = LOCALE_PREFIXED.exec(path)?.[1];
+  return unprefixed !== undefined && EXCLUDED_SITEMAP_PATHS_EVERY_LOCALE.has(normalize(unprefixed));
 }
