@@ -228,17 +228,36 @@ if (missingRequired.length > 0) {
 
 const robotsPath = join(distDir, "robots.txt");
 const robots = read(robotsPath);
-const sitemapLine = robots
-  ?.split("\n")
-  .find((line) => line.trim().toLowerCase().startsWith("sitemap:"));
 
-if (!sitemapLine) {
+// Every declaration, not just the first, and compared as a whole URL. A
+// substring test would accept "Sitemap: https://example.com/sitemap-index.xml"
+// and hand the site's crawl budget to someone else's origin.
+//
+// Checked against CANONICAL_ORIGIN rather than the build's own origin:
+// public/robots.txt is a static file naming the production sitemap, and a
+// staging build serving it is not a reason to fail.
+const declaredSitemaps = (robots ?? "")
+  .split("\n")
+  .filter((line) => line.trim().toLowerCase().startsWith("sitemap:"))
+  .map((line) => line.slice(line.indexOf(":") + 1).trim());
+
+const canonicalSitemap = `${CANONICAL_ORIGIN}/sitemap-index.xml`;
+const offOrigin = declaredSitemaps.filter((url) => !url.startsWith(`${CANONICAL_ORIGIN}/`));
+
+if (declaredSitemaps.length === 0) {
   problems.push(`${robotsPath} declares no Sitemap: line.`);
-} else if (!sitemapLine.includes("/sitemap-index.xml")) {
+} else if (!declaredSitemaps.includes(canonicalSitemap)) {
   problems.push(
-    `${robotsPath} points crawlers at the wrong file: "${sitemapLine.trim()}". It should ` +
-      "reference /sitemap-index.xml, the file @astrojs/sitemap generates, not the deleted " +
+    `${robotsPath} declares ${declaredSitemaps.map((u) => `"${u}"`).join(", ")}, none of ` +
+      `which is ${canonicalSitemap} — the file @astrojs/sitemap generates, not the deleted ` +
       "hand-written sitemap.xml (#209).",
+  );
+}
+
+if (offOrigin.length > 0) {
+  problems.push(
+    summarize(offOrigin, (n) => `${n} Sitemap: declaration(s) in robots.txt are off-origin`) +
+      `. Crawlers would be sent somewhere other than ${CANONICAL_ORIGIN}.`,
   );
 }
 
