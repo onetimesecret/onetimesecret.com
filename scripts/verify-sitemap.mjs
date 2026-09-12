@@ -12,40 +12,54 @@
 //
 // This script fails the build if that shape reappears: no generated sitemap,
 // the deleted hand-written file back in `dist/`, robots.txt still pointing at
-// it, a debug page leaking into the URL set, or the count collapsing back
-// toward single digits.
+// it, the count collapsing back toward single digits, a whole locale
+// vanishing, or — the general form of the original defect — an advertised URL
+// that does not resolve to a built page or that the page itself marks
+// noindex.
 //
 // Usage: node scripts/verify-sitemap.mjs [distDir]   (default: ./dist)
 
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
+
+import { loadEnv } from "vite";
 
 // Imported rather than restated so these cannot drift from the values the
 // build itself uses. See scripts/verify-hreflang.mjs for the same approach.
 import { CANONICAL_ORIGIN } from "../config/domains.ts";
-import { EXCLUDED_SITEMAP_PATHS } from "../config/astro/sitemap.ts";
+import { SUPPORTED_LANGUAGES } from "../config/astro/i18n.ts";
+import { isExcludedFromSitemap } from "../config/astro/sitemap.ts";
 
 const distDir = resolve(process.argv[2] ?? "dist");
 
-// Below this, something is badly wrong: the sitemap carried 113 URLs when
+// Exactly how astro.config.ts resolves `site`, via the same vite helper and
+// the same arguments, so a staging or preview build (VITE_BASE_URL set) is
+// checked against the origin it actually built with rather than against the
+// production constant. Reading process.env alone would miss `.env` files —
+// .env.example ships VITE_BASE_URL=https://example.com.
+const env = loadEnv(process.env.NODE_ENV || "development", process.cwd(), "");
+const expectedOrigin = (env.VITE_BASE_URL || CANONICAL_ORIGIN).replace(/\/+$/, "");
+
+// Below this, something is badly wrong: the sitemap carried 107 URLs when
 // this check was written and only grows as content is added. Set well below
 // that so routine additions never fail this, and well above the 8-URL stub
 // #214 was filed about.
 const MINIMUM_URL_COUNT = 50;
 
-// A handful of real content pages that must always be advertised. Not
-// exhaustive — the count floor and the exclusion check below cover that —
-// just enough to catch an overly broad filter silently swallowing a whole
-// section of the site.
+// Real content pages that must always be advertised. Not exhaustive — the
+// count floor and the checks below cover that — but every locale is named, so
+// an overly broad filter cannot silently swallow one. Dropping all of /de/
+// would still clear the count floor on its own.
 const MUST_BE_PRESENT = [
   "/",
-  "/en/",
-  "/en/about/",
-  "/en/pricing/",
-  "/en/security/",
   "/privacy/",
   "/terms/",
+  ...SUPPORTED_LANGUAGES.flatMap((lang) => [`/${lang}/`, `/${lang}/about/`, `/${lang}/pricing/`]),
 ];
+
+// Cap on how many offending URLs a single problem lists. A systemic fault
+// (wrong origin, say) otherwise buries the summary under one line per URL.
+const MAX_EXAMPLES = 5;
 
 function fail(lines) {
   console.error(`\n[verify-sitemap] FAIL:\n${lines.map((l) => `  - ${l}`).join("\n")}\n`);
@@ -60,13 +74,30 @@ function read(path) {
   }
 }
 
+function isFile(path) {
+  try {
+    return statSync(path).isFile();
+  } catch {
+    return false;
+  }
+}
+
 const locs = (xml) => [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, href]) => href);
+
+/** One problem line naming `offenders`, truncated to MAX_EXAMPLES. */
+function summarize(offenders, describe) {
+  const shown = offenders.slice(0, MAX_EXAMPLES).join(", ");
+  const rest = offenders.length - MAX_EXAMPLES;
+  return `${describe(offenders.length)}: ${shown}${rest > 0 ? `, and ${rest} more` : ""}`;
+}
 
 const problems = [];
 
-// The hand-written stub this fix replaces. Its presence means either it was
-// reintroduced, or public/sitemap.xml was restored some other way.
-if (existsSync(join(distDir, "sitemap.xml"))) {
+// The hand-written stub this fix replaces. isFile() rather than existsSync()
+// so that adding a /sitemap.xml -> /sitemap-index.xml redirect, which makes
+// Astro emit a dist/sitemap.xml/ directory, does not trip a message telling
+// you to delete a file that is no longer there.
+if (isFile(join(distDir, "sitemap.xml"))) {
   problems.push(
     "dist/sitemap.xml exists. That was the hand-written, 8-URL stub #214 " +
       "replaced with the generated sitemap — delete public/sitemap.xml " +
@@ -113,32 +144,93 @@ if (urls.length < MINIMUM_URL_COUNT) {
   );
 }
 
+// Every sitemap references it, so losing it renders each one as an XSLT error
+// in a browser. public/sitemap.xml was just deleted from the same directory.
+if (!isFile(join(distDir, "sitemap.xsl"))) {
+  problems.push(
+    "dist/sitemap.xsl is missing, but every generated sitemap opens with an " +
+      "<?xml-stylesheet?> pointing at it (the `xslURL` option in " +
+      "config/astro/integrations.ts). Restore public/sitemap.xsl or drop that option.",
+  );
+}
+
+const wrongOrigin = [];
+const missingPage = [];
+const noindexPage = [];
+const excludedPresent = [];
+
 for (const url of urls) {
-  if (!url.startsWith(`${CANONICAL_ORIGIN}/`)) {
-    problems.push(`Sitemap URL is not on ${CANONICAL_ORIGIN}: ${url}`);
+  if (!url.startsWith(`${expectedOrigin}/`)) {
+    wrongOrigin.push(url);
+    continue;
   }
+
+  const { pathname } = new URL(url);
+
+  if (isExcludedFromSitemap(pathname)) {
+    excludedPresent.push(pathname);
+    continue;
+  }
+
+  // `build.format` is "directory", so /en/about/ is dist/en/about/index.html.
+  const html = read(join(distDir, pathname.replace(/^\//, ""), "index.html"));
+
+  if (html === undefined) {
+    missingPage.push(pathname);
+    continue;
+  }
+
+  const robotsMeta = /<meta[^>]+name="robots"[^>]+content="([^"]*)"/i.exec(html)?.[1];
+
+  if (robotsMeta && /noindex/i.test(robotsMeta)) {
+    noindexPage.push(pathname);
+  }
+}
+
+if (wrongOrigin.length > 0) {
+  problems.push(
+    summarize(wrongOrigin, (n) => `${n} sitemap URL(s) are not on ${expectedOrigin}`) +
+      ". That origin comes from VITE_BASE_URL, falling back to CANONICAL_ORIGIN — " +
+      "the same resolution astro.config.ts uses for `site`.",
+  );
+}
+
+if (missingPage.length > 0) {
+  problems.push(
+    summarize(missingPage, (n) => `${n} sitemap URL(s) have no built page in dist`) +
+      ". Advertising URLs that 404 or redirect is the defect #214 was filed about.",
+  );
+}
+
+if (noindexPage.length > 0) {
+  problems.push(
+    summarize(noindexPage, (n) => `${n} sitemap URL(s) are marked noindex by their own page`) +
+      ". A sitemap tells crawlers to index a URL the page then refuses; add these to " +
+      "config/astro/sitemap.ts or drop the noindex.",
+  );
+}
+
+if (excludedPresent.length > 0) {
+  problems.push(
+    summarize(excludedPresent, (n) => `${n} excluded path(s) are in the sitemap anyway`) +
+      ". Check the `filter` callback in config/astro/integrations.ts.",
+  );
 }
 
 const pathnames = new Set(urls.map((url) => new URL(url).pathname));
+const missingRequired = MUST_BE_PRESENT.filter((path) => !pathnames.has(path));
 
-for (const excluded of EXCLUDED_SITEMAP_PATHS) {
-  if (pathnames.has(excluded)) {
-    problems.push(
-      `${excluded} is in the sitemap despite being listed in EXCLUDED_SITEMAP_PATHS ` +
-        "(config/astro/sitemap.ts) — check the sitemap integration's `filter`.",
-    );
-  }
-}
-
-for (const path of MUST_BE_PRESENT) {
-  if (!pathnames.has(path)) {
-    problems.push(`${path} is missing from the sitemap.`);
-  }
+if (missingRequired.length > 0) {
+  problems.push(
+    summarize(missingRequired, (n) => `${n} required page(s) are missing from the sitemap`) + ".",
+  );
 }
 
 const robotsPath = join(distDir, "robots.txt");
 const robots = read(robotsPath);
-const sitemapLine = robots?.split("\n").find((line) => line.trim().toLowerCase().startsWith("sitemap:"));
+const sitemapLine = robots
+  ?.split("\n")
+  .find((line) => line.trim().toLowerCase().startsWith("sitemap:"));
 
 if (!sitemapLine) {
   problems.push(`${robotsPath} declares no Sitemap: line.`);
@@ -156,5 +248,6 @@ if (problems.length > 0) {
 
 console.log(
   `[verify-sitemap] OK: ${urls.length} URLs across ${childHrefs.length} sitemap file(s), ` +
-    `all on ${CANONICAL_ORIGIN}, none excluded, robots.txt points at sitemap-index.xml.`,
+    `all on ${expectedOrigin}, each resolving to an indexable built page, ` +
+    "robots.txt points at sitemap-index.xml.",
 );
