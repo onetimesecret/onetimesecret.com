@@ -11,7 +11,13 @@
     "skipLibCheck": true,
     "allowJs": true,
     "esModuleInterop": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable"]
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "baseUrl": "../..",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@config/*": ["./config/*"],
+      "@root/*": ["./*"]
+    }
   },
   "include": [
     "./**/*.spec.ts",
