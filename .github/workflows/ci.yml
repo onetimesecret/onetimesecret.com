@@ -188,6 +188,12 @@ jobs:
       - name: Verify hreflang targets
         run: pnpm build:verify:hreflang
 
+      # The generated sitemap has to exist, list 100+ real pages rather than
+      # the deleted 8-URL stub, exclude the debug/test routes, and robots.txt
+      # has to point at it (see scripts/verify-sitemap.mjs). #214/#209.
+      - name: Verify sitemap
+        run: pnpm build:verify:sitemap
+
       # The BIMI logo is hashed into the Verified Mark Certificate. Anything
       # that rewrites it on the way to dist/ invalidates the certificate.
       - name: Verify BIMI assets ship byte-identical

@@ -32,6 +32,9 @@ const pageCollection = defineCollection({
       })
       .optional(),
     // SEO-related metadata
+    // Setting this also needs the path added to config/astro/sitemap.ts: the
+    // sitemap `filter` cannot see rendered HTML, so the build gate will fail
+    // on a page that is advertised and then refuses to be indexed.
     noindex: z.boolean().optional().default(false),
     canonical: z.string().url().optional(),
   }),
@@ -67,6 +70,9 @@ const useCasesCollection = defineCollection({
       })
       .optional(),
     // SEO-related metadata
+    // Setting this also needs the path added to config/astro/sitemap.ts: the
+    // sitemap `filter` cannot see rendered HTML, so the build gate will fail
+    // on a page that is advertised and then refuses to be indexed.
     noindex: z.boolean().optional().default(false),
     canonical: z.string().url().optional(),
   }),

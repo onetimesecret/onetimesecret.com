@@ -6,7 +6,7 @@ import sitemap from "@astrojs/sitemap";
 import vue from "@astrojs/vue";
 import sentry from "@sentry/astro";
 import { AstroUserConfig } from "astro";
-import { getLocalesMap } from "./i18n";
+import { isExcludedFromSitemap } from "./sitemap";
 
 export function createConfig(): AstroUserConfig["integrations"] {
   return [
@@ -21,10 +21,21 @@ export function createConfig(): AstroUserConfig["integrations"] {
      */
     sitemap({
       xslURL: "/sitemap.xsl",
-      i18n: {
-        defaultLocale: "en",
-        locales: getLocalesMap(),
-      },
+
+      // No `i18n` option, deliberately. It emits xhtml:link alternates built
+      // from LANGUAGE_META's region-qualified codes (en-US, de-DE, ...) while
+      // the page-level <link rel="alternate"> tags emit bare language codes
+      // plus an x-default (#211). Google merges both sources and requires
+      // them to agree, and these did not. It also maps the unprefixed / onto
+      // defaultLocale, so / and /en/ both claimed hreflang="en-US" within one
+      // cluster, which invalidates every annotation in that cluster. The
+      // page-level tags are correct, carry the x-default the sitemap cannot,
+      // and are audited by scripts/verify-hreflang.mjs, so they stay the
+      // single source of hreflang truth.
+
+      // Routes that build alongside the real pages but are noindex or
+      // robots.txt-disallowed (see config/astro/sitemap.ts).
+      filter: (page) => !isExcludedFromSitemap(new URL(page).pathname),
     }),
 
     /**

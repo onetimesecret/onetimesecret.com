@@ -33,6 +33,7 @@ import { createConfig as createIntegrations } from "./config/astro/integrations"
 import { createConfig as createMarkdownConfig } from "./config/astro/markdown";
 import { createConfig as createRedirectsConfig } from "./config/astro/redirects";
 import { createConfig as createViteConfig } from "./config/astro/vite";
+import { resolveEnvMode, resolveSite } from "./config/site";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -42,7 +43,7 @@ const __dirname = dirname(__filename);
 
 // Load environment variables (this works in astro.config.ts)
 // The empty string means it will load all variables regardless of prefix
-const env = loadEnv(process.env.NODE_ENV || "development", process.cwd(), "");
+const env = loadEnv(resolveEnvMode(), process.cwd(), "");
 
 // https://astro.build/config
 export default defineConfig({
@@ -59,8 +60,12 @@ export default defineConfig({
    *
    * Avoid using `process.env.VARIABLE_NAME` as it's Node.js specific, unreliable across
    * different runtimes Astro might support, and doesn't work client-side without polyfills.
+   *
+   * Falls back to the canonical production origin when VITE_BASE_URL is unset
+   * (CI and a plain local build both leave it unset today). Without a `site`,
+   * @astrojs/sitemap silently skips generating a sitemap entirely - see #214.
    */
-  site: env.VITE_BASE_URL,
+  site: resolveSite(),
 
   // Astro build configuration
   build: {
