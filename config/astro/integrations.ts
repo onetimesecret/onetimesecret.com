@@ -7,6 +7,7 @@ import vue from "@astrojs/vue";
 import sentry from "@sentry/astro";
 import { AstroUserConfig } from "astro";
 import { getLocalesMap } from "./i18n";
+import { EXCLUDED_SITEMAP_PATHS } from "./sitemap";
 
 export function createConfig(): AstroUserConfig["integrations"] {
   return [
@@ -25,6 +26,10 @@ export function createConfig(): AstroUserConfig["integrations"] {
         defaultLocale: "en",
         locales: getLocalesMap(),
       },
+      // Debug/test routes that build alongside the real pages (see #214).
+      // Whether they should ship to production at all is tracked in #211;
+      // until then, keep them out of what the site advertises to crawlers.
+      filter: (page) => !EXCLUDED_SITEMAP_PATHS.has(new URL(page).pathname),
     }),
 
     /**
