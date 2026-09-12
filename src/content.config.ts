@@ -36,6 +36,9 @@ const pageCollection = defineCollection({
     // sitemap `filter` cannot see rendered HTML, so the build gate will fail
     // on a page that is advertised and then refuses to be indexed.
     noindex: z.boolean().optional().default(false),
+    // Same constraint as noindex above: pointing this somewhere else makes the
+    // page a declared duplicate, so advertising it is the "Alternate page with
+    // proper canonical tag" defect and the build gate fails on it.
     canonical: z.string().url().optional(),
   }),
 });
@@ -74,6 +77,9 @@ const useCasesCollection = defineCollection({
     // sitemap `filter` cannot see rendered HTML, so the build gate will fail
     // on a page that is advertised and then refuses to be indexed.
     noindex: z.boolean().optional().default(false),
+    // Same constraint as noindex above: pointing this somewhere else makes the
+    // page a declared duplicate, so advertising it is the "Alternate page with
+    // proper canonical tag" defect and the build gate fails on it.
     canonical: z.string().url().optional(),
   }),
 });
