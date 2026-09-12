@@ -11,16 +11,11 @@
     "skipLibCheck": true,
     "allowJs": true,
     "esModuleInterop": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "typeRoots": [
-      "./types",
-      "../../node_modules/@types"
-    ]
+    "lib": ["ESNext", "DOM", "DOM.Iterable"]
   },
   "include": [
     "./**/*.spec.ts",
-    "./**/*.test.ts",
-    "./types/**/*.d.ts"
+    "./**/*.test.ts"
   ],
   "exclude": [
     "./playwright.config.ts",

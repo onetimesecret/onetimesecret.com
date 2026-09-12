@@ -1,9 +1,9 @@
 // https://docs.astro.build/en/guides/imports/#aliases
 {
   "extends": "astro/tsconfigs/strict",
-  // `test/unit/**` only: `test/e2e` ships its own ambient shim for
-  // @playwright/test that collides with the real package's types here, and it
-  // is already covered by test/e2e/tsconfig.json.
+  // `test/unit/**` only: `test/e2e` is type-checked separately via
+  // test/e2e/tsconfig.json (see the `type-check:e2e` script), which targets
+  // Playwright's Node-based test runner rather than this config's DOM/Vue setup.
   "include": [".astro/types.d.ts", "config/**/*", "src/**/*", "test/unit/**/*"],
   "exclude": ["dist", "tmp"],
   "compilerOptions": {
