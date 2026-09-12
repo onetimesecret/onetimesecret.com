@@ -21,14 +21,13 @@
 // Usage: node scripts/verify-sitemap.mjs [distDir] [expectedOrigin]
 
 import { readFileSync, realpathSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { join, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
-
-import { loadEnv } from "vite";
 
 // Imported rather than restated so these cannot drift from the values the
 // build itself uses. See scripts/verify-hreflang.mjs for the same approach.
 import { CANONICAL_ORIGIN } from "../config/domains.ts";
+import { resolveSite } from "../config/site.ts";
 import { SUPPORTED_LANGUAGES } from "../config/astro/i18n.ts";
 import { isExcludedFromSitemap } from "../config/astro/sitemap.ts";
 
@@ -101,7 +100,12 @@ export function declaredSitemaps(robots) {
 export function starRules(robots) {
   const allow = [];
   const disallow = [];
-  let inStar = false;
+  // A group may name several agents before its first rule, so agents are
+  // collected until a rule line closes the header. Tracking only the most
+  // recent User-agent would silently drop the `*` rules from a group that
+  // also names another bot.
+  let agents = [];
+  let collectingAgents = false;
 
   for (const raw of (robots ?? "").split("\n")) {
     const line = raw.replace(/#.*$/, "").trim();
@@ -114,12 +118,17 @@ export function starRules(robots) {
     const value = line.slice(separator + 1).trim();
 
     if (key === "user-agent") {
-      inStar = value === "*";
-    } else if (inStar && value && key === "allow") {
-      allow.push(value);
-    } else if (inStar && value && key === "disallow") {
-      disallow.push(value);
+      if (!collectingAgents) {
+        agents = [];
+        collectingAgents = true;
+      }
+      agents.push(value);
+      continue;
     }
+    collectingAgents = false;
+    if (!agents.includes("*") || !value) continue;
+    if (key === "allow") allow.push(value);
+    if (key === "disallow") disallow.push(value);
   }
 
   return { allow, disallow };
@@ -171,14 +180,25 @@ export function decodePath(pathname) {
   }
 }
 
+/** Reads `candidate` only when it resolves inside `distDir`. */
+export function readWithin(distDir, candidate) {
+  const root = resolve(distDir);
+  const target = resolve(candidate);
+  return target.startsWith(root + sep) ? read(target) : undefined;
+}
+
 export function findPage(distDir, pathname) {
   // URL.pathname stays percent-encoded; the file on disk is not. A slug with a
   // non-ASCII or reserved character would otherwise read as an unbuilt page.
+  //
+  // Decoding happens after URL normalisation, so an encoded `%2e%2e%2f`
+  // survives it and becomes `../` here. readWithin keeps the probe inside dist
+  // rather than reading an arbitrary file.
   const rel = decodePath(pathname).replace(/^\//, "");
   const bare = rel.replace(/\/$/, "");
-  const asDirectory = read(join(distDir, rel, "index.html"));
+  const asDirectory = readWithin(distDir, join(distDir, rel, "index.html"));
   if (asDirectory !== undefined) return asDirectory;
-  return bare ? read(join(distDir, `${bare}.html`)) : undefined;
+  return bare ? readWithin(distDir, join(distDir, `${bare}.html`)) : undefined;
 }
 
 /**
@@ -284,9 +304,10 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
     );
   }
 
-  if (urls.length < MINIMUM_URL_COUNT) {
+  const distinct = new Set(urls).size;
+  if (distinct < MINIMUM_URL_COUNT) {
     problems.push(
-      `Only ${urls.length} URL(s) in the sitemap, fewer than the ${MINIMUM_URL_COUNT} floor. ` +
+      `Only ${distinct} distinct URL(s), fewer than the ${MINIMUM_URL_COUNT} floor. ` +
         "#214 was filed because a 100+ page site was advertising 8.",
     );
   }
@@ -445,19 +466,10 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
  * can pass "$VITE_BASE_URL" and not depend on this process resolving the
  * environment the same way the build's process did.
  */
-export function resolveOrigin(explicit, env = process.env) {
-  if (explicit) return explicit;
-  // `astro build` sets NODE_ENV=production before loading astro.config.ts, so
-  // the build resolves env in production mode (verified by probing the config
-  // during a build). This step runs afterwards with NODE_ENV unset, so it must
-  // default to the same mode or a .env.production would make the gate check an
-  // origin the build never used.
-  // An exported variable wins over a .env file, which is vite's own precedence
-  // and how CI and both deploy workflows pass VITE_BASE_URL.
-  if (env.VITE_BASE_URL) return env.VITE_BASE_URL;
-
-  const loaded = loadEnv(env.NODE_ENV || "production", process.cwd(), "");
-  return loaded.VITE_BASE_URL || CANONICAL_ORIGIN;
+export function resolveOrigin(explicit, env = process.env, cwd = process.cwd()) {
+  // Delegates to the same function astro.config.ts uses for `site`, so this
+  // process and the build's cannot drift in how they answer the question.
+  return explicit || resolveSite(env, cwd);
 }
 
 export function main(argv = process.argv.slice(2), env = process.env) {
@@ -475,7 +487,8 @@ export function main(argv = process.argv.slice(2), env = process.env) {
 
   console.log(
     `[verify-sitemap] OK: ${urls.length} URLs across ${childHrefs.length} sitemap file(s), ` +
-      `all on ${expectedOrigin}, each resolving to an indexable built page that robots.txt ` +
+      `all on ${expectedOrigin.replace(/\/+$/, "")}, each resolving to an indexable ` +
+      "built page that robots.txt " +
       "allows, robots.txt points at sitemap-index.xml.",
   );
 }

@@ -18,9 +18,10 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  MAX_EXAMPLES,
   MINIMUM_URL_COUNT,
   MUST_BE_PRESENT,
   decodePath,
@@ -28,6 +29,8 @@ import {
   isDisallowed,
   isNoindex,
   isRedirectStub,
+  main,
+  readWithin,
   resolveOrigin,
   starRules,
   verifySitemap,
@@ -281,7 +284,7 @@ describe("verifySitemap", () => {
 
   it("truncates a systemic fault rather than printing one line per URL", () => {
     const problems = run(fixture(), "https://elsewhere.test");
-    expect(text(problems)).toContain("and 50 more");
+    expect(text(problems)).toContain(`and ${defaultPaths().length - MAX_EXAMPLES} more`);
   });
 
   describe("robots.txt Sitemap declarations", () => {
@@ -452,5 +455,102 @@ describe("isRedirectStub", () => {
 
   it("does not flag a real page", () => {
     expect(isRedirectStub('<meta name="robots" content="index">')).toBe(false);
+  });
+});
+
+describe("starRules grouping", () => {
+  // A group may name several agents before its first rule. Reading only the
+  // most recent User-agent drops the * rules entirely, and silently.
+  it("keeps the * rules when the group also names another agent", () => {
+    const robots = "User-agent: *\nUser-agent: GPTBot\nDisallow: /x\n";
+    expect(starRules(robots).disallow).toEqual(["/x"]);
+  });
+
+  it("ignores a group that does not include *", () => {
+    const robots = "User-agent: GPTBot\nDisallow: /x\n";
+    expect(starRules(robots).disallow).toEqual([]);
+  });
+
+  it("starts a new group after a rule line", () => {
+    const robots = "User-agent: *\nDisallow: /a\nUser-agent: GPTBot\nDisallow: /b\n";
+    expect(starRules(robots).disallow).toEqual(["/a"]);
+  });
+});
+
+describe("readWithin", () => {
+  // An encoded %2e%2e%2f survives URL normalisation and decodes to ../ later,
+  // so the probe has to be confined explicitly.
+  it("refuses a path that escapes the dist directory", () => {
+    expect(readWithin("dist", "dist/../../etc/hosts")).toBeUndefined();
+  });
+
+  it("refuses the dist directory itself", () => {
+    expect(readWithin("dist", "dist")).toBeUndefined();
+  });
+
+  it("reads a file inside dist", () => {
+    const dir = fixture();
+    expect(readWithin(dir, join(dir, "sitemap-index.xml"))).toContain("<sitemapindex>");
+  });
+});
+
+describe("main", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("reports OK and does not exit for a sound sitemap", () => {
+    const dir = fixture();
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const exit = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
+
+    main([dir, ORIGIN]);
+
+    expect(exit).not.toHaveBeenCalled();
+    expect(log.mock.calls.join(" ")).toContain("[verify-sitemap] OK");
+  });
+
+  it("prints a FAIL block and exits non-zero when a check fails", () => {
+    const dir = fixture({ xsl: false });
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const exit = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
+
+    main([dir, ORIGIN]);
+
+    expect(exit).toHaveBeenCalledWith(1);
+    expect(error.mock.calls.join(" ")).toContain("[verify-sitemap] FAIL");
+  });
+});
+
+describe("resolveOrigin env-file resolution", () => {
+  /** A directory holding the .env files loadEnv would read. */
+  function envDir(files: Record<string, string>) {
+    const dir = mkdtempSync(join(tmpdir(), "verify-sitemap-env-"));
+    created.push(dir);
+    for (const [name, body] of Object.entries(files)) writeFileSync(join(dir, name), body);
+    return dir;
+  }
+
+  // astro build sets NODE_ENV=production before loading astro.config.ts. If
+  // this defaulted to development instead, the gate would validate against an
+  // origin the build never used.
+  it("defaults to production mode, matching what astro build sets", () => {
+    const dir = envDir({
+      ".env.production": "VITE_BASE_URL=https://prod.test",
+      ".env.development": "VITE_BASE_URL=https://dev.test",
+    });
+    expect(resolveOrigin(undefined, {}, dir)).toBe("https://prod.test");
+  });
+
+  it("honours an explicit NODE_ENV", () => {
+    const dir = envDir({
+      ".env.production": "VITE_BASE_URL=https://prod.test",
+      ".env.development": "VITE_BASE_URL=https://dev.test",
+    });
+    expect(resolveOrigin(undefined, { NODE_ENV: "development" }, dir)).toBe("https://dev.test");
+  });
+
+  it("falls back to the canonical origin with no env file", () => {
+    expect(resolveOrigin(undefined, {}, envDir({}))).toBe(CANONICAL_ORIGIN);
   });
 });
