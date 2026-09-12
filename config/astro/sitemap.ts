@@ -11,6 +11,11 @@ import { SUPPORTED_LANGUAGES } from "./i18n.ts";
  * engines. Advertising a URL that is noindex or robots.txt-disallowed is the
  * defect #214 was filed about, so anything in that shape belongs here.
  *
+ * Matched unprefixed only, unlike the every-locale set below: every route here
+ * renders from src/pages/*.astro rather than src/pages/[lang]/, so no localized
+ * form exists. If #211 ever moves one under [lang]/, it needs to move to the
+ * other set too or its localized copies will be advertised.
+ *
  * Kept out of integrations.ts, which imports the Astro integration packages
  * themselves, so scripts/verify-sitemap.mjs can read this list under plain
  * Node without pulling those in too.

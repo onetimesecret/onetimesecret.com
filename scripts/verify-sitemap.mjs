@@ -26,7 +26,7 @@
 // Usage: node scripts/verify-sitemap.mjs [distDir] [expectedOrigin]
 
 import { readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
-import { join, resolve, sep } from "node:path";
+import { join, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 
 // Imported rather than restated so these cannot drift from the values the
@@ -41,6 +41,12 @@ import { isExcludedFromSitemap, normalizePath } from "../config/astro/sitemap.ts
 // that so routine additions never fail this, and well above the 8-URL stub
 // #214 was filed about.
 export const MINIMUM_URL_COUNT = 50;
+
+// The floor for how many pages the coverage walk manages to identify as this
+// site's own. A different quantity from the URL count above, comparable to it
+// only because the sitemap advertises every such page; aliased rather than
+// reused so moving one floor does not silently move the other.
+export const MINIMUM_AUDITED_PAGES = MINIMUM_URL_COUNT;
 
 // Real content pages that must always be advertised. Not exhaustive — the
 // count floor and the checks below cover that — but every locale is named, so
@@ -273,8 +279,18 @@ export function isNoindex(html) {
     // Google honours a googlebot-specific directive the same way.
     if (!/\bname\s*=\s*["'](?:robots|googlebot)["']/i.test(tag)) continue;
     const content = /\bcontent\s*=\s*["']([^"']*)["']/i.exec(tag)?.[1];
-    // `none` is defined as `noindex, nofollow`, so it has to count.
-    if (content && /\b(?:noindex|none)\b/i.test(content)) return true;
+    if (content === undefined) continue;
+
+    // Compared as whole directives rather than searched as substrings. A word
+    // boundary matches inside `max-image-preview:none`, because ":" is not a
+    // word character, so an indexable page carrying that perfectly ordinary
+    // directive read as noindex. Split on whitespace as well as commas: the
+    // spec says comma-separated, but `content="noindex nofollow"` is written
+    // in the wild and used to be caught by the substring test.
+    //
+    // `none` stays, because it is defined as `noindex, nofollow`.
+    const directives = content.toLowerCase().split(/[,\s]+/).filter(Boolean);
+    if (directives.includes("noindex") || directives.includes("none")) return true;
   }
   return false;
 }
@@ -295,6 +311,16 @@ export function htmlFiles(dir) {
     else if (entry.name.endsWith(".html")) out.push(path);
   }
   return out;
+}
+
+/** The href a page links as its rel=sitemap, if it links one. */
+export function sitemapLinkOf(html) {
+  for (const tag of html.match(/<link\b[^>]*>/gi) ?? []) {
+    if (!/\brel\s*=\s*["']sitemap["']/i.test(tag)) continue;
+    const href = /\bhref\s*=\s*["']([^"']*)["']/i.exec(tag)?.[1];
+    if (href) return href;
+  }
+  return undefined;
 }
 
 /** The href a page declares as its rel=canonical, if it declares one. */
@@ -349,6 +375,13 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
   // the same one would otherwise be counted twice, and the number an operator
   // reads would be a file count rather than a URL count.
   const missing = new Set();
+  // What the pages actually link as their sitemap. Collected here because this
+  // is already reading every built page, and checked by the caller: the gate
+  // and LayoutHead.astro otherwise hold the filename as two independent
+  // literals, and @astrojs/sitemap's filenameBase option can move it. Them
+  // drifting apart puts a 404 behind every page's <link rel="sitemap">, which
+  // is #209 exactly.
+  const sitemapLinks = new Set();
   // Counted as distinct canonicals for the same reason `missing` is deduped:
   // this number is printed as a page count, and two files can declare one
   // canonical.
@@ -357,6 +390,9 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
   for (const file of htmlFiles(distDir)) {
     const html = read(file);
     if (html === undefined) continue;
+
+    const linked = sitemapLinkOf(html);
+    if (linked !== undefined) sitemapLinks.add(linked);
 
     const href = canonicalOf(html);
     const parsed = href === undefined ? undefined : parseUrl(href);
@@ -384,7 +420,7 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
     if (!advertised.has(normalizePath(pathname))) missing.add(pathname);
   }
 
-  return { missing: [...missing], audited: seen.size };
+  return { missing: [...missing], audited: seen.size, sitemapLinks: [...sitemapLinks] };
 }
 
 /**
@@ -670,14 +706,38 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
         "advertised. Under-advertising is what #214 was filed about; exclude them deliberately " +
         "if that is the intent.",
     );
-  } else if (coverage.audited < MINIMUM_URL_COUNT) {
+  }
+
+  // Reported independently of the line above, not as its else: a markup change
+  // that breaks canonical detection on most routes while leaving one page
+  // genuinely unadvertised would otherwise say "1 built page missing" and never
+  // mention that it looked at three.
+  if (coverage.audited < MINIMUM_AUDITED_PAGES) {
     problems.push(
       `Only ${coverage.audited} page(s) under ${distDir} declare an absolute canonical on ` +
-        `${canonicalOrigin}, fewer than the ${MINIMUM_URL_COUNT} floor, so the coverage check ` +
-        "above examined almost nothing and passed. LayoutHead.astro emits one on every page it " +
-        "renders; if that markup changed, canonicalOf here has to follow. The floor rather than " +
-        "zero: a markup change that breaks the match on some routes leaves this just as blind " +
-        "as one that breaks it on all of them.",
+        `${canonicalOrigin}, fewer than the ${MINIMUM_AUDITED_PAGES} floor, so the coverage ` +
+        "check examined almost nothing. LayoutHead.astro emits one on every page it renders; " +
+        "if that markup changed, canonicalOf here has to follow. The floor rather than zero: a " +
+        "change that breaks the match on some routes leaves this as blind as one that breaks " +
+        "it on all of them.",
+    );
+  }
+
+  // What the pages link, against what this gate actually verified. Both were
+  // the literal "sitemap-index.xml" in two files until now, and nothing
+  // connected them.
+  const unlinked = coverage.sitemapLinks.filter((href) => {
+    const path = parseUrl(href) ? parseUrl(href).pathname : href;
+    return normalizePath(path) !== normalizePath(`/${relative(distDir, indexPath)}`);
+  });
+
+  if (unlinked.length > 0) {
+    problems.push(
+      summarize(unlinked, (n) => `${n} page sitemap link(s) name a file this did not verify`) +
+        `. LayoutHead.astro links every page to its <link rel="sitemap">, and ${indexPath} is ` +
+        "what was checked. Those two held the filename as separate literals, and " +
+        "@astrojs/sitemap can move it with filenameBase; drifting apart puts a 404 behind " +
+        "every page (#209).",
     );
   }
 

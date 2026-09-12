@@ -15,7 +15,7 @@
  * @vitest-environment node
  */
 
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -290,6 +290,38 @@ describe("verifySitemap", () => {
     expect(text(problems)).not.toContain("passed without examining anything");
   });
 
+  // LayoutHead.astro and this gate held the sitemap filename as two separate
+  // literals. Drifting apart puts a 404 behind every page's <link rel=sitemap>,
+  // which is #209 exactly, and nothing connected the two until now.
+  it("flags pages linking a sitemap this check did not verify", () => {
+    const paths = defaultPaths();
+    const dir = fixture({ paths });
+    const target = join(paths[1]!.replace(/^\//, ""), "index.html");
+    const body = readFileSync(join(dir, target), "utf8").replace(
+      "</head>",
+      '<link rel="sitemap" href="/sitemap-renamed.xml"></head>',
+    );
+    writeFileSync(join(dir, target), body);
+
+    const problems = text(run(dir));
+    expect(problems).toContain("page sitemap link(s) name a file this did not verify");
+    expect(problems).toContain("/sitemap-renamed.xml");
+  });
+
+  it("accepts pages linking the sitemap index this check verified", () => {
+    const paths = defaultPaths();
+    const dir = fixture({ paths });
+    for (const path of paths) {
+      const target = join(path.replace(/^\//, ""), "index.html");
+      const body = readFileSync(join(dir, target), "utf8").replace(
+        "</head>",
+        '<link rel="sitemap" href="/sitemap-index.xml"></head>',
+      );
+      writeFileSync(join(dir, target), body);
+    }
+    expect(run(dir)).toEqual([]);
+  });
+
   it("flags a child sitemap on another origin", () => {
     const problems = run(fixture({ childSitemaps: ["https://elsewhere.test/sitemap-0.xml"] }));
     expect(text(problems)).toContain(`is not on ${ORIGIN}`);
@@ -382,7 +414,10 @@ describe("verifySitemap", () => {
     const paths = defaultPaths().filter((path) => !path.startsWith("/de/"));
     const problems = run(fixture({ paths }));
     expect(paths.length).toBeGreaterThan(MINIMUM_URL_COUNT);
-    expect(text(problems)).toContain("/de/");
+    // Named specifically: a bare toContain("/de/") is also satisfied by the
+    // coverage line, so it would survive MUST_BE_PRESENT being emptied.
+    const required = problems.find((p) => p.includes("required page(s) missing"));
+    expect(required).toContain("/de/");
   });
 
   it("flags a sitemap that has collapsed toward the 8-URL stub", () => {
@@ -511,7 +546,7 @@ describe("verifySitemap", () => {
     it("refuses to pass vacuously when no page declares a canonical", () => {
       const paths = defaultPaths();
       const problems = text(run(fixture({ paths, noCanonical: paths })));
-      expect(problems).toContain("examined almost nothing and passed");
+      expect(problems).toContain("examined almost nothing");
     });
 
     // The blindness does not have to be total: a markup change that breaks the
@@ -519,8 +554,24 @@ describe("verifySitemap", () => {
     it("refuses to pass when only a handful of pages are identifiable", () => {
       const paths = defaultPaths();
       const problems = text(run(fixture({ paths, noCanonical: paths.slice(5) })));
-      expect(problems).toContain("examined almost nothing and passed");
+      expect(problems).toContain("examined almost nothing");
       expect(problems).toContain(`fewer than the ${MINIMUM_URL_COUNT} floor`);
+    });
+
+    // Reported independently, not as an else: otherwise a run that identified
+    // three pages and found one of them unadvertised says "1 built page
+    // missing" and never mentions how little it looked at.
+    it("reports a missing page and a near-empty audit together", () => {
+      const paths = defaultPaths();
+      const dir = fixture({
+        paths,
+        noCanonical: paths,
+        extraPages: { "en/orphan/index.html": withCanonical(`${ORIGIN}/en/orphan/`) },
+      });
+      const problems = text(run(dir));
+
+      expect(problems).toContain("1 built page(s) are missing from the sitemap");
+      expect(problems).toContain("examined almost nothing");
     });
 
     it("counts distinct canonicals rather than files", () => {
@@ -656,6 +707,17 @@ describe("isNoindex", () => {
 
   it("honours a googlebot-specific directive", () => {
     expect(isNoindex('<meta name="googlebot" content="noindex">')).toBe(true);
+  });
+
+  // A word boundary matches inside max-image-preview:none, because ":" is not a
+  // word character, so an indexable page carrying it read as noindex.
+  it("does not read `none` inside another directive's value as noindex", () => {
+    const tag = '<meta name="robots" content="index, follow, max-image-preview:none">';
+    expect(isNoindex(tag)).toBe(false);
+  });
+
+  it("still catches directives separated by whitespace rather than commas", () => {
+    expect(isNoindex('<meta name="robots" content="noindex nofollow">')).toBe(true);
   });
 
   it("ignores an indexable page and a non-robots meta", () => {
