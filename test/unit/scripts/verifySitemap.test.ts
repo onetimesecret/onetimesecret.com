@@ -32,6 +32,7 @@ import {
   isDisallowed,
   isNoindex,
   isRedirectStub,
+  linkHref,
   locs,
   main,
   read,
@@ -513,6 +514,14 @@ describe("verifySitemap", () => {
     expect(text(problems)).toContain(`is not on ${ORIGIN}`);
   });
 
+  // The stale-stub check pushes before the guard, so keying it on
+  // problems.length would suppress the floor for this combination.
+  it("reports the floor even when a stale stub was already flagged", () => {
+    const problems = text(run(fixture({ paths: [], locs: [], staleStub: "file" })));
+    expect(problems).toContain("dist/sitemap.xml exists");
+    expect(problems).toContain(`fewer than the ${MINIMUM_URL_COUNT} floor`);
+  });
+
   it("still reports an empty but well-formed sitemap against the floor", () => {
     const problems = text(run(fixture({ paths: [], locs: [] })));
     expect(problems).toContain(`fewer than the ${MINIMUM_URL_COUNT} floor`);
@@ -958,6 +967,19 @@ describe("summarize", () => {
   it("counts the remainder past MAX_EXAMPLES", () => {
     const offenders = Array.from({ length: MAX_EXAMPLES + 3 }, (_, i) => `/p${i}/`);
     expect(summarize(offenders, describeCount)).toContain("and 3 more");
+  });
+});
+
+describe("linkHref", () => {
+  // canonicalOf and sitemapLinkOf are this function with a rel bound, so a
+  // change to how the tag is recognised has to land in one place.
+  it("reads the href of the rel it is asked for, and no other", () => {
+    const html =
+      `<link rel="canonical" href="${ORIGIN}/a/">` +
+      `<link rel="sitemap" href="/sitemap-index.xml">`;
+    expect(linkHref(html, "canonical")).toBe(`${ORIGIN}/a/`);
+    expect(linkHref(html, "sitemap")).toBe("/sitemap-index.xml");
+    expect(linkHref(html, "alternate")).toBeUndefined();
   });
 });
 

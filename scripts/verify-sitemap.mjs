@@ -317,25 +317,28 @@ export function htmlFiles(dir) {
   return out;
 }
 
-/** The href a page links as its rel=sitemap, if it links one. */
-export function sitemapLinkOf(html) {
+/**
+ * The href of the first <link> carrying `rel`, if the page has one.
+ *
+ * One matcher for both callers below, which were byte-identical apart from the
+ * rel value. A future fix to how the tag is recognised has to land in both, and
+ * this is the same reason `within` holds the containment rule once.
+ */
+export function linkHref(html, rel) {
+  const wanted = new RegExp(`\\brel\\s*=\\s*["']${rel}["']`, "i");
   for (const tag of html.match(/<link\b[^>]*>/gi) ?? []) {
-    if (!/\brel\s*=\s*["']sitemap["']/i.test(tag)) continue;
+    if (!wanted.test(tag)) continue;
     const href = /\bhref\s*=\s*["']([^"']*)["']/i.exec(tag)?.[1];
     if (href) return href;
   }
   return undefined;
 }
 
+/** The href a page links as its rel=sitemap, if it links one. */
+export const sitemapLinkOf = (html) => linkHref(html, "sitemap");
+
 /** The href a page declares as its rel=canonical, if it declares one. */
-export function canonicalOf(html) {
-  for (const tag of html.match(/<link\b[^>]*>/gi) ?? []) {
-    if (!/\brel\s*=\s*["']canonical["']/i.test(tag)) continue;
-    const href = /\bhref\s*=\s*["']([^"']*)["']/i.exec(tag)?.[1];
-    if (href) return href;
-  }
-  return undefined;
-}
+export const canonicalOf = (html) => linkHref(html, "canonical");
 
 /**
  * Built pages that belong in the sitemap but are not in `advertised`.
@@ -519,11 +522,17 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
   }
 
   const urls = [];
+  // Counted rather than inferred from problems.length: the stale-stub check
+  // above also pushes, so keying the guard below on "anything reported yet"
+  // would suppress the count floor for a build that has a stale sitemap.xml
+  // and a legitimately empty child sitemap.
+  let childFaults = 0;
   for (const href of childHrefs) {
     const parsed = parseUrl(href);
 
     if (!parsed) {
       problems.push(`${indexPath} names "${href}", which is not a valid URL.`);
+      childFaults += 1;
       continue;
     }
 
@@ -533,6 +542,7 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
     // being a rule.
     if (parsed.origin !== expected.origin) {
       problems.push(`${indexPath} names ${href}, which is not on ${origin}.`);
+      childFaults += 1;
       continue;
     }
 
@@ -541,6 +551,7 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
 
     if (!xml) {
       problems.push(`${indexPath} names ${href}, but ${file} does not exist.`);
+      childFaults += 1;
       continue;
     }
 
@@ -552,7 +563,7 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
   // adding the count floor, the required paths and all 107 built pages on top
   // of it: the same preference applied to the off-origin case, where one
   // accurate line beats four with the cause buried at the top.
-  if (urls.length === 0 && problems.length > 0) {
+  if (urls.length === 0 && childFaults > 0) {
     return { problems, urls, childHrefs, audited: 0 };
   }
 
@@ -851,7 +862,7 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
     );
   }
 
-  return { problems, urls, childHrefs, audited: coverage.audited };
+  return { problems, urls, childHrefs, audited: coverage.audited, distinct };
 }
 
 /**
@@ -870,7 +881,7 @@ export function main(argv = process.argv.slice(2), env = process.env) {
   const distDir = resolve(distArg ?? "dist");
   const expectedOrigin = resolveOrigin(originArg, env);
 
-  const { problems, urls, childHrefs, audited } = verifySitemap({ distDir, expectedOrigin });
+  const { problems, childHrefs, audited, distinct } = verifySitemap({ distDir, expectedOrigin });
 
   if (problems.length > 0) {
     const lines = [`${problems.length} problem(s):`, ...problems];
@@ -882,7 +893,6 @@ export function main(argv = process.argv.slice(2), env = process.env) {
 
   // The audited count is printed rather than only asserted, so a drop is
   // visible in the build log before it is large enough to trip a check.
-  const distinct = new Set(urls).size;
   console.log(
     `[verify-sitemap] OK: ${distinct} distinct URLs across ${childHrefs.length} sitemap file(s), ` +
       `all on ${expectedOrigin.replace(/\/+$/, "")}, each resolving to an indexable ` +

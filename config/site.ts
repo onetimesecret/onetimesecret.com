@@ -67,6 +67,11 @@ export function resolveSite(env: NodeJS.ProcessEnv = process.env, cwd = process.
  * between the assignment and the finally. If it ever becomes async, or this is
  * called from more than one thread, the swap has to go rather than be widened.
  *
+ * Under test that also depends on a file this comment does not live in:
+ * test/unit/vitest.config.ts sets no `pool`, so files run in separate workers
+ * and cases within a file run in sequence. `pool: "threads"` there would make
+ * this a cross-file race.
+ *
  * A copy is passed so that anything loadEnv writes into process.env during
  * dotenv expansion lands on the copy instead of the caller's object. Vite does
  * not do that today (verified against the installed version), which is exactly
