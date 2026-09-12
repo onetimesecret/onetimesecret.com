@@ -21,6 +21,13 @@ export const EXCLUDED_SITEMAP_PATHS = new Set([
   "/example/",
   "/env-debug/",
   "/test-layout/",
+
+  // The error document. src/pages/500.astro is noindex, so the coverage check
+  // skips it on that basis alone today — but @astrojs/sitemap will not
+  // enumerate an error route regardless, so dropping the noindex would fail
+  // the build asking for a URL that cannot be advertised. It is excluded here
+  // for what it is rather than for what its meta happens to say.
+  "/500/",
 ]);
 
 /**

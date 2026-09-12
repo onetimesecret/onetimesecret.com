@@ -255,6 +255,30 @@ describe("verifySitemap", () => {
     expect(run(fixture(), `${ORIGIN}/`)).toEqual([]);
   });
 
+  it("refuses a canonical origin carrying a base path", () => {
+    const dir = fixture();
+    const problems = verifySitemap({
+      distDir: dir,
+      expectedOrigin: ORIGIN,
+      canonicalOrigin: `${ORIGIN}/base/`,
+    }).problems;
+    expect(text(problems)).toContain("has a path, query or fragment");
+  });
+
+  // src/pages/changelog/rss.xml.ts builds to dist/changelog/rss.xml. Nothing
+  // advertises one today, but reporting a file that exists as unbuilt would be
+  // a false positive, and this gate is meant to fail closed only.
+  it("accepts an advertised route that built to a non-HTML file", () => {
+    const paths = defaultPaths();
+    const locs = [...paths.map((p) => `${ORIGIN}${p}`), `${ORIGIN}/changelog/rss.xml`];
+    const dir = fixture({
+      paths,
+      locs,
+      extraPages: { "changelog/rss.xml": "<rss></rss>" },
+    });
+    expect(text(run(dir))).not.toContain("no built page in dist");
+  });
+
   it("reports an unparseable canonical origin rather than an empty audit", () => {
     const dir = fixture();
     const problems = verifySitemap({
@@ -711,6 +735,13 @@ describe("isExcludedFromSitemap", () => {
     expect("/example/detail/".startsWith(normalizePath("/example"))).toBe(true);
   });
 
+  // An error document is not a crawlable route whatever its meta says, and
+  // @astrojs/sitemap will not enumerate one, so the coverage check must not
+  // demand it be advertised if the noindex is ever dropped.
+  it("excludes the error document", () => {
+    expect(isExcludedFromSitemap("/500/")).toBe(true);
+  });
+
   it("keeps real content pages", () => {
     expect(isExcludedFromSitemap("/en/about/")).toBe(false);
     expect(isExcludedFromSitemap("/")).toBe(false);
@@ -797,6 +828,16 @@ describe("summarize", () => {
   it("omits the suffix at exactly MAX_EXAMPLES", () => {
     const offenders = Array.from({ length: MAX_EXAMPLES }, (_, i) => `/p${i}/`);
     expect(summarize(offenders, describeCount)).not.toContain("more");
+  });
+
+  // Coverage offenders arrive in readdir order, so without sorting two runs of
+  // the same fault print different examples and the logs will not diff.
+  it("names the same examples regardless of input order", () => {
+    const offenders = ["/d/", "/a/", "/c/", "/b/"];
+    const forward = summarize(offenders, describeCount);
+    const reversed = summarize([...offenders].reverse(), describeCount);
+    expect(forward).toBe(reversed);
+    expect(forward).toContain("/a/, /b/, /c/, /d/");
   });
 
   it("counts the remainder past MAX_EXAMPLES", () => {

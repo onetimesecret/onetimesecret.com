@@ -96,7 +96,9 @@ export function parseUrl(href) {
 
 /** One problem line naming `offenders`, truncated to MAX_EXAMPLES. */
 export function summarize(offenders, describe) {
-  const shown = offenders.slice(0, MAX_EXAMPLES).join(", ");
+  // Sorted so the same fault prints the same examples every run: coverage
+  // offenders arrive in readdir order, which is not stable across machines.
+  const shown = [...offenders].sort().slice(0, MAX_EXAMPLES).join(", ");
   const rest = offenders.length - MAX_EXAMPLES;
   return `${describe(offenders.length)}: ${shown}${rest > 0 ? `, and ${rest} more` : ""}`;
 }
@@ -199,11 +201,29 @@ export function decodePath(pathname) {
   }
 }
 
-/** Reads `candidate` only when it resolves inside `distDir`. */
-export function readWithin(distDir, candidate) {
+/**
+ * `candidate` resolved, but only when it lands inside `distDir`.
+ *
+ * The one place the containment rule lives, so a second caller cannot get it
+ * subtly different. The trailing separator is what stops a sibling directory
+ * named dist-backup from passing a bare prefix test.
+ */
+export function within(distDir, candidate) {
   const root = resolve(distDir);
   const target = resolve(candidate);
-  return target.startsWith(root + sep) ? read(target) : undefined;
+  return target.startsWith(root + sep) ? target : undefined;
+}
+
+/** Reads `candidate` only when it resolves inside `distDir`. */
+export function readWithin(distDir, candidate) {
+  const target = within(distDir, candidate);
+  return target === undefined ? undefined : read(target);
+}
+
+/** True when `candidate` is a file inside `distDir`. */
+export function isFileWithin(distDir, candidate) {
+  const target = within(distDir, candidate);
+  return target !== undefined && isFile(target);
 }
 
 /**
@@ -313,6 +333,12 @@ export function canonicalOf(html) {
  * counts as covered by its target, which is the right answer for a duplicate
  * and the reason no file-path-to-URL mapping is needed here.
  *
+ * One assumption this cannot check: it demands that every page it identifies
+ * be advertised, but only @astrojs/sitemap decides what gets advertised, and
+ * this has no view of that enumeration. A route the integration will never
+ * emit therefore has to be excluded in config/astro/sitemap.ts rather than
+ * added to the sitemap; /500/ is there for exactly that reason.
+ *
  * `audited` is returned so the count can be printed: if the canonical markup
  * ever changes shape this check would skip every page and pass without having
  * examined anything, which is the failure mode the gate itself exists to catch.
@@ -343,6 +369,11 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
 
     const { pathname } = parsed;
     if (isExcludedFromSitemap(pathname)) continue;
+    // A Disallow-ed page is deliberately hidden, so not advertising it is
+    // correct. Note the blast radius: an over-broad rule shrinks what this
+    // audits rather than failing anything, and if the same paths are also in
+    // EXCLUDED_SITEMAP_PATHS both defences go quiet together. The audited count
+    // is the signal for that, which is why it is printed and floored.
     if (hasRobots && isDisallowed(decodePath(pathname), rules)) continue;
 
     seen.add(pathname);
@@ -392,8 +423,11 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
   // every page fail the coverage origin comparison, and the run reports
   // "passed without examining anything" — which blames canonicalOf for a bad
   // argument.
-  if (!canonical) {
-    const problem = `Canonical origin "${canonicalOrigin}" is not a valid URL.`;
+  if (!canonical || !isBareOrigin(canonical)) {
+    const detail = canonical ? "has a path, query or fragment" : "is not a valid URL";
+    const problem =
+      `Canonical origin "${canonicalOrigin}" ${detail}. ` +
+      "Everything here compares origins, so a base path would be silently discarded.";
     return { problems: [problem], urls: [], childHrefs: [], audited: 0 };
   }
 
@@ -534,13 +568,20 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
 
     const html = findPage(distDir, pathname);
 
-    if (html === undefined) {
-      missingPage.push(pathname);
-    } else if (isRedirectStub(html)) {
-      redirectPage.push(pathname);
-    } else if (isNoindex(html)) {
-      noindexPage.push(pathname);
+    if (html !== undefined) {
+      if (isRedirectStub(html)) redirectPage.push(pathname);
+      else if (isNoindex(html)) noindexPage.push(pathname);
+      continue;
     }
+
+    // Not an HTML page, but the build may still have emitted a file there:
+    // src/pages/changelog/rss.xml.ts becomes dist/changelog/rss.xml. Nothing
+    // advertises one today, but calling a file that exists "no built page"
+    // would be a false positive, and this gate is meant to fail closed only.
+    // There is no HTML to inspect, so the redirect and noindex checks do not
+    // apply to it.
+    const file = join(distDir, decodePath(pathname).replace(/^\//, ""));
+    if (!isFileWithin(distDir, file)) missingPage.push(pathname);
   }
 
   if (malformed.length > 0) {
