@@ -26,13 +26,14 @@ import {
   MINIMUM_URL_COUNT,
   MUST_BE_PRESENT,
   canonicalOf,
+  canonicalisesToSelf,
   decodePath,
   declaredSitemaps,
   htmlFiles,
   isDisallowed,
   isNoindex,
   isRedirectStub,
-  linkHref,
+  linkHrefs,
   locs,
   main,
   read,
@@ -82,6 +83,8 @@ type FixtureOptions = {
   redirect?: string[];
   /** Paths whose page omits the canonical, as the bunnycdn_errors/ documents do. */
   noCanonical?: string[];
+  /** Paths whose page declares this canonical instead of its own URL. */
+  canonicalTo?: Record<string, string>;
   /** Extra files written under dist but never advertised, as `relative path -> body`. */
   extraPages?: Record<string, string>;
   /** The origin the sitemap is built for. Differs from ORIGIN on a staging build. */
@@ -113,18 +116,27 @@ type PageOptions = {
   noindex?: boolean;
   reversed?: boolean;
   canonical?: boolean;
+  /** Overrides the canonical href, as a page canonicalising to a duplicate's target does. */
+  canonicalHref?: string;
   /** null omits the rel=sitemap link, as a page LayoutHead did not render would. */
   sitemap?: string | null;
 };
 
 function page(
   path: string,
-  { noindex = false, reversed = false, canonical = true, sitemap = SITEMAP_LINK }: PageOptions = {},
+  {
+    noindex = false,
+    reversed = false,
+    canonical = true,
+    canonicalHref,
+    sitemap = SITEMAP_LINK,
+  }: PageOptions = {},
 ) {
   const meta = reversed
     ? '<meta content="noindex, nofollow" name="robots">'
     : '<meta name="robots" content="noindex">';
-  const link = canonical ? `<link rel="canonical" href="${ORIGIN}${path}">` : "";
+  const href = canonicalHref ?? `${ORIGIN}${path}`;
+  const link = canonical ? `<link rel="canonical" href="${href}">` : "";
   // LayoutHead.astro emits this on every page it renders. The fixture omitting
   // it is what let the sitemap-link check look sound while examining nothing.
   const sitemapLink = sitemap === null ? "" : `<link rel="sitemap" href="${sitemap}">`;
@@ -162,6 +174,7 @@ function fixture(options: FixtureOptions = {}) {
       : page(path, {
           noindex: noindex.has(path),
           canonical: !noCanonical.has(path),
+          canonicalHref: options.canonicalTo?.[path],
           sitemap: options.sitemapLink === undefined ? SITEMAP_LINK : options.sitemapLink,
         });
     // A path naming a .html file is written as that file, as Astro writes
@@ -466,6 +479,29 @@ describe("verifySitemap", () => {
     expect(text(problems)).toContain("redirect stubs, not pages");
   });
 
+  // The mirror of the coverage rule that a page canonicalising elsewhere is
+  // legitimately unadvertised: being advertised anyway is the defect.
+  it("flags an advertised page that canonicalises to another origin", () => {
+    const paths = defaultPaths();
+    const path = paths.at(-1)!;
+    const problems = run(
+      fixture({ paths, canonicalTo: { [path]: `https://eu.onetimesecret.com${path}` } }),
+    );
+    expect(text(problems)).toContain("canonicalises somewhere else");
+    expect(text(problems)).toContain(path);
+  });
+
+  it("flags an advertised page that canonicalises to another path on this origin", () => {
+    const paths = defaultPaths();
+    const path = paths.at(-1)!;
+    const problems = run(fixture({ paths, canonicalTo: { [path]: `${ORIGIN}${paths[0]!}` } }));
+    expect(text(problems)).toContain("canonicalises somewhere else");
+  });
+
+  it("accepts a build where every advertised page claims its own URL", () => {
+    expect(run(fixture())).toEqual([]);
+  });
+
   // Keyed on origin + normalized path, so a trailing-slash variant is the same
   // URL rather than two that each clear the floor.
   it("treats a trailing-slash variant as the same URL, not a distinct one", () => {
@@ -540,9 +576,11 @@ describe("verifySitemap", () => {
       const dir = fixture({
         extraPages: { "en/orphan/index.html": withCanonical(`${ORIGIN}/en/orphan/`) },
       });
-      const problems = text(run(dir));
-      expect(problems).toContain("built page(s) are missing from the sitemap");
-      expect(problems).toContain("/en/orphan/");
+      // Asserted against the one line rather than the joined text, so the path
+      // cannot be supplied by some unrelated problem the same build reports.
+      const line = run(dir).find((p) => p.includes("built page(s) are missing from the sitemap"));
+      expect(line).toBeDefined();
+      expect(line).toContain("/en/orphan/");
     });
 
     // The scenario the count floor and MUST_BE_PRESENT are both blind to: an
@@ -964,22 +1002,43 @@ describe("summarize", () => {
     expect(forward).toContain("/a/, /b/, /c/, /d/");
   });
 
+  // findUnadvertised keeps its offenders in Sets until the return boundary, so
+  // a caller reaching this with one must not print "undefined" and a NaN
+  // remainder instead of a count.
+  it("counts a Set as accurately as an array", () => {
+    const offenders = Array.from({ length: MAX_EXAMPLES + 2 }, (_, i) => `/p${i}/`);
+    expect(summarize(new Set(offenders), describeCount)).toBe(
+      summarize(offenders, describeCount),
+    );
+    expect(summarize(new Set(offenders), describeCount)).toContain("and 2 more");
+  });
+
   it("counts the remainder past MAX_EXAMPLES", () => {
     const offenders = Array.from({ length: MAX_EXAMPLES + 3 }, (_, i) => `/p${i}/`);
     expect(summarize(offenders, describeCount)).toContain("and 3 more");
   });
 });
 
-describe("linkHref", () => {
-  // canonicalOf and sitemapLinkOf are this function with a rel bound, so a
+describe("linkHrefs", () => {
+  // canonicalOf and sitemapLinksOf are this function with a rel bound, so a
   // change to how the tag is recognised has to land in one place.
   it("reads the href of the rel it is asked for, and no other", () => {
     const html =
       `<link rel="canonical" href="${ORIGIN}/a/">` +
       `<link rel="sitemap" href="/sitemap-index.xml">`;
-    expect(linkHref(html, "canonical")).toBe(`${ORIGIN}/a/`);
-    expect(linkHref(html, "sitemap")).toBe("/sitemap-index.xml");
-    expect(linkHref(html, "alternate")).toBeUndefined();
+    expect(linkHrefs(html, "canonical")).toEqual([`${ORIGIN}/a/`]);
+    expect(linkHrefs(html, "sitemap")).toEqual(["/sitemap-index.xml"]);
+    expect(linkHrefs(html, "alternate")).toEqual([]);
+  });
+
+  it("returns every match, so a second link cannot go unexamined", () => {
+    const html =
+      `<link rel="sitemap" href="/sitemap-index.xml">` +
+      `<link rel="sitemap" href="https://elsewhere.example/sitemap.xml">`;
+    expect(linkHrefs(html, "sitemap")).toEqual([
+      "/sitemap-index.xml",
+      "https://elsewhere.example/sitemap.xml",
+    ]);
   });
 });
 
@@ -993,6 +1052,46 @@ describe("canonicalOf", () => {
   it("ignores other link tags and pages that declare none", () => {
     expect(canonicalOf(`<link rel="alternate" href="${ORIGIN}/fr/">`)).toBeUndefined();
     expect(canonicalOf("<!doctype html><html><head></head></html>")).toBeUndefined();
+  });
+
+  it("takes the first of conflicting canonicals rather than the last", () => {
+    const html =
+      `<link rel="canonical" href="${ORIGIN}/a/">` + `<link rel="canonical" href="${ORIGIN}/b/">`;
+    expect(canonicalOf(html)).toBe(`${ORIGIN}/a/`);
+  });
+});
+
+describe("canonicalisesToSelf", () => {
+  const canonical = new URL(ORIGIN);
+
+  it("accepts a page claiming the advertised URL", () => {
+    expect(canonicalisesToSelf(page("/en/about/"), canonical, "/en/about/")).toBe(true);
+  });
+
+  it("accepts a page that declares no canonical at all", () => {
+    expect(canonicalisesToSelf(page("/en/about/", { canonical: false }), canonical, "/en/about/"))
+      .toBe(true);
+  });
+
+  it("rejects a canonical on another origin even when the path matches", () => {
+    const html = page("/pricing/", { canonicalHref: "https://eu.onetimesecret.com/pricing/" });
+    expect(canonicalisesToSelf(html, canonical, "/pricing/")).toBe(false);
+  });
+
+  it("rejects a canonical naming another path on this origin", () => {
+    const html = page("/en/duplicate/", { canonicalHref: `${ORIGIN}/en/about/` });
+    expect(canonicalisesToSelf(html, canonical, "/en/duplicate/")).toBe(false);
+  });
+
+  it("rejects a canonical that is not a URL", () => {
+    expect(canonicalisesToSelf(page("/a/", { canonicalHref: "notaurl" }), canonical, "/a/")).toBe(
+      false,
+    );
+  });
+
+  it("ignores a trailing-slash difference, which is not a different page", () => {
+    const html = page("/en/about/", { canonicalHref: `${ORIGIN}/en/about` });
+    expect(canonicalisesToSelf(html, canonical, "/en/about/")).toBe(true);
   });
 });
 
