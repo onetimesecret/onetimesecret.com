@@ -1,0 +1,36 @@
+---
+title: "SAML SSO for self-hosted instances"
+date: 2026-09-30
+description: "Use your organization's SAML identity provider to sign in to self-hosted Onetime Secret instances and custom domains. Support for regional hosted sites is coming soon."
+category: release
+planned: false
+highlightedLinkUrl: "https://github.com/onetimesecret/onetimesecret/releases/tag/v0.26.14"
+highlightedLinkText: "View the release details"
+highlights:
+  - { icon: check, text: "Connect your self-hosted instance to a SAML identity provider with three environment variables" }
+  - { icon: check, text: "Set up a separate identity provider for each custom domain in its SSO settings" }
+  - { icon: check, text: "Copy the registration details you need directly from the custom domain SSO form" }
+  - { icon: check, text: "Built-in checks prevent login responses from being reused and keep identities separate across providers" }
+  - { icon: ask, text: "Support for our EU, UK, CA, NZ and US regional sites is coming soon" }
+---
+
+SAML 2.0 single sign-on is now available for self-hosted Onetime Secret instances and custom
+domains running on [v0.26.14](https://github.com/onetimesecret/onetimesecret/releases/tag/v0.26.14). Your team can sign in through your organization's identity provider.
+
+For self-hosted instances, connect an identity provider using three environment variables:
+`SAML_IDP_SSO_SERVICE_URL`, `SAML_IDP_ENTITY_ID` and `SAML_IDP_CERT`.
+
+For custom domains, configure an identity provider in the domain's SSO settings. Each domain
+can use its own provider. The form displays the SP Entity ID, metadata URL and ACS URL you
+need to register with your provider.
+
+Every SAML login includes checks to confirm that the response comes from the configured
+provider and matches a login request started by your instance. Responses can only be used
+once, and sign-ins must return to the registered address. User identities stay separate
+across providers, and each custom domain's identity provider settings are encrypted and
+tied to that domain.
+
+See [`per-install-sso.md`](https://github.com/onetimesecret/onetimesecret/blob/v0.26.14/docs/authentication/per-install-sso.md) and [`per-domain-sso.md`](https://github.com/onetimesecret/onetimesecret/blob/v0.26.14/docs/authentication/per-domain-sso.md) for setup instructions, provider registration
+details and troubleshooting codes.
+
+SAML support for our EU, UK, CA, NZ and US regional sites is coming soon.
