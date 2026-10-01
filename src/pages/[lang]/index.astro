@@ -47,8 +47,7 @@ const pageI18n = await createLocaleI18n(
 const t = pageI18n.global.t;
 
 // Translated title and description for the Layout
-// IMPORTANT: You'll need to add 'web.homepage.title' and 'web.homepage.description' keys
-// to your i18n JSON files (e.g., src/i18n/ui/en.json).
+
 const pageTitle = t("web.homepage.title");
 const pageDescription = t("web.homepage.description");
 ---
@@ -60,10 +59,9 @@ const pageDescription = t("web.homepage.description");
   htmlLang={effectiveLang}
   langDir={effectiveLangMeta.dir}
   initialMessages={effectiveInitialMessages}
-  header={true}>
-  <!-- Homepage has its own navigation so we disable the default header -->
-  <div slot="header"></div>
-
+  header={true}
+  large={true}
+  showCompanyName={true}>
   <!-- Dismissible changelog banner above the hero -->
   <ChangelogBanner locale={effectiveLang} />
 

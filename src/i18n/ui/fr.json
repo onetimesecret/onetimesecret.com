@@ -366,9 +366,7 @@
         "badge": "Conception axée sur la vie privée",
         "title": {
           "line1": "Onetime Secret",
-          "line2_w1": "Signé.",
-          "line2_w2": "Scellé.",
-          "line2_w3": "Livré."
+          "line2": "Gérez votre propre service de partage de secrets."
         },
         "subtitle": "Envoyez des mots de passe, des identifiants et des données sensibles avec des liens à usage unique.",
         "compliance": {

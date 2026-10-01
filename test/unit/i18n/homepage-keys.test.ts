@@ -10,8 +10,8 @@
  * redesign are present in en, fr, de, and es, and that structural parity
  * is maintained across all locales.
  *
- * Note: fr/de/es keys are English-copy stubs for the redesign phase;
- * these tests only assert key existence, not translation quality.
+ * Structural checks do not establish translation quality; hero rendering tests
+ * separately verify the localized positioning copy with the real i18n runtime.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -76,9 +76,7 @@ const REQUIRED_HOMEPAGE_KEYS = [
   // Hero section
   'web.homepage.hero.badge',
   'web.homepage.hero.title.line1',
-  'web.homepage.hero.title.line2_w1',
-  'web.homepage.hero.title.line2_w2',
-  'web.homepage.hero.title.line2_w3',
+  'web.homepage.hero.title.line2',
   'web.homepage.hero.subtitle',
   'web.homepage.hero.compliance.label',
   'web.homepage.hero.compliance.encrypted',

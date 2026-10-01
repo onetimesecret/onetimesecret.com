@@ -23,9 +23,7 @@ export type SecurityFeatureKey = (typeof SECURITY_FEATURE_KEYS)[number];
  */
 export const HERO_HEADING_KEYS = {
   line1: "web.homepage.hero.title.line1",
-  line2_w1: "web.homepage.hero.title.line2_w1",
-  line2_w2: "web.homepage.hero.title.line2_w2",
-  line2_w3: "web.homepage.hero.title.line2_w3",
+  line2: "web.homepage.hero.title.line2",
 } as const;
 
 /** i18n key for the hero badge text */
