@@ -365,8 +365,8 @@
       "hero": {
         "badge": "Conçu pour oublier",
         "title": {
-          "line1": "Onetime Secret",
-          "line2": "Gérez votre propre service de partage de secrets."
+          "line1": "Vous devez envoyer un mot de passe ?",
+          "line2": "Envoyez plutôt un lien."
         },
         "subtitle": "Envoyez des mots de passe, des identifiants et des données sensibles avec des liens à usage unique.",
         "compliance": {
@@ -391,11 +391,11 @@
           },
           "sso": {
             "title": "Authentification unique (SSO)",
-            "description": "Votre équipe peut se connecter via le fournisseur d'identité de votre organisation avec Entra, OIDC et SAML (bientôt disponible)."
+            "description": "Votre équipe peut se connecter via le fournisseur d'identité de votre organisation avec Entra, OIDC et SAML."
           },
           "incoming": {
             "title": "Secrets entrants",
-            "description": "Une page où vos clients et fournisseurs peuvent vous envoyer des secrets directement"
+            "description": "Une page où vos clients et fournisseurs peuvent vous envoyer des secrets directement."
           }
         },
         "link": "Voir les offres avec domaine personnalisé",
@@ -418,15 +418,7 @@
           "uk": "Londres, Royaume-Uni",
           "us": "Hillsboro, États-Unis"
         },
-        "capabilitiesLabel": "Régions disponibles",
-        "features": {
-          "customDomain": "Domaine personnalisé",
-          "customBranding": "Image de marque personnalisée",
-          "sso": "Authentification unique (SSO)",
-          "incomingSecrets": "Secrets entrants",
-          "accessControls": "Contrôles d'accès",
-          "auditLogs": "Journaux d'audit"
-        }
+        "capabilitiesLabel": "Régions disponibles"
       },
       "cta": {
         "heading": {

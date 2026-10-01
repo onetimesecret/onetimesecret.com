@@ -2,22 +2,21 @@
 <!-- Team pitch: run the service on your own domain. Replaces the persona grid. -->
 
 <script setup lang="ts">
-import { ArrowRight, Inbox, KeyRound, Lock, Palette } from "@lucide/vue";
-import { type Component } from "vue";
 import { useI18n } from "vue-i18n";
 
+import OIcon from "@/components/vue/icons/OIcon.vue";
 import { type SupportedLanguage } from "@/i18n";
 import { localizeUrl } from "@/i18n/utils";
 
 const props = defineProps<{
-  locale: string;
+  locale: SupportedLanguage;
 }>();
 
 const { t } = useI18n();
 
 interface ProofPoint {
   id: string;
-  icon: Component;
+  icon: "swatch" | "key" | "inbox";
   title: string;
   description: string;
 }
@@ -26,19 +25,19 @@ interface ProofPoint {
 const points: ProofPoint[] = [
   {
     id: "branding",
-    icon: Palette,
+    icon: "swatch",
     title: "web.homepage.customDomains.points.branding.title",
     description: "web.homepage.customDomains.points.branding.description",
   },
   {
     id: "sso",
-    icon: KeyRound,
+    icon: "key",
     title: "web.homepage.customDomains.points.sso.title",
     description: "web.homepage.customDomains.points.sso.description",
   },
   {
     id: "incoming",
-    icon: Inbox,
+    icon: "inbox",
     title: "web.homepage.customDomains.points.incoming.title",
     description: "web.homepage.customDomains.points.incoming.description",
   },
@@ -81,7 +80,7 @@ const mock = {
               <div
                 class="flex-shrink-0 flex size-10 items-center justify-center rounded-lg border border-brand-500/15 bg-brand-500/8"
                 aria-hidden="true">
-                <component :is="point.icon" class="size-5 text-brand-600" />
+                <OIcon collection="heroicons" :name="point.icon" class="text-brand-600" />
               </div>
               <div class="min-w-0">
                 <h3 class="text-base font-bold text-text-primary">
@@ -95,10 +94,10 @@ const mock = {
           </ul>
 
           <a
-            :href="localizeUrl('/pricing', props.locale as SupportedLanguage)"
+            :href="localizeUrl('/pricing', props.locale)"
             class="mt-8 inline-flex items-center gap-2 text-base font-semibold text-brand-700 dark:text-brand-400 hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 rounded">
             {{ t("web.homepage.customDomains.link") }}
-            <ArrowRight class="size-4" aria-hidden="true" />
+            <OIcon collection="heroicons" name="arrow-right" size="4" aria-hidden="true" />
           </a>
         </div>
 
@@ -117,7 +116,12 @@ const mock = {
               </div>
               <div
                 class="flex min-w-0 flex-1 items-center gap-2 rounded-md bg-surface-1 px-3 py-1.5 font-mono text-xs text-text-secondary">
-                <Lock class="size-3 shrink-0 text-brandcomp-400" aria-hidden="true" />
+                <OIcon
+                  collection="heroicons"
+                  name="lock-closed"
+                  size="3"
+                  class="shrink-0 text-brandcomp-400"
+                  aria-hidden="true" />
                 <span class="truncate">
                   <span class="font-semibold text-text-primary">{{ mock.host }}</span>
                   <span class="text-text-tertiary">{{ mock.path }}</span>
@@ -144,7 +148,7 @@ const mock = {
                   {{ t("web.homepage.customDomains.mock.body") }}
                 </p>
                 <span
-                  class="mt-5 inline-flex items-center justify-center rounded-lg bg-brandcomp-600 px-4 py-2 text-sm font-semibold text-white"
+                  class="mt-5 inline-flex items-center justify-center rounded-lg bg-brandcomp-800 px-4 py-2 text-sm font-semibold text-white"
                   aria-hidden="true">
                   {{ t("web.homepage.customDomains.mock.button") }}
                 </span>

@@ -114,7 +114,7 @@ test.describe("Homepage redesign — hero section", () => {
     expect(tagName).toBe("H1");
   });
 
-  test("hero heading gives the proposition visual priority over the brand", async ({
+  test("hero heading renders the password question and link answer at equal size", async ({
     page,
   }) => {
     const heading = page.getByRole("heading", { level: 1 });
@@ -122,14 +122,15 @@ test.describe("Homepage redesign — hero section", () => {
     await expect(heading).toHaveText(
       "Need to send a password? Send a link instead.",
     );
-    const brand = heading.locator(":scope > span").first();
+    const question = heading.locator(":scope > span").first();
+    await expect(question).toHaveText("Need to send a password?");
     const proposition = heading.locator(".gradient-text");
     await expect(proposition).toHaveText("Send a link instead.");
     const fontSize = (element: Element): number =>
       parseFloat(getComputedStyle(element).fontSize);
-    expect(await proposition.evaluate(fontSize)).toBeGreaterThan(
-      await brand.evaluate(fontSize),
-    );
+    const headingSize = await heading.evaluate(fontSize);
+    expect(await question.evaluate(fontSize)).toBe(headingSize);
+    expect(await proposition.evaluate(fontSize)).toBe(headingSize);
   });
 
   test("security feature tags list is present", async ({ page }) => {
@@ -329,9 +330,10 @@ test.describe("Homepage redesign — CustomDomains section", () => {
   }) => {
     const heading = page.locator("#custom-domains-heading");
     await expect(heading).toBeVisible();
-    await expect(heading).toHaveText(
-      "Your team has secrets. So run your own secret service.",
-    );
+    await expect(heading.locator(":scope > span")).toHaveText([
+      "Your team has secrets.",
+      "So run your own secret service.",
+    ]);
   });
 
   test("recipient mock shows a customer domain, not ours", async ({ page }) => {

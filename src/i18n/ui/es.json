@@ -365,8 +365,8 @@
       "hero": {
         "badge": "Diseñado para olvidar",
         "title": {
-          "line1": "Onetime Secret",
-          "line2": "Opere su propio servicio para compartir secretos."
+          "line1": "¿Necesita enviar una contraseña?",
+          "line2": "Envíe un enlace en su lugar."
         },
         "subtitle": "Envíe contraseñas, credenciales y datos sensibles con enlaces que funcionan una sola vez.",
         "compliance": {
@@ -391,11 +391,11 @@
           },
           "sso": {
             "title": "Inicio de sesión único (SSO)",
-            "description": "Su equipo puede iniciar sesión a través del proveedor de identidad de su organización con Entra, OIDC y SAML (próximamente)."
+            "description": "Su equipo puede iniciar sesión a través del proveedor de identidad de su organización con Entra, OIDC y SAML."
           },
           "incoming": {
             "title": "Secretos entrantes",
-            "description": "Una página donde clientes y proveedores pueden enviarle secretos directamente"
+            "description": "Una página donde clientes y proveedores pueden enviarle secretos directamente."
           }
         },
         "link": "Ver planes con dominio personalizado",
@@ -418,15 +418,7 @@
           "uk": "Londres, Reino Unido",
           "us": "Hillsboro, Estados Unidos"
         },
-        "capabilitiesLabel": "Regiones disponibles",
-        "features": {
-          "customDomain": "Dominio personalizado",
-          "customBranding": "Marca personalizada",
-          "sso": "Inicio de sesión único (SSO)",
-          "incomingSecrets": "Secretos entrantes",
-          "accessControls": "Controles de acceso",
-          "auditLogs": "Registros de auditoría"
-        }
+        "capabilitiesLabel": "Regiones disponibles"
       },
       "cta": {
         "heading": {

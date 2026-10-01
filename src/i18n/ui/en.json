@@ -391,11 +391,11 @@
           },
           "sso": {
             "title": "Single sign-on (SSO)",
-            "description": "Your team can sign in through your organization's identity provider with Entra, OIDC, and SAML (coming soon)."
+            "description": "Your team can sign in through your organization's identity provider with Entra, OIDC, and SAML."
           },
           "incoming": {
             "title": "Incoming secrets",
-            "description": "A destination page for clients and vendors to send secrets directly to you"
+            "description": "A destination page for clients and vendors to send secrets directly to you."
           }
         },
         "link": "See plans with custom domains",
@@ -418,15 +418,7 @@
           "uk": "London, United Kingdom",
           "us": "Hillsboro, United States"
         },
-        "capabilitiesLabel": "Available regions",
-        "features": {
-          "customDomain": "Custom Domain",
-          "customBranding": "Custom Branding",
-          "sso": "Single sign-on (SSO)",
-          "incomingSecrets": "Incoming Secrets",
-          "accessControls": "Access Controls",
-          "auditLogs": "Audit Logs"
-        }
+        "capabilitiesLabel": "Available regions"
       },
       "cta": {
         "heading": {

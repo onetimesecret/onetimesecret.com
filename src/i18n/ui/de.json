@@ -363,10 +363,10 @@
       "description": "Teilen Sie sensible Informationen sicher mit selbstzerstörenden Links. Fügen Sie Ihr Geheimnis ein, generieren Sie einen Link und teilen Sie ihn. Nach dem Anzeigen ist es für immer verschwunden.",
       "a-trusted-way-to-share-sensitive-information-etc": "Eine vertrauenswürdige Methode zum Teilen vertraulicher Informationen, die nach dem Anzeigen automatisch gelöscht werden.",
       "hero": {
-        "badge": "Gebaut, um zu vergessen",
+        "badge": "Entwickelt, um zu vergessen",
         "title": {
-          "line1": "Onetime Secret",
-          "line2": "Betreiben Sie Ihren eigenen Dienst zum Teilen von Geheimnissen."
+          "line1": "Müssen Sie ein Passwort senden?",
+          "line2": "Senden Sie stattdessen einen Link."
         },
         "subtitle": "Senden Sie Passwörter, Zugangsdaten und sensible Informationen über Links, die nur einmal funktionieren.",
         "compliance": {
@@ -391,11 +391,11 @@
           },
           "sso": {
             "title": "Single Sign-On (SSO)",
-            "description": "Ihr Team kann sich über den Identitätsanbieter Ihrer Organisation mit Entra, OIDC und SAML (demnächst verfügbar) anmelden."
+            "description": "Ihr Team kann sich über den Identitätsanbieter Ihrer Organisation mit Entra, OIDC und SAML anmelden."
           },
           "incoming": {
             "title": "Eingehende Geheimnisse",
-            "description": "Eine Seite, über die Kunden und Lieferanten Geheimnisse direkt an Sie senden können"
+            "description": "Eine Seite, über die Kunden und Lieferanten Geheimnisse direkt an Sie senden können."
           }
         },
         "link": "Tarife mit eigener Domain ansehen",
@@ -418,15 +418,7 @@
           "uk": "London, Vereinigtes Königreich",
           "us": "Hillsboro, Vereinigte Staaten"
         },
-        "capabilitiesLabel": "Verfügbare Regionen",
-        "features": {
-          "customDomain": "Benutzerdefinierte Domain",
-          "customBranding": "Benutzerdefiniertes Branding",
-          "sso": "Single Sign-On (SSO)",
-          "incomingSecrets": "Eingehende Geheimnisse",
-          "accessControls": "Zugriffskontrollen",
-          "auditLogs": "Audit-Logs"
-        }
+        "capabilitiesLabel": "Verfügbare Regionen"
       },
       "cta": {
         "heading": {

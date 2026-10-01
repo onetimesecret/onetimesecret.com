@@ -4,7 +4,7 @@
 import HeroSection from "@/components/vue/homepage/HeroSection.vue";
 import HowItWorks from "@/components/vue/homepage/HowItWorks.vue";
 import { useJurisdiction } from "@/composables/useJurisdiction";
-import { setLanguageWithMessages, type MessageSchema } from "@/i18n";
+import { setLanguageWithMessages, type MessageSchema, type SupportedLanguage } from "@/i18n";
 import { onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -15,7 +15,7 @@ import GlobalInfrastructure from "@/components/vue/homepage/GlobalInfrastructure
 import type { Region } from "@/types/jurisdiction";
 
 const props = defineProps<{
-  locale: string;
+  locale: SupportedLanguage;
   initialMessages: Record<string, MessageSchema>;
   // other component-specific props like 'now' for Homepage
   now?: number;
