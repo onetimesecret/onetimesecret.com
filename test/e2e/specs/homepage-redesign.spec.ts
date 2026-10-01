@@ -114,22 +114,23 @@ test.describe("Homepage redesign — hero section", () => {
     expect(tagName).toBe("H1");
   });
 
-  test("hero heading gives the proposition visual priority over the brand", async ({
+  test("hero heading renders the password question and link answer at equal size", async ({
     page,
   }) => {
     const heading = page.getByRole("heading", { level: 1 });
     await expect(heading).toHaveCount(1);
     await expect(heading).toHaveText(
-      "Onetime Secret Run your own secret service.",
+      "Need to send a password? Send a link instead.",
     );
-    const brand = heading.locator(":scope > span").first();
+    const question = heading.locator(":scope > span").first();
+    await expect(question).toHaveText("Need to send a password?");
     const proposition = heading.locator(".gradient-text");
-    await expect(proposition).toHaveText("Run your own secret service.");
+    await expect(proposition).toHaveText("Send a link instead.");
     const fontSize = (element: Element): number =>
       parseFloat(getComputedStyle(element).fontSize);
-    expect(await proposition.evaluate(fontSize)).toBeGreaterThan(
-      await brand.evaluate(fontSize),
-    );
+    const headingSize = await heading.evaluate(fontSize);
+    expect(await question.evaluate(fontSize)).toBe(headingSize);
+    expect(await proposition.evaluate(fontSize)).toBe(headingSize);
   });
 
   test("security feature tags list is present", async ({ page }) => {
@@ -316,32 +317,37 @@ test.describe("Homepage redesign — GlobalInfrastructure section", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Suite: UseCases section
+// Suite: CustomDomains section
 // ---------------------------------------------------------------------------
 
-test.describe("Homepage redesign — UseCases section", () => {
+test.describe("Homepage redesign — CustomDomains section", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
   });
 
-  test("use cases section contains at least 4 cards", async ({ page }) => {
-    // Use case cards are grid items in the 2x2 grid; they all contain text
-    // matching the known persona names. We locate by the section's proximity.
-    const useCasesSection = page.locator("section").filter({
-      hasText: /how teams use onetime secret/i,
-    });
-    await expect(useCasesSection).toBeVisible();
+  test("custom domains heading is visible and makes the team pitch", async ({
+    page,
+  }) => {
+    const heading = page.locator("#custom-domains-heading");
+    await expect(heading).toBeVisible();
+    await expect(heading.locator(":scope > span")).toHaveText([
+      "Your team has secrets.",
+      "So run your own secret service.",
+    ]);
   });
 
-  test('no use case card has title "Developer"', async ({ page }) => {
-    // Find all h3 elements in use case cards and confirm Developer is absent
-    const useCasesSection = page.locator("section").filter({
-      hasText: /how teams use onetime secret/i,
+  test("recipient mock shows a customer domain, not ours", async ({ page }) => {
+    const mock = page.getByRole("img", { name: /secrets\.acme\.example/ });
+    await expect(mock).toBeVisible();
+    await expect(mock).toContainText("secrets.acme.example");
+    await expect(mock).not.toContainText(/onetime secret/i);
+  });
+
+  test("section links to pricing", async ({ page }) => {
+    const section = page.locator("section", {
+      has: page.locator("#custom-domains-heading"),
     });
-    const cardTitles = useCasesSection.locator("h3");
-    const titles = await cardTitles.allTextContents();
-    for (const title of titles) {
-      expect(title.trim()).not.toBe("Developer");
-    }
+    const link = section.getByRole("link", { name: /custom domains/i });
+    await expect(link).toHaveAttribute("href", /\/pricing/);
   });
 });

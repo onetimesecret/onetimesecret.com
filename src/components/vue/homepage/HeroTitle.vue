@@ -16,11 +16,11 @@ const { t } = useI18n();
       </span>
     </div>
 
-    <!-- Keep the brand in the heading, with the proposition visually dominant. -->
+    <!-- Hero heading: two lines, gradient on second. -->
     <h1
       id="hero-heading"
       class="text-4xl font-extrabold text-text-primary sm:text-5xl md:text-6xl lg:text-7xl">
-      <span class="mb-3 block text-xl font-medium text-text-secondary sm:text-2xl">
+      <span class="mb-3 block">
         {{ t("web.homepage.hero.title.line1") }}{{ " " }}
       </span>
       <span class="gradient-text block">

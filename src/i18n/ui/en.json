@@ -359,16 +359,16 @@
       }
     },
     "homepage": {
-      "title": "Onetime Secret {'|'} Run your own secret service on a custom domain",
+      "title": "Onetime Secret {'|'} Send a password as a link that works once",
       "description": "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever",
       "a-trusted-way-to-share-sensitive-information-etc": "A trusted way to share sensitive information that self-destructs after being viewed.",
       "hero": {
-        "badge": "Privacy-first design",
+        "badge": "Built to forget",
         "title": {
-          "line1": "Onetime Secret",
-          "line2": "Run your own secret service."
+          "line1": "Need to send a password?",
+          "line2": "Send a link instead."
         },
-        "subtitle": "Send passwords, credentials, and sensitive data with links that work only once.",
+        "subtitle": "Share passwords and other sensitive data with links that work only once.",
         "compliance": {
           "label": "Security features",
           "encrypted": "Encrypted",
@@ -377,15 +377,35 @@
           "dataResidency": "Sovereign data"
         }
       },
-      "features": {
-        "label": "Security architecture",
-        "heading": "Built to forget.",
-        "description": "Every design decision serves one purpose: make sure secrets are readable exactly once, then gone."
-      },
-      "useCases": {
-        "label": "Use cases",
-        "heading": "How teams use Onetime Secret",
-        "description": "From onboarding a new hire to rotating production credentials, sensitive data moves through organizations every day."
+      "customDomains": {
+        "label": "Custom domains",
+        "heading": {
+          "line1": "Your team has secrets.",
+          "line2": "So run your own secret service."
+        },
+        "description": "Send and receive single-use links from your own domain and brand recipients already know and trust.",
+        "points": {
+          "branding": {
+            "title": "Your domain, your brand",
+            "description": "secrets.yourcompany.com, with your logo and colors."
+          },
+          "sso": {
+            "title": "Single sign-on (SSO)",
+            "description": "Your team can sign in through your organization's identity provider with Entra, OIDC, and SAML."
+          },
+          "incoming": {
+            "title": "Incoming secrets",
+            "description": "A destination page for clients and vendors to send secrets directly to you."
+          }
+        },
+        "link": "See plans with custom domains",
+        "mock": {
+          "ariaLabel": "Mock of the page a recipient sees at {host}: the customer's own logo, a one-time secret, and no Onetime Secret branding.",
+          "title": "You have a secure message",
+          "body": "This link works once. After you open it, the content is gone for good.",
+          "button": "View secret",
+          "footer": "Sent through {brand}'s private secret service."
+        }
       },
       "infrastructure": {
         "label": "Global infrastructure",
@@ -398,15 +418,7 @@
           "uk": "London, United Kingdom",
           "us": "Hillsboro, United States"
         },
-        "capabilitiesLabel": "Available regions",
-        "features": {
-          "customDomain": "Custom Domain",
-          "customBranding": "Custom Branding",
-          "sso": "SSO / SAML",
-          "incomingSecrets": "Incoming Secrets",
-          "accessControls": "Access Controls",
-          "auditLogs": "Audit Logs"
-        }
+        "capabilitiesLabel": "Available regions"
       },
       "cta": {
         "heading": {
@@ -441,35 +453,6 @@
         "sr_description": "An image carousel showing screenshots of examples of using onetime secret with custom branding.",
         "view_pricing": "View Pricing",
         "toggle_animation": "Toggle animation"
-      },
-      "featureHighlights": {
-        "sectionTitle": "Key Features",
-        "sectionSubtitle": "Discover what makes Onetime Secret the preferred solution for secure information sharing.",
-        "security": {
-          "title": "Enhanced Privacy Options",
-          "description": "Add a passphrase for an extra layer of security. Only those with the passphrase can view the secret."
-        },
-        "encryption": {
-          "title": "Per-secret encryption",
-          "description": "Every secret is encrypted with its own unique key before being stored. Decryption keys live on the application server, never in the database — a defense-in-depth measure that limits exposure in the event of a data breach."
-        },
-        "selfDestruction": {
-          "title": "Read once, gone forever",
-          "description": "After a single view, the secret is permanently purged from all storage. No copies, no recovery, no trace."
-        },
-        "dataResidency": {
-          "title": "Regional data storage",
-          "description": "Choose where your secrets live: EU, US, or other regions. Meet data sovereignty requirements at the point of creation."
-        },
-        "compliance": {
-          "title": "Helps teams meet compliance goals",
-          "description": "Built to support SOC 2, GDPR, CCPA, and HIPAA workflows. Audit logs, access controls, and SSO help teams meet their own compliance requirements."
-        },
-        "api": {
-          "title": "Developer API",
-          "description": "Integrate secret sharing into your workflows, CI/CD pipelines, and internal tools. Full REST API with language-specific SDKs."
-        },
-        "also": "Also available:"
       }
     }
   },
