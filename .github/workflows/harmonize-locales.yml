@@ -54,17 +54,20 @@ jobs:
            github.event_name == 'push')
         id: report
         run: |
-          echo "# Translation Needs Report" > translation-report.md
-          echo "## Files changed" >> translation-report.md
-          echo "The following locale files have been updated:" >> translation-report.md
-          echo "$(git diff --name-only | grep 'src/i18n/ui/' | grep -v 'en.json')" >> translation-report.md
-          echo "" >> translation-report.md
+          {
+            echo "# Translation Needs Report"
+            echo "## Files changed"
+            echo "The following locale files have been updated:"
+            # `|| true` keeps an empty match from failing the step under bash -e
+            git diff --name-only | grep 'src/i18n/ui/' | grep -v 'en.json' || true
+            echo ""
 
-          echo "## Changes needed" >> translation-report.md
-          echo "The following keys need translation in each modified locale file:" >> translation-report.md
-          echo '```diff' >> translation-report.md
-          git diff --unified=0 src/i18n/ui/*.json | grep -E "^\+.*\":" | grep -v "src/i18n/ui/en.json" >> translation-report.md
-          echo '```' >> translation-report.md
+            echo "## Changes needed"
+            echo "The following keys need translation in each modified locale file:"
+            echo '```diff'
+            git diff --unified=0 src/i18n/ui/*.json | grep -E "^\+.*\":" | grep -v "src/i18n/ui/en.json"
+            echo '```'
+          } > translation-report.md
 
           # Create artifact for the report
           mkdir -p ./reports
