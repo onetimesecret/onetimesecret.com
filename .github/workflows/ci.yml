@@ -302,6 +302,9 @@ jobs:
   # run on every branch until #238 bumped the lockfile. A PR therefore runs the
   # audit only when it changes the dependency manifests. Push, manual and
   # scheduled runs always audit, and the daily schedule catches new advisories.
+  #
+  # Unlike the jobs above, this one has no schedule guard: security needs its
+  # output on every event, including the scheduled run.
   dependency-changes:
     name: Detect Dependency Changes
     runs-on: ubuntu-latest
@@ -326,9 +329,16 @@ jobs:
             exit 0
           fi
 
-          changed=$(git diff --name-only --no-renames HEAD^1 HEAD)
-          if grep -qxE 'package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml' <<< "$changed"; then
+          # Every repo file pnpm reads to resolve or audit dependencies. A new
+          # one (e.g. a pnpmfile under another name) has to be added here, or
+          # PRs that change it skip the audit. Pathspecs match from the repo
+          # root, so a nested package.json doesn't count.
+          changed=$(git diff --name-only HEAD^1 HEAD -- \
+            package.json pnpm-lock.yaml pnpm-workspace.yaml \
+            .npmrc .pnpmfile.cjs .pnpmfile.mjs)
+          if [[ -n "$changed" ]]; then
             echo "This PR changes dependency manifests: the audit runs"
+            echo "$changed"
             echo "audit=true" >> "$GITHUB_OUTPUT"
           else
             echo "This PR leaves dependency manifests alone: the audit is skipped"
