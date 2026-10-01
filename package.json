@@ -86,7 +86,7 @@
     "@spotlightjs/sidecar": "^2.5.0",
     "@spotlightjs/spotlight": "^4.11.8",
     "@types/d3-geo": "^3.1.1",
-    "@vitejs/plugin-vue": "^6.0.8",
+    "@vitejs/plugin-vue": "^6.0.9",
     "@vue/devtools-kit": "^8.2.1",
     "@vue/test-utils": "^2.5.0",
     "eslint": "10.10.0",
