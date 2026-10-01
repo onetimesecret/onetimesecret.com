@@ -10,7 +10,7 @@ import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
 import { createLocaleI18n } from "@/i18n";
 import enMessages from "@/i18n/ui/en.json";
 import type { MessageSchema } from "@/i18n";
-import { getLocalizedCollection } from "@/utils/content";
+import { getLocalizedCollection, getSlugFromEntry } from "@/utils/content";
 
 export async function getStaticPaths() {
   return getLanguagePaths();
@@ -96,7 +96,7 @@ useCases.sort((a, b) => {
                 {useCase.data.description}
               </p>
               <a
-                href={`/${lang}/use-cases/${useCase.id.split('/')[1]}`}
+                href={`/${lang}/use-cases/${getSlugFromEntry(useCase)}`}
                 class="inline-flex items-center text-sm font-medium text-blue-600 transition-colors hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
               >
                 Learn more
