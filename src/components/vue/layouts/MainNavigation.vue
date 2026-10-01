@@ -10,14 +10,16 @@ import { setLanguage, setLanguageWithMessages, type MessageSchema, type Supporte
 import { currentJurisdiction } from "@/stores/jurisdictionStore";
 import { getRegionalAuthUrl } from "@/utils/regionalAuth";
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   locale: SupportedLanguage;
   initialMessages?: Record<string, MessageSchema>;
   customNavItems?: Array<{name: string, href: string}>;
   showAuthButtons?: boolean;
   showLogo?: boolean;
   stickyHeader?: boolean;
-}>();
+}>(), {
+  showLogo: true,
+});
 
 const { t } = useI18n();
 
@@ -64,7 +66,6 @@ const navigation = computed(() => {
   }
 
   return [
-    { name: t("navigation.home"), href: localizeUrl("/", props.locale) },
     { name: t("navigation.pricing"), href: localizeUrl("/pricing", props.locale) },
     { name: t("navigation.whats-new"), href: localizeUrl("/changelog", props.locale) },
   ];
@@ -90,13 +91,13 @@ const mobileMenuOpen = ref(false);
         <div class="flex md:flex-1">
           <a
             v-if="showLogo"
-            href="/"
+            :href="localizeUrl('/', props.locale)"
             class="-m-1.5 p-1.5">
             <span class="sr-only">{{ t("onetime-secret-literal") }}</span>
             <img
               class="h-12 w-auto rounded-lg"
               src="/etc/img/onetime-logo-sm.png"
-              alt="Onetime Secret logo"
+              alt=""
               width="160"
               height="160" />
           </a>
@@ -161,13 +162,13 @@ const mobileMenuOpen = ref(false);
           <div class="flex items-center justify-between">
             <a
               v-if="showLogo"
-              href="/"
+              :href="localizeUrl('/', props.locale)"
               class="-m-1.5 p-1.5">
               <span class="sr-only">{{ t("onetime-secret-literal") }}</span>
               <img
                 class="h-12 w-auto rounded-lg"
                 src="/etc/img/onetime-logo-sm.png"
-                alt="Onetime Secret logo"
+                alt=""
                 width="160"
                 height="160" />
             </a>
