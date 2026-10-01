@@ -32,13 +32,13 @@ const pageCollection = defineCollection({
       })
       .optional(),
     // SEO-related metadata
-    // Setting this also needs the path added to config/astro/sitemap.ts: the
-    // sitemap `filter` cannot see rendered HTML, so the build gate will fail
-    // on a page that is advertised and then refuses to be indexed.
+    // Rendered by ContentPageLayout unless an explicit noindex prop overrides it.
+    // If effective noindex is true, exclude the route in config/astro/sitemap.ts;
+    // its filter cannot see frontmatter or HTML, and the build gate rejects it.
     noindex: z.boolean().optional().default(false),
-    // Same constraint as noindex above: pointing this somewhere else makes the
-    // page a declared duplicate, so advertising it is the "Alternate page with
-    // proper canonical tag" defect and the build gate fails on it.
+    // Maps to canonicalUrl; explicit layout props take precedence. If the
+    // effective canonical points elsewhere, exclude the route from the sitemap:
+    // the build gate rejects advertised duplicates. Omit for a self-canonical.
     canonical: z.string().url().optional(),
   }),
 });
@@ -73,13 +73,13 @@ const useCasesCollection = defineCollection({
       })
       .optional(),
     // SEO-related metadata
-    // Setting this also needs the path added to config/astro/sitemap.ts: the
-    // sitemap `filter` cannot see rendered HTML, so the build gate will fail
-    // on a page that is advertised and then refuses to be indexed.
+    // Rendered by ContentPageLayout unless an explicit noindex prop overrides it.
+    // If effective noindex is true, exclude the route in config/astro/sitemap.ts;
+    // its filter cannot see frontmatter or HTML, and the build gate rejects it.
     noindex: z.boolean().optional().default(false),
-    // Same constraint as noindex above: pointing this somewhere else makes the
-    // page a declared duplicate, so advertising it is the "Alternate page with
-    // proper canonical tag" defect and the build gate fails on it.
+    // Maps to canonicalUrl; explicit layout props take precedence. If the
+    // effective canonical points elsewhere, exclude the route from the sitemap:
+    // the build gate rejects advertised duplicates. Omit for a self-canonical.
     canonical: z.string().url().optional(),
   }),
 });
