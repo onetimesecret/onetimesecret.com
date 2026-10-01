@@ -365,8 +365,15 @@
       "hero": {
         "badge": "Conçu pour oublier",
         "title": {
-          "line1": "Vous devez envoyer un mot de passe ?",
-          "line2": "Envoyez plutôt un lien."
+          "line1": "Vous devez envoyer {item}\u00a0?",
+          "line2": "Envoyez plutôt un lien.",
+          "items": {
+            "password": "un mot de passe",
+            "apiKey": "une clé API",
+            "loveLetter": "un mot doux",
+            "login": "des identifiants",
+            "timePlace": "le lieu et l'heure"
+          }
         },
         "subtitle": "Envoyez des mots de passe, des identifiants et des données sensibles avec des liens à usage unique.",
         "compliance": {

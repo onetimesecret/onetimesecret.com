@@ -365,8 +365,15 @@
       "hero": {
         "badge": "Entwickelt, um zu vergessen",
         "title": {
-          "line1": "Müssen Sie ein Passwort senden?",
-          "line2": "Senden Sie stattdessen einen Link."
+          "line1": "Müssen Sie {item} senden?",
+          "line2": "Senden Sie stattdessen einen Link.",
+          "items": {
+            "password": "ein Passwort",
+            "apiKey": "API-Schlüssel",
+            "loveLetter": "einen Liebesbrief",
+            "login": "Zugangsdaten",
+            "timePlace": "Ort und Zeit"
+          }
         },
         "subtitle": "Senden Sie Passwörter, Zugangsdaten und sensible Informationen über Links, die nur einmal funktionieren.",
         "compliance": {

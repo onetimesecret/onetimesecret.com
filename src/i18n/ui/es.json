@@ -365,8 +365,15 @@
       "hero": {
         "badge": "Diseñado para olvidar",
         "title": {
-          "line1": "¿Necesita enviar una contraseña?",
-          "line2": "Envíe un enlace en su lugar."
+          "line1": "¿Necesita enviar {item}?",
+          "line2": "Envíe un enlace en su lugar.",
+          "items": {
+            "password": "una contraseña",
+            "apiKey": "una clave de API",
+            "loveLetter": "una nota de amor",
+            "login": "unas credenciales",
+            "timePlace": "el lugar y la hora"
+          }
         },
         "subtitle": "Envíe contraseñas, credenciales y datos sensibles con enlaces que funcionan una sola vez.",
         "compliance": {

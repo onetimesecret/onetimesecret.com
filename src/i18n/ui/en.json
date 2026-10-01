@@ -365,8 +365,15 @@
       "hero": {
         "badge": "Built to forget",
         "title": {
-          "line1": "Need to send a password?",
-          "line2": "Send a link instead."
+          "line1": "Need to send {item}?",
+          "line2": "Send a link instead.",
+          "items": {
+            "password": "a password",
+            "apiKey": "an API key",
+            "loveLetter": "a love letter",
+            "login": "login details",
+            "timePlace": "a time & place"
+          }
         },
         "subtitle": "Share passwords and other sensitive data with links that work only once.",
         "compliance": {
