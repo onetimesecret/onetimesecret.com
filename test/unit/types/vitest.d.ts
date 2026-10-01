@@ -19,6 +19,7 @@ declare module 'vitest' {
       results: Array<{ type: string; value: T }>;
     };
     mockReturnValue(val: T): this;
+    mockResolvedValue(val: Awaited<T>): this;
     mockImplementation(fn: (...args: Y) => T): this;
     mockReset(): this;
     mockClear(): this;
@@ -29,6 +30,10 @@ declare module 'vitest' {
     fn<T = unknown, Y extends unknown[] = unknown[]>(
       impl?: (...args: Y) => T
     ): MockInstance<T, Y> & ((...args: Y) => T);
+    mock(path: string, factory?: () => unknown): void;
+    mocked<T extends (...args: never[]) => unknown>(
+      fn: T,
+    ): MockInstance<ReturnType<T>, Parameters<T>>;
     spyOn<O extends object, K extends keyof O>(obj: O, method: K): MockInstance;
     clearAllMocks(): void;
     resetAllMocks(): void;
@@ -125,6 +130,6 @@ declare module 'vitest' {
   const test: TestFn;
   function beforeEach(fn: () => void | Promise<void>): void;
   function afterEach(fn: () => void | Promise<void>): void;
-  function beforeAll(fn: () => void | Promise<void>): void;
+  function beforeAll(fn: () => void | Promise<void>, timeout?: number): void;
   function afterAll(fn: () => void | Promise<void>): void;
 }
