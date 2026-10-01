@@ -21,6 +21,7 @@ on:
     branches: [main, develop]
     paths:
       - ".github/workflows/**"
+      - ".github/actionlint-matcher.json"
 
   # Allow manual triggering
   workflow_dispatch:
@@ -39,8 +40,14 @@ jobs:
         with:
           persist-credentials: false
 
+      # Turns findings in the log into annotations on the PR diff. The matcher
+      # is copied unchanged from rhysd/actionlint v1.7.12 and handles -color.
+      - name: Register actionlint problem matcher
+        run: echo "::add-matcher::.github/actionlint-matcher.json"
+
       # The image bundles actionlint, shellcheck and pyflakes, so the versions
-      # that run here do not drift with the runner image.
+      # that run here do not drift with the runner image. Upstream tags the
+      # image without a "v" prefix, hence "# 1.7.12".
       - name: Lint workflow files
         uses: docker://rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 # 1.7.12
         with:
