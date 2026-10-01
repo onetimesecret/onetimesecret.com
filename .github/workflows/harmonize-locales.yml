@@ -65,8 +65,7 @@ jobs:
             echo "## Changes needed"
             echo "The following keys need translation in each modified locale file:"
             echo '```diff'
-            # Empty when the run only removed keys; that is still a report
-            git diff --unified=0 src/i18n/ui/*.json | grep -E "^\+.*\":" | grep -v "src/i18n/ui/en.json" || true
+            git diff --unified=0 src/i18n/ui/*.json | grep -E "^\+.*\":" | grep -v "src/i18n/ui/en.json"
             echo '```'
           } > translation-report.md
 
