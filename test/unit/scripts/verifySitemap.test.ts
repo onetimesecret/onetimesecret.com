@@ -487,19 +487,90 @@ describe("verifySitemap", () => {
     const problems = run(
       fixture({ paths, canonicalTo: { [path]: `https://eu.onetimesecret.com${path}` } }),
     );
-    expect(text(problems)).toContain("canonicalises somewhere else");
-    expect(text(problems)).toContain(path);
+    const line = problems.find((p) =>
+      p.includes("canonicalises somewhere else"),
+    );
+    expect(line).toContain("1 sitemap URL(s)");
+    expect(line).toContain(path);
+    expect(problems).toHaveLength(1);
+    expect(text(problems)).not.toContain("no built page");
   });
 
   it("flags an advertised page that canonicalises to another path on this origin", () => {
     const paths = defaultPaths();
     const path = paths.at(-1)!;
-    const problems = run(fixture({ paths, canonicalTo: { [path]: `${ORIGIN}${paths[0]!}` } }));
-    expect(text(problems)).toContain("canonicalises somewhere else");
+    const problems = run(
+      fixture({ paths, canonicalTo: { [path]: `${ORIGIN}${paths[0]!}` } }),
+    );
+    const line = problems.find((p) =>
+      p.includes("canonicalises somewhere else"),
+    );
+    expect(line).toContain("1 sitemap URL(s)");
+    expect(line).toContain(path);
+    expect(problems).toHaveLength(1);
+    expect(text(problems)).not.toContain("no built page");
   });
 
-  it("accepts a build where every advertised page claims its own URL", () => {
-    expect(run(fixture())).toEqual([]);
+  it("accepts advertised pages with trailing-slash canonical variants", () => {
+    const paths = defaultPaths();
+    const canonicalTo = Object.fromEntries(
+      paths.map((p) => [p, `${ORIGIN}${p.replace(/\/$/, "")}`]),
+    );
+    expect(run(fixture({ paths, canonicalTo }))).toEqual([]);
+  });
+
+  it.each([ORIGIN, "https://staging.onetimesecret.com"])(
+    "accepts relative self canonicals and audits coverage on %s",
+    (origin) => {
+      const paths = defaultPaths();
+      const canonicalTo = Object.fromEntries(paths.map((p) => [p, "./"]));
+      expect(run(fixture({ paths, canonicalTo, origin }), origin)).toEqual([]);
+    },
+  );
+
+  it("reports an unadvertised document-relative canonical on its document route", () => {
+    const dir = fixture({
+      extraPages: {
+        "en/orphan/index.html": page("/en/orphan/", { canonicalHref: "./" }),
+      },
+    });
+    const problems = run(dir);
+    const line = problems.find((p) =>
+      p.includes("built page(s) are missing from the sitemap"),
+    );
+    expect(line).toContain("/en/orphan/");
+  });
+
+  it.each(["?preview=1", "#section", "%ZZ/", "%C3/"])(
+    "rejects an advertised canonical suffix %s without a missing-page cascade",
+    (suffix) => {
+      const path = defaultPaths().at(-1)!;
+      const problems = run(
+        fixture({ canonicalTo: { [path]: `${ORIGIN}${path}${suffix}` } }),
+      );
+      const line = problems.find((p) =>
+        p.includes("canonicalises somewhere else"),
+      );
+      expect(line).toContain("1 sitemap URL(s)");
+      expect(line).toContain(path);
+      expect(problems).toHaveLength(1);
+      expect(text(problems)).not.toContain("no built page");
+    },
+  );
+
+  it("audits a direct HTML document with a document-relative self canonical", () => {
+    const paths = [...defaultPaths(), "/en/direct.html"];
+    expect(
+      run(
+        fixture({ paths, canonicalTo: { "/en/direct.html": "direct.html" } }),
+      ),
+    ).toEqual([]);
+  });
+
+  it("accepts equivalent encoded canonicals without a coverage cascade", () => {
+    const paths = [...defaultPaths(), "/en/café/"];
+    const canonicalTo = { "/en/café/": `${ORIGIN}/en/caf%c3%a9/` };
+    expect(run(fixture({ paths, canonicalTo }))).toEqual([]);
   });
 
   // Keyed on origin + normalized path, so a trailing-slash variant is the same
@@ -1082,6 +1153,43 @@ describe("canonicalisesToSelf", () => {
     const html = page("/en/duplicate/", { canonicalHref: `${ORIGIN}/en/about/` });
     expect(canonicalisesToSelf(html, canonical, "/en/duplicate/")).toBe(false);
   });
+
+  const relativeCanonicalCases: [
+    href: string,
+    pathname: string,
+    self: boolean,
+  ][] = [
+    ["/en/about/", "/en/about/", true],
+    ["./", "/en/about/", true],
+    ["../about/", "/en/about/", true],
+    ["about/", "/en/about/", false],
+    ["about", "/en/about", true],
+    ["./", "/en/about", false],
+    ["about.html", "/en/about.html", true],
+    ["//eu.onetimesecret.com/en/about/", "/en/about/", false],
+    ["?preview=1", "/en/about/", false],
+    ["#section", "/en/about/", false],
+    [`${ORIGIN}/en/about/?preview=1`, "/en/about/", false],
+    [`${ORIGIN}/en/about/#section`, "/en/about/", false],
+    ["/en/%61bout/", "/en/about/", true],
+    ["/en/caf%c3%a9/", "/en/caf%C3%A9/", true],
+    ["/en/café/", "/en/caf%C3%A9/", true],
+    ["/en/%ZZ/", "/en/%ZZ/", false],
+    ["/en/%C3/", "/en/%C3/", false],
+  ];
+
+  it.each(relativeCanonicalCases)(
+    "resolves %s against document %s (self: %s)",
+    (href, path, self) => {
+      expect(
+        canonicalisesToSelf(
+          page(path, { canonicalHref: href }),
+          canonical,
+          path,
+        ),
+      ).toBe(self);
+    },
+  );
 
   it("rejects a canonical that is not a URL", () => {
     expect(canonicalisesToSelf(page("/a/", { canonicalHref: "notaurl" }), canonical, "/a/")).toBe(

@@ -361,6 +361,7 @@ export const canonicalOf = (html) => linkHrefs(html, "canonical")[0];
 
 /**
  * True when `html` claims `pathname` on `canonical` as its own canonical URL.
+ * `canonical` is a parsed URL for the production origin, not an origin string.
  *
  * A page with no canonical passes: nothing is claimed, so nothing contradicts
  * the sitemap, and demanding one here would duplicate a check the coverage
@@ -375,12 +376,39 @@ export const canonicalOf = (html) => linkHrefs(html, "canonical")[0];
 export function canonicalisesToSelf(html, canonical, pathname) {
   const href = canonicalOf(html);
   if (href === undefined) return true;
-  const declared = parseUrl(href);
-  if (!declared) return false;
+  const declared = resolveCanonical(href, new URL(pathname, canonical));
+  if (!declared || declared.origin !== canonical.origin) return false;
+  const expectedPath = canonicalPath(pathname);
   return (
-    declared.origin === canonical.origin &&
-    normalizePath(declared.pathname) === normalizePath(pathname)
+    expectedPath !== undefined &&
+    canonicalPath(declared.pathname) === expectedPath
   );
+}
+
+/** Resolve a canonical against the production document URL, failing closed. */
+function resolveCanonical(href, documentUrl) {
+  try {
+    const parsed = new URL(href, documentUrl);
+    if (
+      parsed.search ||
+      parsed.hash ||
+      canonicalPath(parsed.pathname) === undefined
+    )
+      return;
+    return parsed;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Decode before normalization, but never accept malformed percent encoding. */
+function canonicalPath(pathname) {
+  try {
+    decodeURIComponent(pathname);
+    return normalizePath(decodePath(pathname));
+  } catch {
+    return undefined;
+  }
 }
 
 /**
@@ -392,7 +420,7 @@ export function canonicalisesToSelf(html, canonical, pathname) {
  * in the sitemap can see that. MUST_BE_PRESENT names 15 paths and the count
  * floor is 50, so an over-broad `filter` could still drop 40 pages silently.
  *
- * A page counts as a route of this site when it declares an absolute canonical
+ * A page counts as a route of this site when its canonical resolves to a URL
  * on `canonicalOrigin`, which is what LayoutHead.astro emits for every page it
  * renders. That is derived rather than a skip list, and it is the same
  * identification scripts/verify-hreflang.mjs already ships with. It excludes,
@@ -407,7 +435,8 @@ export function canonicalisesToSelf(html, canonical, pathname) {
  * canonical is advertised rather than whether every file is. A page that
  * deliberately canonicalises elsewhere (LayoutHead takes a canonicalUrl prop)
  * counts as covered by its target, which is the right answer for a duplicate
- * and the reason no file-path-to-URL mapping is needed here.
+ * Absolute targets need no file mapping; relative targets resolve against the
+ * document route (index.html is directory format, other HTML files are direct).
  *
  * One assumption this cannot check: it demands that every page it identifies
  * be advertised, but only @astrojs/sitemap decides what gets advertised, and
@@ -429,6 +458,7 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
   // the same one would otherwise be counted twice, and the number an operator
   // reads would be a file count rather than a URL count.
   const missing = new Set();
+  const advertisedPaths = new Set([...advertised].map(canonicalPath));
   // What the pages actually link as their sitemap. Collected here because this
   // is already reading every built page, and checked by the caller: the gate
   // and LayoutHead.astro otherwise hold the filename as two independent
@@ -453,7 +483,15 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
     }
 
     const href = canonicalOf(html);
-    const parsed = href === undefined ? undefined : parseUrl(href);
+    const filePath = relative(distDir, file)
+      .split(sep)
+      .map(encodeURIComponent)
+      .join("/");
+    const documentPath = `/${filePath.replace(/(^|\/)index\.html$/, "$1")}`;
+    const parsed =
+      href === undefined
+        ? undefined
+        : resolveCanonical(href, new URL(documentPath, canonical));
     if (!parsed || parsed.origin !== canonical.origin) continue;
 
     // A redirect stub canonicalises to its target and a noindex page asks not
@@ -473,12 +511,13 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
     // the disallowedPage check above, whose message names this file second.
     if (hasRobots && isDisallowed(decodePath(pathname), rules)) continue;
 
-    seen.add(pathname);
+    const key = canonicalPath(pathname);
+    seen.add(key);
     // Normalized on both sides, because these are two independently produced
     // strings: this one from the page's canonical, the set from the sitemap's
     // <loc> values. They agree on a trailing slash today; flipping
     // `trailingSlash` should not be able to report all 107 pages as missing.
-    if (!advertised.has(normalizePath(pathname))) missing.add(pathname);
+    if (!advertisedPaths.has(key)) missing.add(pathname);
   }
 
   return {
