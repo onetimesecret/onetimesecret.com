@@ -365,10 +365,10 @@
       "hero": {
         "badge": "Privacy-first design",
         "title": {
-          "line1": "Onetime Secret",
-          "line2": "Run your own secret service."
+          "line1": "Need to send a password?",
+          "line2": "Send a link instead."
         },
-        "subtitle": "Send passwords, credentials, and sensitive data with links that work only once.",
+        "subtitle": "Share passwords and other sensitive data with links that work only once.",
         "compliance": {
           "label": "Security features",
           "encrypted": "Encrypted",
@@ -462,7 +462,7 @@
           "description": "Choose where your secrets live: EU, US, or other regions. Meet data sovereignty requirements at the point of creation."
         },
         "compliance": {
-          "title": "Helps teams meet compliance goals",
+          "title": "Meet your compliance goals",
           "description": "Built to support SOC 2, GDPR, CCPA, and HIPAA workflows. Audit logs, access controls, and SSO help teams meet their own compliance requirements."
         },
         "api": {
