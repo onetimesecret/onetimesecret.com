@@ -24,8 +24,9 @@ function entrySlug(id: string): string {
 }
 
 const entries = await getCollection("changelog");
+const now = Date.now();
 const latest = entries
-  .filter((e) => !e.data.planned)
+  .filter((e) => !e.data.planned && e.data.date.getTime() <= now)
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())[0];
 
 const slug = latest ? entrySlug(latest.id) : null;
