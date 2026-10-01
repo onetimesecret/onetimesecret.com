@@ -13,7 +13,7 @@
  *   - Badge-dot element presence in DOM (animation is CSS-only)
  */
 
-import { test, expect, type Locator, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -114,11 +114,22 @@ test.describe("Homepage redesign — hero section", () => {
     expect(tagName).toBe("H1");
   });
 
-  test("hero heading contains two text spans (two-line structure)", async ({
+  test("hero heading gives the proposition visual priority over the brand", async ({
     page,
   }) => {
-    const spans = page.locator("#hero-heading span");
-    await expect(spans).toHaveCount(2);
+    const heading = page.getByRole("heading", { level: 1 });
+    await expect(heading).toHaveCount(1);
+    await expect(heading).toHaveText(
+      "Onetime Secret Run your own secret service.",
+    );
+    const brand = heading.locator(":scope > span").first();
+    const proposition = heading.locator(".gradient-text");
+    await expect(proposition).toHaveText("Run your own secret service.");
+    const fontSize = (element: Element): number =>
+      parseFloat(getComputedStyle(element).fontSize);
+    expect(await proposition.evaluate(fontSize)).toBeGreaterThan(
+      await brand.evaluate(fontSize),
+    );
   });
 
   test("security feature tags list is present", async ({ page }) => {
