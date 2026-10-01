@@ -43,6 +43,11 @@ on:
   schedule:
     - cron: "23 6 * * *"
 
+# Every job only reads the repository. Stated here so the token stays
+# read-only even if the repository default changes.
+permissions:
+  contents: read
+
 jobs:
   # ============================================================================
   # Type Safety & Linting
