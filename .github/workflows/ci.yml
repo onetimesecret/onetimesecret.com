@@ -320,8 +320,11 @@ jobs:
         with:
           fetch-depth: 2
 
+      # shell: bash runs with -eo pipefail, so a failed git diff ends the job
+      # instead of reading as "no dependency changes".
       - name: Decide whether to audit
         id: decide
+        shell: bash
         run: |
           if [[ "$GITHUB_EVENT_NAME" != "pull_request" ]]; then
             echo "Event is $GITHUB_EVENT_NAME: the audit always runs"
@@ -331,8 +334,8 @@ jobs:
 
           # Every repo file pnpm reads to resolve or audit dependencies. A new
           # one (e.g. a pnpmfile under another name) has to be added here, or
-          # PRs that change it skip the audit. Pathspecs match from the repo
-          # root, so a nested package.json doesn't count.
+          # PRs that change it skip the audit. The step runs from the checkout
+          # root, so these match root files only, not a nested package.json.
           changed=$(git diff --name-only HEAD^1 HEAD -- \
             package.json pnpm-lock.yaml pnpm-workspace.yaml \
             .npmrc .pnpmfile.cjs .pnpmfile.mjs)
