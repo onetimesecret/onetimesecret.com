@@ -366,9 +366,7 @@
         "badge": "Privacy-first design",
         "title": {
           "line1": "Onetime Secret",
-          "line2_w1": "Signed.",
-          "line2_w2": "Sealed.",
-          "line2_w3": "Delivered."
+          "line2": "Run your own secret service."
         },
         "subtitle": "Send passwords, credentials, and sensitive data with links that work only once.",
         "compliance": {

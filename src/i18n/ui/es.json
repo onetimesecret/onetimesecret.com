@@ -366,9 +366,7 @@
         "badge": "Diseño orientado a la privacidad",
         "title": {
           "line1": "Onetime Secret",
-          "line2_w1": "Firmado.",
-          "line2_w2": "Sellado.",
-          "line2_w3": "Entregado."
+          "line2": "Opere su propio servicio para compartir secretos."
         },
         "subtitle": "Envíe contraseñas, credenciales y datos sensibles con enlaces que funcionan una sola vez.",
         "compliance": {

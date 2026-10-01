@@ -15,12 +15,14 @@ export interface Props {
   initialMessages?: Record<string, MessageSchema>;
   authRedirect?: string;
   large?: boolean;
+  showCompanyName?: boolean;
 }
 
 const {
   initialMessages = {},
   authRedirect,
   large = false,
+  showCompanyName = false,
   effectiveLocale: propsLocale,
 } = Astro.props;
 const effectiveLocale: SupportedLanguage = (propsLocale ||
@@ -58,11 +60,6 @@ const t = pageI18n.global.t;
 // Define navigation items
 const navigation = [
   {
-    name: t("navigation.home"),
-    href: localizeUrl("/", effectiveLocale),
-    external: false,
-  },
-  {
     name: t("navigation.docs"),
     href: `https://docs.onetimesecret.com/${getDocsLocale(effectiveLocale)}`,
     external: true,
@@ -95,19 +92,34 @@ const signInHref = authRedirect
     aria-label="Global">
     <div class="flex flex-1">
       <a
-        href="/"
-        class="-m-1.5 flex items-center p-1.5">
-        <span class="sr-only">{t("onetime-secret-literal")}</span>
+        href={localizeUrl("/", effectiveLocale)}
+        class="-m-1.5 flex items-center gap-3 p-1.5">
+        {
+          !showCompanyName && (
+            <span class="sr-only">{t("onetime-secret-literal")}</span>
+          )
+        }
         <img
           class:list={[
             "w-auto rounded-lg",
             large ? "h-16 sm:h-18" : "h-14 sm:h-16",
           ]}
           src="/etc/img/onetime-logo-md.png"
-          alt={t("onetime-secret-literal-logo")}
+          alt=""
           width="640"
           height="640"
         />
+        {
+          showCompanyName && (
+            <span
+              class:list={[
+                "font-brand font-semibold text-gray-900 dark:text-gray-100",
+                large ? "text-3xl" : "text-xl",
+              ]}>
+              {t("onetime-secret-literal")}
+            </span>
+          )
+        }
       </a>
     </div>
 
@@ -203,16 +215,27 @@ const signInHref = authRedirect
     class="fixed inset-y-0 right-0 z-[101] w-full translate-x-full overflow-y-auto bg-white px-6 py-6 transition-transform duration-300 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 dark:bg-gray-900 dark:sm:ring-gray-700/30">
     <div class="flex items-center justify-between">
       <a
-        href="/"
-        class="-m-1.5 p-1.5">
-        <span class="sr-only">{t("onetime-secret-literal")}</span>
+        href={localizeUrl("/", effectiveLocale)}
+        class="-m-1.5 flex items-center gap-3 p-1.5">
+        {
+          !showCompanyName && (
+            <span class="sr-only">{t("onetime-secret-literal")}</span>
+          )
+        }
         <img
           class="h-12 w-auto rounded-lg"
           src="/etc/img/onetime-logo-sm.png"
-          alt="Onetime Secret logo"
+          alt=""
           width="160"
           height="160"
         />
+        {
+          showCompanyName && (
+            <span class="font-brand text-lg font-semibold text-gray-900 dark:text-gray-100">
+              {t("onetime-secret-literal")}
+            </span>
+          )
+        }
       </a>
       <button
         type="button"
@@ -238,8 +261,7 @@ const signInHref = authRedirect
                 rel={item.external ? "noopener noreferrer" : undefined}
                 class:list={[
                   "focus-visible:outline-brand-500 -mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2",
-                  currentPath === item.href ||
-                  (currentPath === "/" && item.href === "/") // Logic for active link
+                  currentPath === item.href
                     ? "text-brand-600 dark:text-brand-400 bg-gray-50 dark:bg-gray-800"
                     : "text-gray-900 hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-800",
                 ]}>

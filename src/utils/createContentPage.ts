@@ -6,6 +6,7 @@ import type { AstroGlobal } from "astro";
 import type { SupportedLanguage } from "../i18n";
 import { DEFAULT_LANGUAGE, getLanguagePaths } from "../i18n";
 import { getContentPageData } from "./contentPage";
+import { resolveContentSeo } from "./contentSeo";
 
 interface ContentPageFactoryOptions {
   /**
@@ -75,6 +76,7 @@ export function createContentPageFactory(options: ContentPageFactoryOptions) {
     return {
       Content: renderedContent.Content as unknown,
       pageProps: {
+        ...resolveContentSeo(page.data),
         page,
         renderedContent,
         initialMessages,

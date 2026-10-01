@@ -77,6 +77,7 @@ export interface Props {
   header?: boolean; // Whether to show the default header (true) or custom header via slot (false)
   footer?: boolean; // Whether to show the footer (defaults to true)
   large?: boolean; // Whether to show the logo in large mode (defaults to false)
+  showCompanyName?: boolean; // Whether to show the company name beside the logo (defaults to false)
 }
 
 // --------------------------
@@ -91,6 +92,7 @@ const {
   header = true,
   footer = true,
   large = false,
+  showCompanyName = false,
   // SEO related props are passed through to LayoutHead
   ...seoProps
 } = Astro.props;
@@ -157,6 +159,7 @@ if (import.meta.env.DEV) {
       header ? (
         <LayoutHeader
           large={large}
+          showCompanyName={showCompanyName}
           authRedirect={authRedirect}
           effectiveLocale={effectiveLocale}
           initialMessages={initialMessages}>

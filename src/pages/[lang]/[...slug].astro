@@ -4,7 +4,7 @@
  *
  * Generic template for rendering any page from the content collections
  * Supports:
- * - Multiple content collections (pages, product, useCases)
+ * - Pages and use-case detail content
  * - Language fallback (preferred language -> default language)
  * - Consistent styling and layout
  */
@@ -15,10 +15,12 @@ import { DEFAULT_LANGUAGE } from "@config/astro/i18n";
 import { createLocaleI18n } from "@/i18n";
 import enMessages from "@/i18n/ui/en.json";
 import type { MessageSchema } from "@/i18n";
+import { getLocalizedCollection, getSlugFromEntry } from "@/utils/content";
 
 export async function getStaticPaths() {
   // Get all available content from collections
   const pagesEntries = await getCollection("pages");
+  type ContentEntry = CollectionEntry<"pages"> | CollectionEntry<"useCases">;
 
   // Get all supported language paths
   const langPaths = await getLanguagePaths();
@@ -26,7 +28,7 @@ export async function getStaticPaths() {
   // Create a map for all available content
   const paths: Array<{
     params: { lang: string; slug: string };
-    props: { entry: CollectionEntry<"pages">; collection: string; entryLang: string };
+    props: { entry: ContentEntry; collection: string; entryLang: string };
   }> = [];
 
   // Process each content collection
@@ -68,6 +70,22 @@ export async function getStaticPaths() {
 
     // Add paths for each collection
     addCollectionPaths(pagesEntries, "pages");
+
+    // Use the same language fallback and draft filtering as the use-case index.
+    const useCases = await getLocalizedCollection("useCases", langCode);
+    for (const entry of useCases) {
+      paths.push({
+        params: {
+          lang: langCode,
+          slug: `use-cases/${getSlugFromEntry(entry)}`,
+        },
+        props: {
+          entry,
+          collection: "useCases",
+          entryLang: entry.id.split("/")[0],
+        },
+      });
+    }
   }
 
   return paths;

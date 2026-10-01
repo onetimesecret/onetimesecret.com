@@ -7,7 +7,7 @@ This directory contains all content collections for the Onetime Secret website. 
 ```
 src/content/
 ├── README.md            # This file
-├── config.ts            # Content collection schema definitions
+
 ├── pages/               # Static pages (about, security, etc.)
 │   ├── en/              # English content (default)
 │   ├── es/              # Spanish content
@@ -43,11 +43,17 @@ Each collection defines a schema in `src/content.config.ts` using Zod for valida
 
 ```typescript
 const pageCollection = defineCollection({
-  type: "content",
+  loader: glob({
+    pattern: ["**/*.{md,mdx}", "!**/_*", "!**/_*/**"],
+    base: "./src/content/pages",
+  }),
   schema: z.object({
     title: z.string(),
     description: z.string().optional(),
-    layout: z.string().optional().default("MarkdownLayout"),
+    layout: z.string().optional().default("ContentPageLayout"),
+    draft: z.boolean().optional().default(false),
+    heroTitle: z.string().optional(),
+    heroDescription: z.string().optional(),
     heroType: z.enum(["simple", "feature", "none"]).optional().default("simple"),
     pubDate: z.date().optional(),
     updatedDate: z.date().optional(),
@@ -60,6 +66,26 @@ const pageCollection = defineCollection({
   }),
 });
 ```
+
+### SEO metadata for pages and use cases
+
+Both `pages` and `useCases` support the SEO fields shown above. Page routes and
+use-case detail routes (`/[lang]/use-cases/[slug]/`) render them through
+`ContentPageLayout`. The use-case index does not inherit metadata from its entries.
+
+Precedence is explicit layout props (`canonicalUrl`, `noindex`), then entry
+frontmatter (`canonical`, `noindex`), then the existing `LayoutHead` defaults.
+An explicit `noindex={false}` overrides `noindex: true`. Absent canonical metadata
+keeps the generated self-canonical; absent noindex metadata keeps route defaults.
+The collection schema defaults `noindex` to `false`. Language-fallback entries
+retain their own metadata, so an authored canonical also applies to fallback routes.
+
+- `canonical` must be an absolute URL. It supplies both the canonical link and `og:url`.
+- Effective `noindex: true` emits `robots: noindex, nofollow` and suppresses hreflang.
+- **Sitemap warning:** exclude routes with effective noindex or a canonical pointing
+  elsewhere in `config/astro/sitemap.ts`. The sitemap filter cannot inspect
+  frontmatter or rendered HTML. The verification gate rejects advertised noindex
+  pages and duplicates; setting frontmatter does not automatically exclude a route.
 
 ## Using Content Collections
 
@@ -119,7 +145,7 @@ Create a file at `src/content/pages/en/new-page.md`:
 ---
 title: New Page Title
 description: Description for SEO and previews
-layout: MarkdownLayout
+layout: ContentPageLayout
 heroType: simple
 ---
 
