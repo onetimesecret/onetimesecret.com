@@ -359,11 +359,11 @@
       }
     },
     "homepage": {
-      "title": "Onetime Secret {'|'} Service de partage de secrets sur votre domaine",
+      "title": "Onetime Secret {'|'} Envoyez un mot de passe sous forme de lien à usage unique",
       "description": "Partagez des informations sensibles en toute sécurité avec des liens auto-destructibles. Collez votre secret, générez un lien et partagez-le. Une fois consulté, il disparaît à jamais.",
       "a-trusted-way-to-share-sensitive-information-etc": "Une méthode fiable pour partager des informations confidentielles qui s'autodétruisent après consultation.",
       "hero": {
-        "badge": "Conception axée sur la vie privée",
+        "badge": "Conçu pour oublier",
         "title": {
           "line1": "Onetime Secret",
           "line2": "Gérez votre propre service de partage de secrets."
@@ -377,15 +377,35 @@
           "dataResidency": "Souveraineté des données"
         }
       },
-      "features": {
-        "label": "Architecture de sécurité",
-        "heading": "Conçu pour oublier.",
-        "description": "Chaque décision de conception sert un seul objectif : garantir que les secrets sont lisibles exactement une fois, puis disparaissent."
-      },
-      "useCases": {
-        "label": "Cas d'usage",
-        "heading": "Comment les équipes utilisent Onetime Secret",
-        "description": "De l'intégration d'un nouvel employé à la rotation des identifiants de production, les données sensibles circulent chaque jour dans les organisations."
+      "customDomains": {
+        "label": "Domaines personnalisés",
+        "heading": {
+          "line1": "Votre équipe a des secrets.",
+          "line2": "Gérez donc votre propre service de secrets."
+        },
+        "description": "Envoyez et recevez des liens à usage unique depuis votre propre domaine, avec votre logo sur la page que le destinataire ouvre. Notre chiffrement, votre nom sur la porte.",
+        "points": {
+          "branding": {
+            "title": "Votre domaine, votre marque",
+            "description": "secrets.votreentreprise.fr, avec votre logo et vos couleurs. Rien de nous dans la barre d'adresse."
+          },
+          "sso": {
+            "title": "SSO / SAML",
+            "description": "Votre fournisseur d'identité décide qui peut envoyer. Les journaux d'audit montrent qui l'a fait."
+          },
+          "incoming": {
+            "title": "Secrets entrants",
+            "description": "Offrez à vos clients et fournisseurs une page à vos couleurs pour vous envoyer des secrets, et pas seulement l'inverse."
+          }
+        },
+        "link": "Voir les offres avec domaine personnalisé",
+        "mock": {
+          "ariaLabel": "Aperçu de la page vue par un destinataire sur {host} : le logo du client, un secret à usage unique et aucune marque Onetime Secret.",
+          "title": "Vous avez un message sécurisé",
+          "body": "Ce lien ne fonctionne qu'une seule fois. Une fois ouvert, le contenu disparaît définitivement.",
+          "button": "Voir le secret",
+          "footer": "Envoyé via le service de secrets privé de {brand}."
+        }
       },
       "infrastructure": {
         "label": "Infrastructure mondiale",
@@ -441,35 +461,6 @@
         "sr_description": "Un carrousel d'images montrant des captures d'écran d'exemples d'utilisation d'Onetime Secret avec une personnalisation de marque.",
         "view_pricing": "Voir les tarifs",
         "toggle_animation": "Activer/désactiver l'animation"
-      },
-      "featureHighlights": {
-        "sectionTitle": "Fonctionnalités principales",
-        "sectionSubtitle": "Découvrez ce qui fait de Onetime Secret la solution préférée pour le partage sécurisé d'informations",
-        "security": {
-          "title": "Options de confidentialité améliorées",
-          "description": "Ajoutez une phrase de passe pour une couche de sécurité supplémentaire. Seules les personnes connaissant la phrase de passe peuvent consulter le secret."
-        },
-        "encryption": {
-          "title": "Chiffrement par secret",
-          "description": "Chaque secret est chiffré avec sa propre clé unique avant d'être stocké. Les clés de déchiffrement résident sur le serveur applicatif, jamais dans la base de données — une mesure de défense en profondeur qui limite l'exposition en cas de violation de données."
-        },
-        "selfDestruction": {
-          "title": "Lu une fois, disparu pour toujours",
-          "description": "Après une seule consultation, le secret est définitivement supprimé de tous les stockages. Aucune copie, aucune récupération, aucune trace."
-        },
-        "dataResidency": {
-          "title": "Stockage régional des données",
-          "description": "Choisissez où vos secrets sont stockés : UE, États-Unis ou autres régions. Respectez les exigences de souveraineté des données dès la création."
-        },
-        "compliance": {
-          "title": "Aide les équipes à atteindre leurs objectifs de conformité",
-          "description": "Conçu pour accompagner les flux de travail SOC 2, RGPD, CCPA et HIPAA. Les journaux d'audit, les contrôles d'accès et le SSO aident les équipes à répondre à leurs propres exigences de conformité."
-        },
-        "api": {
-          "title": "API développeur",
-          "description": "Intégrez le partage sécurisé de secrets dans vos flux de travail, pipelines CI/CD et outils internes. API REST complète avec des SDKs spécifiques à chaque langage."
-        },
-        "also": "Également disponible :"
       }
     }
   },

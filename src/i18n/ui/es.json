@@ -359,11 +359,11 @@
       }
     },
     "homepage": {
-      "title": "Onetime Secret {'|'} Servicio de secretos en un dominio personalizado",
+      "title": "Onetime Secret {'|'} Envíe una contraseña como un enlace que funciona una sola vez",
       "description": "Comparta información sensible de forma segura con enlaces autodestructibles. Pegue su secreto, genere un enlace y compártalo. Una vez visto, desaparece para siempre",
       "a-trusted-way-to-share-sensitive-information-etc": "Una forma confiable de compartir información sensible que se autodestruye después de ser vista.",
       "hero": {
-        "badge": "Diseño orientado a la privacidad",
+        "badge": "Diseñado para olvidar",
         "title": {
           "line1": "Onetime Secret",
           "line2": "Opere su propio servicio para compartir secretos."
@@ -377,15 +377,35 @@
           "dataResidency": "Soberanía de datos"
         }
       },
-      "features": {
-        "label": "Arquitectura de seguridad",
-        "heading": "Diseñado para olvidar.",
-        "description": "Cada decisión de diseño tiene un único propósito: garantizar que los secretos se puedan leer exactamente una vez y luego desaparezcan."
-      },
-      "useCases": {
-        "label": "Casos de uso",
-        "heading": "Cómo los equipos usan Onetime Secret",
-        "description": "Desde la incorporación de un nuevo empleado hasta la rotación de credenciales de producción, los datos sensibles circulan por las organizaciones todos los días."
+      "customDomains": {
+        "label": "Dominios personalizados",
+        "heading": {
+          "line1": "Su equipo tiene secretos.",
+          "line2": "Así que opere su propio servicio de secretos."
+        },
+        "description": "Envíe y reciba enlaces de un solo uso desde su propio dominio, con su logotipo en la página que abre el destinatario. Nuestro cifrado, su nombre en la puerta.",
+        "points": {
+          "branding": {
+            "title": "Su dominio, su marca",
+            "description": "secrets.suempresa.com, con su logotipo y sus colores. Nada nuestro en la barra de direcciones."
+          },
+          "sso": {
+            "title": "SSO / SAML",
+            "description": "Su proveedor de identidad decide quién puede enviar. Los registros de auditoría muestran quién lo hizo."
+          },
+          "incoming": {
+            "title": "Secretos entrantes",
+            "description": "Ofrezca a clientes y proveedores una página con su marca para que le envíen secretos, y no solo al revés."
+          }
+        },
+        "link": "Ver planes con dominio personalizado",
+        "mock": {
+          "ariaLabel": "Simulación de la página que ve un destinatario en {host}: el logotipo del cliente, un secreto de un solo uso y ninguna marca de Onetime Secret.",
+          "title": "Tiene un mensaje seguro",
+          "body": "Este enlace funciona una sola vez. Después de abrirlo, el contenido desaparece para siempre.",
+          "button": "Ver secreto",
+          "footer": "Enviado a través del servicio de secretos privado de {brand}."
+        }
       },
       "infrastructure": {
         "label": "Infraestructura global",
@@ -441,35 +461,6 @@
         "sr_description": "Un carrusel de imágenes que muestra capturas de pantalla de ejemplos de uso de onetime secret con marca personalizada.",
         "view_pricing": "Ver precios",
         "toggle_animation": "Activar/desactivar animación"
-      },
-      "featureHighlights": {
-        "sectionTitle": "Características clave",
-        "sectionSubtitle": "Descubra qué hace de Onetime Secret la solución preferida para el intercambio seguro de información.",
-        "security": {
-          "title": "Opciones de privacidad mejoradas",
-          "description": "Agregue una frase de contraseña para una capa adicional de seguridad. Solo quienes tengan la frase de contraseña pueden ver el secreto."
-        },
-        "encryption": {
-          "title": "Cifrado por secreto",
-          "description": "Cada secreto se cifra con su propia clave única antes de almacenarse. Las claves de descifrado residen en el servidor de aplicaciones, nunca en la base de datos — una medida de defensa en profundidad que limita la exposición en caso de una filtración de datos."
-        },
-        "selfDestruction": {
-          "title": "Se lee una vez y desaparece para siempre",
-          "description": "Tras una única visualización, el secreto se elimina permanentemente de todos los almacenamientos. Sin copias, sin recuperación, sin rastro."
-        },
-        "dataResidency": {
-          "title": "Almacenamiento regional de datos",
-          "description": "Elija dónde se almacenan sus secretos: UE, EE. UU. u otras regiones. Cumpla los requisitos de soberanía de datos desde el momento de la creación."
-        },
-        "compliance": {
-          "title": "Ayuda a los equipos a cumplir sus objetivos de conformidad",
-          "description": "Diseñado para acompañar los flujos de trabajo SOC 2, RGPD, CCPA e HIPAA. Los registros de auditoría, los controles de acceso y el SSO ayudan a los equipos a cumplir sus propios requisitos de conformidad."
-        },
-        "api": {
-          "title": "API para desarrolladores",
-          "description": "Integre el intercambio seguro de secretos en sus flujos de trabajo, pipelines CI/CD y herramientas internas. API REST completa con SDKs específicos para cada lenguaje."
-        },
-        "also": "También disponible:"
       }
     }
   },

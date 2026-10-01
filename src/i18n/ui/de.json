@@ -359,11 +359,11 @@
       }
     },
     "homepage": {
-      "title": "Onetime Secret {'|'} Ihr eigener Secret-Dienst auf eigener Domain",
+      "title": "Onetime Secret {'|'} Passwörter als Link senden, der nur einmal funktioniert",
       "description": "Teilen Sie sensible Informationen sicher mit selbstzerstörenden Links. Fügen Sie Ihr Geheimnis ein, generieren Sie einen Link und teilen Sie ihn. Nach dem Anzeigen ist es für immer verschwunden.",
       "a-trusted-way-to-share-sensitive-information-etc": "Eine vertrauenswürdige Methode zum Teilen vertraulicher Informationen, die nach dem Anzeigen automatisch gelöscht werden.",
       "hero": {
-        "badge": "Datenschutzorientiertes Design",
+        "badge": "Gebaut, um zu vergessen",
         "title": {
           "line1": "Onetime Secret",
           "line2": "Betreiben Sie Ihren eigenen Dienst zum Teilen von Geheimnissen."
@@ -377,15 +377,35 @@
           "dataResidency": "Datensouveränität"
         }
       },
-      "features": {
-        "label": "Sicherheitsarchitektur",
-        "heading": "Gebaut, um zu vergessen.",
-        "description": "Jede Designentscheidung dient einem einzigen Zweck: dafür zu sorgen, dass Geheimnisse genau einmal lesbar sind und dann verschwinden."
-      },
-      "useCases": {
-        "label": "Anwendungsfälle",
-        "heading": "Wie Teams Onetime Secret nutzen",
-        "description": "Vom Onboarding neuer Mitarbeiter bis zum Rotieren von Produktions-Zugangsdaten — sensible Daten bewegen sich täglich durch Unternehmen."
+      "customDomains": {
+        "label": "Eigene Domains",
+        "heading": {
+          "line1": "Ihr Team hat Geheimnisse.",
+          "line2": "Betreiben Sie also Ihren eigenen Dienst dafür."
+        },
+        "description": "Senden und empfangen Sie Einmal-Links über Ihre eigene Domain, mit Ihrem Logo auf der Seite, die der Empfänger öffnet. Unsere Verschlüsselung, Ihr Name an der Tür.",
+        "points": {
+          "branding": {
+            "title": "Ihre Domain, Ihre Marke",
+            "description": "secrets.ihrefirma.de, mit Ihrem Logo und Ihren Farben. Nichts von uns in der Adresszeile."
+          },
+          "sso": {
+            "title": "SSO / SAML",
+            "description": "Ihr Identitätsanbieter entscheidet, wer senden darf. Audit-Logs zeigen, wer es getan hat."
+          },
+          "incoming": {
+            "title": "Eingehende Geheimnisse",
+            "description": "Geben Sie Kunden und Lieferanten eine Seite in Ihrem Design, über die sie Ihnen Geheimnisse senden, nicht nur umgekehrt."
+          }
+        },
+        "link": "Tarife mit eigener Domain ansehen",
+        "mock": {
+          "ariaLabel": "Darstellung der Seite, die ein Empfänger unter {host} sieht: das Logo des Kunden, ein Einmal-Geheimnis und kein Onetime-Secret-Branding.",
+          "title": "Sie haben eine sichere Nachricht",
+          "body": "Dieser Link funktioniert nur einmal. Nach dem Öffnen ist der Inhalt endgültig gelöscht.",
+          "button": "Geheimnis anzeigen",
+          "footer": "Gesendet über den privaten Secret-Dienst von {brand}."
+        }
       },
       "infrastructure": {
         "label": "Globale Infrastruktur",
@@ -441,35 +461,6 @@
         "sr_description": "Ein Bildkarussell mit Screenshots von Beispielen für die Verwendung von Onetime Secret mit individueller Markengestaltung.",
         "view_pricing": "Preise anzeigen",
         "toggle_animation": "Animation umschalten"
-      },
-      "featureHighlights": {
-        "sectionTitle": "Hauptfunktionen",
-        "sectionSubtitle": "Entdecken Sie, was Onetime Secret zur bevorzugten Lösung für den sicheren Informationsaustausch macht",
-        "security": {
-          "title": "Erweiterte Datenschutzoptionen",
-          "description": "Fügen Sie eine Passphrase für eine zusätzliche Sicherheitsebene hinzu. Nur wer die Passphrase kennt, kann das Geheimnis einsehen."
-        },
-        "encryption": {
-          "title": "Verschlüsselung pro Geheimnis",
-          "description": "Jedes Geheimnis wird vor der Speicherung mit einem eigenen Schlüssel verschlüsselt. Die Entschlüsselungsschlüssel befinden sich auf dem Anwendungsserver, niemals in der Datenbank — eine Defense-in-Depth-Maßnahme, die die Gefährdung im Falle eines Datenlecks begrenzt."
-        },
-        "selfDestruction": {
-          "title": "Einmal lesen, für immer verschwunden",
-          "description": "Nach einer einzigen Ansicht wird das Geheimnis dauerhaft aus allen Speichern gelöscht. Keine Kopien, keine Wiederherstellung, keine Spur."
-        },
-        "dataResidency": {
-          "title": "Regionale Datenspeicherung",
-          "description": "Wählen Sie, wo Ihre Geheimnisse gespeichert werden: EU, USA oder andere Regionen. Erfüllen Sie Datensouveränitätsanforderungen bereits bei der Erstellung."
-        },
-        "compliance": {
-          "title": "Hilft Teams bei der Erreichung ihrer Compliance-Ziele",
-          "description": "Entwickelt zur Unterstützung von SOC 2-, DSGVO-, CCPA- und HIPAA-Workflows. Audit-Logs, Zugriffskontrollen und SSO helfen Teams, ihre eigenen Compliance-Anforderungen zu erfüllen."
-        },
-        "api": {
-          "title": "Entwickler-API",
-          "description": "Integrieren Sie das sichere Teilen von Geheimnissen in Ihre Arbeitsabläufe, CI/CD-Pipelines und internen Tools. Vollständige REST-API mit sprachspezifischen SDKs."
-        },
-        "also": "Ebenfalls verfügbar:"
       }
     }
   },

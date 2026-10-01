@@ -88,6 +88,7 @@ const ALLOWED_COMMON = [
   "web.footer.links.dpa",
   "web.homepage.hero.title.line1", // "Onetime Secret" — brand wordmark
   "web.homepage.infrastructure.features.sso", // "SSO / SAML"
+  "web.homepage.customDomains.points.sso.title", // "SSO / SAML"
   "web.pricing.comparison.status.beta", // "Beta" — universal technical term
 ];
 
