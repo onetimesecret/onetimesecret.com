@@ -9,6 +9,7 @@ import StatsHeader from "@/components/changelog/StatsHeader.astro";
 import ShippedPlannedToggle from "@/components/changelog/ShippedPlannedToggle.astro";
 import { getCollection } from "astro:content";
 import { getLanguagePaths } from "@/i18n";
+import { isChangelogEntryShipped } from "@/utils/changelog";
 import {
   createLocaleI18n,
   type MessageSchema,
@@ -33,9 +34,10 @@ const pageI18n = await createLocaleI18n(
 const t = pageI18n.global.t;
 
 const allEntries = await getCollection("changelog");
+const now = Date.now();
 
 const shippedEntries = allEntries
-  .filter((e) => !e.data.planned)
+  .filter((e) => isChangelogEntryShipped(e, now))
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
 const plannedEntries = allEntries
@@ -119,7 +121,9 @@ const latestDate =
       }
     </div>
 
-    {/* Planned entries — only rendered when there are planned entries to show */}
+    {
+      /* Planned entries — only rendered when there are planned entries to show */
+    }
     {
       plannedEntries.length > 0 && (
         <div

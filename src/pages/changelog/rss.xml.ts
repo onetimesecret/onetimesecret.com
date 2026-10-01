@@ -7,9 +7,10 @@
  * currently links to the English entry pages \u2014 RSS_LOCALE is the
  * single source of truth if per-locale feeds are added later.
  */
+import { isChangelogEntryShipped } from "@/utils/changelog";
 import rss from "@astrojs/rss";
-import { getCollection } from "astro:content";
 import type { APIContext } from "astro";
+import { getCollection } from "astro:content";
 
 const RSS_LOCALE = "en";
 
@@ -18,8 +19,9 @@ function entrySlug(id: string): string {
 }
 
 export async function GET(context: APIContext) {
+  const now = Date.now();
   const entries = (await getCollection("changelog"))
-    .filter((e) => !e.data.planned)
+    .filter((e) => isChangelogEntryShipped(e, now))
     .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
   const siteBase = context.site ?? new URL(context.url.origin);

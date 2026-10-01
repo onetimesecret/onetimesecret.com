@@ -215,7 +215,9 @@ imageAlt: "Descriptive alt text for the hero image"
 featured: false            # true → richer treatment on index
 highlightedLinkUrl: "https://github.com/onetimesecret/onetimesecret/releases/tag/v1.0"
 highlightedLinkText: "GitHub release notes"
-planned: false             # true → appears in Planned tab only
+planned: false             # true → public upcoming announcement + detail page
+                           # false → hidden until date (UTC); rebuild to publish
+                           # revise upcoming copy before setting false
 highlights:                # optional bullet list shown on the index card
   - { icon: check, text: "Something done, shipped, or fixed" }
   - { icon: info,  text: "Neutral supporting detail" }
@@ -293,9 +295,9 @@ Your markdown content starts here.`}</code></pre>
       <Prose>
         <h2>Highlight bullets</h2>
         <p>
-          The optional <code>highlights</code> field renders a short bullet list
-          on the index card. Each item picks one of four icons. Stick to the
-          legend &mdash; the colour is canonical, don't re-tint.
+          The optional <code>highlights</code> field renders a short bullet list on
+          the index card. Each item picks one of four icons. Stick to the legend &mdash;
+          the colour is canonical, don't re-tint.
         </p>
       </Prose>
       <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -341,10 +343,19 @@ Your markdown content starts here.`}</code></pre>
         <p class="section-label mb-4">Live preview</p>
         <EntryHighlights
           highlights={[
-            { icon: "check", text: "Passphrase hint shipped behind feature flag" },
+            {
+              icon: "check",
+              text: "Passphrase hint shipped behind feature flag",
+            },
             { icon: "info", text: "Defaults to off for self-hosted instances" },
-            { icon: "warn", text: "Old API field renamed; clients must update" },
-            { icon: "ask", text: "Localized hint strings still pending translation" },
+            {
+              icon: "warn",
+              text: "Old API field renamed; clients must update",
+            },
+            {
+              icon: "ask",
+              text: "Localized hint strings still pending translation",
+            },
           ]}
         />
       </div>

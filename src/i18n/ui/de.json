@@ -366,9 +366,7 @@
         "badge": "Datenschutzorientiertes Design",
         "title": {
           "line1": "Onetime Secret",
-          "line2_w1": "Signiert.",
-          "line2_w2": "Versiegelt.",
-          "line2_w3": "Zugestellt."
+          "line2": "Betreiben Sie Ihren eigenen Dienst zum Teilen von Geheimnissen."
         },
         "subtitle": "Senden Sie Passwörter, Zugangsdaten und sensible Informationen über Links, die nur einmal funktionieren.",
         "compliance": {

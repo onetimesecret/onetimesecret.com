@@ -22,20 +22,42 @@ chronologically in the directory:
 
 ## Shipped vs pending content
 
-Three states an entry can live in. The `_` filename prefix and the `planned`
-frontmatter flag are independent — they answer different questions
-("is this even in the build?" vs "has this gone out yet?").
+Publication timing and delivery status are separate. `planned: true` means a
+public upcoming announcement, not a scheduled shipped entry. The `_` filename
+prefix excludes unfinished drafts from the collection entirely.
 
-| State   | How to mark                              | In collection? | Where it shows |
-|---------|------------------------------------------|----------------|----------------|
-| Draft   | filename starts with `_`                 | no             | nowhere; loader excludes it |
-| Planned | `planned: true` in frontmatter           | yes            | `/<lang>/changelog` "Planned" tab only |
-| Shipped | `planned: false` (default) and no `_`    | yes            | everywhere: homepage banner, `/<lang>/changelog` "Shipped" tab, `/<lang>/changelog/<slug>` page, RSS feed |
+| State | How to mark | In collection? | Where it shows |
+|-------|-------------|----------------|----------------|
+| Draft | filename starts with `_` | no | nowhere; loader excludes it |
+| Planned | `planned: true`, regardless of date | yes | "Planned" tab and its public detail page; no banner or RSS |
+| Queued | `planned: false` (default), future `date` | yes | nowhere publicly; no detail page is generated |
+| Shipped | `planned: false`, `date` at or before build time | yes | "Shipped" tab, detail page, RSS; latest shipped entry in the banner |
+
+### Publishing upcoming content
+
+Use `planned: true` to announce upcoming work. Use future-tense wording in the
+title, description, highlights, and body; avoid check icons for work not yet
+shipped. The date is an estimate, displayed as month/year in the Planned listing.
+Passing that date does **not** automatically mark the announcement shipped.
+
+When the work ships, revise the copy to describe what is actually available,
+update `date` to the actual release date, and set `planned: false`. Update the
+existing entry rather than creating a duplicate. If renaming its date-prefixed
+file, remember that this changes the URL; preserve or redirect the old URL.
+
+Use future-dated `planned: false` only for finished release copy queued for
+publication, not for a public preview of an unfinished feature.
+
+All visibility checks run at **build time**. Date-only values become midnight
+UTC: an October 8 entry is eligible from October 8 at 00:00 UTC, but requires a
+new build and deployment then or later. Existing static pages do not update
+when the clock passes a date.
 
 ## Homepage banner
 
 `src/components/homepage/ChangelogBanner.astro` runs at build time, calls
-`getCollection("changelog")`, drops `planned: true` entries, sorts by `date`
+`getCollection("changelog")`, drops planned and future-dated entries using the
+shared publication policy in `src/utils/changelog.ts`, sorts by `date`
 descending, and renders the first result as a dismissible banner above the
 hero. The banner links to `/<lang>/changelog/<slug>`, where `<slug>` is the
 file id with a trailing `/index` stripped (so dir-layout entries resolve
@@ -57,7 +79,7 @@ category: release                      # release | news | operations | security
 image: "./hero.png"                    # optional; relative path, resolved via Astro image()
 imageAlt: "Required iff image is set"  # non-empty when image present
 featured: false                        # default false
-planned: false                         # default false; future/roadmap entry
+planned: false                         # true = public upcoming; false = date-gated shipped copy
 highlightedLinkUrl: "https://github.com/onetimesecret/onetimesecret/releases/tag/v0.9000.0"  # optional CTA link
 highlightedLinkText: "GitHub release notes"                                                  # label for the CTA link
 highlights:                            # optional; max 6 items; string OR {icon, text}

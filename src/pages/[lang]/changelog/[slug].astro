@@ -6,10 +6,8 @@
  */
 import EntryLayout from "@/components/changelog/EntryLayout.astro";
 import { getCollection, render } from "astro:content";
-import {
-  SUPPORTED_LANGUAGES,
-  type MessageSchema,
-} from "@/i18n";
+import { isChangelogEntryPublished } from "@/utils/changelog";
+import { SUPPORTED_LANGUAGES, type MessageSchema } from "@/i18n";
 
 import enMessages from "@/i18n/ui/en.json";
 import frMessages from "@/i18n/ui/fr.json";
@@ -24,13 +22,12 @@ export async function getStaticPaths() {
     return id.replace(/\/index$/, "");
   }
 
-  // Generate pages for all entries (shipped and planned) so cards in
-  // the index page don't link to a 404. Prev/next chains stay scoped
-  // to shipped entries to keep navigation chronological for visitors
-  // reading the release feed.
-  const allEntries = (await getCollection("changelog")).sort(
-    (a, b) => b.data.date.getTime() - a.data.date.getTime(),
-  );
+  // Queued shipped copy must not be accessible before its date.
+  // Planned announcements remain public, outside shipped prev/next navigation.
+  const now = Date.now();
+  const allEntries = (await getCollection("changelog"))
+    .filter((entry) => isChangelogEntryPublished(entry, now))
+    .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
   const entries = allEntries.filter((e) => !e.data.planned);
   const plannedEntries = allEntries.filter((e) => e.data.planned);
 
@@ -56,18 +53,20 @@ export async function getStaticPaths() {
         props: {
           entry,
           initialMessages,
-          prev: i < entries.length - 1
-            ? {
-                slug: entrySlug(entries[i + 1].id),
-                title: entries[i + 1].data.title,
-              }
-            : null,
-          next: i > 0
-            ? {
-                slug: entrySlug(entries[i - 1].id),
-                title: entries[i - 1].data.title,
-              }
-            : null,
+          prev:
+            i < entries.length - 1
+              ? {
+                  slug: entrySlug(entries[i + 1].id),
+                  title: entries[i + 1].data.title,
+                }
+              : null,
+          next:
+            i > 0
+              ? {
+                  slug: entrySlug(entries[i - 1].id),
+                  title: entries[i - 1].data.title,
+                }
+              : null,
         },
       });
     }

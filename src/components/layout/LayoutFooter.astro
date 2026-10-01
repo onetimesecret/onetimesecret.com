@@ -57,12 +57,12 @@ const currentYear = new Date().getFullYear();
       <div class="space-y-6">
         <div class="flex items-center">
           <a
-            href="/"
+            href={localizeUrl("/", effectiveLocale as SupportedLanguage)}
             class="inline-flex items-center">
             <img
               class="h-10 w-auto rounded-lg"
               src="/etc/img/onetime-logo-sm.png"
-              alt={t("onetime-secret-literal-logo")}
+              alt=""
               width="160"
               height="160"
             />
