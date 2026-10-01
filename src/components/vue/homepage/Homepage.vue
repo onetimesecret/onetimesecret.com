@@ -1,22 +1,21 @@
 <!-- src/components/vue/homepage/Homepage.vue -->
 
 <script setup lang="ts">
-import FeatureHighlights from "@/components/vue/homepage/FeatureHighlights.vue";
 import HeroSection from "@/components/vue/homepage/HeroSection.vue";
 import HowItWorks from "@/components/vue/homepage/HowItWorks.vue";
 import { useJurisdiction } from "@/composables/useJurisdiction";
-import { setLanguageWithMessages, type MessageSchema } from "@/i18n";
+import { setLanguageWithMessages, type MessageSchema, type SupportedLanguage } from "@/i18n";
 import { onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import type { ApiResult } from "@/components/vue/forms/SecretForm.vue";
 import CtaSection from "@/components/vue/homepage/CtaSection.vue";
+import CustomDomains from "@/components/vue/homepage/CustomDomains.vue";
 import GlobalInfrastructure from "@/components/vue/homepage/GlobalInfrastructure.vue";
-import UseCases from "@/components/vue/homepage/UseCases.vue";
 import type { Region } from "@/types/jurisdiction";
 
 const props = defineProps<{
-  locale: string;
+  locale: SupportedLanguage;
   initialMessages: Record<string, MessageSchema>;
   // other component-specific props like 'now' for Homepage
   now?: number;
@@ -102,19 +101,16 @@ onUnmounted(() => {
         @region-change="handleRegionChange"
         @create-secret="handleSecretCreationResult" />
 
-      <!-- Section 3: Feature Highlights -->
-      <FeatureHighlights />
-
-      <!-- Section 4: How It Works -->
+      <!-- Section 3: How It Works -->
       <HowItWorks />
 
-      <!-- Section 5: Use Cases -->
-      <UseCases />
+      <!-- Section 4: Custom Domains (team pitch) -->
+      <CustomDomains :locale="locale" />
 
-      <!-- Section 6: Global Infrastructure -->
+      <!-- Section 5: Global Infrastructure -->
       <GlobalInfrastructure />
 
-      <!-- Section 7: CTA -->
+      <!-- Section 6: CTA -->
       <CtaSection :locale="locale" />
     </div>
   </div>
