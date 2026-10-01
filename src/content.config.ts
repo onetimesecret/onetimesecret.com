@@ -100,6 +100,7 @@ const changelogCollection = defineCollection({
         featured: z.boolean().default(false),
         highlightedLinkUrl: z.string().url().optional(),
         highlightedLinkText: z.string().optional(),
+        // Public upcoming announcement; false entries wait for their date to publish.
         planned: z.boolean().default(false),
         highlights: z
           .array(
