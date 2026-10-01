@@ -35,12 +35,12 @@
  * `ALLOWED_BY_LANG` for a single locale).
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import enRaw from "../../../src/i18n/ui/en.json";
-import frRaw from "../../../src/i18n/ui/fr.json";
 import deRaw from "../../../src/i18n/ui/de.json";
+import enRaw from "../../../src/i18n/ui/en.json";
 import esRaw from "../../../src/i18n/ui/es.json";
+import frRaw from "../../../src/i18n/ui/fr.json";
 
 // ---------------------------------------------------------------------------
 // Types & helpers
@@ -87,8 +87,7 @@ const ALLOWED_COMMON = [
   "web.footer.links.github",
   "web.footer.links.dpa",
   "web.homepage.hero.title.line1", // "Onetime Secret" — brand wordmark
-  "web.homepage.infrastructure.features.sso", // "SSO / SAML"
-  "web.homepage.customDomains.points.sso.title", // "SSO / SAML"
+
   "web.pricing.comparison.status.beta", // "Beta" — universal technical term
 ];
 

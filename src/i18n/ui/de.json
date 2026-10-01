@@ -387,15 +387,15 @@
         "points": {
           "branding": {
             "title": "Ihre Domain, Ihre Marke",
-            "description": "secrets.ihrefirma.de, mit Ihrem Logo und Ihren Farben. Nichts von uns in der Adresszeile."
+            "description": "secrets.ihrefirma.de, mit Ihrem Logo und Ihren Farben."
           },
           "sso": {
-            "title": "SSO / SAML",
-            "description": "Ihr Identitätsanbieter entscheidet, wer senden darf. Audit-Logs zeigen, wer es getan hat."
+            "title": "Single Sign-On (SSO)",
+            "description": "Ihr Team kann sich über den Identitätsanbieter Ihrer Organisation mit Entra, OIDC und SAML (demnächst verfügbar) anmelden."
           },
           "incoming": {
             "title": "Eingehende Geheimnisse",
-            "description": "Geben Sie Kunden und Lieferanten eine Seite in Ihrem Design, über die sie Ihnen Geheimnisse senden, nicht nur umgekehrt."
+            "description": "Eine Seite, über die Kunden und Lieferanten Geheimnisse direkt an Sie senden können"
           }
         },
         "link": "Tarife mit eigener Domain ansehen",
@@ -422,7 +422,7 @@
         "features": {
           "customDomain": "Benutzerdefinierte Domain",
           "customBranding": "Benutzerdefiniertes Branding",
-          "sso": "SSO / SAML",
+          "sso": "Single Sign-On (SSO)",
           "incomingSecrets": "Eingehende Geheimnisse",
           "accessControls": "Zugriffskontrollen",
           "auditLogs": "Audit-Logs"

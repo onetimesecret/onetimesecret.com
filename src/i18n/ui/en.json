@@ -383,19 +383,19 @@
           "line1": "Your team has secrets.",
           "line2": "So run your own secret service."
         },
-        "description": "Send and receive one-time links from your own domain, with your logo on the page the recipient opens. Our encryption, your name on the door.",
+        "description": "Send and receive single-use links from your own domain and brand recipients already know and trust.",
         "points": {
           "branding": {
             "title": "Your domain, your brand",
-            "description": "secrets.yourcompany.com, with your logo and colors. Nothing of ours in the address bar."
+            "description": "secrets.yourcompany.com, with your logo and colors."
           },
           "sso": {
-            "title": "SSO / SAML",
-            "description": "Your identity provider decides who can send. Audit logs show who did."
+            "title": "Single sign-on (SSO)",
+            "description": "Your team can sign in through your organization's identity provider with Entra, OIDC, and SAML (coming soon)."
           },
           "incoming": {
             "title": "Incoming secrets",
-            "description": "Give clients and vendors a branded page to send secrets to you, not only the other way round."
+            "description": "A destination page for clients and vendors to send secrets directly to you"
           }
         },
         "link": "See plans with custom domains",
@@ -422,7 +422,7 @@
         "features": {
           "customDomain": "Custom Domain",
           "customBranding": "Custom Branding",
-          "sso": "SSO / SAML",
+          "sso": "Single sign-on (SSO)",
           "incomingSecrets": "Incoming Secrets",
           "accessControls": "Access Controls",
           "auditLogs": "Audit Logs"

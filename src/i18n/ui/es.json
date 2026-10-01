@@ -387,15 +387,15 @@
         "points": {
           "branding": {
             "title": "Su dominio, su marca",
-            "description": "secrets.suempresa.com, con su logotipo y sus colores. Nada nuestro en la barra de direcciones."
+            "description": "secrets.suempresa.com, con su logotipo y sus colores."
           },
           "sso": {
-            "title": "SSO / SAML",
-            "description": "Su proveedor de identidad decide quién puede enviar. Los registros de auditoría muestran quién lo hizo."
+            "title": "Inicio de sesión único (SSO)",
+            "description": "Su equipo puede iniciar sesión a través del proveedor de identidad de su organización con Entra, OIDC y SAML (próximamente)."
           },
           "incoming": {
             "title": "Secretos entrantes",
-            "description": "Ofrezca a clientes y proveedores una página con su marca para que le envíen secretos, y no solo al revés."
+            "description": "Una página donde clientes y proveedores pueden enviarle secretos directamente"
           }
         },
         "link": "Ver planes con dominio personalizado",
@@ -422,7 +422,7 @@
         "features": {
           "customDomain": "Dominio personalizado",
           "customBranding": "Marca personalizada",
-          "sso": "SSO / SAML",
+          "sso": "Inicio de sesión único (SSO)",
           "incomingSecrets": "Secretos entrantes",
           "accessControls": "Controles de acceso",
           "auditLogs": "Registros de auditoría"

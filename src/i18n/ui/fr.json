@@ -387,15 +387,15 @@
         "points": {
           "branding": {
             "title": "Votre domaine, votre marque",
-            "description": "secrets.votreentreprise.fr, avec votre logo et vos couleurs. Rien de nous dans la barre d'adresse."
+            "description": "secrets.votreentreprise.fr, avec votre logo et vos couleurs."
           },
           "sso": {
-            "title": "SSO / SAML",
-            "description": "Votre fournisseur d'identité décide qui peut envoyer. Les journaux d'audit montrent qui l'a fait."
+            "title": "Authentification unique (SSO)",
+            "description": "Votre équipe peut se connecter via le fournisseur d'identité de votre organisation avec Entra, OIDC et SAML (bientôt disponible)."
           },
           "incoming": {
             "title": "Secrets entrants",
-            "description": "Offrez à vos clients et fournisseurs une page à vos couleurs pour vous envoyer des secrets, et pas seulement l'inverse."
+            "description": "Une page où vos clients et fournisseurs peuvent vous envoyer des secrets directement"
           }
         },
         "link": "Voir les offres avec domaine personnalisé",
@@ -422,7 +422,7 @@
         "features": {
           "customDomain": "Domaine personnalisé",
           "customBranding": "Image de marque personnalisée",
-          "sso": "SSO / SAML",
+          "sso": "Authentification unique (SSO)",
           "incomingSecrets": "Secrets entrants",
           "accessControls": "Contrôles d'accès",
           "auditLogs": "Journaux d'audit"
