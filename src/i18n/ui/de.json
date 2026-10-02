@@ -370,7 +370,7 @@
           "line2": "Senden Sie stattdessen einen Link.",
           "items": {
             "password": "ein Passwort",
-            "apiKey": "API-Schlüssel",
+            "apiKey": "einen API-Schlüssel",
             "loveLetter": "einen Liebesbrief",
             "login": "Zugangsdaten",
             "timePlace": "Ort und Zeit"
