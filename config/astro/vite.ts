@@ -87,6 +87,10 @@ export function createConfig(
         "@root": pathResolve(astroPath),
         "@config": pathResolve(astroPath, "config"),
       },
+      // One Vue runtime for the app and its dependencies. When torph's vue peer
+      // resolved to a stale older copy, the bundle carried two runtimes and
+      // the homepage island failed to hydrate.
+      dedupe: ["vue"],
     },
     server: {
       // port: 4321,
