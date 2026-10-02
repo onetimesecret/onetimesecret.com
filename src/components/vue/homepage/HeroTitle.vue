@@ -84,8 +84,11 @@ function toggleAnimation() {
 
 <template>
   <div class="text-center">
-    <!-- Security badge -->
-    <div class="relative mb-6 flex justify-center">
+    <!--
+      Security badge. The row's padding reserves the pause control's 32px on
+      both sides, so a longer badge wraps instead of running under it.
+    -->
+    <div class="relative mb-6 flex justify-center px-8">
       <span
         class="inline-flex items-center rounded-full border border-brand-500/30 bg-brand-500/10 px-4 py-1.5 text-sm font-medium text-brand-700 dark:text-brand-400">
         {{ t("web.homepage.hero.badge") }}
@@ -100,6 +103,7 @@ function toggleAnimation() {
         class="absolute top-1/2 right-0 -translate-y-1/2 rounded-full p-2 text-text-tertiary transition-colors hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
         :aria-label="animationLabel"
         @click="toggleAnimation">
+        <!-- OIcon is aria-hidden, so its label only shows as a hover tooltip. -->
         <OIcon
           collection="heroicons"
           :name="animating ? 'pause-20-solid' : 'play-20-solid'"
