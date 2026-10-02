@@ -119,11 +119,12 @@ test.describe("Homepage redesign — hero section", () => {
   }) => {
     const heading = page.getByRole("heading", { level: 1 });
     await expect(heading).toHaveCount(1);
-    await expect(heading).toHaveText(
+    // The example item in the question rotates on screen; screen readers get
+    // the sentence with the default item.
+    await expect(heading).toHaveAccessibleName(
       "Need to send a password? Send a link instead.",
     );
     const question = heading.locator(":scope > span").first();
-    await expect(question).toHaveText("Need to send a password?");
     const proposition = heading.locator(".gradient-text");
     await expect(proposition).toHaveText("Send a link instead.");
     const fontSize = (element: Element): number =>

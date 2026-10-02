@@ -7,19 +7,29 @@ import fr from "../../../src/i18n/ui/fr.json" with { type: "json" };
 
 const messages = { en, de, es, fr };
 
+// Reduced motion keeps the question on its default item; the rotation has its
+// own spec (homepage-hero-motion.spec.ts).
+test.use({ reducedMotion: "reduce" });
+
 for (const [locale, translations] of Object.entries(messages)) {
   test(`${locale} homepage renders both localized hero lines at equal size`, async ({
     page,
   }) => {
-    const { line1, line2 } = translations.web.homepage.hero.title;
+    const { line1, line2, items } = translations.web.homepage.hero.title;
+    const sentence = line1.replace("{item}", items.password);
     await page.goto(`/${locale}/`);
     const heading = page.getByRole("heading", { level: 1 });
     await expect(heading).toHaveCount(1);
-    await expect(heading).toHaveAccessibleName(`${line1} ${line2}`);
+    await expect(heading).toHaveAccessibleName(`${sentence} ${line2}`);
     await expect(heading.locator(":scope > span")).toHaveCount(2);
     const question = heading.locator(":scope > span").first();
     const message = heading.locator(".gradient-text");
-    await expect(question).toHaveText(line1);
+    // The visible copy says the same as the sentence screen readers get, apart
+    // from the word joiner that keeps the "?" with the item.
+    const shown = await question
+      .locator('[aria-hidden="true"]')
+      .evaluate((element) => element.textContent?.replace(/⁠/g, ""));
+    expect(shown).toBe(sentence);
     await expect(message).toHaveText(line2);
     const fontSize = (element: Element): number =>
       parseFloat(getComputedStyle(element).fontSize);
