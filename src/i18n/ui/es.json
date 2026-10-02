@@ -58,6 +58,7 @@
     "privacy-policy": "Política de Privacidad",
     "terms-and-conditions": "Términos y Condiciones",
     "security": "Seguridad",
+    "accessibility": "Accesibilidad",
     "paused": "En pausa",
     "playing": "Reproduciendo",
     "feedback": "Comentarios",
@@ -359,16 +360,27 @@
       }
     },
     "homepage": {
-      "title": "Onetime Secret {'|'} Envíe una contraseña como un enlace que funciona una sola vez",
+      "title": "Onetime Secret {'|'} Servicio de secretos en un dominio personalizado",
       "description": "Comparta información sensible de forma segura con enlaces autodestructibles. Pegue su secreto, genere un enlace y compártalo. Una vez visto, desaparece para siempre",
       "a-trusted-way-to-share-sensitive-information-etc": "Una forma confiable de compartir información sensible que se autodestruye después de ser vista.",
       "hero": {
         "badge": "Diseñado para olvidar",
         "title": {
-          "line1": "¿Necesita enviar una contraseña?",
-          "line2": "Envíe un enlace en su lugar."
+          "line1": "¿Necesita enviar {item}?",
+          "line2": "Envíe un enlace en su lugar.",
+          "items": {
+            "password": "una contraseña",
+            "apiKey": "una clave de API",
+            "loveLetter": "una nota de amor",
+            "login": "credenciales",
+            "timePlace": "el lugar y la hora"
+          }
         },
         "subtitle": "Envíe contraseñas, credenciales y datos sensibles con enlaces que funcionan una sola vez.",
+        "animation": {
+          "pause": "Pausar animación",
+          "play": "Reproducir animación"
+        },
         "compliance": {
           "label": "Funciones de seguridad",
           "encrypted": "Cifrado",

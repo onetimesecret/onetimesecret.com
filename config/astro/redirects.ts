@@ -33,6 +33,10 @@ export function createConfig(): AstroUserConfig["redirects"] {
       status: 301,
       destination: "/en/security",
     },
+    "/accessibility": {
+      status: 301,
+      destination: "/en/accessibility",
+    },
     "/about": {
       status: 301,
       destination: "/en/about",

@@ -58,6 +58,7 @@
     "privacy-policy": "Politique de confidentialité",
     "terms-and-conditions": "Conditions générales",
     "security": "Mesures de sécurité",
+    "accessibility": "Accessibilité",
     "paused": "En pause",
     "playing": "En lecture",
     "feedback": "Avis",
@@ -359,16 +360,27 @@
       }
     },
     "homepage": {
-      "title": "Onetime Secret {'|'} Envoyez un mot de passe sous forme de lien à usage unique",
+      "title": "Onetime Secret {'|'} Service de partage de secrets sur votre domaine",
       "description": "Partagez des informations sensibles en toute sécurité avec des liens auto-destructibles. Collez votre secret, générez un lien et partagez-le. Une fois consulté, il disparaît à jamais.",
       "a-trusted-way-to-share-sensitive-information-etc": "Une méthode fiable pour partager des informations confidentielles qui s'autodétruisent après consultation.",
       "hero": {
         "badge": "Conçu pour oublier",
         "title": {
-          "line1": "Vous devez envoyer un mot de passe ?",
-          "line2": "Envoyez plutôt un lien."
+          "line1": "Vous devez envoyer {item}\u00a0?",
+          "line2": "Envoyez plutôt un lien.",
+          "items": {
+            "password": "un mot de passe",
+            "apiKey": "une clé API",
+            "loveLetter": "un mot doux",
+            "login": "des identifiants",
+            "timePlace": "le lieu et l'heure"
+          }
         },
         "subtitle": "Envoyez des mots de passe, des identifiants et des données sensibles avec des liens à usage unique.",
+        "animation": {
+          "pause": "Mettre l'animation en pause",
+          "play": "Lire l'animation"
+        },
         "compliance": {
           "label": "Fonctionnalités de sécurité",
           "encrypted": "Chiffré",
