@@ -75,4 +75,12 @@ export const iconLibraries: Record<string, IconLibraryMeta> = {
     sourceUrl: "https://github.com/phosphor-icons/core",
     usagePrefix: "ph",
   },
+  ots: {
+    name: "Onetime Secret",
+    component: "OtsSprites",
+    license: "Public domain map data (Natural Earth)",
+    licenseUrl: "https://www.naturalearthdata.com/about/terms-of-use/",
+    sourceUrl: "https://www.naturalearthdata.com/",
+    usagePrefix: "ots",
+  },
 };
