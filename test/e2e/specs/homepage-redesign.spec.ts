@@ -243,6 +243,18 @@ test.describe("Homepage redesign — footer columns", () => {
     ).toBeVisible();
     await expect(footer.getByRole("link", { name: /^terms$/i })).toBeVisible();
   });
+
+  test("footer links to the accessibility statement", async ({ page }) => {
+    const link = page
+      .locator("footer")
+      .getByRole("link", { name: /^accessibility$/i });
+
+    await expect(link).toHaveAttribute("href", "/en/accessibility");
+    await link.click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Accessibility statement",
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------
