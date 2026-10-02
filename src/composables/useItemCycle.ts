@@ -10,6 +10,15 @@ import {
   type Ref,
 } from "vue";
 
+export interface ItemCycle {
+  /** Index of the entry to show. */
+  index: Readonly<Ref<number>>;
+  /** Whether the cycle has run its course and settled back on the first entry. */
+  finished: Readonly<Ref<boolean>>;
+  /** Starts the cycle over from the first entry. */
+  restart: () => void;
+}
+
 /**
  * Steps once through the allowed entries of a list, then settles back on the
  * first. An entry that stops being allowed mid-cycle, say after a resize, gives
@@ -18,13 +27,13 @@ import {
  * @param allowed - One flag per entry; the first entry is shown regardless
  * @param interval - Milliseconds each entry stays before the next
  * @param active - Whether the cycle may advance; while false it holds its place
- * @returns Index of the entry to show
+ * @returns The entry to show, whether the cycle is over, and a way to replay it
  */
 export function useItemCycle(
   allowed: MaybeRefOrGetter<readonly boolean[]>,
   interval: number,
   active: MaybeRefOrGetter<boolean>,
-): Readonly<Ref<number>> {
+): ItemCycle {
   const position = ref(0);
   const finished = ref(false);
   const { pause, resume } = useIntervalFn(
@@ -46,5 +55,12 @@ export function useItemCycle(
   );
   watch(running, (on) => (on ? resume() : pause()), { immediate: true });
 
-  return computed(() => (toValue(allowed)[position.value] ? position.value : 0));
+  return {
+    index: computed(() => (toValue(allowed)[position.value] ? position.value : 0)),
+    finished: computed(() => finished.value),
+    restart: () => {
+      position.value = 0;
+      finished.value = false;
+    },
+  };
 }

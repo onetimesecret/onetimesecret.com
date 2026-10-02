@@ -742,6 +742,20 @@
       </symbol>
       <symbol
         viewBox="0 0 20 20"
+        id="heroicons-pause-20-solid">
+        <path
+          fill="currentColor"
+          d="M5.75 3a.75.75 0 0 0-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 0 0 .75-.75V3.75A.75.75 0 0 0 7.25 3h-1.5ZM12.75 3a.75.75 0 0 0-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 0 0 .75-.75V3.75a.75.75 0 0 0-.75-.75h-1.5Z" />
+      </symbol>
+      <symbol
+        viewBox="0 0 20 20"
+        id="heroicons-play-20-solid">
+        <path
+          fill="currentColor"
+          d="M6.3 2.84A1.5 1.5 0 0 0 4 4.11v11.78a1.5 1.5 0 0 0 2.3 1.27l9.344-5.891a1.5 1.5 0 0 0 0-2.538L6.3 2.841Z" />
+      </symbol>
+      <symbol
+        viewBox="0 0 20 20"
         id="heroicons-plus-20-solid">
         <path
           fill="currentColor"

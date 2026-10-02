@@ -376,6 +376,10 @@
           }
         },
         "subtitle": "Senden Sie Passwörter, Zugangsdaten und sensible Informationen über Links, die nur einmal funktionieren.",
+        "animation": {
+          "pause": "Animation anhalten",
+          "play": "Animation abspielen"
+        },
         "compliance": {
           "label": "Sicherheitsfunktionen",
           "encrypted": "Verschlüsselt",

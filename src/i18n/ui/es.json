@@ -376,6 +376,10 @@
           }
         },
         "subtitle": "Envíe contraseñas, credenciales y datos sensibles con enlaces que funcionan una sola vez.",
+        "animation": {
+          "pause": "Pausar animación",
+          "play": "Reproducir animación"
+        },
         "compliance": {
           "label": "Funciones de seguridad",
           "encrypted": "Cifrado",

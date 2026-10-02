@@ -376,6 +376,10 @@
           }
         },
         "subtitle": "Share passwords and other sensitive data with links that work only once.",
+        "animation": {
+          "pause": "Pause animation",
+          "play": "Play animation"
+        },
         "compliance": {
           "label": "Security features",
           "encrypted": "Encrypted",
