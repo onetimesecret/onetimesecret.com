@@ -1,6 +1,6 @@
 // src/composables/useFittingTexts.ts
 
-import { useWindowSize } from "@vueuse/core";
+import { refDebounced, useWindowSize } from "@vueuse/core";
 import {
   onMounted,
   shallowRef,
@@ -16,6 +16,9 @@ import {
  * kerning (up to 0.07em in Zilla Slab), so a text right at a line break is unsafe.
  */
 const SLACK_EM = 0.1;
+
+/** How long the window width must hold still before it is measured again. */
+const RESIZE_SETTLE_MS = 150;
 
 const onlyFirst = (texts: readonly string[]) => texts.map((_, i) => i === 0);
 
@@ -41,7 +44,9 @@ export function measureFittingTexts(
   // Without a slot or a laid-out block there is nothing to measure against.
   if (first === undefined || !slot || !(width > 0)) return onlyFirst(texts);
 
-  probe.style.cssText = `position:absolute;top:0;left:0;visibility:hidden;width:${width}px`;
+  // The computed width is the content box, so the copy is sized as one.
+  probe.style.cssText =
+    `position:absolute;top:0;left:0;visibility:hidden;box-sizing:content-box;width:${width}px`;
   slot.removeAttribute("style");
   block.after(probe);
   const slack = SLACK_EM * parseFloat(getComputedStyle(slot).fontSize);
@@ -72,8 +77,8 @@ export function measureFittingTexts(
 /**
  * Reports which `texts` fit the slot in `block` without changing how the block
  * wraps (see measureFittingTexts). Measures once web fonts have loaded, then
- * again whenever the window width or the texts change; until then only the
- * first text fits.
+ * again whenever the window width settles on a new value or the texts change;
+ * until then only the first text fits.
  *
  * @param block - Template ref to the block whose line breaks must not change
  * @param slotSelector - Selects the inline-block inside `block` that holds the text
@@ -87,7 +92,9 @@ export function useFittingTexts(
 ): Readonly<Ref<readonly boolean[]>> {
   const fits = shallowRef<readonly boolean[]>(onlyFirst(toValue(texts)));
   const fontsLoaded = shallowRef(false);
-  const { width } = useWindowSize();
+  // Each measurement forces several layouts, so a drag-resize is measured
+  // once it settles rather than on every resize event.
+  const width = refDebounced(useWindowSize().width, RESIZE_SETTLE_MS);
 
   onMounted(async () => {
     // document.fonts is missing outside real browsers, e.g. in happy-dom.
