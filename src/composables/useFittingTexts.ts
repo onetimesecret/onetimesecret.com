@@ -95,10 +95,16 @@ export function useFittingTexts(
     fontsLoaded.value = true;
   });
 
-  watch([fontsLoaded, width, () => toValue(texts)], () => {
-    if (!fontsLoaded.value || !block.value) return;
-    fits.value = measureFittingTexts(block.value, slotSelector, toValue(texts));
-  });
+  // After the render: new texts usually arrive with a new sentence around the
+  // slot (a language switch), and they must be measured in that sentence.
+  watch(
+    [fontsLoaded, width, () => toValue(texts)],
+    () => {
+      if (!fontsLoaded.value || !block.value) return;
+      fits.value = measureFittingTexts(block.value, slotSelector, toValue(texts));
+    },
+    { flush: "post" },
+  );
 
   return fits;
 }
