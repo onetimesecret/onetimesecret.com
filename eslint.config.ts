@@ -83,6 +83,8 @@ export default tseslint.config(
       "edge/dist/", // Build output of `pnpm edge:build`
       "coverage/",
       "*.d.ts", // Ignore TypeScript definition files
+      // Generated in onetimesecret/onetimesecret; keep byte-identical to upstream
+      "src/components/vue/icons/OtsSprites.vue",
       // Add other patterns to ignore
     ],
   },

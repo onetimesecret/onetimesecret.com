@@ -78,7 +78,7 @@ export const iconLibraries: Record<string, IconLibraryMeta> = {
   ots: {
     name: "Onetime Secret",
     component: "OtsSprites",
-    license: "Public domain map data (Natural Earth)",
+    license: "Onetime Secret, derived from Natural Earth (public domain)",
     licenseUrl: "https://www.naturalearthdata.com/about/terms-of-use/",
     sourceUrl: "https://www.naturalearthdata.com/",
     usagePrefix: "ots",

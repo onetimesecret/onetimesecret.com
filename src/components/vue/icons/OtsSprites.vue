@@ -5,7 +5,14 @@ Custom Onetime Secret icons. Copied verbatim (below this header) from
 onetimesecret/onetimesecret src/shared/components/icons/sprites/OtsSprites.vue,
 which is GENERATED there by scripts/globes/build.mjs. Add or change globes in
 that repo's scripts/globes/presets.mjs, rebuild, and copy the <template> here
-rather than editing the paths by hand.
+rather than editing the paths by hand. Excluded from eslint so that
+`pnpm lint:fix` cannot reorder attributes and drift from upstream.
+
+Upstream revision: onetimesecret/onetimesecret@7cab5625c94b12edf62d8b95ef6610d6e2881702
+
+All ten upstream globes are kept. earth-japan and earth-singapore have no
+entry in src/data/ops/jurisdictions.ts yet; they are here so a JP or SG
+region can reference them without another copy.
 
 Regional globes drawn to match fa6-solid-earth-* (512 viewBox, r=256 disc,
 land cut out inside an r=208 rim), from Natural Earth 1:50m data (public
