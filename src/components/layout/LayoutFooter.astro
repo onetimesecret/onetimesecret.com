@@ -121,7 +121,7 @@ const currentYear = new Date().getFullYear();
       <div
         class={`md:order-2 ${
           t("$config.layout-footer-style") === "horizontal"
-            ? "mt-4 flex justify-center space-x-6 md:mt-0"
+            ? "mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2 md:mt-0"
             : "mt-4 grid grid-cols-1 gap-y-2 sm:grid-cols-2 md:mt-0 md:grid-cols-2 md:gap-x-6 lg:grid-cols-4"
         }`}>
         <a
@@ -138,6 +138,11 @@ const currentYear = new Date().getFullYear();
           href={localizeUrl("/security", effectiveLocale as SupportedLanguage)}
           class="text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
           {t("LABELS.security")}
+        </a>
+        <a
+          href={localizeUrl("/accessibility", effectiveLocale as SupportedLanguage)}
+          class="text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+          {t("LABELS.accessibility")}
         </a>
         <a
           href="/feedback"

@@ -58,6 +58,7 @@
     "privacy-policy": "Datenschutzerklärung",
     "terms-and-conditions": "Allgemeine Geschäftsbedingungen",
     "security": "Sicherheitsmaßnahmen",
+    "accessibility": "Barrierefreiheit",
     "paused": "Pausiert",
     "playing": "Wird abgespielt",
     "feedback": "Rückmeldung",
@@ -359,16 +360,27 @@
       }
     },
     "homepage": {
-      "title": "Onetime Secret {'|'} Passwörter als Link senden, der nur einmal funktioniert",
+      "title": "Onetime Secret {'|'} Ihr eigener Secret-Dienst auf eigener Domain",
       "description": "Teilen Sie sensible Informationen sicher mit selbstzerstörenden Links. Fügen Sie Ihr Geheimnis ein, generieren Sie einen Link und teilen Sie ihn. Nach dem Anzeigen ist es für immer verschwunden.",
       "a-trusted-way-to-share-sensitive-information-etc": "Eine vertrauenswürdige Methode zum Teilen vertraulicher Informationen, die nach dem Anzeigen automatisch gelöscht werden.",
       "hero": {
         "badge": "Entwickelt, um zu vergessen",
         "title": {
-          "line1": "Müssen Sie ein Passwort senden?",
-          "line2": "Senden Sie stattdessen einen Link."
+          "line1": "Müssen Sie {item} senden?",
+          "line2": "Senden Sie stattdessen einen Link.",
+          "items": {
+            "password": "ein Passwort",
+            "apiKey": "einen API-Schlüssel",
+            "loveLetter": "einen Liebesbrief",
+            "login": "Zugangsdaten",
+            "timePlace": "Ort und Zeit"
+          }
         },
         "subtitle": "Senden Sie Passwörter, Zugangsdaten und sensible Informationen über Links, die nur einmal funktionieren.",
+        "animation": {
+          "pause": "Animation anhalten",
+          "play": "Animation abspielen"
+        },
         "compliance": {
           "label": "Sicherheitsfunktionen",
           "encrypted": "Verschlüsselt",

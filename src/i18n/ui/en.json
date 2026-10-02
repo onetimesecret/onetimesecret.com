@@ -58,6 +58,7 @@
     "privacy-policy": "Privacy Policy",
     "terms-and-conditions": "Terms and Conditions",
     "security": "Security",
+    "accessibility": "Accessibility",
     "paused": "Paused",
     "playing": "Playing",
     "feedback": "Feedback",
@@ -359,16 +360,27 @@
       }
     },
     "homepage": {
-      "title": "Onetime Secret {'|'} Send a password as a link that works once",
+      "title": "Onetime Secret {'|'} Run your own secret service on a custom domain",
       "description": "Share sensitive information securely with self-destructing links. Paste your secret, generate a link, and share it. Once viewed, it's gone forever",
       "a-trusted-way-to-share-sensitive-information-etc": "A trusted way to share sensitive information that self-destructs after being viewed.",
       "hero": {
         "badge": "Built to forget",
         "title": {
-          "line1": "Need to send a password?",
-          "line2": "Send a link instead."
+          "line1": "Need to send {item}?",
+          "line2": "Send a link instead.",
+          "items": {
+            "password": "a password",
+            "apiKey": "an API key",
+            "loveLetter": "a love letter",
+            "login": "login details",
+            "timePlace": "a time & place"
+          }
         },
         "subtitle": "Share passwords and other sensitive data with links that work only once.",
+        "animation": {
+          "pause": "Pause animation",
+          "play": "Play animation"
+        },
         "compliance": {
           "label": "Security features",
           "encrypted": "Encrypted",

@@ -26,6 +26,27 @@ export const HERO_HEADING_KEYS = {
   line2: "web.homepage.hero.title.line2",
 } as const;
 
+/**
+ * Example items the hero question cycles through, in order. The first is the
+ * server-rendered default and the one the cycle settles back on.
+ * Each key maps to an i18n path: `web.homepage.hero.title.items.${key}`
+ */
+export const HERO_ITEM_KEYS = [
+  "password",
+  "apiKey",
+  "loveLetter",
+  "login",
+  "timePlace",
+] as const;
+
+export type HeroItemKey = (typeof HERO_ITEM_KEYS)[number];
+
+export const heroItemKey = (key: HeroItemKey) =>
+  `web.homepage.hero.title.items.${key}` as const;
+
+/** How long each example item stays on screen, in milliseconds. */
+export const HERO_ITEM_INTERVAL_MS = 2400;
+
 /** i18n key for the hero badge text */
 export const HERO_BADGE_KEY = "web.homepage.hero.badge" as const;
 
