@@ -12,8 +12,8 @@ export const jurisdictions: Jurisdiction[] = [
     displayName: "European Union",
     domain: "eu.onetimesecret.com",
     icon: {
-      collection: "fa6-solid",
-      name: "earth-europe",
+      collection: "ots",
+      name: "earth-european-union",
     },
   },
   {
@@ -21,8 +21,8 @@ export const jurisdictions: Jurisdiction[] = [
     displayName: "Canada",
     domain: "ca.onetimesecret.com",
     icon: {
-      collection: "fa6-solid",
-      name: "earth-americas",
+      collection: "ots",
+      name: "earth-canada",
     },
   },
   {
@@ -30,8 +30,8 @@ export const jurisdictions: Jurisdiction[] = [
     displayName: "Aotearoa New Zealand",
     domain: "nz.onetimesecret.com",
     icon: {
-      collection: "fa6-solid",
-      name: "earth-oceania",
+      collection: "ots",
+      name: "earth-new-zealand",
     },
   },
   {
@@ -39,8 +39,8 @@ export const jurisdictions: Jurisdiction[] = [
     displayName: "United States",
     domain: "us.onetimesecret.com",
     icon: {
-      collection: "fa6-solid",
-      name: "earth-americas",
+      collection: "ots",
+      name: "earth-united-states",
     },
   },
   {
@@ -48,8 +48,8 @@ export const jurisdictions: Jurisdiction[] = [
     displayName: "United Kingdom",
     domain: "uk.onetimesecret.com",
     icon: {
-      collection: "fa6-solid",
-      name: "earth-europe",
+      collection: "ots",
+      name: "earth-united-kingdom",
     },
   },
   {
@@ -57,8 +57,8 @@ export const jurisdictions: Jurisdiction[] = [
     displayName: "Brazil",
     domain: "br.onetimesecret.com",
     icon: {
-      collection: "fa6-solid",
-      name: "earth-americas",
+      collection: "ots",
+      name: "earth-brazil",
     },
     comingSoon: true,
   },
@@ -67,8 +67,8 @@ export const jurisdictions: Jurisdiction[] = [
     displayName: "Australia",
     domain: "au.onetimesecret.com",
     icon: {
-      collection: "fa6-solid",
-      name: "earth-oceania",
+      collection: "ots",
+      name: "earth-australia",
     },
     comingSoon: true,
   },
@@ -77,8 +77,8 @@ export const jurisdictions: Jurisdiction[] = [
     displayName: "Mexico",
     domain: "mx.onetimesecret.com",
     icon: {
-      collection: "fa6-solid",
-      name: "earth-americas",
+      collection: "ots",
+      name: "earth-mexico",
     },
     comingSoon: true,
   },

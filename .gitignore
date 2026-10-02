@@ -60,7 +60,7 @@ log/
 tmp/
 etc/caddy/
 coverage/
-!tests/data
+!test/unit/data
 
 # Files
 .DS_Store

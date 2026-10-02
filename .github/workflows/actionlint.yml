@@ -1,0 +1,54 @@
+# Workflow Lint
+#
+# Runs actionlint, with shellcheck on every `run:` script, across all files in
+# .github/workflows/. #239 was checked this way locally; this job makes the
+# check happen on every PR that edits a workflow instead of relying on the
+# author to remember it.
+#
+# This is a separate workflow so the `paths:` filter applies only here. The
+# same filter on ci.yml would skip every CI job for PRs that do not touch a
+# workflow. Do not make this a required status check: on PRs it skips, it
+# never reports, and a required check would wait on it forever.
+
+name: Workflow Lint
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - ".github/workflows/**"
+      - ".github/actionlint-matcher.json"
+
+  # Allow manual triggering
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    name: actionlint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Turns findings in the log into annotations on the PR diff. The matcher
+      # is copied unchanged from rhysd/actionlint v1.7.12 and handles -color.
+      - name: Register actionlint problem matcher
+        run: echo "::add-matcher::.github/actionlint-matcher.json"
+
+      # The image bundles actionlint, shellcheck and pyflakes, so the versions
+      # that run here do not drift with the runner image. Upstream tags the
+      # image without a "v" prefix, hence "# 1.7.12".
+      - name: Lint workflow files
+        uses: docker://rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 # 1.7.12
+        with:
+          args: -color

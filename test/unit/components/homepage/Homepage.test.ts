@@ -19,6 +19,10 @@ import {
   setCountry,
 } from '../../helpers/jurisdictionTestEnv';
 
+// The hero's TextMorph needs browser APIs jsdom lacks, and plays no part in
+// the region wiring under test.
+vi.mock('torph/vue', () => import('../../helpers/torphStub'));
+
 let app: App | null = null;
 let host: HTMLElement | null = null;
 

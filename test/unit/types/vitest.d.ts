@@ -30,7 +30,12 @@ declare module 'vitest' {
     fn<T = unknown, Y extends unknown[] = unknown[]>(
       impl?: (...args: Y) => T
     ): MockInstance<T, Y> & ((...args: Y) => T);
-    mock(path: string, factory?: () => unknown): void;
+    mock(
+      path: string,
+      factory?: (importOriginal: <T = unknown>() => Promise<T>) => unknown
+    ): void;
+    /** Runs `factory` before the imports, so `vi.mock` factories can use its result. */
+    hoisted<T>(factory: () => T): T;
     mocked<T extends (...args: never[]) => unknown>(
       fn: T,
     ): MockInstance<ReturnType<T>, Parameters<T>>;
@@ -40,6 +45,9 @@ declare module 'vitest' {
     restoreAllMocks(): void;
     /** Clears the module registry so the next import re-evaluates a module. */
     resetModules(): void;
+    useFakeTimers(): Vi;
+    useRealTimers(): Vi;
+    advanceTimersByTime(ms: number): Vi;
     /** Retries the callback until it stops throwing or the timeout elapses. */
     waitFor<T>(
       fn: () => T | Promise<T>,
