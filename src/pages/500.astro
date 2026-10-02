@@ -22,7 +22,8 @@ const errorMessage = error instanceof Error ? error.message : "Unknown error";
   description="An unexpected error occurred. Please try again later or contact support if the issue persists."
   htmlLang="en"
   noindex>
-  <main class="min-h-screen flex items-center justify-center px-4 py-16">
+  <!-- The layout already provides the page's <main> landmark. -->
+  <div class="min-h-screen flex items-center justify-center px-4 py-16">
     <div class="max-w-md w-full text-center">
       <!-- Error Code -->
       <h1 class="text-6xl sm:text-7xl font-bold text-gray-900 dark:text-white mb-4">
@@ -44,21 +45,18 @@ const errorMessage = error instanceof Error ? error.message : "Unknown error";
         We're sorry for the inconvenience. Please try again in a few moments.
       </p>
 
-      <!-- Action Buttons -->
+      <!--
+        Action Buttons. The visible text is the accessible name; an aria-label
+        that differs from it breaks voice control (WCAG 2.5.3 Label in Name).
+      -->
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a
-          href="/"
-          class="btn btn-lg btn-primary"
-          aria-label="Return to homepage">
+        <a href="/" class="btn btn-lg btn-primary">
           Return Home
         </a>
-        <button
-          onclick="window.location.reload()"
-          class="btn btn-lg btn-secondary"
-          aria-label="Reload the page">
+        <button onclick="window.location.reload()" class="btn btn-lg btn-secondary">
           Try Again
         </button>
       </div>
     </div>
-  </main>
+  </div>
 </Layout>
