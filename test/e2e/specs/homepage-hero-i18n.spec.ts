@@ -16,7 +16,7 @@ for (const [locale, translations] of Object.entries(messages)) {
     page,
   }) => {
     const { line1, line2, items } = translations.web.homepage.hero.title;
-    const sentence = line1.replace("{item}", items.password);
+    const sentence = line1.replace("{item}", () => items.password);
     await page.goto(`/${locale}/`);
     const heading = page.getByRole("heading", { level: 1 });
     await expect(heading).toHaveCount(1);

@@ -72,18 +72,23 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-function mountHero(locale: Locale, localeMessages: object = messages) {
+function mountHero(
+  locale: Locale,
+  localeMessages: object = messages,
+  options: { attachTo?: HTMLElement } = {},
+) {
   const i18n = createI18n({
     legacy: false,
     locale,
     fallbackLocale: false,
     messages: localeMessages as typeof messages,
   });
-  return mount(HeroTitle, { global: { plugins: [i18n] } });
+  return mount(HeroTitle, { global: { plugins: [i18n] }, ...options });
 }
 
 /** The question with its {item} placeholder filled in. */
-const question = (line1: string, item: string) => line1.replace("{item}", item);
+// A replacer function, so a "$" in the item is not read as a pattern.
+const question = (line1: string, item: string) => line1.replace("{item}", () => item);
 
 /** Visible text, without the word joiner that keeps the "?" with the item. */
 const visible = (wrapper: { text(): string }) => wrapper.text().replace(/⁠/g, "");
@@ -95,6 +100,9 @@ const shownItem = (wrapper: VueWrapper) =>
   wrapper.get("[data-hero-item]").attributes("data-hero-item");
 
 const pauseControl = (wrapper: VueWrapper) => wrapper.get("button");
+
+const morphDisabled = (wrapper: VueWrapper) =>
+  wrapper.getComponent({ name: "TextMorph" }).props("disabled");
 
 async function advance(steps = 1) {
   for (let i = 0; i < steps; i++) {
@@ -176,10 +184,10 @@ describe("HeroTitle — localized rendering", () => {
 describe("HeroTitle — rotation and its pause control", () => {
   const { animation, title } = en.web.homepage.hero;
 
-  function mountRotating() {
+  function mountRotating(options: { attachTo?: HTMLElement } = {}) {
     vi.useFakeTimers();
     env.allItemsFit = true;
-    return mountHero("en");
+    return mountHero("en", messages, options);
   }
 
   it("steps through every item once and settles on the default", async () => {
@@ -224,13 +232,17 @@ describe("HeroTitle — rotation and its pause control", () => {
     await advance();
     expect(shownItem(wrapper)).toBe("apiKey");
 
+    expect(morphDisabled(wrapper)).toBe(false);
     await pauseControl(wrapper).trigger("click");
     expect(pauseControl(wrapper).attributes("aria-label")).toBe(animation.play);
+    // Disabling TextMorph ends the morph in progress too.
+    expect(morphDisabled(wrapper)).toBe(true);
     await advance(3);
     expect(shownItem(wrapper)).toBe("apiKey");
 
     await pauseControl(wrapper).trigger("click");
     expect(pauseControl(wrapper).attributes("aria-label")).toBe(animation.pause);
+    expect(morphDisabled(wrapper)).toBe(false);
     await advance();
     expect(shownItem(wrapper)).toBe("loveLetter");
   });
@@ -273,6 +285,17 @@ describe("HeroTitle — rotation and its pause control", () => {
     await nextTick();
     await advance();
     expect(shownItem(wrapper)).toBe("apiKey");
+  });
+
+  it("moves focus to the heading when the focused control goes away", async () => {
+    const wrapper = mountRotating({ attachTo: document.body });
+    (pauseControl(wrapper).element as HTMLButtonElement).focus();
+    expect(document.activeElement).toBe(pauseControl(wrapper).element);
+
+    env.reducedMotion.value = "reduce";
+    await nextTick();
+    expect(wrapper.find("button").exists()).toBe(false);
+    expect(document.activeElement).toBe(wrapper.get("h1#hero-heading").element);
   });
 
   it("does not replay a finished cycle when reduced motion is turned on and off", async () => {

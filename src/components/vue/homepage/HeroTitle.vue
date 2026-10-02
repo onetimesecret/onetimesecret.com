@@ -65,6 +65,8 @@ const canAnimate = computed(
     reducedMotion.value === "no-preference" &&
     itemFits.value.slice(1).includes(true),
 );
+// Ignores the off-screen and hidden-tab holds on purpose: the label would
+// flip on every scroll, and off screen the control is not in view anyway.
 const animating = computed(() => !paused.value && !cycle.finished.value);
 const animationLabel = computed(() =>
   animating.value
@@ -80,6 +82,13 @@ function toggleAnimation() {
   paused.value = false;
   if (cycle.finished.value) cycle.restart();
 }
+
+// The control goes away once there is nothing left to animate. If it had
+// focus, the heading it controlled takes focus instead of the page.
+const control = useTemplateRef<HTMLButtonElement>("control");
+watch(canAnimate, (can) => {
+  if (!can && control.value === document.activeElement) heading.value?.focus();
+});
 </script>
 
 <template>
@@ -99,6 +108,7 @@ function toggleAnimation() {
       -->
       <button
         v-if="canAnimate"
+        ref="control"
         type="button"
         class="absolute top-1/2 right-0 -translate-y-1/2 rounded-full p-2 text-text-tertiary transition-colors hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
         :aria-label="animationLabel"
@@ -112,10 +122,14 @@ function toggleAnimation() {
       </button>
     </div>
 
-    <!-- Hero heading: question with a rotating example item, gradient answer. -->
+    <!--
+      Hero heading: question with a rotating example item, gradient answer.
+      Focusable from script only, for when the pause control goes away.
+    -->
     <h1
       id="hero-heading"
       ref="heading"
+      tabindex="-1"
       class="text-4xl font-extrabold text-text-primary sm:text-5xl md:text-6xl lg:text-7xl">
       <span ref="question" class="mb-3 block">
         <!-- Screen readers get one stable sentence; the animated copy is hidden. -->
@@ -129,21 +143,23 @@ function toggleAnimation() {
           aria-hidden="true">
           <template #item>
             <!--
-              The word joiner keeps the punctuation after the item on its line.
-              TextMorph has its own reduced-motion listener, but it can hear of
-              a change after the item has already gone back to the default, so
-              it is also told directly.
+              The word joiner (U+2060) keeps the punctuation after the item on
+              its line. Disabling TextMorph ends a morph in progress, so pausing
+              stops the motion at once. TextMorph has its own reduced-motion
+              listener, but it can hear of a change after the item has already
+              gone back to the default, so it is also told directly.
             -->
             <span class="whitespace-nowrap"
               ><TextMorph
-                :disabled="reducedMotion === 'reduce'"
+                :disabled="reducedMotion === 'reduce' || paused"
                 :text="itemTexts[itemIndex]"
                 :locale="locale"
                 :data-hero-item="itemKey"
-                class="inline-block whitespace-nowrap align-top" />&NoBreak;</span
+                class="inline-block whitespace-nowrap align-top" />&#x2060;</span
             >
           </template>
         </I18nT>
+        <!-- Separates the two lines in the heading's accessible name. -->
         {{ " " }}
       </span>
       <span class="gradient-text block">
