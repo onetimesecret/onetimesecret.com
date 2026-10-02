@@ -23,12 +23,16 @@ const semantics = {
 };
 
 // jsdom has no layout, IntersectionObserver or Web Animations. The heading is
-// always in view here, each test says whether motion is welcome and whether
-// every example item fits, and TextMorph renders its text without morphing.
-const env = vi.hoisted(() => ({
-  reducedMotion: "no-preference" as "no-preference" | "reduce",
-  allItemsFit: false,
-}));
+// always in view here, each test says whether motion is welcome (and may
+// change its mind) and whether every example item fits, and TextMorph renders
+// its text without morphing.
+const env = await vi.hoisted(async () => {
+  const { ref } = await import("vue");
+  return {
+    reducedMotion: ref<"no-preference" | "reduce">("no-preference"),
+    allItemsFit: false,
+  };
+});
 
 vi.mock("@vueuse/core", async (importOriginal) => {
   const { ref } = await import("vue");
@@ -36,7 +40,7 @@ vi.mock("@vueuse/core", async (importOriginal) => {
     ...(await importOriginal<typeof import("@vueuse/core")>()),
     useDocumentVisibility: () => ref("visible"),
     useElementVisibility: () => ref(true),
-    usePreferredReducedMotion: () => ref(env.reducedMotion),
+    usePreferredReducedMotion: () => env.reducedMotion,
   };
 });
 
@@ -63,7 +67,7 @@ vi.mock("torph/vue", () => import("../../helpers/torphStub"));
 enableAutoUnmount(afterEach);
 
 afterEach(() => {
-  env.reducedMotion = "no-preference";
+  env.reducedMotion.value = "no-preference";
   env.allItemsFit = false;
   vi.useRealTimers();
 });
@@ -244,11 +248,45 @@ describe("HeroTitle — rotation and its pause control", () => {
   });
 
   it("stays on the default without a control when reduced motion is preferred", async () => {
-    env.reducedMotion = "reduce";
+    env.reducedMotion.value = "reduce";
     const wrapper = mountRotating();
     await advance(3);
 
     expect(shownItem(wrapper)).toBe("password");
     expect(wrapper.find("button").exists()).toBe(false);
+  });
+
+  it("goes back to the default when reduced motion is turned on mid-cycle", async () => {
+    const wrapper = mountRotating();
+    await advance(2);
+    expect(shownItem(wrapper)).toBe("loveLetter");
+
+    env.reducedMotion.value = "reduce";
+    await nextTick();
+    expect(shownItem(wrapper)).toBe("password");
+    expect(wrapper.find("button").exists()).toBe(false);
+    await advance(3);
+    expect(shownItem(wrapper)).toBe("password");
+
+    // Once motion is welcome again, the items play from the start.
+    env.reducedMotion.value = "no-preference";
+    await nextTick();
+    await advance();
+    expect(shownItem(wrapper)).toBe("apiKey");
+  });
+
+  it("does not replay a finished cycle when reduced motion is turned on and off", async () => {
+    const wrapper = mountRotating();
+    await advance(HERO_ITEM_KEYS.length);
+    expect(pauseControl(wrapper).attributes("aria-label")).toBe(animation.play);
+
+    env.reducedMotion.value = "reduce";
+    await nextTick();
+    env.reducedMotion.value = "no-preference";
+    await nextTick();
+    await advance(2);
+
+    expect(shownItem(wrapper)).toBe("password");
+    expect(pauseControl(wrapper).attributes("aria-label")).toBe(animation.play);
   });
 });

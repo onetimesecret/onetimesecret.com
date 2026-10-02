@@ -15,6 +15,7 @@ export const TextMorph = defineComponent({
   props: {
     text: { type: String, required: true },
     locale: { type: String, default: undefined },
+    disabled: { type: Boolean, default: false },
   },
   setup: (props) => () => h("span", props.text),
 });

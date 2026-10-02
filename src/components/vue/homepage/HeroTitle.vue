@@ -7,7 +7,7 @@ import {
   usePreferredReducedMotion,
 } from "@vueuse/core";
 import { TextMorph } from "torph/vue";
-import { computed, ref, useTemplateRef } from "vue";
+import { computed, ref, useTemplateRef, watch } from "vue";
 import { I18nT, useI18n } from "vue-i18n";
 
 import OIcon from "@/components/vue/icons/OIcon.vue";
@@ -49,6 +49,12 @@ const cycle = useItemCycle(
 );
 const itemIndex = cycle.index;
 const itemKey = computed(() => HERO_ITEM_KEYS[itemIndex.value]);
+
+// Turning on reduced motion mid-cycle brings back the default item, which is
+// what visitors who arrive with it on see.
+watch(reducedMotion, (preference) => {
+  if (preference === "reduce" && !cycle.finished.value) cycle.restart();
+});
 
 // Motion that starts on its own needs a way to stop it (WCAG 2.2.2). The
 // control exists only while there is motion to control, and once the cycle
@@ -118,9 +124,15 @@ function toggleAnimation() {
           tag="span"
           aria-hidden="true">
           <template #item>
-            <!-- The word joiner keeps the punctuation after the item on its line. -->
+            <!--
+              The word joiner keeps the punctuation after the item on its line.
+              TextMorph has its own reduced-motion listener, but it can hear of
+              a change after the item has already gone back to the default, so
+              it is also told directly.
+            -->
             <span class="whitespace-nowrap"
               ><TextMorph
+                :disabled="reducedMotion === 'reduce'"
                 :text="itemTexts[itemIndex]"
                 :locale="locale"
                 :data-hero-item="itemKey"

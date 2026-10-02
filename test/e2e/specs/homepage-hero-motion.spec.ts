@@ -92,4 +92,39 @@ test.describe("Homepage hero — rotating item", () => {
     await expect(page.getByRole("button", { name: animation.pause })).toHaveCount(0);
     await expect(page.getByRole("button", { name: animation.play })).toHaveCount(0);
   });
+
+  test("goes straight back to the default item when reduced motion is turned on mid-cycle", async ({
+    page,
+  }) => {
+    await page.goto("/en/");
+    await expect(item(page)).not.toHaveAttribute("data-hero-item", DEFAULT_ITEM, {
+      timeout: HERO_ITEM_INTERVAL_MS * 2,
+    });
+    // Running animations in the heading. TextMorph's fill-both animations
+    // stay listed after they finish, so only running ones count.
+    const morphing = () =>
+      page.evaluate(() => {
+        const heading = document.querySelector("#hero-heading")!;
+        return document
+          .getAnimations()
+          .filter(
+            (a) =>
+              a.playState === "running" &&
+              a.effect instanceof KeyframeEffect &&
+              a.effect.target !== null &&
+              heading.contains(a.effect.target),
+          ).length;
+      });
+    await expect.poll(morphing).toBe(0);
+
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await expect(item(page)).toHaveAttribute("data-hero-item", DEFAULT_ITEM);
+    // A morph back would run for TextMorph's 400 ms; sample through it.
+    for (let i = 0; i < 10; i++) {
+      expect(await morphing()).toBe(0);
+      await page.waitForTimeout(50);
+    }
+    await expect(page.getByRole("button", { name: animation.pause })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: animation.play })).toHaveCount(0);
+  });
 });
