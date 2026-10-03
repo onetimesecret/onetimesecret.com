@@ -91,6 +91,13 @@ const PUBLIC_INDEXABLE_PATHS = [
   "/fr/signup/",
   ...DEFENSIVE_APPLICATION_PATHS.flatMap((path) => [`/en${path}/`, `/fr${path}/guide/`]),
 ];
+const PUBLIC_INDEXABLE_BATCHES = Array.from(
+  { length: Math.ceil(PUBLIC_INDEXABLE_PATHS.length / MAX_EXAMPLES) },
+  (_, i) => ({
+    omitted: PUBLIC_INDEXABLE_PATHS.slice(i * MAX_EXAMPLES, (i + 1) * MAX_EXAMPLES),
+  }),
+);
+
 // Synthetic restrictive policy for parser/gate tests, not the production policy.
 const ROBOTS = [
   "User-agent: *",
@@ -1138,18 +1145,29 @@ describe("production robots.txt", () => {
     expect(run(fixture({ paths, robots: PRODUCTION_ROBOTS }))).toEqual([]);
   });
 
-  it.each(PUBLIC_INDEXABLE_PATHS)(
-    "audits %s when it is missing from the sitemap",
-    (path) => {
-      const paths = [...defaultPaths(), path];
-      const locs = defaultPaths().map((advertised) => `${ORIGIN}${advertised}`);
-      const dir = fixture({ paths, locs, robots: PRODUCTION_ROBOTS });
-      const { problems, audited } = verifySitemap({ distDir: dir, expectedOrigin: ORIGIN });
+  it.each(PUBLIC_INDEXABLE_BATCHES)(
+    "audits every omitted public page in batch $omitted",
+    ({ omitted }) => {
+      expect(omitted.length).toBeLessThanOrEqual(MAX_EXAMPLES);
+      const dir = fixture({ robots: PRODUCTION_ROBOTS });
+      const baseline = verifySitemap({ distDir: dir, expectedOrigin: ORIGIN });
+      expect(baseline.problems).toEqual([]);
+      for (const path of omitted) {
+        write(dir, join(path.replace(/^\//, ""), "index.html"), page(path));
+      }
+      const { problems, audited } = verifySitemap({
+        distDir: dir,
+        expectedOrigin: ORIGIN,
+      });
+      expect(problems).toHaveLength(1);
       const missing = problems.find((problem: string) =>
         problem.includes("built page(s) are missing from the sitemap"),
       );
-      expect(missing).toContain(path);
-      expect(audited).toBe(paths.length);
+      const examples = missing?.split(": ")[1]?.split(". ")[0]?.split(", ");
+      expect(examples).toHaveLength(omitted.length);
+      // Exact entries: /account/ must not pass merely because /account/guide/ is shown.
+      for (const path of omitted) expect(examples).toContain(path);
+      expect(audited - baseline.audited).toBe(omitted.length);
     },
   );
 
