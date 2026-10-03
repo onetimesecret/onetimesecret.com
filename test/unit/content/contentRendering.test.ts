@@ -212,9 +212,9 @@ afterAll(() => {
   if (workspace) rmSync(workspace, { recursive: true, force: true });
 });
 
-describe("rendered auth interstitials", () => {
+describe("rendered origin fallback auth interstitials", () => {
   it.each(["/signin", "/signup"])(
-    "keeps %s crawlable and noindex, but out of the sitemap",
+    "keeps %s crawlable with noindex origin fallback HTML, but out of the sitemap",
     (path) => {
       const rules = starRules(readFileSync(join(dist, "robots.txt"), "utf8"));
       expect(isDisallowed(path, rules)).toBe(false);

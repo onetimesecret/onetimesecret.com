@@ -503,7 +503,7 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
     if (isExcludedFromSitemap(pathname)) continue;
     // A Disallow-ed page is deliberately hidden, so not advertising it is
     // correct. An over-broad rule can still shrink this audit silently (#224),
-    // especially if the same paths are also in EXCLUDED_SITEMAP_PATHS. The
+    // especially if sitemap config also excludes those paths. The
     // audited count is printed and floored as a backstop; production robots
     // rules have regression tests for longer first-segment names.
     if (hasRobots && isDisallowed(decodePath(pathname), rules)) continue;

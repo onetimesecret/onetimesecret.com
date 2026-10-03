@@ -21,14 +21,20 @@ import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  EXCLUDED_SITEMAP_PATHS_EXACT,
+  isExcludedFromSitemap,
+  normalizePath,
+} from "../../../config/astro/sitemap";
+import { CANONICAL_ORIGIN } from "../../../config/domains";
+import {
   MAX_EXAMPLES,
   MINIMUM_AUDITED_PAGES,
   MINIMUM_URL_COUNT,
   MUST_BE_PRESENT,
   canonicalOf,
   canonicalisesToSelf,
-  decodePath,
   declaredSitemaps,
+  decodePath,
   htmlFiles,
   isDisallowed,
   isNoindex,
@@ -43,8 +49,7 @@ import {
   summarize,
   verifySitemap,
 } from "../../../scripts/verify-sitemap.mjs";
-import { isExcludedFromSitemap, normalizePath } from "../../../config/astro/sitemap";
-import { CANONICAL_ORIGIN } from "../../../config/domains";
+import { AUTH_PATHS } from "../../../src/utils/authPaths";
 
 const ORIGIN = CANONICAL_ORIGIN;
 const SITEMAP_LINK = "/sitemap-index.xml";
@@ -477,7 +482,7 @@ describe("verifySitemap", () => {
   });
 
   it("flags a URL that robots.txt Disallows", () => {
-    // Not one of EXCLUDED_SITEMAP_PATHS, so this reaches the robots check
+    // Not an excluded sitemap path, so this reaches the robots check
     // rather than being caught by the hand-maintained list first. That is the
     // point of the check: it catches what the list forgot.
     const paths = [...defaultPaths(), "/account/settings/"];
@@ -488,7 +493,7 @@ describe("verifySitemap", () => {
     expect(text(problems)).toContain("If they are deliberately blocked");
   });
 
-  it("flags a path listed in EXCLUDED_SITEMAP_PATHS", () => {
+  it("flags a path listed in EXCLUDED_SITEMAP_PATHS_SUBTREE", () => {
     const problems = run(fixture({ paths: [...defaultPaths(), "/example/"] }));
     expect(text(problems)).toContain("excluded path(s) are in the sitemap");
   });
@@ -1027,12 +1032,28 @@ describe("resolveOrigin", () => {
 });
 
 describe("isExcludedFromSitemap", () => {
+  it("derives the normalized exact exclusions from the shared slashless auth paths", () => {
+    expect(EXCLUDED_SITEMAP_PATHS_EXACT).toEqual(new Set(AUTH_PATHS.map(normalizePath)));
+    for (const path of AUTH_PATHS) {
+      expect(EXCLUDED_SITEMAP_PATHS_EXACT.has(normalizePath(path))).toBe(true);
+      expect(isExcludedFromSitemap(path)).toBe(true);
+      expect(isExcludedFromSitemap(`${path}/`)).toBe(true);
+      expect(isExcludedFromSitemap(`${path}/help/`)).toBe(false);
+      expect(isExcludedFromSitemap(`${path}-guide/`)).toBe(false);
+      expect(isExcludedFromSitemap(`/en${path}/`)).toBe(false);
+    }
+  });
+
   it("excludes a locale-prefixed path and its unprefixed form", () => {
     expect(isExcludedFromSitemap("/de/changelog/guide/")).toBe(true);
     expect(isExcludedFromSitemap("/changelog/guide/")).toBe(true);
+    expect(isExcludedFromSitemap("/de/changelog/guide/detail/")).toBe(true);
+    expect(isExcludedFromSitemap("/changelog/guide/detail/")).toBe(true);
+    expect(isExcludedFromSitemap("/de/changelog/guidebook/")).toBe(false);
+    expect(isExcludedFromSitemap("/changelog/guidebook/")).toBe(false);
   });
 
-  it.each(["/signin", "/signup"])(
+  it.each(AUTH_PATHS)(
     "excludes the noindex %s interstitial with or without a trailing slash",
     (path) => {
       expect(isExcludedFromSitemap(path)).toBe(true);
@@ -1043,6 +1064,7 @@ describe("isExcludedFromSitemap", () => {
   it("excludes the debug routes and their descendants", () => {
     expect(isExcludedFromSitemap("/example/")).toBe(true);
     expect(isExcludedFromSitemap("/example/detail/")).toBe(true);
+    expect(isExcludedFromSitemap("/en/example/")).toBe(false);
   });
 
   it.each(PUBLIC_INDEXABLE_PATHS)(

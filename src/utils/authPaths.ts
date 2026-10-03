@@ -3,11 +3,12 @@
 /**
  * The auth entry points this site hands off to the regional app domains.
  *
- * Three layers decide whether a request or an anchor is an auth entry point —
- * the edge redirect (`edge/bunnycdn-auth-redirect.ts`), the client-side link
- * rewriter (`src/utils/regionalAuth.ts`) and the origin interstitial pages
- * (`src/pages/{signin,signup}.astro`). They must claim exactly the same paths,
- * so the list and the normalization live here rather than in each of them.
+ * Auth path ownership is shared by the edge redirect
+ * (`edge/bunnycdn-auth-redirect.ts`), the client-side link rewriter
+ * (`src/utils/regionalAuth.ts`), the origin fallback interstitial pages
+ * (`src/pages/{signin,signup}.astro`), and the exact sitemap exclusions
+ * (`config/astro/sitemap.ts`). They must claim exactly the same paths, so the
+ * list and auth-path normalization live here rather than in each consumer.
  *
  * Kept free of imports and side effects: the edge scripts bundle it, and they
  * run in a Deno-flavored runtime with no DOM and no app globals.
