@@ -502,13 +502,10 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
     const { pathname } = parsed;
     if (isExcludedFromSitemap(pathname)) continue;
     // A Disallow-ed page is deliberately hidden, so not advertising it is
-    // correct. Note the blast radius, which runs both ways (#224). Quietly: an
-    // over-broad rule shrinks what this audits rather than failing anything,
-    // and if the same paths are also in EXCLUDED_SITEMAP_PATHS both defences go
-    // quiet together, with the audited count as the only signal — which is why
-    // it is printed and floored. Loudly: the rules here are unanchored
-    // prefixes, so a new /shared-links/ page would be advertised and then fail
-    // the disallowedPage check above, whose message names this file second.
+    // correct. An over-broad rule can still shrink this audit silently (#224),
+    // especially if the same paths are also in EXCLUDED_SITEMAP_PATHS. The
+    // audited count is printed and floored as a backstop; production robots
+    // rules have regression tests for longer first-segment names.
     if (hasRobots && isDisallowed(decodePath(pathname), rules)) continue;
 
     const key = canonicalPath(pathname);
@@ -792,8 +789,9 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
   if (disallowedPage.length > 0) {
     problems.push(
       summarize(disallowedPage, (n) => `${n} sitemap URL(s) are Disallow-ed by robots.txt`) +
-        ". Telling crawlers to index a URL the same site blocks is the defect #214 was " +
-        "filed about; add them to config/astro/sitemap.ts or relax the robots.txt rule.",
+        ". Check public/robots.txt for an over-broad rule first: use an exact path " +
+        "or a segment-bounded subtree if these pages should be crawlable. If they are " +
+        "deliberately blocked, add them to config/astro/sitemap.ts.",
     );
   }
 

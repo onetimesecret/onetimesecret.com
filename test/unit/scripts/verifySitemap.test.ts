@@ -15,7 +15,7 @@
  * @vitest-environment node
  */
 
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -48,6 +48,21 @@ import { CANONICAL_ORIGIN } from "../../../config/domains";
 
 const ORIGIN = CANONICAL_ORIGIN;
 const SITEMAP_LINK = "/sitemap-index.xml";
+
+const PRODUCTION_ROBOTS = readFileSync(
+  new URL("../../../public/robots.txt", import.meta.url),
+  "utf8",
+);
+const PUBLIC_PREFIX_PATHS = [
+  "/signing/",
+  "/signin-guide/",
+  "/signup-guide/",
+  "/shared-links/",
+  "/admin-guide/",
+  "/dashboard-guide/",
+  "/logout-guide/",
+  "/incoming-guide/",
+];
 
 const ROBOTS = [
   "User-agent: *",
@@ -445,6 +460,8 @@ describe("verifySitemap", () => {
     const problems = run(fixture({ paths }));
     expect(text(problems)).toContain("Disallow-ed by robots.txt");
     expect(text(problems)).toContain("/account/settings/");
+    expect(text(problems)).toContain("Check public/robots.txt for an over-broad rule first");
+    expect(text(problems)).toContain("If they are deliberately blocked");
   });
 
   it("flags a path listed in EXCLUDED_SITEMAP_PATHS", () => {
@@ -862,6 +879,89 @@ describe("isDisallowed", () => {
     expect(isDisallowed("/info/public/x", custom)).toBe(false);
     expect(isDisallowed("/info/private", custom)).toBe(true);
   });
+});
+
+describe("production robots.txt", () => {
+  const rules = starRules(PRODUCTION_ROBOTS);
+
+  it("has no redundant public-page Allow rules", () => {
+    expect(rules.allow).toEqual(["/"]);
+  });
+
+  it.each(["/signin", "/signup", "/logout"])(
+    "blocks only the %s endpoint",
+    (path) => {
+      for (const suffix of [
+        "",
+        "/",
+        "?redirect=%2Faccount",
+        "/?redirect=%2Faccount",
+      ]) {
+        expect(isDisallowed(`${path}${suffix}`, rules)).toBe(true);
+      }
+      expect(isDisallowed(`${path}/help/`, rules)).toBe(false);
+    },
+  );
+
+  it.each(["/admin", "/dashboard", "/shared", "/incoming"])(
+    "blocks the %s endpoint and subtree",
+    (path) => {
+      for (const suffix of [
+        "",
+        "/",
+        "?page=2",
+        "/?page=2",
+        "/detail/",
+        "/detail/?page=2",
+      ]) {
+        expect(isDisallowed(`${path}${suffix}`, rules)).toBe(true);
+      }
+    },
+  );
+
+  it.each([
+    "/private/",
+    "/secret/",
+    "/receipt/",
+    "/account/",
+    "/recent/",
+    "/forgot/",
+    "/domains/",
+  ])("preserves the existing %s subtree rule", (path) => {
+    expect(isDisallowed(path, rules)).toBe(true);
+    expect(isDisallowed(`${path}detail/`, rules)).toBe(true);
+  });
+
+  it.each(["/", "/en/about/", "/en/pricing/", ...PUBLIC_PREFIX_PATHS])(
+    "allows public path %s and its query variant",
+    (path) => {
+      expect(isDisallowed(path, rules)).toBe(false);
+      expect(isDisallowed(`${path}?page=2`, rules)).toBe(false);
+    },
+  );
+
+  it("accepts advertised public pages whose first segment extends a blocked token", () => {
+    const paths = [...defaultPaths(), ...PUBLIC_PREFIX_PATHS];
+    expect(run(fixture({ paths, robots: PRODUCTION_ROBOTS }))).toEqual([]);
+  });
+
+  it.each(PUBLIC_PREFIX_PATHS)(
+    "audits %s when it is missing from the sitemap",
+    (path) => {
+      const paths = [...defaultPaths(), path];
+      const locs = defaultPaths().map((advertised) => `${ORIGIN}${advertised}`);
+      const dir = fixture({ paths, locs, robots: PRODUCTION_ROBOTS });
+      const { problems, audited } = verifySitemap({
+        distDir: dir,
+        expectedOrigin: ORIGIN,
+      });
+      const missing = problems.find((problem: string) =>
+        problem.includes("built page(s) are missing from the sitemap"),
+      );
+      expect(missing).toContain(path);
+      expect(audited).toBe(paths.length);
+    },
+  );
 });
 
 describe("isNoindex", () => {

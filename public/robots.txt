@@ -1,13 +1,6 @@
 # robots.txt for onetimesecret.com
 
 User-agent: *
-# Allow specific public pages first so they take precedence
-Allow: /about
-Allow: /features
-Allow: /pricing
-Allow: /feedback
-Allow: /info/
-Allow: /translations
 Allow: /
 
 # Disallow sensitive or private areas
@@ -15,16 +8,39 @@ Disallow: /private/
 Disallow: /secret/
 Disallow: /receipt/
 Disallow: /account/
-Disallow: /dashboard
-Disallow: /admin
-Disallow: /shared
 Disallow: /recent/
 Disallow: /forgot/
 Disallow: /domains/
-Disallow: /signin
-Disallow: /signup
-Disallow: /logout
-Disallow: /incoming
+
+# Private-area endpoints and subtrees, not longer first-segment names.
+# The exact and query rules also cover each endpoint without a trailing slash.
+Disallow: /dashboard$
+Disallow: /dashboard?
+Disallow: /dashboard/
+Disallow: /admin$
+Disallow: /admin?
+Disallow: /admin/
+Disallow: /shared$
+Disallow: /shared?
+Disallow: /shared/
+Disallow: /incoming$
+Disallow: /incoming?
+Disallow: /incoming/
+
+# Auth endpoints only, with or without a trailing slash or query string.
+# In robots syntax, ? is literal and $ anchors the end of the URL.
+Disallow: /signin$
+Disallow: /signin?
+Disallow: /signin/$
+Disallow: /signin/?
+Disallow: /signup$
+Disallow: /signup?
+Disallow: /signup/$
+Disallow: /signup/?
+Disallow: /logout$
+Disallow: /logout?
+Disallow: /logout/$
+Disallow: /logout/?
 
 # Crawl delay recommendation for high-traffic bots
 Crawl-delay: 1
