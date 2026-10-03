@@ -19,7 +19,11 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { verifySitemap } from "../../../scripts/verify-sitemap.mjs";
+import {
+  isDisallowed,
+  starRules,
+  verifySitemap,
+} from "../../../scripts/verify-sitemap.mjs";
 
 const root = resolve(import.meta.dirname, "../../..");
 const require = createRequire(import.meta.url);
@@ -35,6 +39,8 @@ const group = "seo-integration";
 const target = `${origin}/en/about/`;
 let workspace: string;
 let dist: string;
+let builtRobotsRules: ReturnType<typeof starRules>;
+let builtAdvertisedUrls: string[];
 
 function fixture(path: string, contents: string): void {
   const destination = join(workspace, path);
@@ -198,6 +204,10 @@ const page = await getEntry("useCases", "en/${group}/private");
         maxBuffer: 10 * 1024 * 1024,
       },
     );
+    builtRobotsRules = starRules(
+      readFileSync(join(dist, "robots.txt"), "utf8"),
+    );
+    builtAdvertisedUrls = advertisedUrls();
   } catch (error) {
     rmSync(workspace, { recursive: true, force: true });
     throw error;
@@ -206,6 +216,19 @@ const page = await getEntry("useCases", "en/${group}/private");
 
 afterAll(() => {
   if (workspace) rmSync(workspace, { recursive: true, force: true });
+});
+
+describe("rendered origin fallback auth interstitials", () => {
+  it.each(["/signin", "/signup"])(
+    "keeps %s crawlable with noindex origin fallback HTML, but out of the sitemap",
+    (path) => {
+      expect(isDisallowed(path, builtRobotsRules)).toBe(false);
+      expect(isDisallowed(`${path}/`, builtRobotsRules)).toBe(false);
+      expect(robots(html(path.slice(1)))).toBe("noindex");
+      expect(builtAdvertisedUrls).not.toContain(`${origin}${path}`);
+      expect(builtAdvertisedUrls).not.toContain(`${origin}${path}/`);
+    },
+  );
 });
 
 describe("rendered content collection routes", () => {
@@ -264,7 +287,7 @@ describe("rendered content collection routes", () => {
   });
 
   it("does not build, link, or advertise draft use cases in any locale", () => {
-    const urls = advertisedUrls();
+    const urls = builtAdvertisedUrls;
     for (const lang of languages) {
       const path = `/${lang}/use-cases/${group}/draft`;
       expect(existsSync(join(dist, path, "index.html"))).toBe(false);
@@ -276,7 +299,7 @@ describe("rendered content collection routes", () => {
   });
 
   it("advertises published details but rejects noindex/duplicate metadata until excluded", () => {
-    const urls = advertisedUrls();
+    const urls = builtAdvertisedUrls;
     for (const lang of languages) {
       for (const slug of ["nested/published", "private", "duplicate"]) {
         // Frontmatter does not automatically change the sitemap filter.

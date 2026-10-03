@@ -1,52 +1,28 @@
-# robots.txt for onetimesecret.com
+# robots.txt for the static onetimesecret.com website.
+# Application hosts manage their own crawler policies.
+# Keep noindex pages crawlable so crawlers can read their indexing directives.
 
 User-agent: *
-# Allow specific public pages first so they take precedence
-Allow: /about
-Allow: /features
-Allow: /pricing
-Allow: /feedback
-Allow: /info/
-Allow: /translations
 Allow: /
 
-# Disallow sensitive or private areas
-Disallow: /private/
+# Defense-in-depth for legacy secret-handling paths: this repository cannot
+# verify whether the live CDN zone still serves or proxies application routes.
+# Match bare paths, query forms and descendants, not public sibling prefixes.
+# This is crawler guidance, not access control; application hosts own protection.
+Disallow: /secret$
+Disallow: /secret?
 Disallow: /secret/
+Disallow: /private$
+Disallow: /private?
+Disallow: /private/
+Disallow: /receipt$
+Disallow: /receipt?
 Disallow: /receipt/
-Disallow: /account/
-Disallow: /dashboard
-Disallow: /admin
-Disallow: /shared
-Disallow: /recent/
-Disallow: /forgot/
-Disallow: /domains/
-Disallow: /signin
-Disallow: /signup
-Disallow: /logout
-Disallow: /incoming
+Disallow: /shared$
+Disallow: /shared?
+Disallow: /shared/
+Disallow: /incoming$
+Disallow: /incoming?
+Disallow: /incoming/
 
-# Crawl delay recommendation for high-traffic bots
-Crawl-delay: 1
-
-# Allow Puppeteer and LLM fetch requests
-User-agent: Puppeteer
-Allow: /
-
-User-agent: GPTBot
-Allow: /
-
-User-agent: ChatGPT-User
-Allow: /
-
-User-agent: Google-Extended
-Allow: /
-
-User-agent: CCBot
-Allow: /
-
-User-agent: Claude-Web
-Allow: /
-
-# Sitemap declaration
 Sitemap: https://onetimesecret.com/sitemap-index.xml

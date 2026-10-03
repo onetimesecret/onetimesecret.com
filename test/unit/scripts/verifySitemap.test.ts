@@ -15,11 +15,17 @@
  * @vitest-environment node
  */
 
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import {
+  EXCLUDED_SITEMAP_PATHS_EXACT,
+  isExcludedFromSitemap,
+  normalizePath,
+} from "../../../config/astro/sitemap";
+import { CANONICAL_ORIGIN } from "../../../config/domains";
 import {
   MAX_EXAMPLES,
   MINIMUM_AUDITED_PAGES,
@@ -27,8 +33,8 @@ import {
   MUST_BE_PRESENT,
   canonicalOf,
   canonicalisesToSelf,
-  decodePath,
   declaredSitemaps,
+  decodePath,
   htmlFiles,
   isDisallowed,
   isNoindex,
@@ -43,12 +49,56 @@ import {
   summarize,
   verifySitemap,
 } from "../../../scripts/verify-sitemap.mjs";
-import { isExcludedFromSitemap, normalizePath } from "../../../config/astro/sitemap";
-import { CANONICAL_ORIGIN } from "../../../config/domains";
+import { AUTH_PATHS } from "../../../src/utils/authPaths";
 
 const ORIGIN = CANONICAL_ORIGIN;
 const SITEMAP_LINK = "/sitemap-index.xml";
 
+const PRODUCTION_ROBOTS = readFileSync(
+  new URL("../../../public/robots.txt", import.meta.url),
+  "utf8",
+);
+const PUBLIC_PREFIX_PATHS = [
+  "/signing/",
+  "/signin-guide/",
+  "/signup-guide/",
+  "/shared-links/",
+  "/secret-guide/",
+  "/private-guide/",
+  "/receipt-guide/",
+  "/admin-guide/",
+  "/dashboard-guide/",
+  "/logout-guide/",
+  "/incoming-guide/",
+];
+
+const DEFENSIVE_APPLICATION_PATHS = ["/secret", "/private", "/receipt", "/shared", "/incoming"];
+const CRAWLABLE_LEGACY_PATHS = [
+  "/account",
+  "/recent",
+  "/forgot",
+  "/domains",
+  "/dashboard",
+  "/admin",
+  "/logout",
+];
+const PUBLIC_INDEXABLE_PATHS = [
+  ...PUBLIC_PREFIX_PATHS,
+  ...CRAWLABLE_LEGACY_PATHS.flatMap((path) => [`${path}/`, `${path}/guide/`]),
+  "/signin/help/",
+  "/signup/help/",
+  "/en/signin/",
+  "/fr/signup/",
+  ...DEFENSIVE_APPLICATION_PATHS.flatMap((path) => [`/en${path}/`, `/fr${path}/guide/`]),
+];
+const PUBLIC_INDEXABLE_BATCHES = Array.from(
+  { length: Math.ceil(PUBLIC_INDEXABLE_PATHS.length / MAX_EXAMPLES) },
+  (_, i) => ({
+    omitted: PUBLIC_INDEXABLE_PATHS.slice(i * MAX_EXAMPLES, (i + 1) * MAX_EXAMPLES),
+  }),
+);
+
+// Synthetic restrictive policy for parser/gate tests, not the production policy.
 const ROBOTS = [
   "User-agent: *",
   "Allow: /",
@@ -438,16 +488,18 @@ describe("verifySitemap", () => {
   });
 
   it("flags a URL that robots.txt Disallows", () => {
-    // Not one of EXCLUDED_SITEMAP_PATHS, so this reaches the robots check
+    // Not an excluded sitemap path, so this reaches the robots check
     // rather than being caught by the hand-maintained list first. That is the
     // point of the check: it catches what the list forgot.
     const paths = [...defaultPaths(), "/account/settings/"];
     const problems = run(fixture({ paths }));
     expect(text(problems)).toContain("Disallow-ed by robots.txt");
     expect(text(problems)).toContain("/account/settings/");
+    expect(text(problems)).toContain("Check public/robots.txt for an over-broad rule first");
+    expect(text(problems)).toContain("If they are deliberately blocked");
   });
 
-  it("flags a path listed in EXCLUDED_SITEMAP_PATHS", () => {
+  it("flags a path listed in EXCLUDED_SITEMAP_PATHS_SUBTREE", () => {
     const problems = run(fixture({ paths: [...defaultPaths(), "/example/"] }));
     expect(text(problems)).toContain("excluded path(s) are in the sitemap");
   });
@@ -752,6 +804,179 @@ describe("verifySitemap", () => {
     });
   });
 
+  describe("sitemap file crawlability", () => {
+    it.each(["/sitemap-index.xml", "/sitemap-0.xml"])(
+      "rejects an otherwise sound build when only %s is blocked",
+      (path) => {
+        const robots = ROBOTS.replace("Allow: /", `Allow: /\nDisallow: ${path}$`);
+        const problems = run(fixture({ robots }));
+        expect(problems).toHaveLength(1);
+        expect(problems[0]).toContain("1 sitemap file URL(s) are Disallow-ed by robots.txt");
+        expect(problems[0]).toContain(`${ORIGIN}${path}`);
+      },
+    );
+
+    it("checks the generated index even when robots declares only a child", () => {
+      const robots = ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /sitemap-index.xml$").replace(
+        `Sitemap: ${ORIGIN}/sitemap-index.xml`,
+        `Sitemap: ${ORIGIN}/sitemap-0.xml`,
+      );
+      const problems = text(run(fixture({ robots })));
+      expect(problems).toContain("1 sitemap file URL(s) are Disallow-ed by robots.txt");
+      expect(problems).toContain(`${ORIGIN}/sitemap-index.xml`);
+      expect(problems).toContain("none of which is");
+    });
+
+    it("checks every same-origin declaration, not just the valid index declaration", () => {
+      const additional = ["/additional-a.xml", "/additional-b.xml"];
+      const robots =
+        ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /additional-") +
+        additional.map((path) => `\nSitemap: ${ORIGIN}${path}`).join("");
+      const problems = run(fixture({ robots }));
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toContain("2 sitemap file URL(s) are Disallow-ed by robots.txt");
+      for (const path of additional) expect(problems[0]).toContain(`${ORIGIN}${path}`);
+    });
+
+    it("checks every same-origin child, not just the first", () => {
+      const robots = ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /sitemap-1.xml$");
+      const problems = run(
+        fixture({
+          robots,
+          childSitemaps: [`${ORIGIN}/sitemap-0.xml`, `${ORIGIN}/sitemap-1.xml`],
+          extraPages: { "sitemap-1.xml": "<urlset/>" },
+        }),
+      );
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toContain("1 sitemap file URL(s) are Disallow-ed by robots.txt");
+      expect(problems[0]).toContain(`${ORIGIN}/sitemap-1.xml`);
+    });
+
+    it("reports blocked children even when a missing child stops the page audit", () => {
+      const robots = ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /missing.xml$");
+      const problems = text(run(fixture({ robots, childSitemaps: [`${ORIGIN}/missing.xml`] })));
+      expect(problems).toContain("1 sitemap file URL(s) are Disallow-ed by robots.txt");
+      expect(problems).toContain("does not exist");
+      expect(problems).not.toContain("fewer than");
+    });
+
+    it("matches /*.xml$ against both the index and the child, without duplicate examples", () => {
+      const robots = ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /*.xml$");
+      const problems = run(fixture({ robots }));
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toContain("2 sitemap file URL(s) are Disallow-ed by robots.txt");
+      expect(problems[0]).toContain(`${ORIGIN}/sitemap-index.xml`);
+      expect(problems[0]).toContain(`${ORIGIN}/sitemap-0.xml`);
+    });
+
+    it("lets longer Allow rules override the wildcard XML block", () => {
+      const robots = ROBOTS.replace(
+        "Allow: /",
+        [
+          "Allow: /",
+          "Disallow: /*.xml$",
+          "Allow: /sitemap-index.xml",
+          "Allow: /sitemap-0.xml",
+        ].join("\n"),
+      );
+      expect(run(fixture({ robots }))).toEqual([]);
+    });
+
+    it("does not apply an end-anchored XML block to declarations with a query", () => {
+      const robots =
+        ROBOTS.replace(
+          "Allow: /",
+          [
+            "Allow: /",
+            "Disallow: /*.xml$",
+            "Allow: /sitemap-index.xml",
+            "Allow: /sitemap-0.xml",
+          ].join("\n"),
+        ) + `\nSitemap: ${ORIGIN}/additional.xml?download=1`;
+      expect(run(fixture({ robots }))).toEqual([]);
+    });
+
+    it("matches a query-specific block on a declared sitemap", () => {
+      const href = `${ORIGIN}/additional.xml?download=1`;
+      const robots =
+        ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /additional.xml?download=1$") +
+        `\nSitemap: ${href}`;
+      const problems = run(fixture({ robots }));
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toContain("1 sitemap file URL(s) are Disallow-ed by robots.txt");
+      expect(problems[0]).toContain(href);
+    });
+
+    it("does not apply an end-anchored XML block to a child with a query", () => {
+      const robots = ROBOTS.replace(
+        "Allow: /",
+        ["Allow: /", "Disallow: /*.xml$", "Allow: /sitemap-index.xml"].join("\n"),
+      );
+      expect(
+        run(
+          fixture({
+            robots,
+            childSitemaps: [`${ORIGIN}/sitemap-0.xml?download=1`],
+          }),
+        ),
+      ).toEqual([]);
+    });
+
+    it("matches a decoded query-specific block on a child sitemap", () => {
+      const href = `${ORIGIN}/sitemap-0.xml?download=%61`;
+      const robots = ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /sitemap-0.xml?download=a$");
+      const problems = run(fixture({ robots, childSitemaps: [href] }));
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toContain("1 sitemap file URL(s) are Disallow-ed by robots.txt");
+      expect(problems[0]).toContain(href);
+    });
+
+    it("summarizes a systemic block across declared sitemap files", () => {
+      const additional = Array.from(
+        { length: MAX_EXAMPLES + 2 },
+        (_, i) => `${ORIGIN}/blocked/sitemap-${i}.xml`,
+      );
+      const robots =
+        ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /blocked/") +
+        additional.map((href) => `\nSitemap: ${href}`).join("");
+      const problems = run(fixture({ robots }));
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toContain(`${additional.length} sitemap file URL(s)`);
+      for (const href of additional.slice(0, MAX_EXAMPLES)) expect(problems[0]).toContain(href);
+      expect(problems[0]).toContain("and 2 more");
+      expect(problems[0]).not.toContain(additional[MAX_EXAMPLES]);
+    });
+
+    it("retains malformed and off-origin child checks instead of crawlability errors", () => {
+      const robots = ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /blocked/");
+      const problems = text(
+        run(
+          fixture({
+            robots,
+            childSitemaps: [
+              `${ORIGIN}/sitemap-0.xml`,
+              "not a URL",
+              "https://elsewhere.test/blocked/sitemap.xml",
+            ],
+          }),
+        ),
+      );
+      expect(problems).toContain('"not a URL", which is not a valid URL');
+      expect(problems).toContain(`is not on ${ORIGIN}`);
+      expect(problems).not.toContain("sitemap file URL(s) are Disallow-ed");
+    });
+
+    it("retains malformed and off-origin declaration checks instead of crawlability errors", () => {
+      const robots =
+        ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /blocked/") +
+        "\nSitemap: not a URL\nSitemap: https://elsewhere.test/blocked/sitemap.xml";
+      const problems = text(run(fixture({ robots })));
+      expect(problems).toContain("not absolute URLs");
+      expect(problems).toContain("off-origin");
+      expect(problems).not.toContain("sitemap file URL(s) are Disallow-ed");
+    });
+  });
+
   describe("robots.txt Sitemap declarations", () => {
     it("flags an off-origin declaration that still names the right path", () => {
       const robots = ROBOTS.replace(
@@ -793,7 +1018,7 @@ describe("verifySitemap", () => {
           `Sitemap: ${ORIGIN}/sitemap-index.xml`,
           `Sitemap: ${spelling}/sitemap-index.xml`,
         );
-        expect(text(run(fixture({ robots })))).not.toContain("none of which is");
+        expect(run(fixture({ robots }))).toEqual([]);
       }
     });
 
@@ -862,6 +1087,120 @@ describe("isDisallowed", () => {
     expect(isDisallowed("/info/public/x", custom)).toBe(false);
     expect(isDisallowed("/info/private", custom)).toBe(true);
   });
+});
+
+describe("production robots.txt", () => {
+  const rules = starRules(PRODUCTION_ROBOTS);
+
+  // #224: remove broad legacy prefixes that hide public content and let bots
+  // read auth interstitials' noindex. Keep segment-bounded defensive blocks
+  // for secret endpoints, not blanket application-route sitemap exclusions.
+  it("uses one policy with exact and subtree defensive blocks for all crawlers", () => {
+    expect(rules.allow).toEqual(["/"]);
+    expect(rules.disallow).toEqual(
+      expect.arrayContaining(
+        DEFENSIVE_APPLICATION_PATHS.flatMap((path) => [`${path}$`, `${path}/`]),
+      ),
+    );
+    expect(PRODUCTION_ROBOTS.match(/^User-agent:/gim)).toHaveLength(1);
+    expect(PRODUCTION_ROBOTS).not.toMatch(/^Crawl-delay:/im);
+    expect(declaredSitemaps(PRODUCTION_ROBOTS)).toEqual([`${ORIGIN}/sitemap-index.xml`]);
+  });
+
+  it.each([...AUTH_PATHS, ...CRAWLABLE_LEGACY_PATHS])(
+    "leaves %s and its descendants crawlable",
+    (path) => {
+      for (const suffix of ["", "/", "?page=2", "/?page=2", "/detail/", "/detail/?page=2"]) {
+        expect(isDisallowed(`${path}${suffix}`, rules)).toBe(false);
+      }
+    },
+  );
+
+  it.each(DEFENSIVE_APPLICATION_PATHS)(
+    "blocks endpoint %s, its descendants and query variants",
+    (path) => {
+      for (const suffix of [
+        "",
+        "/",
+        "?token=abc",
+        "/?token=abc",
+        "/detail/",
+        "/detail/?token=abc",
+      ]) {
+        expect(isDisallowed(`${path}${suffix}`, rules), `${path}${suffix}`).toBe(true);
+      }
+    },
+  );
+
+  it.each(["/", "/en/about/", "/en/pricing/", ...PUBLIC_INDEXABLE_PATHS])(
+    "allows public path %s and its query variant",
+    (path) => {
+      expect(isDisallowed(path, rules)).toBe(false);
+      expect(isDisallowed(`${path}?page=2`, rules)).toBe(false);
+    },
+  );
+
+  it("accepts advertised public pages under formerly blocked paths", () => {
+    const paths = [...defaultPaths(), ...PUBLIC_INDEXABLE_PATHS];
+    expect(run(fixture({ paths, robots: PRODUCTION_ROBOTS }))).toEqual([]);
+  });
+
+  it.each(PUBLIC_INDEXABLE_BATCHES)(
+    "audits every omitted public page in batch $omitted",
+    ({ omitted }) => {
+      expect(omitted.length).toBeLessThanOrEqual(MAX_EXAMPLES);
+      const dir = fixture({ robots: PRODUCTION_ROBOTS });
+      const baseline = verifySitemap({ distDir: dir, expectedOrigin: ORIGIN });
+      expect(baseline.problems).toEqual([]);
+      for (const path of omitted) {
+        write(dir, join(path.replace(/^\//, ""), "index.html"), page(path));
+      }
+      const { problems, audited } = verifySitemap({
+        distDir: dir,
+        expectedOrigin: ORIGIN,
+      });
+      expect(problems).toHaveLength(1);
+      const missing = problems.find((problem: string) =>
+        problem.includes("built page(s) are missing from the sitemap"),
+      );
+      const examples = missing?.split(": ")[1]?.split(". ")[0]?.split(", ");
+      expect(examples).toHaveLength(omitted.length);
+      // Exact entries: /account/ must not pass merely because /account/guide/ is shown.
+      for (const path of omitted) expect(examples).toContain(path);
+      expect(audited - baseline.audited).toBe(omitted.length);
+    },
+  );
+
+  it.each(DEFENSIVE_APPLICATION_PATHS)(
+    "rejects advertised defensive endpoint %s without hiding it in sitemap config",
+    (path) => {
+      const blocked = [`${path}/`, `${path}/detail/`];
+      const paths = [...defaultPaths(), ...blocked];
+      const problems = run(fixture({ paths, robots: PRODUCTION_ROBOTS }));
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toContain("2 sitemap URL(s) are Disallow-ed by robots.txt");
+      for (const endpoint of blocked) {
+        expect(isExcludedFromSitemap(endpoint)).toBe(false);
+        expect(problems[0]).toContain(endpoint);
+      }
+    },
+  );
+
+  it.each(DEFENSIVE_APPLICATION_PATHS)(
+    "rejects advertised bare endpoint %s and descendants with queries",
+    (path) => {
+      const paths = [...defaultPaths(), `${path}/`, `${path}/detail/`];
+      const blocked = [`${path}?token=abc`, `${path}/detail/?token=abc`];
+      const locs = [
+        ...defaultPaths().map((entry) => `${ORIGIN}${entry}`),
+        ...blocked.map((entry) => `${ORIGIN}${entry}`),
+      ];
+      const problems = run(fixture({ paths, locs, robots: PRODUCTION_ROBOTS }));
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toContain("2 sitemap URL(s) are Disallow-ed by robots.txt");
+      for (const endpoint of blocked) expect(problems[0]).toContain(endpoint);
+    },
+  );
 });
 
 describe("isNoindex", () => {
@@ -938,20 +1277,47 @@ describe("resolveOrigin", () => {
 });
 
 describe("isExcludedFromSitemap", () => {
+  it("derives the normalized exact exclusions from the shared slashless auth paths", () => {
+    expect(EXCLUDED_SITEMAP_PATHS_EXACT).toEqual(new Set(AUTH_PATHS.map(normalizePath)));
+    for (const path of AUTH_PATHS) {
+      expect(EXCLUDED_SITEMAP_PATHS_EXACT.has(normalizePath(path))).toBe(true);
+      expect(isExcludedFromSitemap(path)).toBe(true);
+      expect(isExcludedFromSitemap(`${path}/`)).toBe(true);
+      expect(isExcludedFromSitemap(`${path}/help/`)).toBe(false);
+      expect(isExcludedFromSitemap(`${path}-guide/`)).toBe(false);
+      expect(isExcludedFromSitemap(`/en${path}/`)).toBe(false);
+    }
+  });
+
   it("excludes a locale-prefixed path and its unprefixed form", () => {
     expect(isExcludedFromSitemap("/de/changelog/guide/")).toBe(true);
     expect(isExcludedFromSitemap("/changelog/guide/")).toBe(true);
+    expect(isExcludedFromSitemap("/de/changelog/guide/detail/")).toBe(true);
+    expect(isExcludedFromSitemap("/changelog/guide/detail/")).toBe(true);
+    expect(isExcludedFromSitemap("/de/changelog/guidebook/")).toBe(false);
+    expect(isExcludedFromSitemap("/changelog/guidebook/")).toBe(false);
   });
 
-  it("excludes the robots.txt-disallowed interstitials and the debug routes", () => {
-    expect(isExcludedFromSitemap("/signin/")).toBe(true);
+  it.each(AUTH_PATHS)(
+    "excludes the noindex %s interstitial with or without a trailing slash",
+    (path) => {
+      expect(isExcludedFromSitemap(path)).toBe(true);
+      expect(isExcludedFromSitemap(`${path}/`)).toBe(true);
+    },
+  );
+
+  it("excludes the debug routes and their descendants", () => {
     expect(isExcludedFromSitemap("/example/")).toBe(true);
+    expect(isExcludedFromSitemap("/example/detail/")).toBe(true);
+    expect(isExcludedFromSitemap("/en/example/")).toBe(false);
   });
 
-  it("excludes a page nested under an excluded route", () => {
-    expect(isExcludedFromSitemap("/example/detail/")).toBe(true);
-    expect(isExcludedFromSitemap("/en/signin/callback/")).toBe(true);
-  });
+  it.each(PUBLIC_INDEXABLE_PATHS)(
+    "does not exclude %s merely because it resembles an application path",
+    (path) => {
+      expect(isExcludedFromSitemap(path)).toBe(false);
+    },
+  );
 
   it("does not let a route prefix match a sibling whose name extends it", () => {
     expect(isExcludedFromSitemap("/example-gallery/")).toBe(false);
