@@ -5,4 +5,24 @@
 User-agent: *
 Allow: /
 
+# Defense-in-depth for legacy secret-handling paths: this repository cannot
+# verify whether the live CDN zone still serves or proxies application routes.
+# Match bare paths, query forms and descendants, not public sibling prefixes.
+# This is crawler guidance, not access control; application hosts own protection.
+Disallow: /secret$
+Disallow: /secret?
+Disallow: /secret/
+Disallow: /private$
+Disallow: /private?
+Disallow: /private/
+Disallow: /receipt$
+Disallow: /receipt?
+Disallow: /receipt/
+Disallow: /shared$
+Disallow: /shared?
+Disallow: /shared/
+Disallow: /incoming$
+Disallow: /incoming?
+Disallow: /incoming/
+
 Sitemap: https://onetimesecret.com/sitemap-index.xml

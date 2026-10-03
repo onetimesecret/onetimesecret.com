@@ -63,35 +63,34 @@ const PUBLIC_PREFIX_PATHS = [
   "/signin-guide/",
   "/signup-guide/",
   "/shared-links/",
+  "/secret-guide/",
+  "/private-guide/",
+  "/receipt-guide/",
   "/admin-guide/",
   "/dashboard-guide/",
   "/logout-guide/",
   "/incoming-guide/",
 ];
 
-const LEGACY_APPLICATION_PATHS = [
-  "/private",
-  "/secret",
-  "/receipt",
+const DEFENSIVE_APPLICATION_PATHS = ["/secret", "/private", "/receipt", "/shared", "/incoming"];
+const CRAWLABLE_LEGACY_PATHS = [
   "/account",
   "/recent",
   "/forgot",
   "/domains",
   "/dashboard",
   "/admin",
-  "/shared",
-  "/incoming",
   "/logout",
 ];
 const PUBLIC_INDEXABLE_PATHS = [
   ...PUBLIC_PREFIX_PATHS,
-  ...LEGACY_APPLICATION_PATHS.flatMap((path) => [`${path}/`, `${path}/guide/`]),
+  ...CRAWLABLE_LEGACY_PATHS.flatMap((path) => [`${path}/`, `${path}/guide/`]),
   "/signin/help/",
   "/signup/help/",
   "/en/signin/",
   "/fr/signup/",
+  ...DEFENSIVE_APPLICATION_PATHS.flatMap((path) => [`/en${path}/`, `/fr${path}/guide/`]),
 ];
-
 // Synthetic restrictive policy for parser/gate tests, not the production policy.
 const ROBOTS = [
   "User-agent: *",
@@ -1086,14 +1085,22 @@ describe("isDisallowed", () => {
 describe("production robots.txt", () => {
   const rules = starRules(PRODUCTION_ROBOTS);
 
-  it("uses one unrestricted policy for all crawlers", () => {
-    expect(rules).toEqual({ allow: ["/"], disallow: [] });
+  // #224: remove broad legacy prefixes that hide public content and let bots
+  // read auth interstitials' noindex. Keep segment-bounded defensive blocks
+  // for secret endpoints, not blanket application-route sitemap exclusions.
+  it("uses one policy with exact and subtree defensive blocks for all crawlers", () => {
+    expect(rules.allow).toEqual(["/"]);
+    expect(rules.disallow).toEqual(
+      expect.arrayContaining(
+        DEFENSIVE_APPLICATION_PATHS.flatMap((path) => [`${path}$`, `${path}/`]),
+      ),
+    );
     expect(PRODUCTION_ROBOTS.match(/^User-agent:/gim)).toHaveLength(1);
     expect(PRODUCTION_ROBOTS).not.toMatch(/^Crawl-delay:/im);
     expect(declaredSitemaps(PRODUCTION_ROBOTS)).toEqual([`${ORIGIN}/sitemap-index.xml`]);
   });
 
-  it.each(["/signin", "/signup", ...LEGACY_APPLICATION_PATHS])(
+  it.each([...AUTH_PATHS, ...CRAWLABLE_LEGACY_PATHS])(
     "leaves %s and its descendants crawlable",
     (path) => {
       for (const suffix of ["", "/", "?page=2", "/?page=2", "/detail/", "/detail/?page=2"]) {
@@ -1102,7 +1109,23 @@ describe("production robots.txt", () => {
     },
   );
 
-  it.each(["/", "/en/about/", "/en/pricing/", ...PUBLIC_PREFIX_PATHS])(
+  it.each(DEFENSIVE_APPLICATION_PATHS)(
+    "blocks endpoint %s, its descendants and query variants",
+    (path) => {
+      for (const suffix of [
+        "",
+        "/",
+        "?token=abc",
+        "/?token=abc",
+        "/detail/",
+        "/detail/?token=abc",
+      ]) {
+        expect(isDisallowed(`${path}${suffix}`, rules), `${path}${suffix}`).toBe(true);
+      }
+    },
+  );
+
+  it.each(["/", "/en/about/", "/en/pricing/", ...PUBLIC_INDEXABLE_PATHS])(
     "allows public path %s and its query variant",
     (path) => {
       expect(isDisallowed(path, rules)).toBe(false);
@@ -1127,6 +1150,37 @@ describe("production robots.txt", () => {
       );
       expect(missing).toContain(path);
       expect(audited).toBe(paths.length);
+    },
+  );
+
+  it.each(DEFENSIVE_APPLICATION_PATHS)(
+    "rejects advertised defensive endpoint %s without hiding it in sitemap config",
+    (path) => {
+      const blocked = [`${path}/`, `${path}/detail/`];
+      const paths = [...defaultPaths(), ...blocked];
+      const problems = run(fixture({ paths, robots: PRODUCTION_ROBOTS }));
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toContain("2 sitemap URL(s) are Disallow-ed by robots.txt");
+      for (const endpoint of blocked) {
+        expect(isExcludedFromSitemap(endpoint)).toBe(false);
+        expect(problems[0]).toContain(endpoint);
+      }
+    },
+  );
+
+  it.each(DEFENSIVE_APPLICATION_PATHS)(
+    "rejects advertised bare endpoint %s and descendants with queries",
+    (path) => {
+      const paths = [...defaultPaths(), `${path}/`, `${path}/detail/`];
+      const blocked = [`${path}?token=abc`, `${path}/detail/?token=abc`];
+      const locs = [
+        ...defaultPaths().map((entry) => `${ORIGIN}${entry}`),
+        ...blocked.map((entry) => `${ORIGIN}${entry}`),
+      ];
+      const problems = run(fixture({ paths, locs, robots: PRODUCTION_ROBOTS }));
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toContain("2 sitemap URL(s) are Disallow-ed by robots.txt");
+      for (const endpoint of blocked) expect(problems[0]).toContain(endpoint);
     },
   );
 });

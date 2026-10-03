@@ -503,7 +503,7 @@ export function findUnadvertised({ distDir, advertised, canonicalOrigin, rules, 
     // especially if sitemap config also excludes those paths. The
     // audited count is printed and floored as a backstop; production robots
     // rules have regression tests for longer first-segment names.
-    if (hasRobots && isDisallowed(decodePath(pathname), rules)) continue;
+    if (hasRobots && isDisallowed(decodePath(pathname + parsed.search), rules)) continue;
 
     const key = canonicalPath(pathname);
     seen.add(key);
@@ -751,8 +751,8 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
 
     // Decoded so this agrees with the disk probe below; a non-ASCII Disallow
     // rule would otherwise never match.
-    if (robots !== undefined && isDisallowed(decodePath(pathname), rules)) {
-      disallowedPage.push(pathname);
+    if (robots !== undefined && isDisallowed(decodePath(pathname + parsed.search), rules)) {
+      disallowedPage.push(pathname + parsed.search);
       continue;
     }
 
