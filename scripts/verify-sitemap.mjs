@@ -379,10 +379,7 @@ export function canonicalisesToSelf(html, canonical, pathname) {
   const declared = resolveCanonical(href, new URL(pathname, canonical));
   if (!declared || declared.origin !== canonical.origin) return false;
   const expectedPath = canonicalPath(pathname);
-  return (
-    expectedPath !== undefined &&
-    canonicalPath(declared.pathname) === expectedPath
-  );
+  return expectedPath !== undefined && canonicalPath(declared.pathname) === expectedPath;
 }
 
 /** Resolve a canonical against the production document URL, failing closed. */
@@ -600,6 +597,37 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
     return { problems, urls: [], childHrefs, audited: 0 };
   }
 
+  const robots = read(join(distDir, "robots.txt"));
+  const rules = starRules(robots);
+  const declared = declaredSitemaps(robots);
+  // Staging builds generate files on `expected` while the static robots.txt
+  // still declares `canonical`. Validate each source against its own origin;
+  // malformed and off-origin URLs retain their dedicated checks below.
+  const sitemapHrefs = new Set(
+    [
+      new URL("/sitemap-index.xml", expected).href,
+      ...childHrefs.filter((href) => parseUrl(href)?.origin === expected.origin),
+      ...declared.filter((href) => parseUrl(href)?.origin === canonical.origin),
+    ].map((href) => parseUrl(href).href),
+  );
+  const disallowedSitemaps = [...sitemapHrefs].filter((href) => {
+    const parsed = parseUrl(href);
+    // Robots matches the path plus query, without route normalization: an
+    // anchored /*.xml$ must not also match /sitemap.xml?download=1.
+    return isDisallowed(decodePath(parsed.pathname + parsed.search), rules);
+  });
+  if (disallowedSitemaps.length > 0) {
+    problems.push(
+      summarize(
+        disallowedSitemaps,
+        (n) => `${n} sitemap file URL(s) are Disallow-ed by robots.txt`,
+      ) +
+        ". Crawlers must be able to fetch the generated index, every same-origin " +
+        "Sitemap: declaration and every same-origin child sitemap. Check public/robots.txt " +
+        "for an over-broad rule or add a more specific Allow for these files.",
+    );
+  }
+
   const urls = [];
   // Counted rather than inferred from problems.length: the stale-stub check
   // above also pushes, so keying the guard below on "anything reported yet"
@@ -689,9 +717,6 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
         "config/astro/integrations.ts). Restore public/sitemap.xsl or drop that option.",
     );
   }
-
-  const robots = read(join(distDir, "robots.txt"));
-  const rules = starRules(robots);
 
   const malformed = [];
   const wrongOrigin = [];
@@ -917,7 +942,6 @@ export function verifySitemap({ distDir, expectedOrigin, canonicalOrigin = CANON
   // Every declaration, not just the first, and compared as a whole URL. A
   // substring test would accept "Sitemap: https://example.com/sitemap-index.xml"
   // and hand the site's crawl budget to someone else's origin.
-  const declared = declaredSitemaps(robots);
   // Compared as parsed hrefs, not raw strings. URL lowercases the host and
   // drops a default port, so "https://ONETIMESECRET.com/..." and "...:443/..."
   // are recognised as the same resource. The origin check below already does

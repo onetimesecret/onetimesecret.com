@@ -798,6 +798,179 @@ describe("verifySitemap", () => {
     });
   });
 
+  describe("sitemap file crawlability", () => {
+    it.each(["/sitemap-index.xml", "/sitemap-0.xml"])(
+      "rejects an otherwise sound build when only %s is blocked",
+      (path) => {
+        const robots = ROBOTS.replace("Allow: /", `Allow: /\nDisallow: ${path}$`);
+        const problems = run(fixture({ robots }));
+        expect(problems).toHaveLength(1);
+        expect(problems[0]).toContain("1 sitemap file URL(s) are Disallow-ed by robots.txt");
+        expect(problems[0]).toContain(`${ORIGIN}${path}`);
+      },
+    );
+
+    it("checks the generated index even when robots declares only a child", () => {
+      const robots = ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /sitemap-index.xml$").replace(
+        `Sitemap: ${ORIGIN}/sitemap-index.xml`,
+        `Sitemap: ${ORIGIN}/sitemap-0.xml`,
+      );
+      const problems = text(run(fixture({ robots })));
+      expect(problems).toContain("1 sitemap file URL(s) are Disallow-ed by robots.txt");
+      expect(problems).toContain(`${ORIGIN}/sitemap-index.xml`);
+      expect(problems).toContain("none of which is");
+    });
+
+    it("checks every same-origin declaration, not just the valid index declaration", () => {
+      const additional = ["/additional-a.xml", "/additional-b.xml"];
+      const robots =
+        ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /additional-") +
+        additional.map((path) => `\nSitemap: ${ORIGIN}${path}`).join("");
+      const problems = run(fixture({ robots }));
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toContain("2 sitemap file URL(s) are Disallow-ed by robots.txt");
+      for (const path of additional) expect(problems[0]).toContain(`${ORIGIN}${path}`);
+    });
+
+    it("checks every same-origin child, not just the first", () => {
+      const robots = ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /sitemap-1.xml$");
+      const problems = run(
+        fixture({
+          robots,
+          childSitemaps: [`${ORIGIN}/sitemap-0.xml`, `${ORIGIN}/sitemap-1.xml`],
+          extraPages: { "sitemap-1.xml": "<urlset/>" },
+        }),
+      );
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toContain("1 sitemap file URL(s) are Disallow-ed by robots.txt");
+      expect(problems[0]).toContain(`${ORIGIN}/sitemap-1.xml`);
+    });
+
+    it("reports blocked children even when a missing child stops the page audit", () => {
+      const robots = ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /missing.xml$");
+      const problems = text(run(fixture({ robots, childSitemaps: [`${ORIGIN}/missing.xml`] })));
+      expect(problems).toContain("1 sitemap file URL(s) are Disallow-ed by robots.txt");
+      expect(problems).toContain("does not exist");
+      expect(problems).not.toContain("fewer than");
+    });
+
+    it("matches /*.xml$ against both the index and the child, without duplicate examples", () => {
+      const robots = ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /*.xml$");
+      const problems = run(fixture({ robots }));
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toContain("2 sitemap file URL(s) are Disallow-ed by robots.txt");
+      expect(problems[0]).toContain(`${ORIGIN}/sitemap-index.xml`);
+      expect(problems[0]).toContain(`${ORIGIN}/sitemap-0.xml`);
+    });
+
+    it("lets longer Allow rules override the wildcard XML block", () => {
+      const robots = ROBOTS.replace(
+        "Allow: /",
+        [
+          "Allow: /",
+          "Disallow: /*.xml$",
+          "Allow: /sitemap-index.xml",
+          "Allow: /sitemap-0.xml",
+        ].join("\n"),
+      );
+      expect(run(fixture({ robots }))).toEqual([]);
+    });
+
+    it("does not apply an end-anchored XML block to declarations with a query", () => {
+      const robots =
+        ROBOTS.replace(
+          "Allow: /",
+          [
+            "Allow: /",
+            "Disallow: /*.xml$",
+            "Allow: /sitemap-index.xml",
+            "Allow: /sitemap-0.xml",
+          ].join("\n"),
+        ) + `\nSitemap: ${ORIGIN}/additional.xml?download=1`;
+      expect(run(fixture({ robots }))).toEqual([]);
+    });
+
+    it("matches a query-specific block on a declared sitemap", () => {
+      const href = `${ORIGIN}/additional.xml?download=1`;
+      const robots =
+        ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /additional.xml?download=1$") +
+        `\nSitemap: ${href}`;
+      const problems = run(fixture({ robots }));
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toContain("1 sitemap file URL(s) are Disallow-ed by robots.txt");
+      expect(problems[0]).toContain(href);
+    });
+
+    it("does not apply an end-anchored XML block to a child with a query", () => {
+      const robots = ROBOTS.replace(
+        "Allow: /",
+        ["Allow: /", "Disallow: /*.xml$", "Allow: /sitemap-index.xml"].join("\n"),
+      );
+      expect(
+        run(
+          fixture({
+            robots,
+            childSitemaps: [`${ORIGIN}/sitemap-0.xml?download=1`],
+          }),
+        ),
+      ).toEqual([]);
+    });
+
+    it("matches a decoded query-specific block on a child sitemap", () => {
+      const href = `${ORIGIN}/sitemap-0.xml?download=%61`;
+      const robots = ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /sitemap-0.xml?download=a$");
+      const problems = run(fixture({ robots, childSitemaps: [href] }));
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toContain("1 sitemap file URL(s) are Disallow-ed by robots.txt");
+      expect(problems[0]).toContain(href);
+    });
+
+    it("summarizes a systemic block across declared sitemap files", () => {
+      const additional = Array.from(
+        { length: MAX_EXAMPLES + 2 },
+        (_, i) => `${ORIGIN}/blocked/sitemap-${i}.xml`,
+      );
+      const robots =
+        ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /blocked/") +
+        additional.map((href) => `\nSitemap: ${href}`).join("");
+      const problems = run(fixture({ robots }));
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toContain(`${additional.length} sitemap file URL(s)`);
+      for (const href of additional.slice(0, MAX_EXAMPLES)) expect(problems[0]).toContain(href);
+      expect(problems[0]).toContain("and 2 more");
+      expect(problems[0]).not.toContain(additional[MAX_EXAMPLES]);
+    });
+
+    it("retains malformed and off-origin child checks instead of crawlability errors", () => {
+      const robots = ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /blocked/");
+      const problems = text(
+        run(
+          fixture({
+            robots,
+            childSitemaps: [
+              `${ORIGIN}/sitemap-0.xml`,
+              "not a URL",
+              "https://elsewhere.test/blocked/sitemap.xml",
+            ],
+          }),
+        ),
+      );
+      expect(problems).toContain('"not a URL", which is not a valid URL');
+      expect(problems).toContain(`is not on ${ORIGIN}`);
+      expect(problems).not.toContain("sitemap file URL(s) are Disallow-ed");
+    });
+
+    it("retains malformed and off-origin declaration checks instead of crawlability errors", () => {
+      const robots =
+        ROBOTS.replace("Allow: /", "Allow: /\nDisallow: /blocked/") +
+        "\nSitemap: not a URL\nSitemap: https://elsewhere.test/blocked/sitemap.xml";
+      const problems = text(run(fixture({ robots })));
+      expect(problems).toContain("not absolute URLs");
+      expect(problems).toContain("off-origin");
+      expect(problems).not.toContain("sitemap file URL(s) are Disallow-ed");
+    });
+  });
+
   describe("robots.txt Sitemap declarations", () => {
     it("flags an off-origin declaration that still names the right path", () => {
       const robots = ROBOTS.replace(
@@ -839,7 +1012,7 @@ describe("verifySitemap", () => {
           `Sitemap: ${ORIGIN}/sitemap-index.xml`,
           `Sitemap: ${spelling}/sitemap-index.xml`,
         );
-        expect(text(run(fixture({ robots })))).not.toContain("none of which is");
+        expect(run(fixture({ robots }))).toEqual([]);
       }
     });
 
