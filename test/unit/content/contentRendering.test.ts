@@ -19,7 +19,11 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { verifySitemap } from "../../../scripts/verify-sitemap.mjs";
+import {
+  isDisallowed,
+  starRules,
+  verifySitemap,
+} from "../../../scripts/verify-sitemap.mjs";
 
 const root = resolve(import.meta.dirname, "../../..");
 const require = createRequire(import.meta.url);
@@ -206,6 +210,21 @@ const page = await getEntry("useCases", "en/${group}/private");
 
 afterAll(() => {
   if (workspace) rmSync(workspace, { recursive: true, force: true });
+});
+
+describe("rendered auth interstitials", () => {
+  it.each(["/signin", "/signup"])(
+    "keeps %s crawlable and noindex, but out of the sitemap",
+    (path) => {
+      const rules = starRules(readFileSync(join(dist, "robots.txt"), "utf8"));
+      expect(isDisallowed(path, rules)).toBe(false);
+      expect(isDisallowed(`${path}/`, rules)).toBe(false);
+      expect(robots(html(path.slice(1)))).toBe("noindex");
+      const urls = advertisedUrls();
+      expect(urls).not.toContain(`${origin}${path}`);
+      expect(urls).not.toContain(`${origin}${path}/`);
+    },
+  );
 });
 
 describe("rendered content collection routes", () => {

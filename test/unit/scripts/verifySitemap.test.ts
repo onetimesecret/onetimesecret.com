@@ -64,6 +64,30 @@ const PUBLIC_PREFIX_PATHS = [
   "/incoming-guide/",
 ];
 
+const LEGACY_APPLICATION_PATHS = [
+  "/private",
+  "/secret",
+  "/receipt",
+  "/account",
+  "/recent",
+  "/forgot",
+  "/domains",
+  "/dashboard",
+  "/admin",
+  "/shared",
+  "/incoming",
+  "/logout",
+];
+const PUBLIC_INDEXABLE_PATHS = [
+  ...PUBLIC_PREFIX_PATHS,
+  ...LEGACY_APPLICATION_PATHS.flatMap((path) => [`${path}/`, `${path}/guide/`]),
+  "/signin/help/",
+  "/signup/help/",
+  "/en/signin/",
+  "/fr/signup/",
+];
+
+// Synthetic restrictive policy for parser/gate tests, not the production policy.
 const ROBOTS = [
   "User-agent: *",
   "Allow: /",
@@ -884,53 +908,21 @@ describe("isDisallowed", () => {
 describe("production robots.txt", () => {
   const rules = starRules(PRODUCTION_ROBOTS);
 
-  it("has no redundant public-page Allow rules", () => {
-    expect(rules.allow).toEqual(["/"]);
+  it("uses one unrestricted policy for all crawlers", () => {
+    expect(rules).toEqual({ allow: ["/"], disallow: [] });
+    expect(PRODUCTION_ROBOTS.match(/^User-agent:/gim)).toHaveLength(1);
+    expect(PRODUCTION_ROBOTS).not.toMatch(/^Crawl-delay:/im);
+    expect(declaredSitemaps(PRODUCTION_ROBOTS)).toEqual([`${ORIGIN}/sitemap-index.xml`]);
   });
 
-  it.each(["/signin", "/signup", "/logout"])(
-    "blocks only the %s endpoint",
+  it.each(["/signin", "/signup", ...LEGACY_APPLICATION_PATHS])(
+    "leaves %s and its descendants crawlable",
     (path) => {
-      for (const suffix of [
-        "",
-        "/",
-        "?redirect=%2Faccount",
-        "/?redirect=%2Faccount",
-      ]) {
-        expect(isDisallowed(`${path}${suffix}`, rules)).toBe(true);
-      }
-      expect(isDisallowed(`${path}/help/`, rules)).toBe(false);
-    },
-  );
-
-  it.each(["/admin", "/dashboard", "/shared", "/incoming"])(
-    "blocks the %s endpoint and subtree",
-    (path) => {
-      for (const suffix of [
-        "",
-        "/",
-        "?page=2",
-        "/?page=2",
-        "/detail/",
-        "/detail/?page=2",
-      ]) {
-        expect(isDisallowed(`${path}${suffix}`, rules)).toBe(true);
+      for (const suffix of ["", "/", "?page=2", "/?page=2", "/detail/", "/detail/?page=2"]) {
+        expect(isDisallowed(`${path}${suffix}`, rules)).toBe(false);
       }
     },
   );
-
-  it.each([
-    "/private/",
-    "/secret/",
-    "/receipt/",
-    "/account/",
-    "/recent/",
-    "/forgot/",
-    "/domains/",
-  ])("preserves the existing %s subtree rule", (path) => {
-    expect(isDisallowed(path, rules)).toBe(true);
-    expect(isDisallowed(`${path}detail/`, rules)).toBe(true);
-  });
 
   it.each(["/", "/en/about/", "/en/pricing/", ...PUBLIC_PREFIX_PATHS])(
     "allows public path %s and its query variant",
@@ -940,21 +932,18 @@ describe("production robots.txt", () => {
     },
   );
 
-  it("accepts advertised public pages whose first segment extends a blocked token", () => {
-    const paths = [...defaultPaths(), ...PUBLIC_PREFIX_PATHS];
+  it("accepts advertised public pages under formerly blocked paths", () => {
+    const paths = [...defaultPaths(), ...PUBLIC_INDEXABLE_PATHS];
     expect(run(fixture({ paths, robots: PRODUCTION_ROBOTS }))).toEqual([]);
   });
 
-  it.each(PUBLIC_PREFIX_PATHS)(
+  it.each(PUBLIC_INDEXABLE_PATHS)(
     "audits %s when it is missing from the sitemap",
     (path) => {
       const paths = [...defaultPaths(), path];
       const locs = defaultPaths().map((advertised) => `${ORIGIN}${advertised}`);
       const dir = fixture({ paths, locs, robots: PRODUCTION_ROBOTS });
-      const { problems, audited } = verifySitemap({
-        distDir: dir,
-        expectedOrigin: ORIGIN,
-      });
+      const { problems, audited } = verifySitemap({ distDir: dir, expectedOrigin: ORIGIN });
       const missing = problems.find((problem: string) =>
         problem.includes("built page(s) are missing from the sitemap"),
       );
@@ -1043,15 +1032,25 @@ describe("isExcludedFromSitemap", () => {
     expect(isExcludedFromSitemap("/changelog/guide/")).toBe(true);
   });
 
-  it("excludes the robots.txt-disallowed interstitials and the debug routes", () => {
-    expect(isExcludedFromSitemap("/signin/")).toBe(true);
+  it.each(["/signin", "/signup"])(
+    "excludes the noindex %s interstitial with or without a trailing slash",
+    (path) => {
+      expect(isExcludedFromSitemap(path)).toBe(true);
+      expect(isExcludedFromSitemap(`${path}/`)).toBe(true);
+    },
+  );
+
+  it("excludes the debug routes and their descendants", () => {
     expect(isExcludedFromSitemap("/example/")).toBe(true);
+    expect(isExcludedFromSitemap("/example/detail/")).toBe(true);
   });
 
-  it("excludes a page nested under an excluded route", () => {
-    expect(isExcludedFromSitemap("/example/detail/")).toBe(true);
-    expect(isExcludedFromSitemap("/en/signin/callback/")).toBe(true);
-  });
+  it.each(PUBLIC_INDEXABLE_PATHS)(
+    "does not exclude %s merely because it resembles an application path",
+    (path) => {
+      expect(isExcludedFromSitemap(path)).toBe(false);
+    },
+  );
 
   it("does not let a route prefix match a sibling whose name extends it", () => {
     expect(isExcludedFromSitemap("/example-gallery/")).toBe(false);
