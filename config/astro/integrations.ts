@@ -33,8 +33,7 @@ export function createConfig(): AstroUserConfig["integrations"] {
       // and are audited by scripts/verify-hreflang.mjs, so they stay the
       // single source of hreflang truth.
 
-      // Routes that build alongside the real pages but are noindex or
-      // robots.txt-disallowed (see config/astro/sitemap.ts).
+      // Keep non-indexable utility routes out (see config/astro/sitemap.ts).
       filter: (page) => !isExcludedFromSitemap(new URL(page).pathname),
     }),
 

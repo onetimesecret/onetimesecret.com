@@ -1,26 +1,26 @@
 // config/astro/sitemap.ts
 
-// Explicit .ts extension: scripts/verify-sitemap.mjs imports this module
+// Explicit .ts extensions: scripts/verify-sitemap.mjs imports this module
 // under plain Node, whose type stripping does not resolve extensionless
 // relative paths. tsconfig has allowImportingTsExtensions, and Vite
 // resolves it for the build.
+import { AUTH_PATHS } from "../../src/utils/authPaths.ts";
 import { SUPPORTED_LANGUAGES } from "./i18n.ts";
 
 /**
- * Pages that build as real routes but must not be advertised to search
+ * Route subtrees that build as real routes but must not be advertised to search
  * engines. Advertising a URL that is noindex or robots.txt-disallowed is the
  * defect #214 was filed about, so anything in that shape belongs here.
  *
- * Matched unprefixed only, unlike the every-locale set below: every route here
- * renders from src/pages/*.astro rather than src/pages/[lang]/, so no localized
- * form exists. If #211 ever moves one under [lang]/, it needs to move to the
- * other set too or its localized copies will be advertised.
+ * Matched unprefixed only: these routes render from src/pages/*.astro rather
+ * than src/pages/[lang]/, so no localized form exists. If #211 ever moves one
+ * under [lang]/, its localized copies will need exclusions too.
  *
  * Kept out of integrations.ts, which imports the Astro integration packages
  * themselves, so scripts/verify-sitemap.mjs can read this list under plain
  * Node without pulling those in too.
  */
-export const EXCLUDED_SITEMAP_PATHS = new Set([
+export const EXCLUDED_SITEMAP_PATHS_SUBTREE = new Set([
   // Debug/test routes. Whether they should ship to production at all is
   // tracked separately in #211.
   "/example/",
@@ -34,6 +34,17 @@ export const EXCLUDED_SITEMAP_PATHS = new Set([
   // for what it is rather than for what its meta happens to say.
   "/500/",
 ]);
+
+/**
+ * Production CDN auth endpoints serve a 302 regional handoff. Keep them
+ * crawlable so crawlers can follow the redirect, but do not advertise them in
+ * the sitemap. The noindex HTML interstitials are the origin-direct fallback.
+ * Only these endpoints exist: excluding descendants or localized lookalikes
+ * would silently hide future content from the coverage check.
+ */
+export const EXCLUDED_SITEMAP_PATHS_EXACT = new Set(
+  AUTH_PATHS.map(normalizePath),
+);
 
 /**
  * True when `path` is one of `routes` or anything beneath it.
@@ -56,19 +67,15 @@ const isUnder = (path: string, routes: Set<string>) =>
  * Excluded in every locale, with or without a language prefix. Subtrees, as
  * above.
  *
- * The four /{lang}/changelog/guide/ pages are noindex, nofollow. The auth
- * interstitials are noindex and Disallow-ed in public/robots.txt; they live
- * here rather than in the exact-path set above because those robots.txt rules
- * are unprefixed, so a localized /en/signin/ would be caught by neither.
+ * The four /{lang}/changelog/guide/ pages are noindex, nofollow.
  */
-export const EXCLUDED_SITEMAP_PATHS_EVERY_LOCALE = new Set([
+export const EXCLUDED_SITEMAP_PATHS_SUBTREE_EVERY_LOCALE = new Set([
   "/changelog/guide/",
-  "/signin/",
-  "/signup/",
 ]);
 
 /** Escaped so a future locale code containing regex metacharacters is literal. */
-const escapeForRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const escapeForRegExp = (value: string) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const LOCALE_PREFIXED = new RegExp(
   `^/(?:${SUPPORTED_LANGUAGES.map(escapeForRegExp).join("|")})(/.*)$`,
@@ -97,10 +104,14 @@ export function normalizePath(pathname: string): string {
 export function isExcludedFromSitemap(pathname: string): boolean {
   const path = normalizePath(pathname);
 
-  if (isUnder(path, EXCLUDED_SITEMAP_PATHS)) return true;
-  if (isUnder(path, EXCLUDED_SITEMAP_PATHS_EVERY_LOCALE)) return true;
+  if (EXCLUDED_SITEMAP_PATHS_EXACT.has(path)) return true;
+  if (isUnder(path, EXCLUDED_SITEMAP_PATHS_SUBTREE)) return true;
+  if (isUnder(path, EXCLUDED_SITEMAP_PATHS_SUBTREE_EVERY_LOCALE)) return true;
 
   const unprefixed = LOCALE_PREFIXED.exec(path)?.[1];
   if (unprefixed === undefined) return false;
-  return isUnder(normalizePath(unprefixed), EXCLUDED_SITEMAP_PATHS_EVERY_LOCALE);
+  return isUnder(
+    normalizePath(unprefixed),
+    EXCLUDED_SITEMAP_PATHS_SUBTREE_EVERY_LOCALE,
+  );
 }
