@@ -470,29 +470,44 @@
     "lookalike": {
       "title": "Esto no es onetimesecret.com",
       "description": "Este dominio pertenece a Onetime Secret. Muestra un aviso, no el servicio para compartir secretos.",
-      "eyebrow": "Dominios similares y phishing",
+      "eyebrow": "Aviso sobre el dominio",
       "heading": "Esto no es onetimesecret.com",
       "hostnameFallback": "esta dirección",
-      "lead": "Estás visitando {hostname}. Se parece a la dirección de Onetime Secret, pero no es la real.",
-      "ownership": "Este dominio pertenece a Onetime Secret. Esta página solo muestra un aviso. Aquí no puedes crear ni ver secretos.",
+      "lead": "Estás visitando {hostname}.",
+      "purpose": "Esto es un aviso, no el servicio para compartir secretos. Aquí no puedes crear ni ver secretos.",
+      "ownership": "Este dominio pertenece a Onetime Secret.",
+      "recipient": {
+        "heading": "¿Intentas abrir un secreto que alguien te ha enviado?",
+        "body": "Contacta con quien te envió el enlace a través de un canal que ya conozcas y pídele que lo confirme. No intentes corregir la dirección cambiando letras."
+      },
+      "sender": {
+        "heading": "¿Quieres crear un secreto?"
+      },
       "recognise": {
-        "heading": "Cómo reconocer el sitio real",
+        "heading": "Entender esta dirección",
         "exact": "Comprueba el nombre de host completo en la barra de direcciones de tu navegador. Nuestro sitio web principal es onetimesecret.com.",
-        "regional": "Los secretos se crean en uno de nuestros dominios regionales: {domains}.",
+        "regionalHeading": "Direcciones regionales oficiales del servicio",
+        "regional": "Nuestro servicio para compartir secretos funciona en estos dominios regionales:",
         "bookmark": "Escribe https://onetimesecret.com en la barra de direcciones de tu navegador o utiliza un marcador que hayas verificado previamente.",
-        "https": "HTTPS por sí solo no demuestra que un sitio web pertenezca a Onetime Secret.",
+        "https": "Un logotipo conocido, HTTPS o aparecer entre los primeros resultados de búsqueda no demuestra quién gestiona un sitio web. Esto también se aplica a este aviso.",
         "noLinksHeading": "¿Por qué no hay un enlace al servicio?",
         "noLinks": "Un logotipo conocido o un mensaje tranquilizador se pueden copiar. Ninguno demuestra que una página sea auténtica, aunque aparezca primero en los resultados de búsqueda. Esta página no incluye ningún enlace al servicio de forma deliberada: lo importante es acostumbrarse a comprobar la dirección de manera independiente, en lugar de confiar en un enlace porque la página parece oficial. Ten la misma precaución con esta página."
       },
       "diff": {
-        "toggle": "Ver qué es diferente en esta dirección",
+        "toggle": "Comparar este dominio con el real",
         "real": "La dirección real",
         "this": "Esta dirección",
-        "legend": "Los caracteres resaltados son los que difieren de la dirección real."
+        "legend": "Las partes resaltadas muestran dónde difieren los nombres de dominio."
       },
       "exposed": {
-        "heading": "Si es posible que hayas introducido información confidencial en un dominio no oficial",
-        "body": "Considera que esa información puede haber quedado expuesta. En el sitio web oficial del servicio afectado, cambia las contraseñas expuestas y las que hayas reutilizado, y cierra las demás sesiones si esa opción está disponible. Revoca y sustituye las claves de API o los tokens de acceso expuestos. Si se trata de información laboral, ponte en contacto cuanto antes con tu equipo de TI o de seguridad."
+        "heading": "¿Ya has compartido información confidencial?",
+        "body": "Si has introducido una contraseña, una clave de acceso u otra información privada en un sitio web cuya autenticidad no puedes verificar, considera que esa información puede haber quedado expuesta.",
+        "stepsHeading": "Qué hacer a continuación",
+        "passwords": "Contraseñas: Abre el servicio afectado desde su aplicación oficial o una dirección en la que ya confíes. Cambia la contraseña, cámbiala también en cualquier otro sitio donde la hayas reutilizado y cierra las demás sesiones si esa opción está disponible.",
+        "tokens": "Claves o tokens de acceso: Revócalos y sustitúyelos a través del servicio que los emitió.",
+        "other": "Otra información privada: Contacta con la persona o el servicio correspondiente a través de un canal conocido para recibir ayuda sobre los siguientes pasos.",
+        "work": "Información laboral: Contacta también cuanto antes con el equipo de TI o de seguridad de tu organización, si lo tiene, aunque no estés seguro de lo ocurrido.",
+        "reporting": "No incluyas contraseñas, claves de acceso ni el contenido de los secretos en un correo electrónico normal o un mensaje de soporte."
       },
       "languages": "Idioma",
       "footer": {

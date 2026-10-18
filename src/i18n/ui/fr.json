@@ -470,29 +470,44 @@
     "lookalike": {
       "title": "Ceci n'est pas onetimesecret.com",
       "description": "Ce domaine appartient à Onetime Secret. Il affiche un avis, pas le service de partage de secrets.",
-      "eyebrow": "Domaines ressemblants et hameçonnage",
+      "eyebrow": "Avis concernant le domaine",
       "heading": "Ceci n'est pas onetimesecret.com",
       "hostnameFallback": "cette adresse",
-      "lead": "Vous consultez {hostname}. Elle ressemble à l'adresse de Onetime Secret, mais ce n'est pas la vraie.",
-      "ownership": "Ce domaine appartient à Onetime Secret. Cette page affiche uniquement un avis. Vous ne pouvez ni créer ni consulter de secrets ici.",
+      "lead": "Vous consultez {hostname}.",
+      "purpose": "Ceci est un avis, pas le service de partage de secrets. Vous ne pouvez ni créer ni consulter de secrets ici.",
+      "ownership": "Ce domaine appartient à Onetime Secret.",
+      "recipient": {
+        "heading": "Vous cherchez à ouvrir un secret que l’on vous a envoyé ?",
+        "body": "Contactez la personne qui vous a envoyé le lien par un canal que vous connaissez déjà et demandez-lui de le confirmer. N’essayez pas de corriger l’adresse en changeant des lettres."
+      },
+      "sender": {
+        "heading": "Vous souhaitez créer un secret ?"
+      },
       "recognise": {
-        "heading": "Comment reconnaître le vrai site",
+        "heading": "Comprendre cette adresse",
         "exact": "Vérifiez le nom d'hôte complet dans la barre d'adresse de votre navigateur. Notre site principal est onetimesecret.com.",
-        "regional": "Les secrets sont créés sur l'un de nos domaines régionaux : {domains}.",
+        "regionalHeading": "Adresses régionales officielles du service",
+        "regional": "Notre service de partage de secrets fonctionne sur ces domaines régionaux :",
         "bookmark": "Saisissez https://onetimesecret.com dans la barre d'adresse de votre navigateur ou utilisez un favori que vous avez déjà vérifié.",
-        "https": "HTTPS ne prouve pas à lui seul qu'un site appartient à Onetime Secret.",
+        "https": "Un logo familier, HTTPS ou une place en tête des résultats de recherche ne prouve pas qui exploite un site web. Cela vaut aussi pour cet avis.",
         "noLinksHeading": "Pourquoi n’y a-t-il pas de lien vers le service ?",
         "noLinks": "Un logo familier ou un message rassurant peut être copié. Ni l’un ni l’autre ne prouve qu’une page est authentique, même si elle apparaît en tête des résultats de recherche. Cette page ne propose volontairement aucun lien vers le service : prenez l’habitude de vérifier l’adresse de manière indépendante, plutôt que de faire confiance à un lien parce que la page semble officielle. Faites preuve de la même prudence envers cette page."
       },
       "diff": {
-        "toggle": "Voir ce qui diffère dans cette adresse",
+        "toggle": "Comparer ce domaine avec le vrai",
         "real": "La vraie adresse",
         "this": "Cette adresse",
-        "legend": "Les caractères surlignés sont ceux qui diffèrent de la vraie adresse."
+        "legend": "Les parties surlignées montrent où les noms de domaine diffèrent."
       },
       "exposed": {
-        "heading": "Si vous pensez avoir saisi des informations sensibles sur un domaine non officiel",
-        "body": "Considérez ces informations comme potentiellement exposées. Sur le site officiel du service concerné, modifiez les mots de passe exposés et ceux que vous avez réutilisés, et fermez les autres sessions si cette option est disponible. Révoquez et remplacez les clés d'API ou les jetons d'accès exposés. S'il s'agit d'informations professionnelles, contactez rapidement votre équipe informatique ou de sécurité."
+        "heading": "Vous avez déjà partagé des informations sensibles ?",
+        "body": "Si vous avez saisi un mot de passe, une clé d’accès ou d’autres informations privées sur un site web dont vous ne pouvez pas vérifier l’authenticité, considérez ces informations comme potentiellement exposées.",
+        "stepsHeading": "Que faire ensuite",
+        "passwords": "Mots de passe : Ouvrez le service concerné depuis son application officielle ou une adresse à laquelle vous faites déjà confiance. Modifiez le mot de passe, modifiez-le aussi partout où vous l’avez réutilisé et fermez les autres sessions si cette option est disponible.",
+        "tokens": "Clés ou jetons d’accès : Révoquez-les et remplacez-les via le service qui les a émis.",
+        "other": "Autres informations privées : Contactez la personne ou le service concerné par un canal connu pour obtenir de l’aide sur les prochaines étapes.",
+        "work": "Informations professionnelles : Contactez aussi rapidement l’équipe informatique ou de sécurité de votre organisation, si elle en dispose, même en cas de doute.",
+        "reporting": "N’incluez pas de mots de passe, de clés d’accès ni le contenu de secrets dans un e-mail ordinaire ou un message d’assistance."
       },
       "languages": "Langue",
       "footer": {

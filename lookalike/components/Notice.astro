@@ -6,11 +6,23 @@
  * NoticeFooter.astro). Every string comes
  * from the shared locale files under `web.lookalike`, so the four languages
  * ship from the same build and `pnpm i18n:scan` covers them.
+ *
+ * Order by the visitor's next safe decision, not by explanatory completeness:
+ * orient, help recipients and senders, offer recovery, then explain. Opening
+ * the homepage cannot recover a recipient's secret, so both tasks stay visible.
+ * Recovery is for everyone; workplace reporting is only a conditional addition.
+ * Native disclosures defer lessons and detailed steps, never the exposure warning.
+ * These source-only comments explain the design without adding public-facing copy.
  */
 import DomainDiff from "./DomainDiff.astro";
 import { createLocaleI18n, type MessageSchema } from "@/i18n";
 import { jurisdictions } from "@/data/ops/jurisdictions";
-import { type SupportedLanguage } from "@config/astro/i18n";
+import {
+  DEFAULT_LANGUAGE,
+  LANGUAGE_META,
+  SUPPORTED_LANGUAGES,
+  type SupportedLanguage,
+} from "@config/astro/i18n";
 
 export interface Props {
   lang: SupportedLanguage;
@@ -27,18 +39,40 @@ const t = pageI18n.global.t;
 // answer yet.
 const regionalDomains = jurisdictions
   .filter((j) => !j.comingSoon)
-  .map((j) => j.domain)
-  .join(", ");
+  .map((j) => j.domain);
+
+// Language access precedes the warning: visitors must not read an unfamiliar
+// language all the way to the footer to discover instructions they can use.
+const otherLanguages = SUPPORTED_LANGUAGES.filter((code) => code !== lang).map(
+  (code) => ({
+    code,
+    name: LANGUAGE_META[code].name,
+    href: code === DEFAULT_LANGUAGE ? "/" : `/${code}/`,
+  }),
+);
 
 // The hostname is only known in the browser. Rendered as a placeholder with
 // a generic fallback and filled in by the inline script in NoticeLayout.
-const hostnameSlot = `<strong data-lookalike-hostname class="font-semibold text-gray-900 dark:text-gray-100">${t(
+const hostnameSlot = `<strong data-lookalike-hostname dir="ltr" class="font-semibold break-all text-gray-900 dark:text-gray-100">${t(
   "web.lookalike.hostnameFallback",
 )}</strong>`;
 const lead = t("web.lookalike.lead", { hostname: hostnameSlot });
 ---
 
-<article class="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
+<article class="mx-auto w-full max-w-3xl px-4 pt-6 pb-10 sm:px-6 sm:pt-8">
+  <nav
+    aria-label={t("web.lookalike.languages")}
+    class="mb-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-600 dark:text-gray-400">
+    {otherLanguages.map((language) => (
+      <a
+        href={language.href}
+        hreflang={language.code}
+        lang={language.code}
+        class="inline-block py-2 underline underline-offset-4">
+        {language.name}
+      </a>
+    ))}
+  </nav>
   <p class="text-brand-600 dark:text-brand-400 mb-3 text-sm font-semibold tracking-wide uppercase">
     {t("web.lookalike.eyebrow")}
   </p>
@@ -50,62 +84,118 @@ const lead = t("web.lookalike.lead", { hostname: hostnameSlot });
     set:html={lead}
   />
   <p class="mb-8 text-lg leading-relaxed text-gray-700 dark:text-gray-300">
-    {t("web.lookalike.ownership")}
+    {t("web.lookalike.purpose")}
   </p>
 
-  <div class="bg-surface-1 mb-12 rounded-lg p-5 sm:p-6">
-    {/* Small word boundaries aid recognition without changing the copied hostname. */}
-    <p
-      class="official-address mb-3 font-sans font-medium text-gray-900 dark:text-gray-100"
-      dir="ltr">
-      {["one", "time", "secret.com"].map((part) => (
-        <span>{part}</span>
-      ))}
-    </p>
-    <p class="text-base leading-relaxed text-gray-700 dark:text-gray-300">
-      {t("web.lookalike.recognise.bookmark")}
-    </p>
-  </div>
+  {/* Aligned task rows separate questions from guidance without ranking either task. */}
+  <div class="task-options mb-6 space-y-6">
+    <section class="md:grid md:grid-cols-[1fr_2fr] md:gap-8">
+      <h2 class="mb-3 font-sans text-xl font-semibold text-gray-900 dark:text-gray-100">
+        {t("web.lookalike.recipient.heading")}
+      </h2>
+      <p class="text-base leading-relaxed text-gray-700 dark:text-gray-300">
+        {t("web.lookalike.recipient.body")}
+      </p>
+    </section>
 
-  <section class="mb-10">
-    <h2 class="font-brand mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-100">
-      {t("web.lookalike.recognise.noLinksHeading")}
+    <section
+      class="border-t border-gray-300 pt-6 md:grid md:grid-cols-[1fr_2fr] md:gap-8
+        dark:border-gray-700">
+      <h2 class="mb-3 font-sans text-xl font-semibold text-gray-900 dark:text-gray-100">
+        {t("web.lookalike.sender.heading")}
+      </h2>
+      <div>
+        {/* Small word boundaries aid recognition without changing the copied hostname. */}
+        <p
+          class="official-address mb-3 font-sans font-medium text-gray-900 dark:text-gray-100"
+          dir="ltr">
+          {["one", "time", "secret.com"].map((part) => (
+            <span>{part}</span>
+          ))}
+        </p>
+        <p class="text-base leading-relaxed text-gray-700 dark:text-gray-300">
+          {t("web.lookalike.recognise.bookmark")}
+        </p>
+      </div>
+    </section>
+  </div>
+  <p class="mb-8 max-w-prose text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+    {t("web.lookalike.recognise.https")}
+  </p>
+
+  <section class="mb-10 border-y border-gray-300 py-6 sm:py-8 dark:border-gray-700">
+    <h2 class="mb-3 font-sans text-xl font-semibold text-gray-900 dark:text-gray-100">
+      {t("web.lookalike.exposed.heading")}
     </h2>
-    <p class="text-lg leading-relaxed text-gray-700 dark:text-gray-300">
-      {t("web.lookalike.recognise.noLinks")}
+    <p class="mb-4 text-lg leading-relaxed text-gray-700 dark:text-gray-300">
+      {t("web.lookalike.exposed.body")}
     </p>
+    <details class="text-base leading-relaxed text-gray-700 dark:text-gray-300">
+      <summary
+        class="cursor-pointer py-2 font-medium underline underline-offset-4
+          hover:text-gray-950 focus-visible:outline-2 focus-visible:outline-offset-4
+          focus-visible:outline-current dark:hover:text-white">
+        {t("web.lookalike.exposed.stepsHeading")}
+      </summary>
+      <ul class="mt-3 list-disc space-y-3 pl-6">
+        <li>{t("web.lookalike.exposed.passwords")}</li>
+        <li>{t("web.lookalike.exposed.tokens")}</li>
+        <li>{t("web.lookalike.exposed.other")}</li>
+        <li>{t("web.lookalike.exposed.work")}</li>
+      </ul>
+      <p class="mt-4">{t("web.lookalike.exposed.reporting")}</p>
+    </details>
   </section>
 
-  <section class="mb-10">
-    <h2 class="font-brand mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-100">
+  <section>
+    <h2 class="mb-3 font-sans text-lg font-semibold text-gray-900 dark:text-gray-100">
       {t("web.lookalike.recognise.heading")}
     </h2>
-    <ul class="list-disc space-y-3 pl-6 text-lg leading-relaxed text-gray-700 dark:text-gray-300">
-      <li>{t("web.lookalike.recognise.exact")}</li>
-      <li>
-        {t("web.lookalike.recognise.regional", { domains: regionalDomains })}
-      </li>
-      <li>{t("web.lookalike.recognise.https")}</li>
-    </ul>
+    <p class="text-base leading-relaxed text-gray-600 dark:text-gray-400">
+      {t("web.lookalike.recognise.exact")}
+    </p>
     <DomainDiff
       lang={lang}
       initialMessages={initialMessages}
     />
-  </section>
-
-  <section class="border-brand-500 bg-surface-1 mb-10 rounded-lg border-l-4 p-5 sm:p-6">
-    <h2 class="font-brand mb-3 text-2xl font-semibold text-gray-900 dark:text-gray-100">
-      {t("web.lookalike.exposed.heading")}
-    </h2>
-    <p class="mb-3 text-lg leading-relaxed text-gray-700 dark:text-gray-300">
-      {t("web.lookalike.exposed.body")}
-    </p>
+    <details class="mt-4 text-base leading-relaxed text-gray-700 dark:text-gray-300">
+      <summary class="cursor-pointer py-2 font-semibold underline underline-offset-4">
+        {t("web.lookalike.recognise.regionalHeading")}
+      </summary>
+      <p class="mt-3">{t("web.lookalike.recognise.regional")}</p>
+      <ul class="mt-3 list-disc space-y-2 pl-6">
+        {regionalDomains.map((domain) => (
+          <li>
+            <bdi
+              dir="ltr"
+              class="break-all">
+              {domain}
+            </bdi>
+          </li>
+        ))}
+      </ul>
+    </details>
+    <details class="mt-4 text-base leading-relaxed text-gray-700 dark:text-gray-300">
+      <summary class="cursor-pointer py-2 font-semibold underline underline-offset-4">
+        {t("web.lookalike.recognise.noLinksHeading")}
+      </summary>
+      <p class="mt-3">{t("web.lookalike.recognise.noLinks")}</p>
+    </details>
   </section>
 </article>
 
 <style>
+  .task-options {
+    margin-block-start: 2.5rem;
+  }
+
+  .task-options section {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
   .official-address {
-    font-size: clamp(1.5rem, 5vw, 2.25rem);
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
     line-height: 1.25;
     letter-spacing: -0.025em;
     white-space: nowrap;

@@ -470,17 +470,26 @@
     "lookalike": {
       "title": "This is not onetimesecret.com",
       "description": "This domain belongs to Onetime Secret. It displays a notice, not the secret-sharing service.",
-      "eyebrow": "Lookalike domains and phishing",
+      "eyebrow": "Domain notice",
       "heading": "This is not onetimesecret.com",
       "hostnameFallback": "this address",
-      "lead": "You are visiting {hostname}, not onetimesecret.com.",
-      "ownership": "Onetime Secret. owns this domain. This page only displays a notice. You cannot create or view secrets here.",
+      "lead": "You are visiting {hostname}.",
+      "purpose": "This is a notice, not the secret-sharing service. You cannot create or view secrets here.",
+      "ownership": "Onetime Secret owns this domain.",
+      "recipient": {
+        "heading": "Trying to open a secret someone sent you?",
+        "body": "Contact the sender through a channel you already know and ask them to confirm the link. Do not try to fix the address by changing letters."
+      },
+      "sender": {
+        "heading": "Want to create a secret?"
+      },
       "recognise": {
-        "heading": "How to recognise the real site",
+        "heading": "Understand this address",
         "exact": "Check the full hostname in your browser’s address bar. Our main website is onetimesecret.com.",
-        "regional": "Our secret-sharing service runs on these regional domains: {domains}.",
+        "regionalHeading": "Official regional service addresses",
+        "regional": "Our secret-sharing service runs on these regional domains:",
         "bookmark": "Type https://onetimesecret.com into your browser’s address bar, or use a bookmark you previously verified.",
-        "https": "HTTPS alone does not prove that a website belongs to Onetime Secret.",
+        "https": "A familiar logo, HTTPS, or a top search result does not prove who operates a website. That applies to this notice too.",
         "noLinksHeading": "Why is there no link to the service?",
         "noLinks": "A familiar logo or reassuring message can be copied. Neither proves that a page is genuine, even if it appears first in search results. This page deliberately provides no link to the service: the habit to build is checking the address independently, not trusting a link because the page looks official. Apply that caution to this page too."
       },
@@ -491,8 +500,14 @@
         "legend": "Highlights show where the domain names differ."
       },
       "exposed": {
-        "heading": "If you may have entered sensitive information on an unofficial domain",
-        "body": "Treat that information as potentially exposed. On the affected service’s official website, change exposed passwords and any reused passwords, and sign out other sessions where available. Revoke and replace exposed API keys or access tokens. For work information, contact your IT or security team promptly."
+        "heading": "Already shared sensitive information?",
+        "body": "If you entered a password, access key, or other private information on a website you cannot verify, treat it as potentially exposed.",
+        "stepsHeading": "What to do next",
+        "passwords": "Passwords: Open the affected service through its official app or an address you already trust. Change the password, change it anywhere else you reused it, and sign out other sessions where available.",
+        "tokens": "Access keys or tokens: Revoke and replace them through the service that issued them.",
+        "other": "Other private information: Contact the relevant person or service through a known channel for help with next steps.",
+        "work": "Work-related information: Also contact your organization’s IT or security team promptly, if it has one—even if you are unsure.",
+        "reporting": "Do not include passwords, access keys, or secret contents in an ordinary email or support message."
       },
       "languages": "Language",
       "footer": {

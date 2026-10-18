@@ -129,7 +129,7 @@ const csp = [
     </script>
     <title>{title}</title>
   </head>
-  <body class="bg-surface-0 flex h-full flex-col overflow-x-hidden">
+  <body class="bg-surface-0 flex min-h-full flex-col overflow-x-hidden">
     <header class="mx-auto w-full max-w-3xl px-4 pt-8 sm:px-6">
       <div class="inline-flex items-center gap-3">
         <img
@@ -146,7 +146,7 @@ const csp = [
     </header>
     <main
       id="main-content"
-      class="bg-surface-0 flex-grow">
+      class="bg-surface-0">
       <slot />
     </main>
     <footer class="mx-auto w-full max-w-3xl px-4 pb-10 sm:px-6">

@@ -1,19 +1,13 @@
 ---
 /**
- * lookalike/components/NoticeFooter.astro
- *
- * Attribution line and the local language switcher. A
- * separate component because it fills NoticeLayout's named footer slot, and
- * Astro only honours `slot="footer"` on a direct child of the layout, not on
- * an element nested inside Notice.astro.
+ * Attribution is secondary context, not evidence that visitors should trust
+ * this page. Keep it after the safety instructions. Language navigation lives
+ * before the warning in Notice.astro so reading English is not a prerequisite.
+ * This component fills the layout's footer slot directly; a nested slot inside
+ * Notice.astro would not reach NoticeLayout.
  */
 import { createLocaleI18n, type MessageSchema } from "@/i18n";
-import {
-  DEFAULT_LANGUAGE,
-  LANGUAGE_META,
-  SUPPORTED_LANGUAGES,
-  type SupportedLanguage,
-} from "@config/astro/i18n";
+import { type SupportedLanguage } from "@config/astro/i18n";
 
 export interface Props {
   lang: SupportedLanguage;
@@ -21,34 +15,10 @@ export interface Props {
 }
 
 const { lang, initialMessages } = Astro.props;
-
 const t = (await createLocaleI18n(lang, initialMessages)).global.t;
-
-// Same page on this domain in each other language.
-const otherLanguages = SUPPORTED_LANGUAGES.filter((code) => code !== lang).map(
-  (code) => ({
-    code,
-    name: LANGUAGE_META[code].name,
-    href: code === DEFAULT_LANGUAGE ? "/" : `/${code}/`,
-  }),
-);
 ---
 
-{/* Only local language links are navigation; attribution stays outside the landmark. */}
-<div class="border-surface-3 flex flex-wrap items-center gap-x-5 gap-y-2 border-t pt-6 text-sm text-gray-600 dark:text-gray-400">
-  <span>{t("web.lookalike.footer.operated")}</span>
-
-  <nav
-    aria-label={t("web.lookalike.languages")}
-    class="ms-auto flex gap-x-4">
-    {otherLanguages.map((l) => (
-      <a
-        href={l.href}
-        hreflang={l.code}
-        lang={l.code}
-        class="underline underline-offset-4">
-        {l.name}
-      </a>
-    ))}
-  </nav>
+<div class="border-surface-3 space-y-2 border-t pt-6 text-sm text-gray-600 dark:text-gray-400">
+  <p>{t("web.lookalike.ownership")}</p>
+  <p>{t("web.lookalike.footer.operated")}</p>
 </div>

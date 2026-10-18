@@ -28,6 +28,8 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
 
+import { JSDOM } from "jsdom";
+
 // Node strips the type annotations at import time (engines: node >= 26), the
 // same way edge/error-page/cli.mjs reads src/data/ops/jurisdictions.ts.
 import { SUPPORTED_LANGUAGES } from "../config/astro/i18n.ts";
@@ -165,6 +167,48 @@ for (const page of htmlFiles) {
   const expectedLang = expectedPages.get(page);
   if (lang !== expectedLang) {
     fail(where(`<html lang="${lang}">, expected "${expectedLang}"`));
+  }
+
+  // Safety instructions must precede optional education in every translation.
+  // Parse without executing scripts: the core guidance must work without JS.
+  const document = new JSDOM(html).window.document;
+  const messages = JSON.parse(
+    readFileSync(
+      new URL(`../src/i18n/ui/${expectedLang}.json`, import.meta.url),
+      "utf8",
+    ),
+  ).web.lookalike;
+  const headings = [...document.querySelectorAll("article h2")];
+  const expectedHeadings = [
+    messages.recipient.heading,
+    messages.sender.heading,
+    messages.exposed.heading,
+    messages.recognise.heading,
+  ];
+  if (
+    JSON.stringify(headings.map((heading) => heading.textContent.trim())) !==
+    JSON.stringify(expectedHeadings)
+  ) {
+    fail(where("task guidance and recovery must precede optional education"));
+  }
+  for (const text of [messages.recipient.body, messages.exposed.body]) {
+    const paragraph = [...document.querySelectorAll("article p")].find(
+      (element) => element.textContent.trim() === text,
+    );
+    if (!paragraph || paragraph.closest("details, [hidden]")) {
+      fail(
+        where(
+          "recipient guidance and exposure warning must remain visible without JS",
+        ),
+      );
+    }
+  }
+  const article = document.querySelector("article");
+  if (article?.firstElementChild?.tagName !== "NAV") {
+    fail(where("language navigation must precede the warning"));
+  }
+  if (document.querySelector("details[open]")) {
+    fail(where("optional explanations must start collapsed"));
   }
 
   const languagePaths = new Set([
