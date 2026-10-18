@@ -35,7 +35,10 @@ import { join, relative, resolve, sep } from "node:path";
 // same way edge/error-page/cli.mjs reads src/data/ops/jurisdictions.ts.
 import { SUPPORTED_LANGUAGES } from "../config/astro/i18n.ts";
 import { CANONICAL_ORIGIN } from "../config/domains.ts";
-import { SHARED_BRAND_ASSETS } from "../lookalike/integration.ts";
+import {
+  SHARED_BRAND_ASSETS,
+  isSharedBrandAsset,
+} from "../lookalike/integration.ts";
 
 const distDir = resolve(process.argv[2] ?? "dist-lookalike");
 
@@ -86,6 +89,9 @@ for (const page of htmlFiles) {
 // Per-page content
 // ---------------------------------------------------------------------------
 
+// A tripwire, not a guarantee: a minified alias (`t.fetch(...)`) would slip
+// past a substring scan. The CSP below is the control the browser enforces;
+// this catches the honest mistake of someone adding a request to the page.
 const NETWORK_APIS = [
   "fetch(",
   "XMLHttpRequest",
@@ -169,10 +175,6 @@ for (const page of htmlFiles) {
 // Everything else in the output
 // ---------------------------------------------------------------------------
 
-const allowedPrefixes = SHARED_BRAND_ASSETS.map((asset) =>
-  asset.includes(".") ? asset : `${asset}/`,
-);
-
 for (const file of files) {
   if (file.endsWith(".html")) continue;
   if (file === "robots.txt") continue;
@@ -184,10 +186,7 @@ for (const file of files) {
     fail(`${file}: must not ship on the lookalike domains`);
     continue;
   }
-  const allowed = allowedPrefixes.some(
-    (prefix) => file === prefix || file.startsWith(prefix),
-  );
-  if (!allowed) {
+  if (!isSharedBrandAsset(file)) {
     fail(`${file}: not in SHARED_BRAND_ASSETS (lookalike/integration.ts)`);
   }
 }
