@@ -1,0 +1,184 @@
+# .github/workflows/deploy-lookalike.yml
+#
+# Builds and deploys the lookalike-domain notice site (lookalike/README.md):
+# the second Astro build of this repository, served on the misspelled and
+# alternate-TLD domains Onetime Secret owns. One build, one storage zone, one
+# pull zone; every lookalike domain is a hostname on that zone, so adding a
+# domain never runs this workflow.
+#
+# The shape follows deploy-production.yml: frozen install, build, verify the
+# output, upload, wait for replication, purge, verify what the CDN serves.
+# The differences are the build config, the verify scripts, and `remove: true`
+# on the upload (below).
+#
+# Setup: a GitHub environment named `lookalike` with these secrets, which have
+# the same names as the production and staging environments so the three
+# workflows read alike:
+#
+# - STORAGE_NAME: the lookalike storage zone name
+# - STORAGE_DESTINATION: directory within the zone (empty for root)
+# - STORAGE_PASSWORD_RW: the storage zone's read/write password
+# - STORAGE_KEY: BunnyCDN storage API key
+# - PULL_ZONE_ID: the lookalike pull zone ID
+# - BUNNY_API_KEY: account API key, for the cache purge
+#
+# and one variable:
+#
+# - LOOKALIKE_BASE_URL: an https origin the pull zone answers on, used by the
+#   final verification. The zone's b-cdn.net hostname works; so does any of
+#   the lookalike domains once its DNS points at the zone.
+#
+# No Sentry: the notice pages have no scripts to report from.
+
+name: (lookalike) Build and Deploy to BunnyCDN
+
+concurrency:
+  group: ${{ github.workflow }}-lookalike
+  cancel-in-progress: true
+
+# The notice site ships from main like production. The path filter lists what
+# the build reads: the lookalike sources, the shared styles, fonts, brand
+# assets, locale files and config they import (astro.lookalike.config.ts and
+# lookalike/integration.ts), the verify scripts, and the dependency manifests.
+# A change elsewhere does not change the output. workflow_dispatch covers a
+# path this list has missed.
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/deploy-lookalike.yml"
+      - "astro.lookalike.config.ts"
+      - "lookalike/**"
+      - "scripts/verify-lookalike.mjs"
+      - "scripts/verify-lookalike-live.mjs"
+      - "scripts/verify-live.mjs"
+      - "config/astro/**"
+      - "config/domains.ts"
+      - "config/site.ts"
+      - "src/components/layout/OptimizedFonts.astro"
+      - "src/data/ops/jurisdictions.ts"
+      - "src/i18n/**"
+      - "src/styles/**"
+      - "src/utils/theme.ts"
+      - "public/fonts/**"
+      - "public/etc/img/onetime-logo-md.png"
+      - "public/favicon.ico"
+      - "public/favicon.svg"
+      - "public/favicon-32x32.png"
+      - "public/favicon-16x16.png"
+      - "public/apple-touch-icon.png"
+      - "package.json"
+      - "pnpm-lock.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: lookalike
+    concurrency: lookalike
+
+    env:
+      LOOKALIKE_BASE_URL: ${{ vars.LOOKALIKE_BASE_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # The version comes from the `packageManager` field in package.json so
+      # the deploy uses the same pnpm that wrote pnpm-lock.yaml. See
+      # deploy-production.yml for why no version is pinned here.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "26"
+          cache: "pnpm"
+
+      - name: Verify pnpm matches packageManager
+        run: |
+          expected="$(node -p "require('./package.json').packageManager.replace(/^pnpm@/, '')")"
+          actual="$(pnpm --version)"
+          if [ "$actual" != "$expected" ]; then
+            echo "pnpm $actual on the runner does not match packageManager pnpm@$expected"
+            exit 1
+          fi
+          echo "pnpm $actual matches packageManager"
+
+      - name: Install dependencies
+        run: |
+          # The last step verifies the live site at this URL. Find out now,
+          # not after upload and purge, if the variable is missing.
+          if [ -z "${LOOKALIKE_BASE_URL}" ]; then
+            echo "LOOKALIKE_BASE_URL is not set for the lookalike environment"
+            exit 1
+          fi
+          echo "Deploying the notice site; verifying at ${LOOKALIKE_BASE_URL}"
+          pnpm install --frozen-lockfile
+
+      - name: Build notice site
+        run: pnpm build:lookalike
+
+      # Refuse to ship output that breaks the page's promises: noindex and no
+      # canonical, no form, no script file, no network API, nothing from the
+      # real site's public/ outside the allowlist. See scripts/verify-lookalike.mjs.
+      - name: Verify notice site output
+        run: pnpm build:verify:lookalike
+
+      # Upload and purge are separate so storage replication can finish before
+      # the purge. See deploy-production.yml.
+      #
+      # `remove: true`, unlike the main site. This storage zone holds nothing
+      # but dist-lookalike/, there are no content-hashed assets old pages might
+      # still reference, and verify-lookalike's "every file is in the allowlist"
+      # guarantee is only worth something if a file deleted from the build is
+      # also deleted from the zone.
+      - name: Upload to BunnyCDN Storage
+        uses: ayeressian/bunnycdn-storage-deploy@v2.2.5
+        with:
+          source: "dist-lookalike"
+          accessKey: "${{ secrets.STORAGE_KEY }}"
+          destination: "${{ secrets.STORAGE_DESTINATION }}"
+          storageZoneName: "${{ secrets.STORAGE_NAME }}"
+          storagePassword: "${{ secrets.STORAGE_PASSWORD_RW }}"
+          pullZoneId: "${{ secrets.PULL_ZONE_ID }}"
+          upload: "true"
+          remove: "true"
+          purgePullZone: "false"
+
+      - name: Wait for storage replication
+        run: |
+          echo "Waiting 10 seconds for BunnyCDN storage replication..."
+          sleep 10
+
+      - name: Purge CDN cache
+        run: |
+          echo "Purging BunnyCDN pull zone cache..."
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://api.bunny.net/pullzone/${{ secrets.PULL_ZONE_ID }}/purgeCache" \
+            -H "AccessKey: ${{ secrets.BUNNY_API_KEY }}" \
+            -H "Content-Type: application/json")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          if [[ "$http_code" -ge 200 && "$http_code" -lt 300 ]]; then
+            echo "Cache purge completed successfully (HTTP $http_code)"
+          else
+            echo "Cache purge failed with HTTP $http_code"
+            echo "Response: $body"
+            exit 1
+          fi
+
+      # The CDN must serve the pages we built byte for byte, answer an unknown
+      # path with 404.html, and carry the X-Robots-Tag, frame-ancestors and
+      # HSTS headers that are edge rules on the pull zone rather than anything
+      # this repository controls. See scripts/verify-lookalike-live.mjs.
+      - name: Verify live site matches dist-lookalike
+        run: pnpm build:verify:lookalike:live "$LOOKALIKE_BASE_URL"
