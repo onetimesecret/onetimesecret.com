@@ -6,9 +6,11 @@
  *
  * The cases worth pinning are the ones where the gate would fail open: a
  * dist with no pages or no 404.html, a zone that answers an unknown path with
- * 200, a response that is byte-identical but missing the edge-rule headers, a
- * base path dropped from the URL. The rest pin the retry shape (only failing
- * checks are refetched, an Optimizer rewrite is not retried) and the report.
+ * 200, a response that is byte-identical but missing the edge-rule headers, an
+ * HSTS header whose max-age switches HSTS off, a font or favicon the edge rule
+ * does not cover, a base path dropped from the URL. The rest pin the retry
+ * shape (only failing checks are refetched, an Optimizer rewrite is not
+ * retried) and the report.
  *
  * @vitest-environment node
  */
@@ -18,8 +20,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  HSTS_MIN_MAX_AGE,
   checkUrl,
   describeFailure,
+  hstsProblem,
   listChecks,
   missingHeaders,
   runChecks,
@@ -32,6 +36,8 @@ const EN = "<!doctype html><html lang=en><body>en</body></html>";
 const DE = "<!doctype html><html lang=de><body>de</body></html>";
 const NOT_FOUND = "<!doctype html><html lang=en><body>404</body></html>";
 const ROBOTS = "User-agent: *\nAllow: /\n";
+const ICON = "icon";
+const FONT = "font";
 
 const GOOD_HEADERS = {
   "x-robots-tag": "noindex",
@@ -74,7 +80,12 @@ const GOOD_ROUTES: Record<string, Route> = {
   "/en/": { body: EN, headers: GOOD_HEADERS },
   "/de/": { body: DE, headers: GOOD_HEADERS },
   "/robots.txt": { body: ROBOTS, headers: GOOD_HEADERS },
+  "/favicon.ico": { body: ICON, headers: GOOD_HEADERS },
+  "/fonts/Zilla.woff2": { body: FONT, headers: GOOD_HEADERS },
 };
+
+/** Every file in the fixture dist plus the unknown path. */
+const CHECK_COUNT = 7;
 
 const BASE = "https://cdn.test";
 let distDir: string;
@@ -98,8 +109,8 @@ function writeDist(dir: string) {
   writeFileSync(join(dir, "de", "index.html"), DE);
   writeFileSync(join(dir, "404.html"), NOT_FOUND);
   writeFileSync(join(dir, "robots.txt"), ROBOTS);
-  writeFileSync(join(dir, "favicon.ico"), "icon");
-  writeFileSync(join(dir, "fonts", "Zilla.woff2"), "font");
+  writeFileSync(join(dir, "favicon.ico"), ICON);
+  writeFileSync(join(dir, "fonts", "Zilla.woff2"), FONT);
 }
 
 beforeEach(() => {
@@ -122,21 +133,23 @@ describe("servedPath", () => {
 });
 
 describe("listChecks", () => {
-  it("checks every page and robots.txt, and 404.html through an unknown path", () => {
+  it("checks every file by its URL, and 404.html through an unknown path", () => {
     const checks = listChecks(distDir, { random: () => "abc123" });
     expect(checks).toEqual([
       { file: "de/index.html", path: "/de/", status: 200 },
       { file: "en/index.html", path: "/en/", status: 200 },
+      { file: "favicon.ico", path: "/favicon.ico", status: 200 },
+      { file: "fonts/Zilla.woff2", path: "/fonts/Zilla.woff2", status: 200 },
       { file: "index.html", path: "/", status: 200 },
       { file: "robots.txt", path: "/robots.txt", status: 200 },
       { file: "404.html", path: "/secret/verify-lookalike-live-abc123", status: 404 },
     ]);
   });
 
-  it("does not compare fonts or favicons", () => {
+  it("includes fonts and favicons, so an edge rule scoped to HTML fails", () => {
     const files = listChecks(distDir).map(({ file }) => file);
-    expect(files).not.toContain("favicon.ico");
-    expect(files).not.toContain("fonts/Zilla.woff2");
+    expect(files).toContain("favicon.ico");
+    expect(files).toContain("fonts/Zilla.woff2");
   });
 });
 
@@ -153,7 +166,7 @@ describe("missingHeaders", () => {
     expect(missingHeaders(GOOD_HEADERS)).toEqual([]);
   });
 
-  it("names an absent header and a present header without the token", () => {
+  it("names an absent header, a header without the token, and a disabling value", () => {
     expect(
       missingHeaders({
         "x-robots-tag": "all",
@@ -162,13 +175,40 @@ describe("missingHeaders", () => {
     ).toEqual([
       'x-robots-tag does not contain "noindex" (got "all")',
       "content-security-policy is not set",
+      'strict-transport-security has max-age=0, which switches HSTS off (got "max-age=0")',
     ]);
+  });
+
+  it("rejects an HSTS max-age that is zero, short or not a number", () => {
+    for (const value of ["max-age=0", "max-age=86400", "max-age=invalid"]) {
+      expect(missingHeaders({ ...GOOD_HEADERS, "strict-transport-security": value })).toEqual([
+        `strict-transport-security ${hstsProblem(value)} (got "${value}")`,
+      ]);
+    }
   });
 
   it("compares tokens case-insensitively", () => {
     expect(
       missingHeaders({ ...GOOD_HEADERS, "x-robots-tag": "NoIndex, nofollow" }),
     ).toEqual([]);
+  });
+});
+
+describe("hstsProblem", () => {
+  it("accepts a lifetime of at least the minimum, however the header is spelled", () => {
+    expect(hstsProblem(`max-age=${HSTS_MIN_MAX_AGE}`)).toBeNull();
+    expect(hstsProblem("max-age=31536000; includeSubDomains; preload")).toBeNull();
+    expect(hstsProblem('includeSubDomains; Max-Age="31536000"')).toBeNull();
+  });
+
+  it("names zero, a short lifetime and a missing or malformed directive", () => {
+    expect(hstsProblem("max-age=0")).toMatch(/switches HSTS off/);
+    expect(hstsProblem("max-age=86400")).toBe(
+      `has max-age=86400, below the ${HSTS_MIN_MAX_AGE} second minimum`,
+    );
+    expect(hstsProblem("max-age=invalid")).toBe("has no numeric max-age");
+    expect(hstsProblem("includeSubDomains")).toBe("has no numeric max-age");
+    expect(hstsProblem("max-agex=31536000")).toBe("has no numeric max-age");
   });
 });
 
@@ -229,6 +269,31 @@ describe("runChecks", () => {
     );
   });
 
+  it("fails a font served without the headers the pages carry", async () => {
+    const { fetch } = fakeFetch({
+      ...GOOD_ROUTES,
+      "/fonts/Zilla.woff2": { body: FONT, headers: { "content-type": "font/woff2" } },
+    });
+    const failures = await runChecks(listChecks(distDir), { distDir, base: BASE, fetch });
+    expect(failures).toHaveLength(1);
+    expect(failures[0].check.file).toBe("fonts/Zilla.woff2");
+    expect(failures[0].reason).toMatch(/^x-robots-tag is not set; /);
+  });
+
+  it("fails a page whose HSTS header is present but switched off", async () => {
+    const { fetch } = fakeFetch({
+      ...GOOD_ROUTES,
+      "/en/": {
+        body: EN,
+        headers: { ...GOOD_HEADERS, "strict-transport-security": "max-age=0" },
+      },
+    });
+    const failures = await runChecks(listChecks(distDir), { distDir, base: BASE, fetch });
+    expect(failures).toHaveLength(1);
+    expect(failures[0].check.path).toBe("/en/");
+    expect(failures[0].reason).toMatch(/switches HSTS off/);
+  });
+
   it("treats a network error as a failure instead of throwing", async () => {
     const { fetch } = fakeFetch({ ...GOOD_ROUTES, "/en/": { throws: "ECONNRESET" } });
     const failures = await runChecks(listChecks(distDir), { distDir, base: BASE, fetch });
@@ -257,8 +322,8 @@ describe("verifyLookalikeLive", () => {
     const { fetch, calls } = fakeFetch(GOOD_ROUTES);
     const result = await verifyLookalikeLive({ base: BASE, distDir, fetch });
     expect(result.ok).toBe(true);
-    expect(result.checks).toHaveLength(5);
-    expect(calls).toHaveLength(5);
+    expect(result.checks).toHaveLength(CHECK_COUNT);
+    expect(calls).toHaveLength(CHECK_COUNT);
   });
 
   it("retries only the failing checks until they pass", async () => {
@@ -311,7 +376,7 @@ describe("verifyLookalikeLive", () => {
     });
     expect(result.ok).toBe(false);
     expect(sleep).not.toHaveBeenCalled();
-    expect(calls).toHaveLength(5);
+    expect(calls).toHaveLength(CHECK_COUNT);
     expect(log.mock.calls.flat().join("\n")).toContain("x-bo-version");
   });
 
@@ -378,10 +443,11 @@ describe("describeFailure", () => {
     );
     const result = await verifyLookalikeLive({ base: BASE, distDir, fetch, attempts: 1 });
     const report = describeFailure(result);
-    expect(report).toContain(`2 of 5 checks failed against ${BASE}`);
+    expect(report).toContain(`2 of ${CHECK_COUNT} checks failed against ${BASE}`);
     expect(report).toContain("/de/ (de/index.html): content-security-policy is not set");
     expect(report).toContain("(404.html): HTTP 200, expected 404");
     expect(report).toContain("custom 404 path");
     expect(report).toContain("edge rule");
+    expect(report).toContain(`at least ${HSTS_MIN_MAX_AGE} seconds`);
   });
 });

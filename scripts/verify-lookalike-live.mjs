@@ -16,14 +16,18 @@
 //     noindex` extends the meta directive to fonts and images, and
 //     `frame-ancestors 'none'` is ignored in a <meta> CSP, so it only exists
 //     if the zone adds it. A deploy that drops either is a regression the
-//     repository would otherwise never notice.
+//     repository would otherwise never notice. HSTS with `max-age=0` is HSTS
+//     switched off, so the value is parsed, not just looked for.
 //   - the storage zone's custom 404 path. "Every path is the notice" is the
 //     reason a phishing link already in circulation lands on the warning. A
 //     zone that answers an unknown path with Bunny's default 404 breaks that.
 //
-// Every HTML page and robots.txt is fetched from its URL and compared with the
-// local file. A path that cannot exist is fetched and must come back 404 with
-// the body of 404.html. Each response must carry the required headers.
+// Every file in dist-lookalike/ is fetched from its URL and compared with the
+// local file: the pages and robots.txt, and the fonts, logo and favicons too,
+// because an edge rule scoped to HTML would leave those indexable and the
+// Optimizer rewrites images. A path that cannot exist is fetched and must come
+// back 404 with the body of 404.html. Each response must carry the required
+// headers.
 //
 // Retries: purge and storage replication are eventually consistent, so
 // failing checks are retried a few times. A mismatch whose response carries
@@ -57,14 +61,39 @@ export { DEFAULT_ATTEMPTS, DEFAULT_RETRY_DELAY_MS, DEFAULT_TIMEOUT_MS };
 export const NOT_FOUND_PAGE = "404.html";
 
 /**
- * Headers every response must carry, with the token each must contain. They
- * are set as edge rules on the pull zone (lookalike/README.md, "Deploying"),
- * so they are checked here and not in verify-lookalike.
+ * The shortest HSTS lifetime the gate accepts, in seconds: six months, the
+ * floor Mozilla's web security guidelines set. `max-age=0` tells browsers to
+ * forget the policy, so a zone with that rule has HSTS off while the header
+ * is present.
+ */
+export const HSTS_MIN_MAX_AGE = 15552000;
+
+/**
+ * Why a Strict-Transport-Security value is not acceptable, or null when it
+ * is. The directive is parsed (RFC 6797: `max-age=<delta-seconds>`, quotes
+ * allowed) rather than looked for as a substring.
+ */
+export function hstsProblem(value) {
+  const match = /(?:^|;)\s*max-age\s*=\s*"?(\d+)"?\s*(?:;|$)/i.exec(value);
+  if (!match) return "has no numeric max-age";
+  const seconds = Number(match[1]);
+  if (seconds === 0) return "has max-age=0, which switches HSTS off";
+  if (seconds < HSTS_MIN_MAX_AGE) {
+    return `has max-age=${seconds}, below the ${HSTS_MIN_MAX_AGE} second minimum`;
+  }
+  return null;
+}
+
+/**
+ * Headers every response must carry, with the token each must contain and,
+ * where a token is not proof enough, a check of the value. They are set as
+ * edge rules on the pull zone (lookalike/README.md, "Deploying"), so they are
+ * checked here and not in verify-lookalike.
  */
 export const REQUIRED_HEADERS = Object.freeze([
   { name: "x-robots-tag", token: "noindex" },
   { name: "content-security-policy", token: "frame-ancestors 'none'" },
-  { name: "strict-transport-security", token: "max-age=" },
+  { name: "strict-transport-security", token: "max-age=", check: hstsProblem },
 ]);
 
 /** Response headers worth quoting when a check fails. */
@@ -87,9 +116,10 @@ export function servedPath(file) {
 }
 
 /**
- * The checks to run for `distDir`: every `.html` page and robots.txt by
- * their URL, plus one unknown path that must come back as 404.html. The
- * unknown path carries random bytes so no edge can have it cached.
+ * The checks to run for `distDir`: every file by its URL, plus one unknown
+ * path that must come back as 404.html. The unknown path carries random bytes
+ * so no edge can have it cached. Fonts and images are included so that an
+ * edge rule scoped to HTML, or an Optimizer image rewrite, fails here too.
  */
 export function listChecks(distDir, { random = () => randomBytes(8).toString("hex") } = {}) {
   const files = [];
@@ -109,7 +139,6 @@ export function listChecks(distDir, { random = () => randomBytes(8).toString("he
   const checks = [];
   for (const file of files) {
     if (file === NOT_FOUND_PAGE) continue;
-    if (!file.endsWith(".html") && file !== "robots.txt") continue;
     checks.push({ file, path: servedPath(file), status: 200 });
   }
   if (files.includes(NOT_FOUND_PAGE)) {
@@ -161,13 +190,18 @@ export async function fetchPage(
 /** Header names in `headers` compare case-insensitively; fetch lowercases them. */
 export function missingHeaders(headers, required = REQUIRED_HEADERS) {
   const missing = [];
-  for (const { name, token } of required) {
+  for (const { name, token, check } of required) {
     const value = headers[name];
     if (value === undefined) {
       missing.push(`${name} is not set`);
-    } else if (!value.toLowerCase().includes(token.toLowerCase())) {
-      missing.push(`${name} does not contain "${token}" (got "${value}")`);
+      continue;
     }
+    if (!value.toLowerCase().includes(token.toLowerCase())) {
+      missing.push(`${name} does not contain "${token}" (got "${value}")`);
+      continue;
+    }
+    const problem = check?.(value);
+    if (problem) missing.push(`${name} ${problem} (got "${value}")`);
   }
   return missing;
 }
@@ -302,7 +336,10 @@ export function describeFailure({ base, checks, failures }) {
     "    the pages; disable it on the pull zone.",
     "  - HTTP 200 or a byte difference on the unknown path: the storage zone's",
     "    custom 404 path is not /404.html.",
-    "  - a missing header: add it as an edge rule on the pull zone.",
+    "  - a missing header: add it as an edge rule on the pull zone. On a font",
+    "    or image only: the rule is scoped to HTML; apply it to every response.",
+    "  - strict-transport-security with max-age=0 or a short max-age: raise it",
+    `    to at least ${HSTS_MIN_MAX_AGE} seconds.`,
   ];
   return lines.join("\n");
 }
@@ -342,7 +379,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
   }
   console.log(
     `[verify-lookalike-live] OK: ${result.checks.length} checks against ${baseUrl}: ` +
-      "every page matches dist-lookalike/, the unknown path serves the notice, " +
+      "every file matches dist-lookalike/, the unknown path serves the notice, " +
       "and every response carries the required headers.",
   );
 }
