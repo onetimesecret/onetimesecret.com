@@ -483,6 +483,12 @@
         "noForm": "If a link brought you here, it was created on an imposter site. Do not paste a secret into any page on this domain. There is nowhere to paste it.",
         "bookmark": "Bookmark the real site and open it from the bookmark."
       },
+      "diff": {
+        "toggle": "Show what is different about this address",
+        "real": "The real address",
+        "this": "This address",
+        "legend": "The highlighted characters are the ones that differ from the real address."
+      },
       "why": {
         "heading": "Why this page exists",
         "body": "Imposter copies of Onetime Secret collect what people paste into them. When such a copy is shut down, we take over its domain so that the address leads here instead of to the next copy, and so that anyone who typed it by mistake learns the difference."

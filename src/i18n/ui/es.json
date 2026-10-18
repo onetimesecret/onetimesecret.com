@@ -483,6 +483,12 @@
         "noForm": "Si llegaste aquí desde un enlace, se creó en un sitio impostor. No pegues ningún secreto en ninguna página de este dominio. No hay dónde pegarlo.",
         "bookmark": "Guarda el sitio real en tus marcadores y ábrelo desde ahí."
       },
+      "diff": {
+        "toggle": "Ver qué es diferente en esta dirección",
+        "real": "La dirección real",
+        "this": "Esta dirección",
+        "legend": "Los caracteres resaltados son los que difieren de la dirección real."
+      },
       "why": {
         "heading": "Por qué existe esta página",
         "body": "Las copias impostoras de Onetime Secret recopilan lo que la gente pega en ellas. Cuando una de esas copias se cierra, nos quedamos con su dominio para que la dirección lleve aquí en lugar de a la siguiente copia, y para que quien la escribió por error conozca la diferencia."

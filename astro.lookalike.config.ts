@@ -40,6 +40,7 @@ const __dirname = dirname(__filename);
 // of them are used by the notice pages, but the aliases and the Tailwind
 // plugin come from the same function, and that is what is wanted here.
 const env = loadEnv(resolveEnvMode(), process.cwd(), "");
+const vite = createViteConfig(__dirname, env);
 
 // https://astro.build/config
 export default defineConfig({
@@ -59,5 +60,16 @@ export default defineConfig({
 
   integrations: [sharedBrandAssets()],
 
-  vite: createViteConfig(__dirname, env),
+  vite: {
+    ...vite,
+    build: {
+      ...vite?.build,
+      // The one processed <script> (the domain comparison) must end up inline:
+      // the page's CSP has no script origin and verify-lookalike rejects any
+      // script file. Astro inlines a script chunk below this limit.
+      assetsInlineLimit: 64 * 1024,
+      // No script file, so no map file for it either.
+      sourcemap: false,
+    },
+  },
 });

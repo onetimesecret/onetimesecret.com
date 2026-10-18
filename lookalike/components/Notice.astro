@@ -7,6 +7,7 @@
  * from the shared locale files under `web.lookalike`, so the four languages
  * ship from the same build and `pnpm i18n:scan` covers them.
  */
+import DomainDiff from "./DomainDiff.astro";
 import { createLocaleI18n, type MessageSchema } from "@/i18n";
 import { jurisdictions } from "@/data/ops/jurisdictions";
 import { DEFAULT_LANGUAGE, type SupportedLanguage } from "@config/astro/i18n";
@@ -81,6 +82,10 @@ const lead = t("web.lookalike.lead", { hostname: hostnameSlot });
       <li>{t("web.lookalike.recognise.noForm")}</li>
       <li>{t("web.lookalike.recognise.bookmark")}</li>
     </ul>
+    <DomainDiff
+      lang={lang}
+      initialMessages={initialMessages}
+    />
   </section>
 
   <section class="mb-10">

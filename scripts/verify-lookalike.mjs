@@ -15,7 +15,8 @@
 //     canonical plus noindex is a contradiction Google may resolve either way
 //   - no <form>, <iframe>, external <script src>, or network API in scripts
 //   - a CSP that forbids connections and form submission
-//   - the hostname placeholder the inline script fills in
+//   - the hostname placeholder the inline script fills in, and the domain
+//     comparison block with its inline module script
 //   - lang attribute matching the directory, and a link to the real site
 // Over the output as a whole:
 //   - exactly the expected pages (/, /{lang}/ for each language, 404.html)
@@ -141,6 +142,16 @@ for (const page of htmlFiles) {
 
   if (!html.includes("data-lookalike-hostname")) {
     fail(where("no data-lookalike-hostname placeholder"));
+  }
+  // The domain comparison: a hidden <details> the inline module fills in and
+  // reveals when the hostname resembles a real domain. Astro only inlines the
+  // module below vite.build.assetsInlineLimit; a <script src> would already
+  // have failed above, this catches the block going missing altogether.
+  if (!/<details[^>]*\sdata-lookalike-diff[\s>]/.test(html)) {
+    fail(where("no data-lookalike-diff comparison block"));
+  }
+  if (!/<script type="module">/.test(html)) {
+    fail(where("the domain comparison module script is not inlined"));
   }
 
   const lang = html.match(/<html\s[^>]*\blang="([^"]+)"/)?.[1];

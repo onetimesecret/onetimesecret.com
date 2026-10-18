@@ -483,6 +483,12 @@
         "noForm": "Si un lien vous a amené ici, il a été créé sur un site imposteur. Ne collez aucun secret sur une page de ce domaine. Il n'y a nulle part où le coller.",
         "bookmark": "Ajoutez le vrai site à vos favoris et ouvrez-le depuis le favori."
       },
+      "diff": {
+        "toggle": "Voir ce qui diffère dans cette adresse",
+        "real": "La vraie adresse",
+        "this": "Cette adresse",
+        "legend": "Les caractères surlignés sont ceux qui diffèrent de la vraie adresse."
+      },
       "why": {
         "heading": "Pourquoi cette page existe",
         "body": "Les copies imposteurs de Onetime Secret collectent ce que les gens y collent. Quand une telle copie est fermée, nous reprenons son domaine pour que l'adresse mène ici plutôt qu'à la copie suivante, et pour que quiconque l'a saisie par erreur apprenne la différence."

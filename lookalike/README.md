@@ -67,6 +67,34 @@ everywhere", are checked against the built HTML rather than asserted once:
   file within the allowlist in `integration.ts`
 - `robots.txt` allows crawling and advertises no sitemap
 
+## Showing the difference
+
+Below the "how to recognise the real site" list, a collapsed "Show what is
+different about this address" link opens a side-by-side comparison of the
+real domain and the visited hostname with the differing characters marked.
+Nothing about it is written per domain:
+
+- `lookalike/lib/domainDiff.ts` picks the real domain the hostname is closest
+  to (canonical first, then the live regional domains), strips the common
+  prefix and suffix, diffs what is left character by character, and merges
+  runs so an extra "s", an "l" for an "i", a ".net" ending, a missing letter
+  or an appended ".evil.example" each come out as one highlighted run.
+- `lookalike/components/DomainDiff.astro` renders the result in the browser
+  from `location.hostname`. The imposter's characters get the brand colour
+  and pulse three times, then stay highlighted; the settled state is also the
+  reduced-motion state. The real domain is only dotted-underlined, and the
+  prominent copy in the heading is never touched: the reader should learn the
+  real address, not a decorated version of it.
+- The block stays hidden when there is nothing to teach: on the real site, on
+  `localhost`, on an IP address, or when less than 70% of the real domain
+  survives in the hostname (`RECOGNISABLE_RATIO`).
+- Limits: a punycode hostname (`xn--`) is diffed as its ASCII form, which
+  still marks the `xn--` prefix but not the lookalike glyph itself. Dropping
+  a leading `www.` is deliberate.
+
+Unit tests: `test/unit/lookalike/domainDiff.test.ts`. The verify script checks
+that every page carries the block and that its module script was inlined.
+
 ## SEO posture
 
 Noindex, not a redirect, and not a canonical. A crawler can only read a

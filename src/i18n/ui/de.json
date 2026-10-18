@@ -483,6 +483,12 @@
         "noForm": "Wenn Sie über einen Link hierher gekommen sind, wurde er auf einer gefälschten Website erstellt. Fügen Sie auf keiner Seite dieser Domain ein Secret ein. Es gibt hier keine Stelle dafür.",
         "bookmark": "Speichern Sie die echte Website als Lesezeichen und öffnen Sie sie darüber."
       },
+      "diff": {
+        "toggle": "Zeigen, was an dieser Adresse anders ist",
+        "real": "Die echte Adresse",
+        "this": "Diese Adresse",
+        "legend": "Die hervorgehobenen Zeichen sind die, die von der echten Adresse abweichen."
+      },
       "why": {
         "heading": "Warum es diese Seite gibt",
         "body": "Gefälschte Kopien von Onetime Secret sammeln, was Menschen dort einfügen. Wird eine solche Kopie abgeschaltet, übernehmen wir ihre Domain, damit die Adresse hierher führt statt zur nächsten Kopie, und damit jeder, der sie versehentlich eingegeben hat, den Unterschied kennenlernt."
