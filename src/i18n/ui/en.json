@@ -474,7 +474,7 @@
       "heading": "This is not onetimesecret.com",
       "hostnameFallback": "this address",
       "lead": "You are visiting {hostname}. It looks like the address of Onetime Secret, but it is not the real one.",
-      "ownership": "This domain is now owned by Onetime Secret, Inc. We registered it after it was used for a copy of our site that we did not operate. Nothing runs here: this page has no form and sends no data anywhere.",
+      "ownership": "This domain is owned by Onetime Secret, Inc. Nothing runs here: this page has no form and sends no data anywhere.",
       "cta": "Go to the real onetimesecret.com",
       "recognise": {
         "heading": "How to recognise the real site",
@@ -488,10 +488,6 @@
         "real": "The real address",
         "this": "This address",
         "legend": "The highlighted characters are the ones that differ from the real address."
-      },
-      "why": {
-        "heading": "Why this page exists",
-        "body": "Imposter copies of Onetime Secret collect what people paste into them. When such a copy is shut down, we take over its domain so that the address leads here instead of to the next copy, and so that anyone who typed it by mistake learns the difference."
       },
       "exposed": {
         "heading": "If you entered something on this domain before",

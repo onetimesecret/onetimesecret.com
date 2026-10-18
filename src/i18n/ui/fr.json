@@ -474,7 +474,7 @@
       "heading": "Ceci n'est pas onetimesecret.com",
       "hostnameFallback": "cette adresse",
       "lead": "Vous consultez {hostname}. Elle ressemble à l'adresse de Onetime Secret, mais ce n'est pas la vraie.",
-      "ownership": "Ce domaine appartient désormais à Onetime Secret, Inc. Nous l'avons enregistré après qu'il a servi à une copie de notre site que nous n'exploitions pas. Rien ne fonctionne ici : cette page ne contient aucun formulaire et n'envoie aucune donnée.",
+      "ownership": "Ce domaine appartient à Onetime Secret, Inc. Rien ne fonctionne ici\u00a0: cette page ne contient aucun formulaire et n'envoie aucune donnée.",
       "cta": "Aller sur le vrai onetimesecret.com",
       "recognise": {
         "heading": "Comment reconnaître le vrai site",
@@ -488,10 +488,6 @@
         "real": "La vraie adresse",
         "this": "Cette adresse",
         "legend": "Les caractères surlignés sont ceux qui diffèrent de la vraie adresse."
-      },
-      "why": {
-        "heading": "Pourquoi cette page existe",
-        "body": "Les copies imposteurs de Onetime Secret collectent ce que les gens y collent. Quand une telle copie est fermée, nous reprenons son domaine pour que l'adresse mène ici plutôt qu'à la copie suivante, et pour que quiconque l'a saisie par erreur apprenne la différence."
       },
       "exposed": {
         "heading": "Si vous avez saisi quelque chose sur ce domaine auparavant",
