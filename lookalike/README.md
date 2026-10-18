@@ -107,24 +107,62 @@ option for consolidation but would defeat the point of the page.
 Set `X-Robots-Tag: noindex` as a response header at the CDN as well; the meta
 tag covers HTML and the header covers everything else.
 
-## Deploying (not yet automated)
+## Deploying
 
-The intended shape, modelled on `.github/workflows/deploy-production.yml` and
-`edge/error-page/cli.mjs`:
+`.github/workflows/deploy-lookalike.yml` builds, runs `build:verify:lookalike`,
+uploads `dist-lookalike/` to the storage zone, purges the pull zone and then
+runs `build:verify:lookalike:live` against it. It runs on a push to `main`
+that touches anything the build reads (this directory, the shared styles,
+fonts, brand assets, locale files and config, the verify scripts, the
+dependency manifests) and on `workflow_dispatch`. CI builds and verifies the
+output on every pull request so a shared-layout change cannot reach `main`
+with the notice site broken.
 
-1. One Bunny storage zone for `dist-lookalike/`, custom 404 path `/404.html`.
+The upload runs with `remove: true`, unlike the main site: the zone holds
+nothing but this build, so a file that leaves the build leaves the zone.
+
+### Bunny
+
+1. One storage zone for `dist-lookalike/`, custom 404 path `/404.html`.
 2. One pull zone over it. Every lookalike domain, and a wildcard for each
    (`*.example.tld`), is a hostname on this zone with a free SSL certificate.
    Subdomains used by the former copy then land on the notice too.
 3. Edge rules on the zone: `X-Robots-Tag: noindex`,
    `Content-Security-Policy: frame-ancestors 'none'` (not enforceable from a
    meta tag), `Strict-Transport-Security`.
-4. A workflow `deploy-lookalike.yml` that builds, runs
-   `build:verify:lookalike`, uploads and purges, triggered by changes under
-   `lookalike/`, the shared styles and fonts, or `src/i18n/ui/`.
-5. A reconciliation script that reads `LOOKALIKE_DOMAINS` in
-   `config/domains.ts` and reports or applies the hostname set on the zone,
-   the way the error-page CLI reports drift.
+4. Bunny Optimizer off, as on every zone for this site (docs/deployment.md).
+   Its HTML minifier would rewrite the pages and fail the live check.
+
+### GitHub
+
+A `lookalike` environment with the same secret names as `production` and
+`staging`, scoped to the lookalike zones: `STORAGE_NAME`,
+`STORAGE_DESTINATION`, `STORAGE_PASSWORD_RW`, `STORAGE_KEY`, `PULL_ZONE_ID`,
+`BUNNY_API_KEY`. Plus one variable, `LOOKALIKE_BASE_URL`: an https origin the
+pull zone answers on, used by the live check. The zone's `b-cdn.net` hostname
+works before any domain points at it.
+
+### What `scripts/verify-lookalike-live.mjs` proves after every deploy
+
+The three things `verify-lookalike` cannot see because they are decided on the
+CDN, not in this repository:
+
+- every page and `robots.txt` is served byte for byte as built. Nothing
+  rewrites HTML on this zone by design, so any difference is an edge-side
+  rewrite (Optimizer, `x-bo-version` in the response) and fails at once.
+- an unknown path (`/secret/verify-lookalike-live-<random>`) answers 404
+  with the body of `404.html`: the storage zone's custom 404 path is set.
+- every response carries the three edge-rule headers above.
+
+A deploy whose zone is missing any of these fails loudly rather than shipping a
+notice site that is indexable, framable or dead on a phishing path.
+
+### Not yet automated
+
+A reconciliation script that reads `LOOKALIKE_DOMAINS` in `config/domains.ts`
+and reports or applies the hostname set on the pull zone, the way
+`edge/error-page/cli.mjs` reports drift. Until then, hostnames are added in
+the Bunny dashboard per the checklist below.
 
 ## Per-domain checklist
 
