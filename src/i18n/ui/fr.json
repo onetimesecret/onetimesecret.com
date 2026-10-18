@@ -469,18 +469,20 @@
     },
     "lookalike": {
       "title": "Ceci n'est pas onetimesecret.com",
-      "description": "Ce domaine appartient à Onetime Secret mais n'est pas le vrai site. Aucun service n'y fonctionne et aucune donnée n'y est acceptée.",
-      "eyebrow": "Un avis de Onetime Secret",
+      "description": "Ce domaine appartient à Onetime Secret. Il affiche un avis, pas le service de partage de secrets.",
+      "eyebrow": "Domaines ressemblants et hameçonnage",
       "heading": "Ceci n'est pas onetimesecret.com",
       "hostnameFallback": "cette adresse",
       "lead": "Vous consultez {hostname}. Elle ressemble à l'adresse de Onetime Secret, mais ce n'est pas la vraie.",
-      "ownership": "Ce domaine appartient à Onetime Secret, Inc. Rien ne fonctionne ici\u00a0: cette page ne contient aucun formulaire et n'envoie aucune donnée.",
-      "cta": "Aller sur le vrai onetimesecret.com",
+      "ownership": "Ce domaine appartient à Onetime Secret. Cette page affiche uniquement un avis. Vous ne pouvez ni créer ni consulter de secrets ici.",
       "recognise": {
         "heading": "Comment reconnaître le vrai site",
-        "exact": "L'adresse est exactement onetimesecret.com. Rien avant, rien après, et aucune autre terminaison.",
+        "exact": "Vérifiez le nom d'hôte complet dans la barre d'adresse de votre navigateur. Notre site principal est onetimesecret.com.",
         "regional": "Les secrets sont créés sur l'un de nos domaines régionaux : {domains}.",
-        "bookmark": "Ajoutez le vrai site à vos favoris et ouvrez-le depuis le favori."
+        "bookmark": "Saisissez https://onetimesecret.com dans la barre d'adresse de votre navigateur ou utilisez un favori que vous avez déjà vérifié.",
+        "https": "HTTPS ne prouve pas à lui seul qu'un site appartient à Onetime Secret.",
+        "noLinksHeading": "Pourquoi n’y a-t-il pas de lien vers le service ?",
+        "noLinks": "Un logo familier ou un message rassurant peut être copié. Ni l’un ni l’autre ne prouve qu’une page est authentique, même si elle apparaît en tête des résultats de recherche. Cette page ne propose volontairement aucun lien vers le service : prenez l’habitude de vérifier l’adresse de manière indépendante, plutôt que de faire confiance à un lien parce que la page semble officielle. Faites preuve de la même prudence envers cette page."
       },
       "diff": {
         "toggle": "Voir ce qui diffère dans cette adresse",
@@ -489,14 +491,12 @@
         "legend": "Les caractères surlignés sont ceux qui diffèrent de la vraie adresse."
       },
       "exposed": {
-        "heading": "Si vous avez saisi quelque chose sur ce domaine auparavant",
-        "body": "Considérez-le comme compromis. Changez le mot de passe ou renouvelez la clé, et prévenez la personne avec qui vous l'avez partagé.",
-        "link": "Lire comment le vrai service protège les secrets"
+        "heading": "Si vous pensez avoir saisi des informations sensibles sur un domaine non officiel",
+        "body": "Considérez ces informations comme potentiellement exposées. Sur le site officiel du service concerné, modifiez les mots de passe exposés et ceux que vous avez réutilisés, et fermez les autres sessions si cette option est disponible. Révoquez et remplacez les clés d'API ou les jetons d'accès exposés. S'il s'agit d'informations professionnelles, contactez rapidement votre équipe informatique ou de sécurité."
       },
       "languages": "Langue",
       "footer": {
-        "operated": "Maintenu par Onetime Secret, Inc. pour protéger ses utilisateurs.",
-        "realSite": "Le vrai site"
+        "operated": "Maintenu par Onetime Secret pour protéger ses utilisateurs."
       }
     }
   },

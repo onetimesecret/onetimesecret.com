@@ -13,7 +13,6 @@
  */
 import OptimizedFonts from "@/components/layout/OptimizedFonts.astro";
 import { AVAILABLE_THEMES } from "@/utils/theme";
-import { CANONICAL_ORIGIN } from "@config/domains";
 
 // The real site's stylesheets, with Tailwind's class detection narrowed to
 // lookalike/ (see lookalike/styles/tailwind.css).
@@ -30,9 +29,9 @@ export interface Props {
 
 const { title, description, lang, dir, brandName } = Astro.props;
 
-// The page runs two inline scripts (theme before paint, hostname after) and
-// nothing else. No external script, no connection anywhere, no form target,
-// so the browser enforces what the page promises. frame-ancestors is not
+// Inline scripts handle theme, hostname display, and domain comparison.
+// No external scripts, script-initiated connections, or form targets are allowed.
+// Fonts and images still load from this origin. frame-ancestors is not
 // honoured in a <meta> policy and is set as a response header at the CDN.
 //
 // `astro dev` is the one place the policy would break the page: Vite serves
@@ -132,10 +131,7 @@ const csp = [
   </head>
   <body class="bg-surface-0 flex h-full flex-col overflow-x-hidden">
     <header class="mx-auto w-full max-w-3xl px-4 pt-8 sm:px-6">
-      <a
-        href={CANONICAL_ORIGIN}
-        rel="noopener"
-        class="inline-flex items-center gap-3">
+      <div class="inline-flex items-center gap-3">
         <img
           class="h-12 w-auto rounded-lg sm:h-14"
           src="/etc/img/onetime-logo-md.png"
@@ -146,7 +142,7 @@ const csp = [
         <span class="font-brand text-2xl font-semibold text-gray-900 dark:text-gray-100">
           {brandName}
         </span>
-      </a>
+      </div>
     </header>
     <main
       id="main-content"

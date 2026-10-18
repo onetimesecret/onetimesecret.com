@@ -3,12 +3,9 @@
 // Gate between `pnpm build:lookalike` and the CDN upload of the notice site
 // served on the lookalike domains (lookalike/README.md).
 //
-// The page's whole claim is "nothing runs here and nothing is collected", and
-// its SEO posture is "indexed nowhere, crawlable everywhere". Both are easy to
-// break by accident: a shared layout change can add a canonical, an island or
-// a sitemap link; a new file in public/ can ship. This script fails the build
-// when the output stops matching the claim, so the claim is proven on each
-// build rather than asserted once.
+// The page is a notice, not a secret-sharing service. These regression checks
+// enforce its restricted output and noindex directives, not CDN logging behavior
+// or removal from every search index.
 //
 // Checks, per HTML page:
 //   - robots noindex, and no rel=canonical, hreflang or sitemap link: a
@@ -17,7 +14,7 @@
 //   - a CSP that forbids connections and form submission
 //   - the hostname placeholder the inline script fills in, and the domain
 //     comparison block with its inline module script
-//   - lang attribute matching the directory, and a link to the real site
+//   - lang attribute matching the directory, and only local language links
 // Over the output as a whole:
 //   - exactly the expected pages (/, /{lang}/ for each language, 404.html)
 //   - no JavaScript or stylesheet files: everything is inline, no islands
@@ -34,7 +31,7 @@ import { join, relative, resolve, sep } from "node:path";
 // Node strips the type annotations at import time (engines: node >= 26), the
 // same way edge/error-page/cli.mjs reads src/data/ops/jurisdictions.ts.
 import { SUPPORTED_LANGUAGES } from "../config/astro/i18n.ts";
-import { CANONICAL_ORIGIN } from "../config/domains.ts";
+
 import {
   SHARED_BRAND_ASSETS,
   isSharedBrandAsset,
@@ -170,8 +167,17 @@ for (const page of htmlFiles) {
     fail(where(`<html lang="${lang}">, expected "${expectedLang}"`));
   }
 
-  if (!html.includes(`href="${CANONICAL_ORIGIN}/`)) {
-    fail(where(`no link to ${CANONICAL_ORIGIN}`));
+  const languagePaths = new Set([
+    "/",
+    ...SUPPORTED_LANGUAGES.map((lang) => `/${lang}/`),
+  ]);
+  for (const anchor of html.matchAll(/<a\b[^>]*>/gi)) {
+    const href = anchor[0].match(/\bhref="([^"]*)"/i)?.[1];
+    if (!languagePaths.has(href)) {
+      fail(
+        where(`link is not a local language switch: ${href ?? "missing href"}`),
+      );
+    }
   }
 }
 

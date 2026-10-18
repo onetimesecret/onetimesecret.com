@@ -469,18 +469,20 @@
     },
     "lookalike": {
       "title": "Dies ist nicht onetimesecret.com",
-      "description": "Diese Domain gehört Onetime Secret, ist aber nicht die echte Website. Hier läuft kein Dienst, und es werden keine Daten angenommen.",
-      "eyebrow": "Ein Hinweis von Onetime Secret",
+      "description": "Diese Domain gehört Onetime Secret. Sie zeigt einen Hinweis, nicht den Dienst zum Teilen von Geheimnissen.",
+      "eyebrow": "Täuschend ähnliche Domains und Phishing",
       "heading": "Dies ist nicht onetimesecret.com",
       "hostnameFallback": "diese Adresse",
       "lead": "Sie besuchen {hostname}. Sie sieht aus wie die Adresse von Onetime Secret, ist aber nicht die echte.",
-      "ownership": "Diese Domain gehört Onetime Secret, Inc. Hier läuft nichts: Diese Seite hat kein Formular und sendet keine Daten.",
-      "cta": "Zum echten onetimesecret.com",
+      "ownership": "Diese Domain gehört Onetime Secret. Diese Seite zeigt nur einen Hinweis an. Sie können hier keine Geheimnisse erstellen oder ansehen.",
       "recognise": {
         "heading": "So erkennen Sie die echte Website",
-        "exact": "Die Adresse lautet genau onetimesecret.com. Nichts davor, nichts danach und keine andere Endung.",
+        "exact": "Prüfen Sie den vollständigen Hostnamen in der Adressleiste Ihres Browsers. Unsere Hauptwebsite ist onetimesecret.com.",
         "regional": "Secrets werden auf einer unserer regionalen Domains erstellt: {domains}.",
-        "bookmark": "Speichern Sie die echte Website als Lesezeichen und öffnen Sie sie darüber."
+        "bookmark": "Geben Sie https://onetimesecret.com in die Adressleiste Ihres Browsers ein oder verwenden Sie ein Lesezeichen, das Sie zuvor überprüft haben.",
+        "https": "HTTPS allein beweist nicht, dass eine Website zu Onetime Secret gehört.",
+        "noLinksHeading": "Warum gibt es keinen Link zum Dienst?",
+        "noLinks": "Ein vertrautes Logo oder eine beruhigende Nachricht lässt sich kopieren. Beides beweist nicht, dass eine Seite echt ist, auch wenn sie in den Suchergebnissen an erster Stelle steht. Diese Seite enthält bewusst keinen Link zum Dienst: Gewöhnen Sie sich an, die Adresse unabhängig zu prüfen, statt einem Link zu vertrauen, weil die Seite offiziell aussieht. Seien Sie auch bei dieser Seite vorsichtig."
       },
       "diff": {
         "toggle": "Zeigen, was an dieser Adresse anders ist",
@@ -489,14 +491,12 @@
         "legend": "Die hervorgehobenen Zeichen sind die, die von der echten Adresse abweichen."
       },
       "exposed": {
-        "heading": "Falls Sie zuvor etwas auf dieser Domain eingegeben haben",
-        "body": "Betrachten Sie es als offengelegt. Ändern Sie das Passwort oder tauschen Sie den Schlüssel aus, und informieren Sie die Person, mit der Sie es geteilt haben.",
-        "link": "Lesen, wie der echte Dienst Secrets schützt"
+        "heading": "Falls Sie möglicherweise vertrauliche Informationen auf einer inoffiziellen Domain eingegeben haben",
+        "body": "Betrachten Sie diese Informationen als möglicherweise offengelegt. Ändern Sie auf der offiziellen Website des betroffenen Dienstes offengelegte und wiederverwendete Passwörter und melden Sie andere Sitzungen ab, sofern dies möglich ist. Widerrufen und ersetzen Sie offengelegte API-Schlüssel oder Zugriffstoken. Wenden Sie sich bei beruflichen Informationen umgehend an Ihr IT- oder Sicherheitsteam."
       },
       "languages": "Sprache",
       "footer": {
-        "operated": "Betrieben von Onetime Secret, Inc. zum Schutz seiner Nutzer.",
-        "realSite": "Die echte Website"
+        "operated": "Betrieben von Onetime Secret zum Schutz seiner Nutzer."
       }
     }
   },

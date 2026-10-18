@@ -3,8 +3,9 @@
 The second build of this repository. It is served on the lookalike domains
 Onetime Secret owns: misspellings and alternate TLDs of onetimesecret.com. Each
 such domain serves one page in four languages that says, in effect: this is
-not onetimesecret.com, nothing runs here, here is how to recognise the real
-site, and here is what to do if you entered something on this domain before.
+not onetimesecret.com, this is a notice rather than the secret-sharing service,
+here is how to recognise the official site, and here is what to do if you may
+have entered sensitive information on any unofficial domain.
 
 ```sh
 pnpm build:lookalike            # -> dist-lookalike/
@@ -60,10 +61,13 @@ end. Point the storage zone's custom 404 path at
 the real site's strings, so `pnpm i18n:scan` and the harmonize workflow cover
 them. The scanner's source glob includes this directory.
 
-## What `scripts/verify-lookalike.mjs` proves on every build
+## What `scripts/verify-lookalike.mjs` checks on every build
 
-The page's two claims, "nothing is collected" and "indexed nowhere, crawlable
-everywhere", are checked against the built HTML rather than asserted once:
+These regression checks enforce restricted page output and noindex directives.
+They do not establish that no data is collected: the CDN receives requests,
+including paths and query strings. CDN logging and retention require a separate
+operational review. Noindex instructs compliant crawlers; it does not guarantee
+removal from every index.
 
 - every page has `<meta name="robots" content="noindex">` and no
   `rel="canonical"`, `<link hreflang>` or sitemap link
@@ -73,8 +77,8 @@ everywhere", are checked against the built HTML rather than asserted once:
 - a Content-Security-Policy with `default-src 'none'`, `connect-src 'none'`
   and `form-action 'none'`
 - exactly the expected pages (`/`, `/{lang}/` per language, `404.html`), each
-  with the right `lang` attribute, the hostname placeholder and a link to
-  https://onetimesecret.com
+  with the right `lang` attribute and the hostname placeholder; every anchor
+  is a local language-switch link, never an outbound link
 - no `.js`, `.css`, sitemap, llms.txt or webmanifest files, and every other
   file within the allowlist in `integration.ts`: a listed file exactly, or
   anything under a listed directory (`favicon.svg.bak` does not pass)
@@ -150,12 +154,15 @@ nothing.
 
 ### Response headers
 
-Edge rules on the pull zone, so fonts, images and the 404 fallback carry them
-as well as the pages. The policy is the one in
-`docs/.lookalike-domain-defense-playbook.txt`: the root of each domain is
-indexed so a search for the domain itself surfaces the notice; every other
-path is not, so an old phishing URL is never re-indexed under the notice
-title.
+**Current policy:** all pages emit `noindex, nofollow`, and the live verification
+requires `X-Robots-Tag: noindex` on every response. Keep that header on all paths
+until an indexing-policy change is implemented and deployed together.
+
+**Proposed root exception (not implemented):** the policy in
+`docs/.lookalike-domain-defense-playbook.txt` would allow indexing of the roots
+so a domain search may surface the notice, while other paths retain noindex.
+The table and matching rules below describe that proposal, not the current
+configuration. Headers apply to fonts, images and the 404 fallback as well as pages.
 
 | Header                      | Value                                                                               |
 | --------------------------- | ----------------------------------------------------------------------------------- |
@@ -202,8 +209,10 @@ attacker-chosen path could launder a link through it.
 The checks in this repository have not caught up with the root exception:
 `verify-lookalike` requires a `noindex` meta tag on every page and
 `verify-lookalike-live` requires `X-Robots-Tag: noindex` on every response,
-roots included. Switch the roots to indexed in both gates in the same change
-as the edge rules, or the next deploy fails loudly, which is the intent.
+roots included. To allow root indexing, update `layouts/NoticeLayout.astro`, both gates and the
+edge rules together. Omitting the root header does not override its existing
+noindex meta tag. Reconcile `nofollow` in the meta tag with the proposed
+`follow` header at the same time. Indexing remains a crawler decision.
 
 ### GitHub
 
@@ -266,8 +275,16 @@ send phishing email that appears to come from it.
 
 ## Wording
 
-The copy says the domain is owned by Onetime Secret, Inc., that it is not the
-real site, and that nothing runs here. It says nothing about a domain's history,
+The copy says the domain is owned by Onetime Secret, that it is not the
+official service, and that visitors cannot create or view secrets here. It says nothing about a domain's history,
 how it was acquired, or anyone who held it before. Keep it that way: the text
 is generic across every domain, carries no claim that would need per-domain
 evidence, and explains nothing about how these domains are handled.
+
+There are no outbound links, including on the logo, in the footer, or in the
+recovery guidance. Only local language switching remains linked. Visitors are
+instructed to type the official address or use a previously verified bookmark,
+not to trust a destination suggested by an official-looking notice. The large
+address uses subtle CSS spacing between `one`, `time` and `secret.com`, keeping
+`.com` attached and the text `onetimesecret.com` intact for copying. Recovery guidance covers possible
+exposure on any unofficial domain without asserting that a breach occurred.

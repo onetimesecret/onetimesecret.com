@@ -469,18 +469,20 @@
     },
     "lookalike": {
       "title": "This is not onetimesecret.com",
-      "description": "This domain belongs to Onetime Secret, Inc. It displays a notice, not the secret-sharing service.",
-      "eyebrow": "A notice from Onetime Secret",
+      "description": "This domain belongs to Onetime Secret. It displays a notice, not the secret-sharing service.",
+      "eyebrow": "Lookalike domains and phishing",
       "heading": "This is not onetimesecret.com",
       "hostnameFallback": "this address",
       "lead": "You are visiting {hostname}, not onetimesecret.com.",
-      "ownership": "Onetime Secret, Inc. owns this domain. This is a notice page, not a secret-sharing service. It has no forms.",
-      "cta": "Go to onetimesecret.com",
+      "ownership": "Onetime Secret. owns this domain. This page only displays a notice. You cannot create or view secrets here.",
       "recognise": {
         "heading": "How to recognise the real site",
-        "exact": "Our main website is onetimesecret.com. Check the domain name carefully.",
+        "exact": "Check the full hostname in your browser’s address bar. Our main website is onetimesecret.com.",
         "regional": "Our secret-sharing service runs on these regional domains: {domains}.",
-        "bookmark": "Bookmark the real site and open it from the bookmark."
+        "bookmark": "Type https://onetimesecret.com into your browser’s address bar, or use a bookmark you previously verified.",
+        "https": "HTTPS alone does not prove that a website belongs to Onetime Secret.",
+        "noLinksHeading": "Why is there no link to the service?",
+        "noLinks": "A familiar logo or reassuring message can be copied. Neither proves that a page is genuine, even if it appears first in search results. This page deliberately provides no link to the service: the habit to build is checking the address independently, not trusting a link because the page looks official. Apply that caution to this page too."
       },
       "diff": {
         "toggle": "Compare this domain with the real one",
@@ -489,14 +491,12 @@
         "legend": "Highlights show where the domain names differ."
       },
       "exposed": {
-        "heading": "If you previously entered sensitive information here",
-        "body": "Treat it as exposed. Change any affected passwords, revoke and replace exposed keys, and notify anyone affected.",
-        "link": "How Onetime Secret protects secrets"
+        "heading": "If you may have entered sensitive information on an unofficial domain",
+        "body": "Treat that information as potentially exposed. On the affected service’s official website, change exposed passwords and any reused passwords, and sign out other sessions where available. Revoke and replace exposed API keys or access tokens. For work information, contact your IT or security team promptly."
       },
       "languages": "Language",
       "footer": {
-        "operated": "Maintained by Onetime Secret, Inc. to protect its users.",
-        "realSite": "The real site"
+        "operated": "Maintained by Onetime Secret to protect its users."
       }
     }
   },
