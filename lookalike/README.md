@@ -117,8 +117,8 @@ A canonical to the real site alongside noindex is a contradiction Google may
 resolve either way, so there is none. A wholesale 301 would be the strongest
 option for consolidation but would defeat the point of the page.
 
-Set `X-Robots-Tag: noindex` as a response header at the CDN as well; the meta
-tag covers HTML and the header covers everything else.
+The response headers that back this up are edge rules on the pull zone; see
+"Response headers" under Deploying.
 
 ## Deploying
 
@@ -143,12 +143,51 @@ nothing.
 2. One pull zone over it. Every lookalike domain, and a wildcard for each
    (`*.example.tld`), is a hostname on this zone with a free SSL certificate.
    Any subdomain then lands on the notice too.
-3. Edge rules on the zone, applied to every response and not only HTML:
-   `X-Robots-Tag: noindex`, `Content-Security-Policy: frame-ancestors 'none'`
-   (not enforceable from a meta tag), `Strict-Transport-Security` with a
-   `max-age` of at least 15552000 seconds (six months).
+3. Edge rules setting the response headers below on every response, not
+   only HTML.
 4. Bunny Optimizer off, as on every zone for this site (docs/deployment.md).
    Its HTML minifier would rewrite the pages and fail the live check.
+
+### Response headers
+
+Edge rules on the pull zone, so fonts, images and the 404 fallback carry them
+as well as the pages. The policy is the one in
+`docs/.lookalike-domain-defense-playbook.txt`: the root of each domain is
+indexed so a search for the domain itself surfaces the notice; every other
+path is not, so an old phishing URL is never re-indexed under the notice
+title.
+
+| Header                      | Value                                                                               |
+| --------------------------- | ----------------------------------------------------------------------------------- |
+| `X-Robots-Tag`              | `noindex, follow` on every path except the roots `/` and `/{lang}/`, which get none |
+| `Content-Security-Policy`   | `frame-ancestors 'none'; form-action 'none'; connect-src 'none'; base-uri 'none'`   |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains; preload`                                      |
+| `Referrer-Policy`           | `no-referrer`                                                                       |
+| `Cache-Control`             | `public, max-age=300, stale-while-revalidate=86400, stale-if-error=604800`          |
+| `Link`                      | none: no canonical by header either                                                 |
+
+`X-Robots-Tag` takes two rules, a catch-all and an exception for the roots,
+and the exception must not catch `404.html` served for a deep path ending in
+`/`. The CSP header carries only directives the page's meta tag cannot
+(`frame-ancestors`) or that restate the "accepts no data" claim. It has no
+`default-src 'self'`: every delivered policy is enforced, so a header
+`default-src 'self'` would block the inline hostname script and inline
+styles that the meta tag's `'unsafe-inline'` allows. `includeSubDomains` is
+right because the wildcard hostname lands every subdomain on this zone;
+submit each domain to the HSTS preload list once it is stable.
+`stale-if-error` keeps the notice served if the storage zone is unreachable.
+
+Status codes: the roots answer 200, every unknown path answers 404 with the
+notice as its body and `X-Robots-Tag: noindex`. Never redirect from a
+lookalike to onetimesecret.com, not even for deep links: a redirect hands the
+phishing link's click to the real site with no warning, and an
+attacker-chosen path could launder a link through it.
+
+The checks in this repository have not caught up with the root exception:
+`verify-lookalike` requires a `noindex` meta tag on every page and
+`verify-lookalike-live` requires `X-Robots-Tag: noindex` on every response,
+roots included. Switch the roots to indexed in both gates in the same change
+as the edge rules, or the next deploy fails loudly, which is the intent.
 
 ### GitHub
 
@@ -177,9 +216,11 @@ CDN, not in this repository:
   in the response) and fails at once.
 - an unknown path (`/secret/verify-lookalike-live-<random>`) answers 404
   with the body of `404.html`: the storage zone's custom 404 path is set.
-- every response carries the three edge-rule headers above, fonts and images
-  included, and the HSTS `max-age` is parsed: `max-age=0` switches HSTS off
-  and fails, as does anything under six months.
+- every response carries `X-Robots-Tag: noindex`, `frame-ancestors 'none'`
+  and `Strict-Transport-Security`, fonts and images included, and the HSTS
+  `max-age` is parsed: `max-age=0` switches HSTS off and fails, as does
+  anything under six months. `Referrer-Policy` and `Cache-Control` are not
+  checked yet, and the root exception above is not known to it yet either.
 
 A deploy whose zone is missing any of these fails loudly rather than shipping a
 notice site that is indexable, framable or dead on a phishing path.
