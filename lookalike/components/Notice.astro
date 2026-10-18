@@ -1,0 +1,105 @@
+---
+/**
+ * lookalike/components/Notice.astro
+ *
+ * The main content of a lookalike-domain notice page (the footer is
+ * NoticeFooter.astro). Every string comes
+ * from the shared locale files under `web.lookalike`, so the four languages
+ * ship from the same build and `pnpm i18n:scan` covers them.
+ */
+import DomainDiff from "./DomainDiff.astro";
+import { createLocaleI18n, type MessageSchema } from "@/i18n";
+import { jurisdictions } from "@/data/ops/jurisdictions";
+import { DEFAULT_LANGUAGE, type SupportedLanguage } from "@config/astro/i18n";
+import { CANONICAL_ORIGIN } from "@config/domains";
+
+export interface Props {
+  lang: SupportedLanguage;
+  initialMessages: Record<string, MessageSchema>;
+}
+
+const { lang, initialMessages } = Astro.props;
+
+const pageI18n = await createLocaleI18n(lang, initialMessages);
+const t = pageI18n.global.t;
+
+// Links into the real site. The default language lives at the root there
+// (prefixDefaultLocale is true but / is also built, and it is the address
+// people know), every other language under its prefix.
+const realSite =
+  lang === DEFAULT_LANGUAGE
+    ? `${CANONICAL_ORIGIN}/`
+    : `${CANONICAL_ORIGIN}/${lang}/`;
+const securityPage = `${CANONICAL_ORIGIN}/${lang}/security`;
+
+// The regional domains a real secret is created on. comingSoon regions have
+// no live service and would teach visitors to trust a hostname that does not
+// answer yet.
+const regionalDomains = jurisdictions
+  .filter((j) => !j.comingSoon)
+  .map((j) => j.domain)
+  .join(", ");
+
+// The hostname is only known in the browser. Rendered as a placeholder with
+// a generic fallback and filled in by the inline script in NoticeLayout.
+const hostnameSlot = `<strong data-lookalike-hostname class="font-semibold text-gray-900 dark:text-gray-100">${t(
+  "web.lookalike.hostnameFallback",
+)}</strong>`;
+const lead = t("web.lookalike.lead", { hostname: hostnameSlot });
+---
+
+<article class="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
+  <p class="text-brand-600 dark:text-brand-400 mb-3 text-sm font-semibold tracking-wide uppercase">
+    {t("web.lookalike.eyebrow")}
+  </p>
+  <h1 class="font-brand mb-6 text-4xl font-bold text-gray-900 sm:text-5xl dark:text-gray-100">
+    {t("web.lookalike.heading")}
+  </h1>
+  <p
+    class="mb-4 text-xl leading-relaxed text-gray-700 dark:text-gray-300"
+    set:html={lead}
+  />
+  <p class="mb-8 text-lg leading-relaxed text-gray-700 dark:text-gray-300">
+    {t("web.lookalike.ownership")}
+  </p>
+
+  <a
+    href={realSite}
+    rel="noopener"
+    class="bg-brand-600 hover:bg-brand-700 focus-visible:outline-brand-500 mb-12 inline-block rounded-lg px-6 py-3 text-lg font-semibold text-white shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2">
+    {t("web.lookalike.cta")} →
+  </a>
+
+  <section class="mb-10">
+    <h2 class="font-brand mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-100">
+      {t("web.lookalike.recognise.heading")}
+    </h2>
+    <ul class="list-disc space-y-3 pl-6 text-lg leading-relaxed text-gray-700 dark:text-gray-300">
+      <li>{t("web.lookalike.recognise.exact")}</li>
+      <li>
+        {t("web.lookalike.recognise.regional", { domains: regionalDomains })}
+      </li>
+      <li>{t("web.lookalike.recognise.noForm")}</li>
+      <li>{t("web.lookalike.recognise.bookmark")}</li>
+    </ul>
+    <DomainDiff
+      lang={lang}
+      initialMessages={initialMessages}
+    />
+  </section>
+
+  <section class="border-brand-500 bg-surface-1 mb-10 rounded-lg border-l-4 p-5 sm:p-6">
+    <h2 class="font-brand mb-3 text-2xl font-semibold text-gray-900 dark:text-gray-100">
+      {t("web.lookalike.exposed.heading")}
+    </h2>
+    <p class="mb-3 text-lg leading-relaxed text-gray-700 dark:text-gray-300">
+      {t("web.lookalike.exposed.body")}
+    </p>
+    <a
+      href={securityPage}
+      rel="noopener"
+      class="text-brand-600 dark:text-brand-400 text-lg font-semibold underline underline-offset-4">
+      {t("web.lookalike.exposed.link")}
+    </a>
+  </section>
+</article>

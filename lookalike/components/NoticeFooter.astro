@@ -1,0 +1,67 @@
+---
+/**
+ * lookalike/components/NoticeFooter.astro
+ *
+ * Attribution line, link to the real site, and the language switcher. A
+ * separate component because it fills NoticeLayout's named footer slot, and
+ * Astro only honours `slot="footer"` on a direct child of the layout, not on
+ * an element nested inside Notice.astro.
+ */
+import { createLocaleI18n, type MessageSchema } from "@/i18n";
+import {
+  DEFAULT_LANGUAGE,
+  LANGUAGE_META,
+  SUPPORTED_LANGUAGES,
+  type SupportedLanguage,
+} from "@config/astro/i18n";
+import { CANONICAL_ORIGIN } from "@config/domains";
+
+export interface Props {
+  lang: SupportedLanguage;
+  initialMessages: Record<string, MessageSchema>;
+}
+
+const { lang, initialMessages } = Astro.props;
+
+const t = (await createLocaleI18n(lang, initialMessages)).global.t;
+
+const realSite =
+  lang === DEFAULT_LANGUAGE
+    ? `${CANONICAL_ORIGIN}/`
+    : `${CANONICAL_ORIGIN}/${lang}/`;
+
+// Same page on this domain in each other language.
+const otherLanguages = SUPPORTED_LANGUAGES.filter((code) => code !== lang).map(
+  (code) => ({
+    code,
+    name: LANGUAGE_META[code].name,
+    href: code === DEFAULT_LANGUAGE ? "/" : `/${code}/`,
+  }),
+);
+---
+
+{/* Only the language links are navigation; the attribution and the link to
+    the real site sit beside them, outside the landmark, so a screen reader's
+    landmark list reads "Language" for the switcher alone. */}
+<div class="border-surface-3 flex flex-wrap items-center gap-x-5 gap-y-2 border-t pt-6 text-sm text-gray-600 dark:text-gray-400">
+  <span>{t("web.lookalike.footer.operated")}</span>
+  <a
+    href={realSite}
+    rel="noopener"
+    class="underline underline-offset-4">
+    {t("web.lookalike.footer.realSite")}
+  </a>
+  <nav
+    aria-label={t("web.lookalike.languages")}
+    class="ms-auto flex gap-x-4">
+    {otherLanguages.map((l) => (
+      <a
+        href={l.href}
+        hreflang={l.code}
+        lang={l.code}
+        class="underline underline-offset-4">
+        {l.name}
+      </a>
+    ))}
+  </nav>
+</div>

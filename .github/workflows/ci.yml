@@ -210,6 +210,18 @@ jobs:
       - name: Verify sitemap
         run: pnpm build:verify:sitemap
 
+      # The second build: the notice site for the lookalike domains, which
+      # shares styles, fonts and locale files with the main site and so can be
+      # broken by a change to any of them. verify-lookalike fails the build if
+      # the output stops being noindex, scriptless and form-free, or ships a
+      # file outside its allowlist (see scripts/verify-lookalike.mjs and
+      # lookalike/README.md). deploy-lookalike.yml runs the same two steps.
+      - name: Build notice site
+        run: pnpm build:lookalike
+
+      - name: Verify notice site output
+        run: pnpm build:verify:lookalike
+
       # The BIMI logo is hashed into the Verified Mark Certificate. Anything
       # that rewrites it on the way to dist/ invalidates the certificate.
       - name: Verify BIMI assets ship byte-identical

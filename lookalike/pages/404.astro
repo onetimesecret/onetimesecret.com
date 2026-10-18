@@ -1,0 +1,39 @@
+---
+/**
+ * lookalike/pages/404.astro
+ *
+ * Every other path on a lookalike domain. Someone arriving at a deep path
+ * (/secret/abc...) is exactly who this notice is for, so the not-found page
+ * is the notice itself rather than a dead end. Astro writes it to dist-lookalike/404.html;
+ * the CDN storage zone's custom 404 path points at it.
+ */
+import Notice from "../components/Notice.astro";
+import NoticeFooter from "../components/NoticeFooter.astro";
+import NoticeLayout from "../layouts/NoticeLayout.astro";
+import { createLocaleI18n, type MessageSchema } from "@/i18n";
+import enMessages from "@/i18n/ui/en.json";
+import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
+
+const lang = DEFAULT_LANGUAGE;
+const initialMessages: Record<string, MessageSchema> = {
+  [lang]: enMessages as MessageSchema,
+};
+const t = (await createLocaleI18n(lang, initialMessages)).global.t;
+---
+
+<NoticeLayout
+  title={t("web.lookalike.title")}
+  description={t("web.lookalike.description")}
+  lang={lang}
+  dir={LANGUAGE_META[lang].dir}
+  brandName={t("onetime-secret-literal")}>
+  <Notice
+    lang={lang}
+    initialMessages={initialMessages}
+  />
+  <NoticeFooter
+    slot="footer"
+    lang={lang}
+    initialMessages={initialMessages}
+  />
+</NoticeLayout>

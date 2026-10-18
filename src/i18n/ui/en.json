@@ -466,6 +466,39 @@
         "view_pricing": "View Pricing",
         "toggle_animation": "Toggle animation"
       }
+    },
+    "lookalike": {
+      "title": "This is not onetimesecret.com",
+      "description": "This domain is owned by Onetime Secret but is not the real site. It runs no service and accepts no data.",
+      "eyebrow": "A notice from Onetime Secret",
+      "heading": "This is not onetimesecret.com",
+      "hostnameFallback": "this address",
+      "lead": "You are visiting {hostname}. It looks like the address of Onetime Secret, but it is not the real one.",
+      "ownership": "This domain is owned by Onetime Secret, Inc. Nothing runs here: this page has no form and sends no data anywhere.",
+      "cta": "Go to the real onetimesecret.com",
+      "recognise": {
+        "heading": "How to recognise the real site",
+        "exact": "The address is exactly onetimesecret.com. Nothing added before it, nothing after it, and no other ending.",
+        "regional": "Secrets are created on one of our regional domains: {domains}.",
+        "noForm": "If a link brought you here, do not paste a secret into any page on this domain. There is nowhere to paste it.",
+        "bookmark": "Bookmark the real site and open it from the bookmark."
+      },
+      "diff": {
+        "toggle": "Show what is different about this address",
+        "real": "The real address",
+        "this": "This address",
+        "legend": "The highlighted characters are the ones that differ from the real address."
+      },
+      "exposed": {
+        "heading": "If you entered something on this domain before",
+        "body": "Treat it as exposed. Change the password or rotate the key, and tell the person you shared it with.",
+        "link": "Read how the real service protects secrets"
+      },
+      "languages": "Language",
+      "footer": {
+        "operated": "Maintained by Onetime Secret, Inc. to protect its users.",
+        "realSite": "The real site"
+      }
     }
   },
   "changelog": {

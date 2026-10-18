@@ -1,0 +1,173 @@
+---
+/**
+ * lookalike/layouts/NoticeLayout.astro
+ *
+ * Document shell for the lookalike-domain notice pages. Deliberately not
+ * src/layouts/Layout.astro: that layout emits a canonical to the real site
+ * (which contradicts noindex), hreflang alternates, a sitemap link, a CSP
+ * that allows the API origin, and header and footer links that are relative
+ * to the real site and would 404 on a lookalike domain. This shell shares the
+ * brand (styles, fonts, logo, favicons) and nothing else.
+ *
+ * Verified by scripts/verify-lookalike.mjs against the built output.
+ */
+import OptimizedFonts from "@/components/layout/OptimizedFonts.astro";
+import { AVAILABLE_THEMES } from "@/utils/theme";
+import { CANONICAL_ORIGIN } from "@config/domains";
+
+// The real site's stylesheets, with Tailwind's class detection narrowed to
+// lookalike/ (see lookalike/styles/tailwind.css).
+import "../styles/tailwind.css";
+
+export interface Props {
+  title: string;
+  description: string;
+  lang: string;
+  dir: "ltr" | "rtl";
+  /** Localized "Onetime Secret" literal for the header mark. */
+  brandName: string;
+}
+
+const { title, description, lang, dir, brandName } = Astro.props;
+
+// The page runs two inline scripts (theme before paint, hostname after) and
+// nothing else. No external script, no connection anywhere, no form target,
+// so the browser enforces what the page promises. frame-ancestors is not
+// honoured in a <meta> policy and is set as a response header at the CDN.
+//
+// `astro dev` is the one place the policy would break the page: Vite serves
+// the comparison module and its own client as files, and hot reload needs a
+// WebSocket. The dev server gets 'self' and ws: for those, and nothing else
+// changes. Only the production policy is built, and verify-lookalike checks
+// the built pages for it.
+const dev = import.meta.env.DEV;
+const csp = [
+  "default-src 'none'",
+  dev ? "script-src 'self' 'unsafe-inline'" : "script-src 'unsafe-inline'",
+  dev ? "style-src 'self' 'unsafe-inline'" : "style-src 'unsafe-inline'",
+  // data: for the grain texture global.css paints over the page.
+  "img-src 'self' data:",
+  "font-src 'self'",
+  dev ? "connect-src 'self' ws: wss:" : "connect-src 'none'",
+  "form-action 'none'",
+  "base-uri 'none'",
+  "object-src 'none'",
+].join("; ");
+---
+
+<!doctype html>
+<html
+  lang={lang}
+  dir={dir}
+  class="dark h-full">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <meta
+      name="color-scheme"
+      content="dark light"
+    />
+    <meta
+      name="robots"
+      content="noindex, nofollow"
+    />
+    <meta
+      name="description"
+      content={description}
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content={csp}
+    />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/favicon.svg"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/favicon-16x16.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/apple-touch-icon.png"
+    />
+    <OptimizedFonts />
+    <script
+      is:inline
+      define:vars={{ AVAILABLE_THEMES }}>
+      // Same resolution order as src/components/layout/LayoutHead.astro and
+      // ThemeManager.getPreferredTheme(): stored theme wins, else the system
+      // preference. Read only; this page writes nothing to storage.
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)",
+      ).matches;
+      let themeToApply = prefersDark ? "dark" : "light";
+      try {
+        const storedTheme = localStorage.getItem("theme");
+        if (storedTheme && AVAILABLE_THEMES.includes(storedTheme)) {
+          themeToApply = storedTheme;
+        }
+      } catch (e) {
+        // localStorage unavailable; the system preference stands
+      }
+      AVAILABLE_THEMES.forEach((t) =>
+        document.documentElement.classList.remove(t),
+      );
+      document.documentElement.classList.add(themeToApply);
+    </script>
+    <title>{title}</title>
+  </head>
+  <body class="bg-surface-0 flex h-full flex-col overflow-x-hidden">
+    <header class="mx-auto w-full max-w-3xl px-4 pt-8 sm:px-6">
+      <a
+        href={CANONICAL_ORIGIN}
+        rel="noopener"
+        class="inline-flex items-center gap-3">
+        <img
+          class="h-12 w-auto rounded-lg sm:h-14"
+          src="/etc/img/onetime-logo-md.png"
+          alt=""
+          width="640"
+          height="640"
+        />
+        <span class="font-brand text-2xl font-semibold text-gray-900 dark:text-gray-100">
+          {brandName}
+        </span>
+      </a>
+    </header>
+    <main
+      id="main-content"
+      class="bg-surface-0 flex-grow">
+      <slot />
+    </main>
+    <footer class="mx-auto w-full max-w-3xl px-4 pb-10 sm:px-6">
+      <slot name="footer" />
+    </footer>
+    <script is:inline>
+      // Name the domain the visitor is actually on. Rendered server-side with a
+      // generic fallback so the sentence reads correctly without JavaScript,
+      // and so one build serves every lookalike domain.
+      (function () {
+        var host = window.location.hostname;
+        if (!host) return;
+        var targets = document.querySelectorAll("[data-lookalike-hostname]");
+        for (var i = 0; i < targets.length; i++) {
+          targets[i].textContent = host;
+        }
+      })();
+    </script>
+  </body>
+</html>

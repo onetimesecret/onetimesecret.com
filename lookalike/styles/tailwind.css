@@ -1,0 +1,20 @@
+/* lookalike/styles/tailwind.css
+ *
+ * The real site's two stylesheets, with Tailwind's source detection narrowed
+ * to the notice pages. Imported directly, Tailwind scans the whole repository
+ * for class names and the build inlines every utility the real site uses into
+ * each notice page: about 190 KB of CSS per page, most of it typography-plugin
+ * rules and dark: variants nothing here references. `source(none)` switches
+ * automatic detection off for both imports; the `@source` lines add back the
+ * directories the pages are built from. Theme, preflight, custom variants and
+ * the base layer come through unchanged, so the brand cannot drift.
+ *
+ * The one shared component the pages render, OptimizedFonts.astro, emits
+ * <link> tags and @font-face rules and no utility classes, so it needs no
+ * @source of its own.
+ */
+@import "../../src/styles/global.css" source(none);
+@import "../../src/styles/tailwind.css" source(none);
+@source "../components";
+@source "../layouts";
+@source "../pages";

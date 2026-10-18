@@ -466,6 +466,39 @@
         "view_pricing": "Preise anzeigen",
         "toggle_animation": "Animation umschalten"
       }
+    },
+    "lookalike": {
+      "title": "Dies ist nicht onetimesecret.com",
+      "description": "Diese Domain gehört Onetime Secret, ist aber nicht die echte Website. Hier läuft kein Dienst, und es werden keine Daten angenommen.",
+      "eyebrow": "Ein Hinweis von Onetime Secret",
+      "heading": "Dies ist nicht onetimesecret.com",
+      "hostnameFallback": "diese Adresse",
+      "lead": "Sie besuchen {hostname}. Sie sieht aus wie die Adresse von Onetime Secret, ist aber nicht die echte.",
+      "ownership": "Diese Domain gehört Onetime Secret, Inc. Hier läuft nichts: Diese Seite hat kein Formular und sendet keine Daten.",
+      "cta": "Zum echten onetimesecret.com",
+      "recognise": {
+        "heading": "So erkennen Sie die echte Website",
+        "exact": "Die Adresse lautet genau onetimesecret.com. Nichts davor, nichts danach und keine andere Endung.",
+        "regional": "Secrets werden auf einer unserer regionalen Domains erstellt: {domains}.",
+        "noForm": "Wenn Sie über einen Link hierher gekommen sind, fügen Sie auf keiner Seite dieser Domain ein Secret ein. Es gibt hier keine Stelle dafür.",
+        "bookmark": "Speichern Sie die echte Website als Lesezeichen und öffnen Sie sie darüber."
+      },
+      "diff": {
+        "toggle": "Zeigen, was an dieser Adresse anders ist",
+        "real": "Die echte Adresse",
+        "this": "Diese Adresse",
+        "legend": "Die hervorgehobenen Zeichen sind die, die von der echten Adresse abweichen."
+      },
+      "exposed": {
+        "heading": "Falls Sie zuvor etwas auf dieser Domain eingegeben haben",
+        "body": "Betrachten Sie es als offengelegt. Ändern Sie das Passwort oder tauschen Sie den Schlüssel aus, und informieren Sie die Person, mit der Sie es geteilt haben.",
+        "link": "Lesen, wie der echte Dienst Secrets schützt"
+      },
+      "languages": "Sprache",
+      "footer": {
+        "operated": "Betrieben von Onetime Secret, Inc. zum Schutz seiner Nutzer.",
+        "realSite": "Die echte Website"
+      }
     }
   },
   "changelog": {

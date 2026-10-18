@@ -466,6 +466,39 @@
         "view_pricing": "Ver precios",
         "toggle_animation": "Activar/desactivar animación"
       }
+    },
+    "lookalike": {
+      "title": "Esto no es onetimesecret.com",
+      "description": "Este dominio pertenece a Onetime Secret, pero no es el sitio real. No ejecuta ningún servicio ni acepta datos.",
+      "eyebrow": "Un aviso de Onetime Secret",
+      "heading": "Esto no es onetimesecret.com",
+      "hostnameFallback": "esta dirección",
+      "lead": "Estás visitando {hostname}. Se parece a la dirección de Onetime Secret, pero no es la real.",
+      "ownership": "Este dominio pertenece a Onetime Secret, Inc. Aquí no funciona nada: esta página no tiene formularios y no envía datos a ningún lugar.",
+      "cta": "Ir al verdadero onetimesecret.com",
+      "recognise": {
+        "heading": "Cómo reconocer el sitio real",
+        "exact": "La dirección es exactamente onetimesecret.com. Nada antes, nada después y ninguna otra terminación.",
+        "regional": "Los secretos se crean en uno de nuestros dominios regionales: {domains}.",
+        "noForm": "Si llegaste aquí desde un enlace, no pegues ningún secreto en ninguna página de este dominio. No hay dónde pegarlo.",
+        "bookmark": "Guarda el sitio real en tus marcadores y ábrelo desde ahí."
+      },
+      "diff": {
+        "toggle": "Ver qué es diferente en esta dirección",
+        "real": "La dirección real",
+        "this": "Esta dirección",
+        "legend": "Los caracteres resaltados son los que difieren de la dirección real."
+      },
+      "exposed": {
+        "heading": "Si antes introdujiste algo en este dominio",
+        "body": "Considéralo expuesto. Cambia la contraseña o rota la clave, y avisa a la persona con quien lo compartiste.",
+        "link": "Lee cómo protege los secretos el servicio real"
+      },
+      "languages": "Idioma",
+      "footer": {
+        "operated": "Mantenido por Onetime Secret, Inc. para proteger a sus usuarios.",
+        "realSite": "El sitio real"
+      }
     }
   },
   "changelog": {

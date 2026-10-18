@@ -466,6 +466,39 @@
         "view_pricing": "Voir les tarifs",
         "toggle_animation": "Activer/désactiver l'animation"
       }
+    },
+    "lookalike": {
+      "title": "Ceci n'est pas onetimesecret.com",
+      "description": "Ce domaine appartient à Onetime Secret mais n'est pas le vrai site. Aucun service n'y fonctionne et aucune donnée n'y est acceptée.",
+      "eyebrow": "Un avis de Onetime Secret",
+      "heading": "Ceci n'est pas onetimesecret.com",
+      "hostnameFallback": "cette adresse",
+      "lead": "Vous consultez {hostname}. Elle ressemble à l'adresse de Onetime Secret, mais ce n'est pas la vraie.",
+      "ownership": "Ce domaine appartient à Onetime Secret, Inc. Rien ne fonctionne ici\u00a0: cette page ne contient aucun formulaire et n'envoie aucune donnée.",
+      "cta": "Aller sur le vrai onetimesecret.com",
+      "recognise": {
+        "heading": "Comment reconnaître le vrai site",
+        "exact": "L'adresse est exactement onetimesecret.com. Rien avant, rien après, et aucune autre terminaison.",
+        "regional": "Les secrets sont créés sur l'un de nos domaines régionaux : {domains}.",
+        "noForm": "Si un lien vous a amené ici, ne collez aucun secret sur une page de ce domaine. Il n'y a nulle part où le coller.",
+        "bookmark": "Ajoutez le vrai site à vos favoris et ouvrez-le depuis le favori."
+      },
+      "diff": {
+        "toggle": "Voir ce qui diffère dans cette adresse",
+        "real": "La vraie adresse",
+        "this": "Cette adresse",
+        "legend": "Les caractères surlignés sont ceux qui diffèrent de la vraie adresse."
+      },
+      "exposed": {
+        "heading": "Si vous avez saisi quelque chose sur ce domaine auparavant",
+        "body": "Considérez-le comme compromis. Changez le mot de passe ou renouvelez la clé, et prévenez la personne avec qui vous l'avez partagé.",
+        "link": "Lire comment le vrai service protège les secrets"
+      },
+      "languages": "Langue",
+      "footer": {
+        "operated": "Maintenu par Onetime Secret, Inc. pour protéger ses utilisateurs.",
+        "realSite": "Le vrai site"
+      }
     }
   },
   "changelog": {

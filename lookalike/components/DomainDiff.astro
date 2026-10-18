@@ -1,0 +1,159 @@
+---
+/**
+ * lookalike/components/DomainDiff.astro
+ *
+ * "Show what is different": a collapsed block that, once opened, prints the
+ * real domain and the visited hostname side by side with the characters that
+ * differ highlighted. The highlights pulse a few times and then stay, so the
+ * settled state is also the reduced-motion state (the global reduced-motion
+ * rule in src/styles/tailwind.css cuts the animation to a single instant run).
+ *
+ * The comparison is computed in the browser from `location.hostname` by
+ * lookalike/lib/domainDiff.ts against the real domains listed in
+ * data-lookalike-real, so one build serves every lookalike domain and no
+ * domain needs a hand-written explanation. The block stays hidden when there
+ * is nothing to show (the real site itself, localhost, an unrelated name).
+ *
+ * The real domain is only ever marked with a dotted underline. The prominent
+ * copy of it in the heading is left untouched on purpose: the point is to
+ * learn what the real address looks like, and the visited address is what
+ * gets the colour.
+ */
+import { createLocaleI18n, type MessageSchema } from "@/i18n";
+import { jurisdictions } from "@/data/ops/jurisdictions";
+import { type SupportedLanguage } from "@config/astro/i18n";
+import { CANONICAL_ORIGIN } from "@config/domains";
+
+export interface Props {
+  lang: SupportedLanguage;
+  initialMessages: Record<string, MessageSchema>;
+}
+
+const { lang, initialMessages } = Astro.props;
+const t = (await createLocaleI18n(lang, initialMessages)).global.t;
+
+// Canonical first: closestDomain() keeps the earliest candidate on a tie.
+const realDomains = [
+  new URL(CANONICAL_ORIGIN).hostname,
+  ...jurisdictions.filter((j) => !j.comingSoon).map((j) => j.domain),
+].join(",");
+---
+
+<details
+  hidden
+  data-lookalike-diff
+  data-lookalike-real={realDomains}
+  class="lookalike-diff mt-6 text-lg leading-relaxed text-gray-700 dark:text-gray-300">
+  <summary class="text-brand-600 dark:text-brand-400 inline-block cursor-pointer font-semibold underline underline-offset-4">
+    {t("web.lookalike.diff.toggle")}
+  </summary>
+  <dl class="bg-surface-1 mt-4 grid gap-x-6 gap-y-3 rounded-lg p-5 sm:grid-cols-[auto_1fr] sm:p-6">
+    <dt class="text-sm font-semibold tracking-wide text-gray-500 uppercase sm:self-center dark:text-gray-400">
+      {t("web.lookalike.diff.real")}
+    </dt>
+    <dd class="mb-2 sm:mb-0">
+      <code
+        data-lookalike-diff-expected
+        class="font-mono text-xl break-all text-gray-900 sm:text-2xl dark:text-gray-100"></code>
+    </dd>
+    <dt class="text-sm font-semibold tracking-wide text-gray-500 uppercase sm:self-center dark:text-gray-400">
+      {t("web.lookalike.diff.this")}
+    </dt>
+    <dd>
+      <code
+        data-lookalike-diff-actual
+        class="font-mono text-xl break-all text-gray-900 sm:text-2xl dark:text-gray-100"></code>
+    </dd>
+  </dl>
+  <p class="mt-3 text-base text-gray-600 dark:text-gray-400">
+    {t("web.lookalike.diff.legend")}
+  </p>
+</details>
+
+<style is:global>
+  /* Settled state: a permanent highlight. This is also what reduced-motion
+     users see, since the animation below returns to it. */
+  .lookalike-diff mark {
+    display: inline-block;
+    border-radius: 0.2em;
+    padding: 0 0.12em;
+    font-weight: 700;
+    color: inherit;
+    background-color: transparent;
+    animation: lookalike-diff-pulse 0.9s ease-in-out 3 both;
+  }
+  .lookalike-diff mark.lookalike-diff-differs {
+    display: inline;
+    padding: 0;
+    text-decoration: underline dotted;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+    animation: none;
+  }
+  .lookalike-diff mark.lookalike-diff-added,
+  .lookalike-diff mark.lookalike-diff-changed {
+    color: #fff;
+    background-color: var(--color-brand-600);
+  }
+  /* A character of the real domain that is missing here: an empty slot. */
+  .lookalike-diff mark.lookalike-diff-gap {
+    width: 0.55ch;
+    height: 1em;
+    vertical-align: -0.15em;
+    border: 2px dashed var(--color-brand-600);
+    border-radius: 0.15em;
+  }
+  @keyframes lookalike-diff-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+      box-shadow: none;
+    }
+    50% {
+      transform: scale(1.12);
+      box-shadow: 0 0 0 4px var(--color-brand-400);
+    }
+  }
+</style>
+
+<script>
+  import { compareHostname, toSegments } from "../lib/domainDiff";
+  import type { DiffSegment } from "../lib/domainDiff";
+
+  function render(target: Element | null, segments: DiffSegment[]): void {
+    if (!target) return;
+    target.replaceChildren();
+    for (const segment of segments) {
+      if (segment.kind === "same") {
+        target.append(segment.text);
+        continue;
+      }
+      const mark = document.createElement("mark");
+      mark.className = `lookalike-diff-${segment.kind}`;
+      if (segment.kind === "gap") mark.setAttribute("aria-hidden", "true");
+      mark.textContent = segment.text;
+      target.append(mark);
+    }
+  }
+
+  const root = document.querySelector<HTMLDetailsElement>(
+    "[data-lookalike-diff]",
+  );
+  if (root) {
+    const realDomains = (root.dataset.lookalikeReal ?? "")
+      .split(",")
+      .filter(Boolean);
+    const comparison = compareHostname(window.location.hostname, realDomains);
+    if (comparison) {
+      render(
+        root.querySelector("[data-lookalike-diff-expected]"),
+        toSegments(comparison.ops, "expected"),
+      );
+      render(
+        root.querySelector("[data-lookalike-diff-actual]"),
+        toSegments(comparison.ops, "actual"),
+      );
+      root.hidden = false;
+    }
+  }
+</script>
