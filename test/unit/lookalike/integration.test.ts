@@ -20,6 +20,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { PassThrough } from "node:stream";
 import { pathToFileURL } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -113,6 +114,69 @@ describe("sharedBrandAssetFile", () => {
       sharedBrandAssetFile("/fonts/../../etc/passwd", publicDir),
     ).toBeNull();
     expect(sharedBrandAssetFile("/%ZZ", publicDir)).toBeNull();
+  });
+});
+
+describe("sharedBrandAssets dev middleware", () => {
+  type Handler = (
+    req: { url?: string },
+    res: { setHeader: (name: string, value: string) => void; chunks: Buffer[] },
+    next: (error?: unknown) => void,
+  ) => void;
+
+  /** The middleware the integration registers, driven with a fake server. */
+  function middleware(): Handler {
+    let handler: Handler | undefined;
+    const hook = sharedBrandAssets(publicDir).hooks["astro:server:setup"];
+    if (!hook) throw new Error("no astro:server:setup hook");
+    void hook({
+      server: { middlewares: { use: (fn: Handler) => (handler = fn) } },
+    } as unknown as Parameters<typeof hook>[0]);
+    if (!handler) throw new Error("middleware was not registered");
+    return handler;
+  }
+
+  /** Runs one request; resolves when the response ends or `next` is called. */
+  function request(url: string) {
+    return new Promise<{
+      body: string;
+      headers: Record<string, string>;
+      next: boolean;
+    }>((done) => {
+      const headers: Record<string, string> = {};
+      const chunks: Buffer[] = [];
+      const res = Object.assign(new PassThrough(), {
+        setHeader: (name: string, value: string) =>
+          void (headers[name] = value),
+        chunks,
+      });
+      res.on("data", (chunk: Buffer) => chunks.push(chunk));
+      res.on("end", () =>
+        done({ body: Buffer.concat(chunks).toString(), headers, next: false }),
+      );
+      middleware()({ url }, res, () => done({ body: "", headers, next: true }));
+    });
+  }
+
+  it("serves an allowlisted asset with its content type", async () => {
+    const font = await request("/fonts/Zilla.woff2?v=1");
+    expect(font.next).toBe(false);
+    expect(font.body).toBe("font");
+    expect(font.headers["Content-Type"]).toBe("font/woff2");
+    const icon = await request("/favicon.svg");
+    expect(icon.body).toBe("favicon.svg");
+    expect(icon.headers["Content-Type"]).toBe("image/svg+xml");
+  });
+
+  it("passes everything else on", async () => {
+    for (const url of [
+      "/",
+      "/robots.txt",
+      "/favicon.svg.bak",
+      "/fonts/missing.woff2",
+    ]) {
+      expect((await request(url)).next, url).toBe(true);
+    }
   });
 });
 

@@ -209,6 +209,7 @@ describe("hstsProblem", () => {
     expect(hstsProblem("max-age=invalid")).toBe("has no numeric max-age");
     expect(hstsProblem("includeSubDomains")).toBe("has no numeric max-age");
     expect(hstsProblem("max-agex=31536000")).toBe("has no numeric max-age");
+    expect(hstsProblem("max-age=31536000; max-age=0")).toMatch(/twice/);
   });
 });
 

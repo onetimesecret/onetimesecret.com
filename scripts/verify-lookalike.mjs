@@ -137,10 +137,14 @@ for (const page of htmlFiles) {
   if (!csp) {
     fail(where("no Content-Security-Policy meta"));
   } else {
+    // The trailing semicolons matter: NoticeLayout adds 'self' to script-src
+    // and style-src under `astro dev`, and that policy must never be built.
     for (const directive of [
       "connect-src 'none'",
       "form-action 'none'",
       "default-src 'none'",
+      "script-src 'unsafe-inline';",
+      "style-src 'unsafe-inline';",
     ]) {
       if (!csp[1].includes(directive)) fail(where(`CSP lacks ${directive}`));
     }

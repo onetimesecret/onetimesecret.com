@@ -74,9 +74,11 @@ export const HSTS_MIN_MAX_AGE = 15552000;
  * allowed) rather than looked for as a substring.
  */
 export function hstsProblem(value) {
-  const match = /(?:^|;)\s*max-age\s*=\s*"?(\d+)"?\s*(?:;|$)/i.exec(value);
-  if (!match) return "has no numeric max-age";
-  const seconds = Number(match[1]);
+  const matches = [...value.matchAll(/(?:^|;)\s*max-age\s*=\s*"?(\d+)"?\s*(?=;|$)/gi)];
+  if (matches.length === 0) return "has no numeric max-age";
+  // RFC 6797 section 8.1: a header with a directive given twice is ignored.
+  if (matches.length > 1) return "gives max-age twice, so browsers ignore it";
+  const seconds = Number(matches[0][1]);
   if (seconds === 0) return "has max-age=0, which switches HSTS off";
   if (seconds < HSTS_MIN_MAX_AGE) {
     return `has max-age=${seconds}, below the ${HSTS_MIN_MAX_AGE} second minimum`;
