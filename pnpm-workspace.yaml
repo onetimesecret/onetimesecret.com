@@ -13,7 +13,11 @@ onlyBuiltDependencies:
   - unrs-resolver
 overrides:
   "@eslint/plugin-kit": ^0.3.4
+  # GHSA-6qxp-vccf-f47h. Pulled in by @spotlightjs/spotlight and sidecar.
   "@modelcontextprotocol/sdk": ^1.31.0
+  # GHSA-rj75-hqrm-r3gf. typography 0.5.20 pins 6.0.10 and there is no
+  # patched 6.x. Scoped so other packages keep their own major. Drop once
+  # typography depends on ^7.1.6 itself.
   "@tailwindcss/typography>postcss-selector-parser": ^7.1.6
   "@ungap/structured-clone": ^1.3.1
   "@vue/devtools-kit": ^8.2.1
@@ -23,13 +27,12 @@ overrides:
   js-yaml: ^4.2.0
   lodash: ^4.17.23
   mdast-util-to-hast: ^13.2.1
+  # GHSA-pqg4-j6r4-53mv. Pulled in by launch-editor via Spotlight.
   shell-quote: ^1.11.0
   undici: ^7.28.0
   yaml: ^2.8.3
-auditConfig:
-  ignoreGhsas:
-    - GHSA-gv7w-rqvm-qjhr
-    - GHSA-g7r4-m6w7-qqqr
+# minimumReleaseAge is left at the pnpm 11+ default of 1440 minutes (1 day).
+# Setting it explicitly would also turn on minimumReleaseAgeStrict.
 minimumReleaseAgeExclude:
   - typescript
   - typescript-eslint
