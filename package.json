@@ -14,6 +14,7 @@
     "build:verify:sitemap": "node scripts/verify-sitemap.mjs",
     "build:lookalike": "astro build --config astro.lookalike.config.ts",
     "build:verify:lookalike": "node scripts/verify-lookalike.mjs",
+    "build:verify:lookalike:live": "node scripts/verify-lookalike-live.mjs",
     "check": "astro check --tsconfig tsconfig.json",
     "clean": "rm -rf dist/ dist-lookalike/ .astro/ node_modules/.vite/",
     "reinstall": "pnpm clean && pnpm install",
