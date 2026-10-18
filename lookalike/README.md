@@ -164,7 +164,7 @@ title.
 | `Strict-Transport-Security` | `max-age=31536000; includeSubDomains; preload`                                      |
 | `Referrer-Policy`           | `no-referrer`                                                                       |
 | `Cache-Control`             | `public, max-age=300, stale-while-revalidate=86400, stale-if-error=604800`          |
-| `Link`                      | none: no canonical by header either                                                 |
+| `Link`                      | not set at all; a `rel="canonical"` by header is as wrong as one in the page        |
 
 `X-Robots-Tag` takes two rules, a catch-all and an exception for the roots,
 and the exception must not catch `404.html` served for a deep path ending in
