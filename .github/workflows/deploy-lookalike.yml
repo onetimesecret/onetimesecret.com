@@ -22,8 +22,15 @@
 # - PULL_ZONE_ID: the lookalike pull zone ID
 # - BUNNY_API_KEY: account API key, for the cache purge
 #
-# and one variable:
+# and two variables:
 #
+# - STORAGE_ENDPOINT: the storage zone's API hostname, shown on its FTP & API
+#   Access page. It is decided by the zone's primary region:
+#   storage.bunnycdn.com for Falkenstein (DE), ny.storage.bunnycdn.com for
+#   New York, la. for Los Angeles, sg. for Singapore, syd. for Sydney, uk. for
+#   London, se. for Stockholm, br. for Sao Paulo, jh. for Johannesburg. The
+#   upload action defaults to the DE hostname and fails with 401 against any
+#   other region, so the hostname is stated here rather than assumed.
 # - LOOKALIKE_BASE_URL: an https origin the pull zone answers on, used by the
 #   final verification. The zone's b-cdn.net hostname works; so does any of
 #   the lookalike domains once its DNS points at the zone.
@@ -81,6 +88,7 @@ jobs:
     concurrency: lookalike
 
     env:
+      STORAGE_ENDPOINT: ${{ vars.STORAGE_ENDPOINT }}
       LOOKALIKE_BASE_URL: ${{ vars.LOOKALIKE_BASE_URL }}
 
     steps:
@@ -113,13 +121,25 @@ jobs:
 
       - name: Install dependencies
         run: |
-          # The last step verifies the live site at this URL. Find out now,
-          # not after upload and purge, if the variable is missing.
+          # The upload needs the storage hostname and the last step verifies
+          # the live site at a URL. Find out now, not after the build, if
+          # either variable is missing.
+          if [ -z "${STORAGE_ENDPOINT}" ]; then
+            echo "STORAGE_ENDPOINT is not set for the lookalike environment"
+            exit 1
+          fi
+          case "${STORAGE_ENDPOINT}" in
+            storage.bunnycdn.com|*.storage.bunnycdn.com) ;;
+            *)
+              echo "STORAGE_ENDPOINT '${STORAGE_ENDPOINT}' is not a Bunny storage hostname"
+              exit 1
+              ;;
+          esac
           if [ -z "${LOOKALIKE_BASE_URL}" ]; then
             echo "LOOKALIKE_BASE_URL is not set for the lookalike environment"
             exit 1
           fi
-          echo "Deploying the notice site; verifying at ${LOOKALIKE_BASE_URL}"
+          echo "Uploading via ${STORAGE_ENDPOINT}; verifying at ${LOOKALIKE_BASE_URL}"
           pnpm install --frozen-lockfile
 
       - name: Build notice site
@@ -147,6 +167,7 @@ jobs:
           destination: "${{ secrets.STORAGE_DESTINATION }}"
           storageZoneName: "${{ secrets.STORAGE_NAME }}"
           storagePassword: "${{ secrets.STORAGE_PASSWORD_RW }}"
+          storageEndpoint: "${{ vars.STORAGE_ENDPOINT }}"
           pullZoneId: "${{ secrets.PULL_ZONE_ID }}"
           upload: "true"
           remove: "true"

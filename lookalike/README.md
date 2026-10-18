@@ -138,9 +138,16 @@ nothing but this build, so a file that leaves the build leaves the zone.
 A `lookalike` environment with the same secret names as `production` and
 `staging`, scoped to the lookalike zones: `STORAGE_NAME`,
 `STORAGE_DESTINATION`, `STORAGE_PASSWORD_RW`, `STORAGE_KEY`, `PULL_ZONE_ID`,
-`BUNNY_API_KEY`. Plus one variable, `LOOKALIKE_BASE_URL`: an https origin the
-pull zone answers on, used by the live check. The zone's `b-cdn.net` hostname
-works before any domain points at it.
+`BUNNY_API_KEY`. Plus two variables:
+
+- `STORAGE_ENDPOINT`: the storage zone's API hostname from its FTP & API
+  Access page, for example `storage.bunnycdn.com` (Falkenstein) or
+  `ny.storage.bunnycdn.com` (New York). The upload action assumes
+  Falkenstein when it is not given; against any other region the upload
+  fails with 401. The workflow refuses to run without it.
+- `LOOKALIKE_BASE_URL`: an https origin the pull zone answers on, used by the
+  live check. The zone's `b-cdn.net` hostname works before any domain points
+  at it.
 
 ### What `scripts/verify-lookalike-live.mjs` proves after every deploy
 
