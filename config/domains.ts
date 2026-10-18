@@ -48,7 +48,11 @@ export interface LookalikeDomain {
 }
 
 export const LOOKALIKE_DOMAINS: readonly LookalikeDomain[] = [
-  // { domain: "example-lookalike.tld", acquired: "2026-01-31", note: "..." },
+  // `acquired` is the registry creation date from WHOIS on 2026-10-18.
+  { domain: "onetimesecret.ca", acquired: "2025-03-05" },
+  { domain: "onetimesecret.co", acquired: "2025-12-26" },
+  { domain: "onetimesecret.io", acquired: "2025-12-26" },
+  { domain: "onetimesecret.nl", acquired: "2026-10-17" },
 ];
 
 /**
