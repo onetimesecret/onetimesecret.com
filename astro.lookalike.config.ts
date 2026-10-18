@@ -65,7 +65,9 @@ export default defineConfig({
       ...vite?.build,
       // The one processed <script> (the domain comparison) must end up inline:
       // the page's CSP has no script origin and verify-lookalike rejects any
-      // script file. Astro inlines a script chunk below this limit.
+      // script file. Astro inlines a script chunk below this limit. The limit
+      // is global, so a processed image under it would become a data: URI too
+      // (allowed by the CSP); one emitted as a file fails the allowlist check.
       assetsInlineLimit: 64 * 1024,
       // No script file, so no map file for it either.
       sourcemap: false,

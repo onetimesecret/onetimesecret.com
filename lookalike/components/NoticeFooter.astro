@@ -40,9 +40,10 @@ const otherLanguages = SUPPORTED_LANGUAGES.filter((code) => code !== lang).map(
 );
 ---
 
-<nav
-  aria-label={t("web.lookalike.languages")}
-  class="border-surface-3 flex flex-wrap items-center gap-x-5 gap-y-2 border-t pt-6 text-sm text-gray-600 dark:text-gray-400">
+{/* Only the language links are navigation; the attribution and the link to
+    the real site sit beside them, outside the landmark, so a screen reader's
+    landmark list reads "Language" for the switcher alone. */}
+<div class="border-surface-3 flex flex-wrap items-center gap-x-5 gap-y-2 border-t pt-6 text-sm text-gray-600 dark:text-gray-400">
   <span>{t("web.lookalike.footer.operated")}</span>
   <a
     href={realSite}
@@ -50,7 +51,9 @@ const otherLanguages = SUPPORTED_LANGUAGES.filter((code) => code !== lang).map(
     class="underline underline-offset-4">
     {t("web.lookalike.footer.realSite")}
   </a>
-  <span class="ms-auto flex gap-x-4">
+  <nav
+    aria-label={t("web.lookalike.languages")}
+    class="ms-auto flex gap-x-4">
     {otherLanguages.map((l) => (
       <a
         href={l.href}
@@ -60,5 +63,5 @@ const otherLanguages = SUPPORTED_LANGUAGES.filter((code) => code !== lang).map(
         {l.name}
       </a>
     ))}
-  </span>
-</nav>
+  </nav>
+</div>
