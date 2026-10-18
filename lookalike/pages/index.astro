@@ -1,0 +1,38 @@
+---
+/**
+ * lookalike/pages/index.astro
+ *
+ * Root of a lookalike domain, in the default language. Mirrors the real
+ * site's layout of / plus /{lang}/ so a visitor who swaps the hostname for
+ * onetimesecret.com lands on the same path there.
+ */
+import Notice from "../components/Notice.astro";
+import NoticeFooter from "../components/NoticeFooter.astro";
+import NoticeLayout from "../layouts/NoticeLayout.astro";
+import { createLocaleI18n, type MessageSchema } from "@/i18n";
+import enMessages from "@/i18n/ui/en.json";
+import { DEFAULT_LANGUAGE, LANGUAGE_META } from "@config/astro/i18n";
+
+const lang = DEFAULT_LANGUAGE;
+const initialMessages: Record<string, MessageSchema> = {
+  [lang]: enMessages as MessageSchema,
+};
+const t = (await createLocaleI18n(lang, initialMessages)).global.t;
+---
+
+<NoticeLayout
+  title={t("web.lookalike.title")}
+  description={t("web.lookalike.description")}
+  lang={lang}
+  dir={LANGUAGE_META[lang].dir}
+  brandName={t("onetime-secret-literal")}>
+  <Notice
+    lang={lang}
+    initialMessages={initialMessages}
+  />
+  <NoticeFooter
+    slot="footer"
+    lang={lang}
+    initialMessages={initialMessages}
+  />
+</NoticeLayout>

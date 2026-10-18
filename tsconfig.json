@@ -4,8 +4,14 @@
   // `test/unit/**` only: `test/e2e` is type-checked separately via
   // test/e2e/tsconfig.json (see the `type-check:e2e` script), which targets
   // Playwright's Node-based test runner rather than this config's DOM/Vue setup.
-  "include": [".astro/types.d.ts", "config/**/*", "src/**/*", "test/unit/**/*"],
-  "exclude": ["dist", "tmp"],
+  "include": [
+    ".astro/types.d.ts",
+    "config/**/*",
+    "lookalike/**/*",
+    "src/**/*",
+    "test/unit/**/*"
+  ],
+  "exclude": ["dist", "dist-lookalike", "tmp"],
   "compilerOptions": {
     "baseUrl": ".",
     "jsx": "preserve",

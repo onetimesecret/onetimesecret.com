@@ -26,3 +26,43 @@ export function isStagingHostname(hostname: string): boolean {
     hostname === staging || hostname.endsWith(`.${staging}`)
   );
 }
+
+/**
+ * A lookalike domain Onetime Secret owns: a misspelling or alternate TLD of
+ * onetimesecret.com that an imposter copy of the site used before it was
+ * taken down. Each one is registered to keep it out of the next imposter's
+ * hands and serves the notice site built by astro.lookalike.config.ts.
+ *
+ * This list is the inventory. The notice pages do not read it (they show
+ * `location.hostname` in the browser, so one build serves every domain); it
+ * exists so the CDN hostname set, the DNS probe and the DNS hardening
+ * checklist in lookalike/README.md have one source of truth to reconcile
+ * against. Add a domain here when it is acquired.
+ */
+export interface LookalikeDomain {
+  /** Bare registrable hostname, lowercase, no scheme or path. */
+  domain: string;
+  /** Date the domain came under Onetime Secret's control, YYYY-MM-DD. */
+  acquired: string;
+  /** One factual line: what it was used for, where it was reported. */
+  note?: string;
+}
+
+export const LOOKALIKE_DOMAINS: readonly LookalikeDomain[] = [
+  // { domain: "example-lookalike.tld", acquired: "2026-01-31", note: "..." },
+];
+
+/**
+ * Whether `hostname` is one of the owned lookalike domains or a subdomain of
+ * one. Same strict matching as isStagingHostname(): a substring test would let
+ * `example-lookalike.tld.attacker.com` pass.
+ */
+export function isLookalikeHostname(
+  hostname: string,
+  domains: readonly LookalikeDomain[] = LOOKALIKE_DOMAINS,
+): boolean {
+  const host = hostname.trim().toLowerCase().replace(/\.$/, "");
+  return domains.some(
+    ({ domain }) => host === domain || host.endsWith(`.${domain}`),
+  );
+}

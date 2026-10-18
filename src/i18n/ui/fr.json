@@ -466,6 +466,37 @@
         "view_pricing": "Voir les tarifs",
         "toggle_animation": "Activer/désactiver l'animation"
       }
+    },
+    "lookalike": {
+      "title": "Ceci n'est pas onetimesecret.com",
+      "description": "Ce domaine appartient à Onetime Secret mais n'est pas le vrai site. Aucun service n'y fonctionne et aucune donnée n'y est acceptée.",
+      "eyebrow": "Un avis de Onetime Secret",
+      "heading": "Ceci n'est pas onetimesecret.com",
+      "hostnameFallback": "cette adresse",
+      "lead": "Vous consultez {hostname}. Elle ressemble à l'adresse de Onetime Secret, mais ce n'est pas la vraie.",
+      "ownership": "Ce domaine appartient désormais à Onetime Secret, Inc. Nous l'avons enregistré après qu'il a servi à une copie de notre site que nous n'exploitions pas. Rien ne fonctionne ici : cette page ne contient aucun formulaire et n'envoie aucune donnée.",
+      "cta": "Aller sur le vrai onetimesecret.com",
+      "recognise": {
+        "heading": "Comment reconnaître le vrai site",
+        "exact": "L'adresse est exactement onetimesecret.com. Rien avant, rien après, et aucune autre terminaison.",
+        "regional": "Les secrets sont créés sur l'un de nos domaines régionaux : {domains}.",
+        "noForm": "Si un lien vous a amené ici, il a été créé sur un site imposteur. Ne collez aucun secret sur une page de ce domaine. Il n'y a nulle part où le coller.",
+        "bookmark": "Ajoutez le vrai site à vos favoris et ouvrez-le depuis le favori."
+      },
+      "why": {
+        "heading": "Pourquoi cette page existe",
+        "body": "Les copies imposteurs de Onetime Secret collectent ce que les gens y collent. Quand une telle copie est fermée, nous reprenons son domaine pour que l'adresse mène ici plutôt qu'à la copie suivante, et pour que quiconque l'a saisie par erreur apprenne la différence."
+      },
+      "exposed": {
+        "heading": "Si vous avez saisi quelque chose sur ce domaine auparavant",
+        "body": "Considérez-le comme compromis. Changez le mot de passe ou renouvelez la clé, et prévenez la personne avec qui vous l'avez partagé.",
+        "link": "Lire comment le vrai service protège les secrets"
+      },
+      "languages": "Langue",
+      "footer": {
+        "operated": "Maintenu par Onetime Secret, Inc. pour protéger ses utilisateurs.",
+        "realSite": "Le vrai site"
+      }
     }
   },
   "changelog": {

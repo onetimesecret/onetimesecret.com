@@ -466,6 +466,37 @@
         "view_pricing": "View Pricing",
         "toggle_animation": "Toggle animation"
       }
+    },
+    "lookalike": {
+      "title": "This is not onetimesecret.com",
+      "description": "This domain is owned by Onetime Secret but is not the real site. It runs no service and accepts no data.",
+      "eyebrow": "A notice from Onetime Secret",
+      "heading": "This is not onetimesecret.com",
+      "hostnameFallback": "this address",
+      "lead": "You are visiting {hostname}. It looks like the address of Onetime Secret, but it is not the real one.",
+      "ownership": "This domain is now owned by Onetime Secret, Inc. We registered it after it was used for a copy of our site that we did not operate. Nothing runs here: this page has no form and sends no data anywhere.",
+      "cta": "Go to the real onetimesecret.com",
+      "recognise": {
+        "heading": "How to recognise the real site",
+        "exact": "The address is exactly onetimesecret.com. Nothing added before it, nothing after it, and no other ending.",
+        "regional": "Secrets are created on one of our regional domains: {domains}.",
+        "noForm": "If a link brought you here, it was created on an imposter site. Do not paste a secret into any page on this domain. There is nowhere to paste it.",
+        "bookmark": "Bookmark the real site and open it from the bookmark."
+      },
+      "why": {
+        "heading": "Why this page exists",
+        "body": "Imposter copies of Onetime Secret collect what people paste into them. When such a copy is shut down, we take over its domain so that the address leads here instead of to the next copy, and so that anyone who typed it by mistake learns the difference."
+      },
+      "exposed": {
+        "heading": "If you entered something on this domain before",
+        "body": "Treat it as exposed. Change the password or rotate the key, and tell the person you shared it with.",
+        "link": "Read how the real service protects secrets"
+      },
+      "languages": "Language",
+      "footer": {
+        "operated": "Maintained by Onetime Secret, Inc. to protect its users.",
+        "realSite": "The real site"
+      }
     }
   },
   "changelog": {

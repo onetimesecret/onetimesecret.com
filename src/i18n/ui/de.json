@@ -466,6 +466,37 @@
         "view_pricing": "Preise anzeigen",
         "toggle_animation": "Animation umschalten"
       }
+    },
+    "lookalike": {
+      "title": "Dies ist nicht onetimesecret.com",
+      "description": "Diese Domain gehört Onetime Secret, ist aber nicht die echte Website. Hier läuft kein Dienst, und es werden keine Daten angenommen.",
+      "eyebrow": "Ein Hinweis von Onetime Secret",
+      "heading": "Dies ist nicht onetimesecret.com",
+      "hostnameFallback": "diese Adresse",
+      "lead": "Sie besuchen {hostname}. Sie sieht aus wie die Adresse von Onetime Secret, ist aber nicht die echte.",
+      "ownership": "Diese Domain gehört jetzt Onetime Secret, Inc. Wir haben sie registriert, nachdem sie für eine Kopie unserer Website benutzt wurde, die nicht von uns betrieben wurde. Hier läuft nichts: Diese Seite hat kein Formular und sendet keine Daten.",
+      "cta": "Zum echten onetimesecret.com",
+      "recognise": {
+        "heading": "So erkennen Sie die echte Website",
+        "exact": "Die Adresse lautet genau onetimesecret.com. Nichts davor, nichts danach und keine andere Endung.",
+        "regional": "Secrets werden auf einer unserer regionalen Domains erstellt: {domains}.",
+        "noForm": "Wenn Sie über einen Link hierher gekommen sind, wurde er auf einer gefälschten Website erstellt. Fügen Sie auf keiner Seite dieser Domain ein Secret ein. Es gibt hier keine Stelle dafür.",
+        "bookmark": "Speichern Sie die echte Website als Lesezeichen und öffnen Sie sie darüber."
+      },
+      "why": {
+        "heading": "Warum es diese Seite gibt",
+        "body": "Gefälschte Kopien von Onetime Secret sammeln, was Menschen dort einfügen. Wird eine solche Kopie abgeschaltet, übernehmen wir ihre Domain, damit die Adresse hierher führt statt zur nächsten Kopie, und damit jeder, der sie versehentlich eingegeben hat, den Unterschied kennenlernt."
+      },
+      "exposed": {
+        "heading": "Falls Sie zuvor etwas auf dieser Domain eingegeben haben",
+        "body": "Betrachten Sie es als offengelegt. Ändern Sie das Passwort oder tauschen Sie den Schlüssel aus, und informieren Sie die Person, mit der Sie es geteilt haben.",
+        "link": "Lesen, wie der echte Dienst Secrets schützt"
+      },
+      "languages": "Sprache",
+      "footer": {
+        "operated": "Betrieben von Onetime Secret, Inc. zum Schutz seiner Nutzer.",
+        "realSite": "Die echte Website"
+      }
     }
   },
   "changelog": {
