@@ -166,9 +166,25 @@ title.
 | `Cache-Control`             | `public, max-age=300, stale-while-revalidate=86400, stale-if-error=604800`          |
 | `Link`                      | not set at all; a `rel="canonical"` by header is as wrong as one in the page        |
 
-`X-Robots-Tag` takes two rules, a catch-all and an exception for the roots,
-and the exception must not catch `404.html` served for a deep path ending in
-`/`. The CSP header carries only directives the page's meta tag cannot
+`X-Robots-Tag` is one rule, not a catch-all plus an override: Bunny's Set
+Response Header action is cumulative, so a second matching rule adds a
+header and cannot remove the first. The rule sets `X-Robots-Tag` to
+`noindex, follow` with a Request URL trigger set to **Match None** and one
+anchored Lua pattern per root (the trigger path includes the scheme and
+host, `*` crosses slashes, and the query string is ignored):
+
+```text
+pattern:^https://[^/]+/$
+pattern:^https://[^/]+/de/$
+pattern:^https://[^/]+/en/$
+pattern:^https://[^/]+/es/$
+pattern:^https://[^/]+/fr/$
+```
+
+Listing the languages rather than `[a-z][a-z]` keeps a two-letter phishing
+path like `/id/` out of the exception. Add a line when a language is added.
+Check with `curl -sI` that `/` and `/en/` have no `X-Robots-Tag` and that
+`/en`, `/favicon.ico`, `/404.html` and `/secret/anything/` do. The CSP header carries only directives the page's meta tag cannot
 (`frame-ancestors`) or that restate the "accepts no data" claim. It has no
 `default-src 'self'`: every delivered policy is enforced, so a header
 `default-src 'self'` would block the inline hostname script and inline
