@@ -32,10 +32,24 @@ that allows the API origin, and relative header and footer links that would
 **Nothing from `public/` by accident.** `publicDir` is `lookalike/public`,
 which holds only this site's `robots.txt`. `integration.ts` copies an
 allowlist of brand assets (fonts, logo, three favicons) out of the real
-site's `public/` after the build. The real site's robots.txt, sitemap.xsl,
-llms.txt, webmanifest and error pages never ship. The Vite warnings about
-`/fonts/*.woff` not resolving at build time are this arrangement: the fonts
-are copied in after Vite has run.
+site's `public/` after the build, and serves the same allowlist under
+`pnpm dev:lookalike`, where Astro would otherwise serve `publicDir` alone.
+The real site's robots.txt, sitemap.xsl, llms.txt, webmanifest and error
+pages never ship. The Vite warnings about `/fonts/*.woff` not resolving at
+build time are this arrangement: the fonts are copied in after Vite has run.
+
+**Only the CSS the page uses.** `styles/tailwind.css` imports the real site's
+two stylesheets with `source(none)` and adds this directory back as the only
+`@source`. Imported directly, Tailwind scans the whole repository and inlines
+every utility the real site uses into each page, about 190 KB of CSS; scoped,
+a page is about 35 KB in total. The theme, preflight and custom variants are
+the real site's, unchanged.
+
+**The CSP is the production one, except under `astro dev`.** There, Vite
+serves the comparison module and its client as files and hot reload needs a
+WebSocket, so `NoticeLayout.astro` adds `'self'` and `ws:` to the policy in
+development only. `verify-lookalike` checks the built pages for the
+production directives.
 
 **Every path is the notice.** `pages/404.astro` renders the same page, so a
 link to a deep path (`/secret/abc…`) lands on the warning rather than a dead
@@ -62,7 +76,8 @@ everywhere", are checked against the built HTML rather than asserted once:
   with the right `lang` attribute, the hostname placeholder and a link to
   https://onetimesecret.com
 - no `.js`, `.css`, sitemap, llms.txt or webmanifest files, and every other
-  file within the allowlist in `integration.ts`
+  file within the allowlist in `integration.ts`: a listed file exactly, or
+  anything under a listed directory (`favicon.svg.bak` does not pass)
 - `robots.txt` allows crawling and advertises no sitemap
 
 ## Showing the difference
@@ -117,7 +132,10 @@ output on every pull request so a shared-layout change cannot reach `main`
 with the notice site broken.
 
 The upload runs with `remove: true`, unlike the main site: the zone holds
-nothing but this build, so a file that leaves the build leaves the zone.
+nothing but this build, so a file that leaves the build leaves the zone. For
+the same reason runs queue rather than cancel each other: a run cancelled
+between the removal and the end of the upload would leave the domains serving
+nothing.
 
 ### Bunny
 
@@ -125,9 +143,10 @@ nothing but this build, so a file that leaves the build leaves the zone.
 2. One pull zone over it. Every lookalike domain, and a wildcard for each
    (`*.example.tld`), is a hostname on this zone with a free SSL certificate.
    Any subdomain then lands on the notice too.
-3. Edge rules on the zone: `X-Robots-Tag: noindex`,
-   `Content-Security-Policy: frame-ancestors 'none'` (not enforceable from a
-   meta tag), `Strict-Transport-Security`.
+3. Edge rules on the zone, applied to every response and not only HTML:
+   `X-Robots-Tag: noindex`, `Content-Security-Policy: frame-ancestors 'none'`
+   (not enforceable from a meta tag), `Strict-Transport-Security` with a
+   `max-age` of at least 15552000 seconds (six months).
 4. Bunny Optimizer off, as on every zone for this site (docs/deployment.md).
    Its HTML minifier would rewrite the pages and fail the live check.
 
@@ -152,12 +171,15 @@ A `lookalike` environment with the same secret names as `production` and
 The three things `verify-lookalike` cannot see because they are decided on the
 CDN, not in this repository:
 
-- every page and `robots.txt` is served byte for byte as built. Nothing
-  rewrites HTML on this zone by design, so any difference is an edge-side
-  rewrite (Optimizer, `x-bo-version` in the response) and fails at once.
+- every file is served byte for byte as built: the pages and `robots.txt`,
+  and the fonts, logo and favicons. Nothing rewrites anything on this zone by
+  design, so any difference is an edge-side rewrite (Optimizer, `x-bo-version`
+  in the response) and fails at once.
 - an unknown path (`/secret/verify-lookalike-live-<random>`) answers 404
   with the body of `404.html`: the storage zone's custom 404 path is set.
-- every response carries the three edge-rule headers above.
+- every response carries the three edge-rule headers above, fonts and images
+  included, and the HSTS `max-age` is parsed: `max-age=0` switches HSTS off
+  and fails, as does anything under six months.
 
 A deploy whose zone is missing any of these fails loudly rather than shipping a
 notice site that is indexable, framable or dead on a phishing path.
