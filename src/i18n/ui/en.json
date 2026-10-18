@@ -469,30 +469,29 @@
     },
     "lookalike": {
       "title": "This is not onetimesecret.com",
-      "description": "This domain is owned by Onetime Secret but is not the real site. It runs no service and accepts no data.",
+      "description": "This domain belongs to Onetime Secret, Inc. It displays a notice, not the secret-sharing service.",
       "eyebrow": "A notice from Onetime Secret",
       "heading": "This is not onetimesecret.com",
       "hostnameFallback": "this address",
-      "lead": "You are visiting {hostname}. It looks like the address of Onetime Secret, but it is not the real one.",
-      "ownership": "This domain is owned by Onetime Secret, Inc. Nothing runs here: this page has no form and sends no data anywhere.",
-      "cta": "Go to the real onetimesecret.com",
+      "lead": "You are visiting {hostname}, not onetimesecret.com.",
+      "ownership": "Onetime Secret, Inc. owns this domain. This is a notice page, not a secret-sharing service. It has no forms.",
+      "cta": "Go to onetimesecret.com",
       "recognise": {
         "heading": "How to recognise the real site",
-        "exact": "The address is exactly onetimesecret.com. Nothing added before it, nothing after it, and no other ending.",
-        "regional": "Secrets are created on one of our regional domains: {domains}.",
-        "noForm": "If a link brought you here, do not paste a secret into any page on this domain. There is nowhere to paste it.",
+        "exact": "Our main website is onetimesecret.com. Check the domain name carefully.",
+        "regional": "Our secret-sharing service runs on these regional domains: {domains}.",
         "bookmark": "Bookmark the real site and open it from the bookmark."
       },
       "diff": {
-        "toggle": "Show what is different about this address",
+        "toggle": "Compare this domain with the real one",
         "real": "The real address",
         "this": "This address",
-        "legend": "The highlighted characters are the ones that differ from the real address."
+        "legend": "Highlights show where the domain names differ."
       },
       "exposed": {
-        "heading": "If you entered something on this domain before",
-        "body": "Treat it as exposed. Change the password or rotate the key, and tell the person you shared it with.",
-        "link": "Read how the real service protects secrets"
+        "heading": "If you previously entered sensitive information here",
+        "body": "Treat it as exposed. Change any affected passwords, revoke and replace exposed keys, and notify anyone affected.",
+        "link": "How Onetime Secret protects secrets"
       },
       "languages": "Language",
       "footer": {

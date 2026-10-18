@@ -480,7 +480,6 @@
         "heading": "Comment reconnaître le vrai site",
         "exact": "L'adresse est exactement onetimesecret.com. Rien avant, rien après, et aucune autre terminaison.",
         "regional": "Les secrets sont créés sur l'un de nos domaines régionaux : {domains}.",
-        "noForm": "Si un lien vous a amené ici, ne collez aucun secret sur une page de ce domaine. Il n'y a nulle part où le coller.",
         "bookmark": "Ajoutez le vrai site à vos favoris et ouvrez-le depuis le favori."
       },
       "diff": {
