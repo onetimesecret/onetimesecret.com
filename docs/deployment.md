@@ -66,12 +66,16 @@ job runs the browser tests described below.
 2. `pnpm build:verify:lookalike` checks the output is noindex, scriptless and form-free, and
    ships nothing outside its allowlist. Nothing is uploaded if it fails.
 3. The upload runs with `remove: true`. The storage zone holds nothing but this build.
-4. After the purge, `pnpm build:verify:lookalike:live` fetches every page and `robots.txt` from
-   `LOOKALIKE_BASE_URL`, requires each to match the built file byte for byte, requires an unknown
-   path to answer 404 with the body of `404.html`, and requires `X-Robots-Tag: noindex`,
-   `frame-ancestors 'none'` and `Strict-Transport-Security` on every response. Those three
-   headers and the custom 404 path are Bunny zone settings, which is why they are verified
+4. After the purge, `pnpm build:verify:lookalike:live` fetches every built file (pages,
+   `robots.txt`, fonts, logo, favicons) from `LOOKALIKE_BASE_URL`, requires each to match the
+   built file byte for byte, requires an unknown path to answer 404 with the body of `404.html`,
+   and requires `X-Robots-Tag: noindex`, `frame-ancestors 'none'` and
+   `Strict-Transport-Security` with a `max-age` of at least six months on every response. Those
+   three headers and the custom 404 path are Bunny zone settings, which is why they are verified
    rather than assumed.
+
+Runs of this workflow queue instead of cancelling each other. The upload removes files that left
+the build, so a cancelled run could leave the zone empty.
 
 Bunny Optimizer must stay off on the lookalike pull zone as well. Its HTML minifier would rewrite
 the pages and the live check would fail at once, without retrying, when a response carries
