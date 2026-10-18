@@ -1,12 +1,10 @@
 # Lookalike-domain notice site
 
 The second build of this repository. It is served on the lookalike domains
-Onetime Secret owns: misspellings and alternate TLDs of onetimesecret.com that
-imposter copies of the site used before they were taken down. Each such domain
-is registered so it cannot be reused, and it serves one page in four languages
-that says, in effect: this is not onetimesecret.com, nothing runs here, here is
-how to recognise the real site, and here is what to do if you pasted something
-into the copy that used to live here.
+Onetime Secret owns: misspellings and alternate TLDs of onetimesecret.com. Each
+such domain serves one page in four languages that says, in effect: this is
+not onetimesecret.com, nothing runs here, here is how to recognise the real
+site, and here is what to do if you entered something on this domain before.
 
 ```sh
 pnpm build:lookalike            # -> dist-lookalike/
@@ -40,8 +38,8 @@ llms.txt, webmanifest and error pages never ship. The Vite warnings about
 are copied in after Vite has run.
 
 **Every path is the notice.** `pages/404.astro` renders the same page, so a
-phishing link already in circulation (`/secret/abc…`) lands on the warning
-rather than a dead end. Point the storage zone's custom 404 path at
+link to a deep path (`/secret/abc…`) lands on the warning rather than a dead
+end. Point the storage zone's custom 404 path at
 `/404.html`.
 
 **Translations** live under `web.lookalike` in `src/i18n/ui/*.json`, next to
@@ -80,7 +78,7 @@ Nothing about it is written per domain:
   runs so an extra "s", an "l" for an "i", a ".net" ending, a missing letter
   or an appended ".evil.example" each come out as one highlighted run.
 - `lookalike/components/DomainDiff.astro` renders the result in the browser
-  from `location.hostname`. The imposter's characters get the brand colour
+  from `location.hostname`. The visited address's characters get the brand colour
   and pulse three times, then stay highlighted; the settled state is also the
   reduced-motion state. The real domain is only dotted-underlined, and the
   prominent copy in the heading is never touched: the reader should learn the
@@ -99,7 +97,7 @@ that every page carries the block and that its module script was inlined.
 
 Noindex, not a redirect, and not a canonical. A crawler can only read a
 noindex directive on a page it may fetch, so `robots.txt` allows everything
-and a squatted domain's stale index entries get dropped rather than frozen.
+and a domain's stale index entries get dropped rather than frozen.
 A canonical to the real site alongside noindex is a contradiction Google may
 resolve either way, so there is none. A wholesale 301 would be the strongest
 option for consolidation but would defeat the point of the page.
@@ -126,7 +124,7 @@ nothing but this build, so a file that leaves the build leaves the zone.
 1. One storage zone for `dist-lookalike/`, custom 404 path `/404.html`.
 2. One pull zone over it. Every lookalike domain, and a wildcard for each
    (`*.example.tld`), is a hostname on this zone with a free SSL certificate.
-   Subdomains used by the former copy then land on the notice too.
+   Any subdomain then lands on the notice too.
 3. Edge rules on the zone: `X-Robots-Tag: noindex`,
    `Content-Security-Policy: frame-ancestors 'none'` (not enforceable from a
    meta tag), `Strict-Transport-Security`.
@@ -184,13 +182,13 @@ on the domain's DNS:
 - `CAA` restricting issuance to the CDN's certificate authority
 - DNSSEC if the registrar supports it
 
-The domains were used for phishing. Without the mail records they can still
-be used for phishing email after they are owned.
+Without the mail records a domain that sends no mail can still be used to
+send phishing email that appears to come from it.
 
 ## Wording
 
-The copy says the domain is now owned by Onetime Secret, Inc., that it was
-used for a copy of the site Onetime Secret did not operate, and that nothing
-runs here. It does not characterise the former operator. Keep it that way:
-the text is generic across every domain and carries no claim that would need
-per-domain evidence.
+The copy says the domain is owned by Onetime Secret, Inc., that it is not the
+real site, and that nothing runs here. It says nothing about a domain's history,
+how it was acquired, or anyone who held it before. Keep it that way: the text
+is generic across every domain, carries no claim that would need per-domain
+evidence, and explains nothing about how these domains are handled.

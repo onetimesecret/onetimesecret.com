@@ -31,8 +31,9 @@ export type DiffOp =
 /**
  * A run of characters on one side of the comparison, ready to render.
  *
- * Real-domain side: `same` or `differs` (the characters the imposter changed
- * or dropped), so the real address stays legible and is never rewritten.
+ * Real-domain side: `same` or `differs` (the characters the visited hostname
+ * changed or dropped), so the real address stays legible and is never
+ * rewritten.
  * Visited side: `same`, `added`, `changed`, or an empty `gap` where a
  * character of the real domain is missing.
  */

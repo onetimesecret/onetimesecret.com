@@ -480,7 +480,7 @@
         "heading": "How to recognise the real site",
         "exact": "The address is exactly onetimesecret.com. Nothing added before it, nothing after it, and no other ending.",
         "regional": "Secrets are created on one of our regional domains: {domains}.",
-        "noForm": "If a link brought you here, it was created on an imposter site. Do not paste a secret into any page on this domain. There is nowhere to paste it.",
+        "noForm": "If a link brought you here, do not paste a secret into any page on this domain. There is nowhere to paste it.",
         "bookmark": "Bookmark the real site and open it from the bookmark."
       },
       "diff": {

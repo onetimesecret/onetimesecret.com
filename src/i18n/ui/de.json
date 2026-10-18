@@ -480,7 +480,7 @@
         "heading": "So erkennen Sie die echte Website",
         "exact": "Die Adresse lautet genau onetimesecret.com. Nichts davor, nichts danach und keine andere Endung.",
         "regional": "Secrets werden auf einer unserer regionalen Domains erstellt: {domains}.",
-        "noForm": "Wenn Sie über einen Link hierher gekommen sind, wurde er auf einer gefälschten Website erstellt. Fügen Sie auf keiner Seite dieser Domain ein Secret ein. Es gibt hier keine Stelle dafür.",
+        "noForm": "Wenn Sie über einen Link hierher gekommen sind, fügen Sie auf keiner Seite dieser Domain ein Secret ein. Es gibt hier keine Stelle dafür.",
         "bookmark": "Speichern Sie die echte Website als Lesezeichen und öffnen Sie sie darüber."
       },
       "diff": {

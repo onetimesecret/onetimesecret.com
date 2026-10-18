@@ -1,11 +1,10 @@
 // astro.lookalike.config.ts
 //
 // Second Astro build of this repository: the notice site served on the
-// lookalike domains Onetime Secret owns (misspellings and alternate TLDs that
-// were used by imposter copies of onetimesecret.com before they were taken
-// down). One build, one output, every lookalike domain is a hostname on the
-// same CDN zone; the page reads `location.hostname` in the browser, so adding
-// a domain never needs a rebuild. See lookalike/README.md.
+// lookalike domains Onetime Secret owns (misspellings and alternate TLDs of
+// onetimesecret.com). One build, one output, every lookalike domain is a
+// hostname on the same CDN zone; the page reads `location.hostname` in the
+// browser, so adding a domain never needs a rebuild. See lookalike/README.md.
 //
 // Astro cannot exclude pages from `src/pages`, so this config points `srcDir`
 // at `lookalike/`, which holds only the notice pages. The `@/` and `@config/`

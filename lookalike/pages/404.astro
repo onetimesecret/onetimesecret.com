@@ -2,10 +2,9 @@
 /**
  * lookalike/pages/404.astro
  *
- * Every other path on a lookalike domain. Phishing links already in
- * circulation point at deep paths (/secret/abc...), and the person following
- * one is exactly who this notice is for, so the not-found page is the notice
- * itself rather than a dead end. Astro writes it to dist-lookalike/404.html;
+ * Every other path on a lookalike domain. Someone arriving at a deep path
+ * (/secret/abc...) is exactly who this notice is for, so the not-found page
+ * is the notice itself rather than a dead end. Astro writes it to dist-lookalike/404.html;
  * the CDN storage zone's custom 404 path points at it.
  */
 import Notice from "../components/Notice.astro";

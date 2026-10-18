@@ -2,7 +2,7 @@
 #
 # Crawling is allowed on purpose. Every page carries a noindex directive, and
 # a crawler can only read that directive on a page it is permitted to fetch.
-# A `Disallow: /` here would leave a squatted domain's stale index entries in
+# A `Disallow: /` here would leave the domain's stale index entries in
 # place indefinitely. There is no sitemap: nothing here is meant to be found.
 
 User-agent: *
