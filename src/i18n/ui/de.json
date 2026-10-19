@@ -469,36 +469,51 @@
     },
     "lookalike": {
       "title": "Dies ist nicht onetimesecret.com",
-      "description": "Diese Domain gehört Onetime Secret, ist aber nicht die echte Website. Hier läuft kein Dienst, und es werden keine Daten angenommen.",
-      "eyebrow": "Ein Hinweis von Onetime Secret",
+      "description": "Diese Domain gehört Onetime Secret. Sie zeigt einen Hinweis, nicht den Dienst zum Teilen von Geheimnissen.",
+      "eyebrow": "Hinweis zur Domain",
+      "headerLabel": "Onetime Secret?",
       "heading": "Dies ist nicht onetimesecret.com",
       "hostnameFallback": "diese Adresse",
       "lead": "Sie besuchen {hostname}. Sie sieht aus wie die Adresse von Onetime Secret, ist aber nicht die echte.",
-      "ownership": "Diese Domain gehört Onetime Secret, Inc. Hier läuft nichts: Diese Seite hat kein Formular und sendet keine Daten.",
-      "cta": "Zum echten onetimesecret.com",
+      "purpose": "Dies ist ein Hinweis, nicht der Dienst zum Teilen von Geheimnissen. Sie können hier keine Geheimnisse erstellen oder ansehen.",
+      "ownership": "Diese Domain ({hostname}) gehört Onetime Secret.",
+      "recipient": {
+        "heading": "Hat Sie ein Link hierher geführt?",
+        "body": "Kontaktieren Sie die Person, die Ihnen den Link geschickt hat, über einen Ihnen bereits bekannten Kanal und bitten Sie um Bestätigung des Links. Versuchen Sie nicht, die Adresse durch Ändern von Buchstaben zu korrigieren."
+      },
+      "sender": {
+        "heading": "Möchten Sie ein Geheimnis erstellen?",
+        "body": "Geben Sie diese Adresse in die Adressleiste Ihres Browsers ein oder verwenden Sie ein Lesezeichen, das Sie zuvor überprüft haben.",
+        "https": "Ein vertrautes Logo, HTTPS oder ein Platz ganz oben in den Suchergebnissen beweist nicht, wer eine Website betreibt. Das gilt auch für diesen Hinweis."
+      },
       "recognise": {
-        "heading": "So erkennen Sie die echte Website",
-        "exact": "Die Adresse lautet genau onetimesecret.com. Nichts davor, nichts danach und keine andere Endung.",
-        "regional": "Secrets werden auf einer unserer regionalen Domains erstellt: {domains}.",
-        "noForm": "Wenn Sie über einen Link hierher gekommen sind, fügen Sie auf keiner Seite dieser Domain ein Secret ein. Es gibt hier keine Stelle dafür.",
-        "bookmark": "Speichern Sie die echte Website als Lesezeichen und öffnen Sie sie darüber."
+        "heading": "Was ist diese Seite?",
+        "exact": "Prüfen Sie den vollständigen Hostnamen in der Adressleiste Ihres Browsers. Unsere Hauptwebsite ist onetimesecret.com.",
+        "regionalHeading": "Offizielle regionale Adressen des Dienstes",
+        "regional": "Unser Dienst zum Teilen von Geheimnissen läuft auf diesen regionalen Domains:",
+        "noLinksHeading": "Warum gibt es keinen Link zum Dienst?",
+        "noLinks": "Ein vertrautes Logo oder eine beruhigende Nachricht lässt sich kopieren. Beides beweist nicht, dass eine Seite echt ist, auch wenn sie in den Suchergebnissen an erster Stelle steht. Diese Seite enthält bewusst keinen Link zum Dienst: Gewöhnen Sie sich an, die Adresse unabhängig zu prüfen, statt einem Link zu vertrauen, weil die Seite offiziell aussieht. Seien Sie auch bei dieser Seite vorsichtig."
       },
       "diff": {
-        "toggle": "Zeigen, was an dieser Adresse anders ist",
+        "toggle": "Diese Domain mit der echten vergleichen",
         "real": "Die echte Adresse",
         "this": "Diese Adresse",
-        "legend": "Die hervorgehobenen Zeichen sind die, die von der echten Adresse abweichen."
+        "legend": "Die Hervorhebungen zeigen, wo sich die Domainnamen unterscheiden.",
+        "srAdded": "(zusätzlich: {chars})",
+        "srChanged": "({chars} statt {expected})",
+        "srMissing": "(fehlt: {expected})"
       },
       "exposed": {
-        "heading": "Falls Sie zuvor etwas auf dieser Domain eingegeben haben",
-        "body": "Betrachten Sie es als offengelegt. Ändern Sie das Passwort oder tauschen Sie den Schlüssel aus, und informieren Sie die Person, mit der Sie es geteilt haben.",
-        "link": "Lesen, wie der echte Dienst Secrets schützt"
+        "heading": "Bereits vertrauliche Informationen geteilt?",
+        "body": "Wenn Sie ein Passwort, einen Zugriffsschlüssel oder andere private Informationen auf dieser Domain oder auf einer Website eingegeben haben, deren Echtheit Sie nicht überprüfen können, betrachten Sie diese Informationen als offengelegt. Ändern Sie das Passwort oder tauschen Sie den Schlüssel aus, und informieren Sie die Person, mit der Sie sie geteilt haben.",
+        "stepsHeading": "Was Sie als Nächstes tun können",
+        "passwords": "Passwörter: Öffnen Sie den betroffenen Dienst über seine offizielle App oder eine Adresse, der Sie bereits vertrauen. Ändern Sie das Passwort und ändern Sie es auch überall dort, wo Sie es wiederverwendet haben. Melden Sie andere Sitzungen ab, sofern dies möglich ist.",
+        "tokens": "Zugriffsschlüssel oder Token: Widerrufen und ersetzen Sie diese über den Dienst, der sie ausgestellt hat.",
+        "other": "Andere private Informationen: Kontaktieren Sie die zuständige Person oder den zuständigen Dienst über einen bekannten Kanal, um Hilfe bei den nächsten Schritten zu erhalten.",
+        "work": "Berufliche Informationen: Wenden Sie sich außerdem umgehend an das IT- oder Sicherheitsteam Ihrer Organisation, sofern es eines gibt – auch wenn Sie sich nicht sicher sind.",
+        "reporting": "Geben Sie keine Passwörter, Zugriffsschlüssel oder Inhalte von Geheimnissen in einer gewöhnlichen E-Mail oder Supportnachricht an."
       },
-      "languages": "Sprache",
-      "footer": {
-        "operated": "Betrieben von Onetime Secret, Inc. zum Schutz seiner Nutzer.",
-        "realSite": "Die echte Website"
-      }
+      "languages": "Sprache"
     }
   },
   "changelog": {

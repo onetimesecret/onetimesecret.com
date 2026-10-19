@@ -469,36 +469,51 @@
     },
     "lookalike": {
       "title": "Esto no es onetimesecret.com",
-      "description": "Este dominio pertenece a Onetime Secret, pero no es el sitio real. No ejecuta ningún servicio ni acepta datos.",
-      "eyebrow": "Un aviso de Onetime Secret",
+      "description": "Este dominio pertenece a Onetime Secret. Muestra un aviso, no el servicio para compartir secretos.",
+      "eyebrow": "Aviso sobre el dominio",
+      "headerLabel": "¿Onetime Secret?",
       "heading": "Esto no es onetimesecret.com",
       "hostnameFallback": "esta dirección",
       "lead": "Estás visitando {hostname}. Se parece a la dirección de Onetime Secret, pero no es la real.",
-      "ownership": "Este dominio pertenece a Onetime Secret, Inc. Aquí no funciona nada: esta página no tiene formularios y no envía datos a ningún lugar.",
-      "cta": "Ir al verdadero onetimesecret.com",
+      "purpose": "Esto es un aviso, no el servicio para compartir secretos. Aquí no puedes crear ni ver secretos.",
+      "ownership": "Este dominio ({hostname}) pertenece a Onetime Secret.",
+      "recipient": {
+        "heading": "¿Un enlace te ha traído aquí?",
+        "body": "Contacta con quien te envió el enlace a través de un canal que ya conozcas y pídele que lo confirme. No intentes corregir la dirección cambiando letras."
+      },
+      "sender": {
+        "heading": "¿Quieres crear un secreto?",
+        "body": "Escribe esta dirección en la barra de direcciones de tu navegador o utiliza un marcador que hayas verificado previamente.",
+        "https": "Un logotipo conocido, HTTPS o aparecer entre los primeros resultados de búsqueda no demuestra quién gestiona un sitio web. Esto también se aplica a este aviso."
+      },
       "recognise": {
-        "heading": "Cómo reconocer el sitio real",
-        "exact": "La dirección es exactamente onetimesecret.com. Nada antes, nada después y ninguna otra terminación.",
-        "regional": "Los secretos se crean en uno de nuestros dominios regionales: {domains}.",
-        "noForm": "Si llegaste aquí desde un enlace, no pegues ningún secreto en ninguna página de este dominio. No hay dónde pegarlo.",
-        "bookmark": "Guarda el sitio real en tus marcadores y ábrelo desde ahí."
+        "heading": "¿Qué es esta página?",
+        "exact": "Comprueba el nombre de host completo en la barra de direcciones de tu navegador. Nuestro sitio web principal es onetimesecret.com.",
+        "regionalHeading": "Direcciones regionales oficiales del servicio",
+        "regional": "Nuestro servicio para compartir secretos funciona en estos dominios regionales:",
+        "noLinksHeading": "¿Por qué no hay un enlace al servicio?",
+        "noLinks": "Un logotipo conocido o un mensaje tranquilizador se pueden copiar. Ninguno demuestra que una página sea auténtica, aunque aparezca primero en los resultados de búsqueda. Esta página no incluye ningún enlace al servicio de forma deliberada: lo importante es acostumbrarse a comprobar la dirección de manera independiente, en lugar de confiar en un enlace porque la página parece oficial. Ten la misma precaución con esta página."
       },
       "diff": {
-        "toggle": "Ver qué es diferente en esta dirección",
+        "toggle": "Comparar este dominio con el real",
         "real": "La dirección real",
         "this": "Esta dirección",
-        "legend": "Los caracteres resaltados son los que difieren de la dirección real."
+        "legend": "Las partes resaltadas muestran dónde difieren los nombres de dominio.",
+        "srAdded": "(sobra: {chars})",
+        "srChanged": "({chars} en lugar de {expected})",
+        "srMissing": "(falta: {expected})"
       },
       "exposed": {
-        "heading": "Si antes introdujiste algo en este dominio",
-        "body": "Considéralo expuesto. Cambia la contraseña o rota la clave, y avisa a la persona con quien lo compartiste.",
-        "link": "Lee cómo protege los secretos el servicio real"
+        "heading": "¿Ya has compartido información confidencial?",
+        "body": "Si has introducido una contraseña, una clave de acceso u otra información privada en este dominio o en un sitio web cuya autenticidad no puedes verificar, considera esa información expuesta. Cambia la contraseña o sustituye la clave, y avisa a la persona con quien la compartiste.",
+        "stepsHeading": "Qué hacer a continuación",
+        "passwords": "Contraseñas: Abre el servicio afectado desde su aplicación oficial o una dirección en la que ya confíes. Cambia la contraseña, cámbiala también en cualquier otro sitio donde la hayas reutilizado y cierra las demás sesiones si esa opción está disponible.",
+        "tokens": "Claves o tokens de acceso: Revócalos y sustitúyelos a través del servicio que los emitió.",
+        "other": "Otra información privada: Contacta con la persona o el servicio correspondiente a través de un canal conocido para recibir ayuda sobre los siguientes pasos.",
+        "work": "Información laboral: Contacta también cuanto antes con el equipo de TI o de seguridad de tu organización, si lo tiene, aunque no estés seguro de lo ocurrido.",
+        "reporting": "No incluyas contraseñas, claves de acceso ni el contenido de los secretos en un correo electrónico normal o un mensaje de soporte."
       },
-      "languages": "Idioma",
-      "footer": {
-        "operated": "Mantenido por Onetime Secret, Inc. para proteger a sus usuarios.",
-        "realSite": "El sitio real"
-      }
+      "languages": "Idioma"
     }
   },
   "changelog": {

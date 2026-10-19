@@ -25,7 +25,8 @@ const t = (await createLocaleI18n(lang, initialMessages)).global.t;
   description={t("web.lookalike.description")}
   lang={lang}
   dir={LANGUAGE_META[lang].dir}
-  brandName={t("onetime-secret-literal")}>
+  brandName={t("web.lookalike.headerLabel")}
+  languagesLabel={t("web.lookalike.languages")}>
   <Notice
     lang={lang}
     initialMessages={initialMessages}

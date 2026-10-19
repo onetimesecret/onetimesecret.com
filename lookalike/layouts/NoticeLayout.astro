@@ -13,7 +13,11 @@
  */
 import OptimizedFonts from "@/components/layout/OptimizedFonts.astro";
 import { AVAILABLE_THEMES } from "@/utils/theme";
-import { CANONICAL_ORIGIN } from "@config/domains";
+import {
+  DEFAULT_LANGUAGE,
+  LANGUAGE_META,
+  SUPPORTED_LANGUAGES,
+} from "@config/astro/i18n";
 
 // The real site's stylesheets, with Tailwind's class detection narrowed to
 // lookalike/ (see lookalike/styles/tailwind.css).
@@ -24,15 +28,26 @@ export interface Props {
   description: string;
   lang: string;
   dir: "ltr" | "rtl";
-  /** Localized "Onetime Secret" literal for the header mark. */
+  /** Localized question identifying the service the visitor may have expected. */
   brandName: string;
+  languagesLabel: string;
 }
 
-const { title, description, lang, dir, brandName } = Astro.props;
+const { title, description, lang, dir, brandName, languagesLabel } =
+  Astro.props;
 
-// The page runs two inline scripts (theme before paint, hostname after) and
-// nothing else. No external script, no connection anywhere, no form target,
-// so the browser enforces what the page promises. frame-ancestors is not
+// Keep language access ahead of the warning, alongside the site identity.
+const otherLanguages = SUPPORTED_LANGUAGES.filter((code) => code !== lang).map(
+  (code) => ({
+    code,
+    name: LANGUAGE_META[code].name,
+    href: code === DEFAULT_LANGUAGE ? "/" : `/${code}/`,
+  }),
+);
+
+// Inline scripts handle theme, hostname display, and domain comparison.
+// No external scripts, script-initiated connections, or form targets are allowed.
+// Fonts and images still load from this origin. frame-ancestors is not
 // honoured in a <meta> policy and is set as a response header at the CDN.
 //
 // `astro dev` is the one place the policy would break the page: Vite serves
@@ -130,27 +145,42 @@ const csp = [
     </script>
     <title>{title}</title>
   </head>
-  <body class="bg-surface-0 flex h-full flex-col overflow-x-hidden">
-    <header class="mx-auto w-full max-w-3xl px-4 pt-8 sm:px-6">
-      <a
-        href={CANONICAL_ORIGIN}
-        rel="noopener"
-        class="inline-flex items-center gap-3">
-        <img
-          class="h-12 w-auto rounded-lg sm:h-14"
-          src="/etc/img/onetime-logo-md.png"
-          alt=""
-          width="640"
-          height="640"
-        />
-        <span class="font-brand text-2xl font-semibold text-gray-900 dark:text-gray-100">
-          {brandName}
-        </span>
-      </a>
+  <body class="bg-surface-0 flex min-h-full flex-col overflow-x-hidden">
+    {/* The nav shares the brand name's grid column, so on narrow screens it lines up
+        under the name whatever the logo's width. From sm it takes a third column. */}
+    <header
+      class="mx-auto grid w-full max-w-3xl grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2
+        px-4 pt-8 sm:grid-cols-[auto_auto_1fr] sm:px-6">
+      <img
+        class="h-12 w-auto rounded-lg sm:h-14"
+        src="/etc/img/onetime-logo-md.png"
+        alt=""
+        width="640"
+        height="640"
+      />
+      <span class="font-brand text-2xl font-semibold text-gray-900 dark:text-gray-100">
+        {brandName}
+      </span>
+      <nav
+        aria-label={languagesLabel}
+        class="col-start-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-gray-600
+          sm:col-start-3 sm:justify-end dark:text-gray-400">
+        {otherLanguages.map((language) => (
+          <a
+            href={language.href}
+            hreflang={language.code}
+            lang={language.code}
+            class="inline-block py-3 underline underline-offset-4
+              hover:text-gray-950 focus-visible:outline-2 focus-visible:outline-offset-4
+              focus-visible:outline-current dark:hover:text-white">
+            {language.name}
+          </a>
+        ))}
+      </nav>
     </header>
     <main
       id="main-content"
-      class="bg-surface-0 flex-grow">
+      class="bg-surface-0">
       <slot />
     </main>
     <footer class="mx-auto w-full max-w-3xl px-4 pb-10 sm:px-6">
@@ -160,6 +190,8 @@ const csp = [
       // Name the domain the visitor is actually on. Rendered server-side with a
       // generic fallback so the sentence reads correctly without JavaScript,
       // and so one build serves every lookalike domain.
+      // Deliberate: IDNs stay in location.hostname's punycode (xn--) form and are
+      // never rendered as Unicode.
       (function () {
         var host = window.location.hostname;
         if (!host) return;

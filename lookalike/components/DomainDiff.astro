@@ -2,11 +2,15 @@
 /**
  * lookalike/components/DomainDiff.astro
  *
- * "Show what is different": a collapsed block that, once opened, prints the
+ * A collapsed block (web.lookalike.diff.toggle) that, once opened, prints the
  * real domain and the visited hostname side by side with the characters that
  * differ highlighted. The highlights pulse a few times and then stay, so the
  * settled state is also the reduced-motion state (the global reduced-motion
  * rule in src/styles/tailwind.css cuts the animation to a single instant run).
+ *
+ * Screen readers get the visited side's differences in words instead of the
+ * highlights ("extra: s", "missing: e"), letter by letter: read aloud,
+ * "onetimesecrt" and "onetimesecret" sound the same.
  *
  * The comparison is computed in the browser from `location.hostname` by
  * lookalike/lib/domainDiff.ts against the real domains listed in
@@ -37,14 +41,24 @@ const realDomains = [
   new URL(CANONICAL_ORIGIN).hostname,
   ...jurisdictions.filter((j) => !j.comingSoon).map((j) => j.domain),
 ].join(",");
+
+// Screen-reader descriptions, filled in by the script below. The placeholders
+// pass through vue-i18n unchanged.
+const placeholders = { chars: "{chars}", expected: "{expected}" };
 ---
 
 <details
   hidden
   data-lookalike-diff
   data-lookalike-real={realDomains}
-  class="lookalike-diff mt-6 text-lg leading-relaxed text-gray-700 dark:text-gray-300">
-  <summary class="text-brand-600 dark:text-brand-400 inline-block cursor-pointer font-semibold underline underline-offset-4">
+  data-lookalike-sr-added={t("web.lookalike.diff.srAdded", placeholders)}
+  data-lookalike-sr-changed={t("web.lookalike.diff.srChanged", placeholders)}
+  data-lookalike-sr-gap={t("web.lookalike.diff.srMissing", placeholders)}
+  class="lookalike-diff mt-4 text-lg leading-relaxed text-gray-700 dark:text-gray-300">
+  <summary
+    class="text-brand-600 dark:text-brand-400 cursor-pointer py-2 font-semibold underline
+      underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4
+      focus-visible:outline-current">
     {t("web.lookalike.diff.toggle")}
   </summary>
   <dl class="bg-surface-1 mt-4 grid gap-x-6 gap-y-3 rounded-lg p-5 sm:grid-cols-[auto_1fr] sm:p-6">
@@ -120,7 +134,19 @@ const realDomains = [
   import { compareHostname, toSegments } from "../lib/domainDiff";
   import type { DiffSegment } from "../lib/domainDiff";
 
-  function render(target: Element | null, segments: DiffSegment[]): void {
+  /** Screen-reader text per kind of difference, with {chars} and {expected}. */
+  type Descriptions = Partial<Record<DiffSegment["kind"], string>>;
+
+  /** Letter by letter, so a screen reader spells it instead of reading a word. */
+  function spell(text = ""): string {
+    return Array.from(text).join(" ");
+  }
+
+  function render(
+    target: Element | null,
+    segments: DiffSegment[],
+    descriptions: Descriptions = {},
+  ): void {
     if (!target) return;
     target.replaceChildren();
     for (const segment of segments) {
@@ -130,9 +156,22 @@ const realDomains = [
       }
       const mark = document.createElement("mark");
       mark.className = `lookalike-diff-${segment.kind}`;
-      if (segment.kind === "gap") mark.setAttribute("aria-hidden", "true");
       mark.textContent = segment.text;
       target.append(mark);
+      // A described highlight is read as its description, not twice.
+      const description = descriptions[segment.kind];
+      if (description || segment.kind === "gap") {
+        mark.setAttribute("aria-hidden", "true");
+      }
+      if (!description) continue;
+      // The spaces keep it a separate phrase; select-none keeps it out of a
+      // copied address.
+      const words = document.createElement("span");
+      words.className = "sr-only select-none";
+      words.textContent = ` ${description
+        .replace("{chars}", () => spell(segment.text))
+        .replace("{expected}", () => spell(segment.expected))} `;
+      target.append(words);
     }
   }
 
@@ -152,6 +191,11 @@ const realDomains = [
       render(
         root.querySelector("[data-lookalike-diff-actual]"),
         toSegments(comparison.ops, "actual"),
+        {
+          added: root.dataset.lookalikeSrAdded,
+          changed: root.dataset.lookalikeSrChanged,
+          gap: root.dataset.lookalikeSrGap,
+        },
       );
       root.hidden = false;
     }

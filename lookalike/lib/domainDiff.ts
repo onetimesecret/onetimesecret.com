@@ -40,6 +40,12 @@ export type DiffOp =
 export interface DiffSegment {
   text: string;
   kind: "same" | "differs" | "added" | "changed" | "gap";
+  /**
+   * Visited side, `changed` and `gap` only: the real domain's characters this
+   * segment stands in for, so a screen reader can name what was replaced or
+   * is missing.
+   */
+  expected?: string;
 }
 
 export interface HostnameComparison {
@@ -181,8 +187,9 @@ export function toSegments(
     } else {
       if (op.type === "insert") segments.push({ text: op.text, kind: "added" });
       if (op.type === "replace")
-        segments.push({ text: op.to, kind: "changed" });
-      if (op.type === "delete") segments.push({ text: "", kind: "gap" });
+        segments.push({ text: op.to, kind: "changed", expected: op.from });
+      if (op.type === "delete")
+        segments.push({ text: "", kind: "gap", expected: op.text });
     }
   }
   return segments;

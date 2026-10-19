@@ -469,36 +469,51 @@
     },
     "lookalike": {
       "title": "This is not onetimesecret.com",
-      "description": "This domain is owned by Onetime Secret but is not the real site. It runs no service and accepts no data.",
-      "eyebrow": "A notice from Onetime Secret",
+      "description": "This domain belongs to Onetime Secret. It displays a notice, not the secret-sharing service.",
+      "eyebrow": "Domain notice",
+      "headerLabel": "Onetime Secret?",
       "heading": "This is not onetimesecret.com",
       "hostnameFallback": "this address",
       "lead": "You are visiting {hostname}. It looks like the address of Onetime Secret, but it is not the real one.",
-      "ownership": "This domain is owned by Onetime Secret, Inc. Nothing runs here: this page has no form and sends no data anywhere.",
-      "cta": "Go to the real onetimesecret.com",
+      "purpose": "This is a notice, not the secret-sharing service. You cannot create or view secrets here.",
+      "ownership": "This domain ({hostname}) is owned by Onetime Secret.",
+      "recipient": {
+        "heading": "Did a link send you here?",
+        "body": "Contact the sender through a channel you already know and ask them to confirm the link. Do not try to fix the address by changing letters."
+      },
+      "sender": {
+        "heading": "Want to create a secret?",
+        "body": "Type this address into your browser’s address bar, or use a bookmark you previously verified.",
+        "https": "A familiar logo, HTTPS, or a top search result does not prove who operates a website. That applies to this notice too."
+      },
       "recognise": {
-        "heading": "How to recognise the real site",
-        "exact": "The address is exactly onetimesecret.com. Nothing added before it, nothing after it, and no other ending.",
-        "regional": "Secrets are created on one of our regional domains: {domains}.",
-        "noForm": "If a link brought you here, do not paste a secret into any page on this domain. There is nowhere to paste it.",
-        "bookmark": "Bookmark the real site and open it from the bookmark."
+        "heading": "What is this page?",
+        "exact": "Check the full hostname in your browser’s address bar. Our main website is onetimesecret.com.",
+        "regionalHeading": "Official regional service addresses",
+        "regional": "Our secret-sharing service runs on these regional domains:",
+        "noLinksHeading": "Why is there no link to the service?",
+        "noLinks": "A familiar logo or reassuring message can be copied. Neither proves that a page is genuine, even if it appears first in search results. This page deliberately provides no link to the service: the habit to build is checking the address independently, not trusting a link because the page looks official. Apply that caution to this page too."
       },
       "diff": {
-        "toggle": "Show what is different about this address",
+        "toggle": "Compare this domain with the real one",
         "real": "The real address",
         "this": "This address",
-        "legend": "The highlighted characters are the ones that differ from the real address."
+        "legend": "Highlights show where the domain names differ.",
+        "srAdded": "(extra: {chars})",
+        "srChanged": "({chars} instead of {expected})",
+        "srMissing": "(missing: {expected})"
       },
       "exposed": {
-        "heading": "If you entered something on this domain before",
-        "body": "Treat it as exposed. Change the password or rotate the key, and tell the person you shared it with.",
-        "link": "Read how the real service protects secrets"
+        "heading": "Already shared sensitive information?",
+        "body": "If you entered a password, access key, or other private information on this domain or on any website you cannot verify, treat it as exposed. Change the password or replace the key, and tell the person you shared it with.",
+        "stepsHeading": "What to do next",
+        "passwords": "Passwords: Open the affected service through its official app or an address you already trust. Change the password, change it anywhere else you reused it, and sign out other sessions where available.",
+        "tokens": "Access keys or tokens: Revoke and replace them through the service that issued them.",
+        "other": "Other private information: Contact the relevant person or service through a known channel for help with next steps.",
+        "work": "Work-related information: Also contact your organization’s IT or security team promptly, if it has one—even if you are unsure.",
+        "reporting": "Do not include passwords, access keys, or secret contents in an ordinary email or support message."
       },
-      "languages": "Language",
-      "footer": {
-        "operated": "Maintained by Onetime Secret, Inc. to protect its users.",
-        "realSite": "The real site"
-      }
+      "languages": "Language"
     }
   },
   "changelog": {
