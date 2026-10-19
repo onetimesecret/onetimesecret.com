@@ -1,16 +1,17 @@
 packages:
   - .
+# Dependencies allowed to run install scripts. allowBuilds is the only key on
+# purpose: pnpm 12 folds it into onlyBuiltDependencies (true) and
+# ignoredBuiltDependencies (false), and only the first list decides what runs,
+# so a package named in both an allowBuilds: false and an onlyBuiltDependencies
+# entry was built regardless. unrs-resolver was in that position and stays
+# built here; set it to false to stop building it.
 allowBuilds:
   '@sentry/cli': true
+  '@tailwindcss/oxide': true
   esbuild: true
   sharp: true
-  unrs-resolver: false
-onlyBuiltDependencies:
-  - '@sentry/cli'
-  - '@tailwindcss/oxide'
-  - esbuild
-  - sharp
-  - unrs-resolver
+  unrs-resolver: true
 overrides:
   "@eslint/plugin-kit": ^0.3.4
   # GHSA-6qxp-vccf-f47h. Pulled in by @spotlightjs/spotlight and sidecar.
@@ -31,8 +32,9 @@ overrides:
   shell-quote: ^1.11.0
   undici: ^7.28.0
   yaml: ^2.8.3
-# minimumReleaseAge is left at the pnpm 11+ default of 1440 minutes (1 day).
-# Setting it explicitly would also turn on minimumReleaseAgeStrict.
+# minimumReleaseAge is left at the pnpm default of 1440 minutes (1 day);
+# verified against pnpm 12.4.1 (see packageManager in package.json). Setting
+# it explicitly would also turn on minimumReleaseAgeStrict.
 minimumReleaseAgeExclude:
   - typescript
   - typescript-eslint
