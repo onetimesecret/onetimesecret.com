@@ -75,12 +75,9 @@ async function collectConsoleErrors(
 test.describe("Homepage redesign — page load", () => {
   test("homepage loads without console errors", async ({ page }) => {
     const errors = await collectConsoleErrors(page, "/");
-    // Filter known third-party noise (e.g. Sentry, spotlight in dev)
+    // Filter known third-party noise (e.g. Sentry)
     const appErrors = errors.filter(
-      (e) =>
-        !e.includes("ERR_BLOCKED_BY_CLIENT") &&
-        !e.includes("sentry") &&
-        !e.includes("spotlight"),
+      (e) => !e.includes("ERR_BLOCKED_BY_CLIENT") && !e.includes("sentry"),
     );
     expect(appErrors).toHaveLength(0);
   });

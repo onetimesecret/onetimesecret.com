@@ -55,7 +55,6 @@ export function createConfig(): AstroUserConfig["integrations"] {
        * variables for security.
        *
        * @see https://docs.sentry.io/platforms/javascript/guides/astro/
-       * @see https://github.com/getsentry/spotlight/blob/main/packages/astro/README.md
        */
       sourceMapsUploadOptions: {
         // Disable Sentry telemetry during the upload process
@@ -75,18 +74,7 @@ export function createConfig(): AstroUserConfig["integrations"] {
         // The integration should automatically handle deleting maps
         // based on vite.build.sourcemap setting ('hidden' deletes maps)
       },
-      // Spotlight configuration can also be potentially moved here if preferred,
-      // but keeping runtime config in sentry.config.ts is fine.
     }),
-    // https://spotlightjs.com/reference/configuration/
-    // spotlightjs({
-    //   debug: false,
-    //   // sidecarUrl: "https://catch.onetimesecret.com/",
-    //   sidecarUrl: "http://localhost:8969", // Force using only the local sidecar
-    //   openOnInit: false,
-    //   injectImmediately: true,
-    //   fullPage: true,
-    // }),
     vue({
       devtools: false,
       /**

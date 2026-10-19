@@ -30,10 +30,7 @@ test.describe('Pricing — page load', () => {
     });
     await page.goto('/pricing', { waitUntil: 'networkidle' });
     const appErrors = errors.filter(
-      (e) =>
-        !e.includes('ERR_BLOCKED_BY_CLIENT') &&
-        !e.includes('sentry') &&
-        !e.includes('spotlight')
+      (e) => !e.includes('ERR_BLOCKED_BY_CLIENT') && !e.includes('sentry')
     );
     expect(appErrors).toHaveLength(0);
   });
