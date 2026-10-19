@@ -1635,10 +1635,17 @@ describe("main", () => {
       const fake = fakeProbe(liveZones(), {
         answer: (_z, attempt) => (attempt < 2 ? healthy : served),
       });
-      const { code, sleep } = run(["probe", "nz"], fake.fetch);
+      const { code, sleep, log } = run(["probe", "nz"], fake.fetch);
 
       expect(await code).toBe(0);
       expect(fake.serving.map((s) => s.attempt)).toEqual([0, 1, 2]);
+      const requests = fake.requests.filter(
+        (r) => r.url.hostname === REGIONAL_HOSTS.nz,
+      );
+      const urls = log.mock.calls
+        .map(([line]) => line as string)
+        .filter((line) => line.startsWith("nz: probe URL "));
+      expect(urls).toEqual(requests.map((r) => `nz: probe URL ${r.url.href}`));
       expect(new Set(fake.serving.map((s) => s.guid)).size).toBe(1);
       expect(sleep).toHaveBeenCalledTimes(2);
       expect(sleep.mock.calls.every(([ms]) => ms > 0)).toBe(true);

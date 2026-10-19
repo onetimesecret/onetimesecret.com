@@ -165,7 +165,8 @@ Commands:
                 temporary edge rule scoped to a random probe URL. Normal
                 traffic and the configured origin are unchanged. Requires
                 BUNNY_API_KEY; retries for propagation and removes the rule
-                even on failure. Exit 0 only when all pages match.
+                even on failure. Prints each request URL. Exit 0 only when
+                all pages match.
 
 Arguments:
   --apply       push only: write to the zones that differ
@@ -1086,8 +1087,10 @@ async function probeCommand({
         for (let attempt = 0; attempt < 12; attempt++) {
           signal?.throwIfAborted();
           // Unique paths defeat cached responses even when query strings are ignored.
+          const url = `https://${host}/.well-known/ots-error-page-probe/${token}/${attempt}`;
+          log(`${s.region}: probe URL ${url}`);
           result = await probeRegion(client.fetch, s.region, host, marker, {
-            url: `https://${host}/.well-known/ots-error-page-probe/${token}/${attempt}`,
+            url,
             expectedZone: fresh.Id,
             html,
             signal: servingSignal,

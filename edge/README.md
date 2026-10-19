@@ -371,10 +371,14 @@ one region at a time:
    It never restores a saved rule list over concurrent edits. Any failure
    stops the command before the next region.
 
-The command logs the zone ID, local probe token and, after read-back, Bunny's
-assigned rule GUID. Cleanup cannot be guaranteed
-on `SIGKILL`, power loss or another uncatchable termination. A leftover rule
-is still scoped only to the unpredictable probe URL, not normal traffic.
+The command prints the exact URL before each serving attempt, alongside the
+zone ID, local probe token and, after read-back, Bunny's assigned rule GUID.
+These URLs exercise the custom page only while the temporary rule is active;
+opening them after cleanup will reach the origin instead.
+
+Cleanup cannot be guaranteed on `SIGKILL`, power loss or another uncatchable
+termination. A leftover rule is still scoped only to the unpredictable probe
+URL, not normal traffic.
 If cleanup fails, the command prints recovery using those logged values:
 `DELETE /pullzone/{id}/edgerules/{guid}`. If the GUID could not be discovered,
 it instead identifies the exact Description to find. Delete only the
