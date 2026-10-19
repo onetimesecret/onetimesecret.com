@@ -16,9 +16,14 @@ export interface Props {
 
 const { lang, initialMessages } = Astro.props;
 const t = (await createLocaleI18n(lang, initialMessages)).global.t;
+
+// Filled in the browser by the inline script in NoticeLayout, like the lead.
+const hostnameSlot = `<span data-lookalike-hostname dir="ltr" class="break-all">${t(
+  "web.lookalike.hostnameFallback",
+)}</span>`;
+const ownership = t("web.lookalike.ownership", { hostname: hostnameSlot });
 ---
 
 <div class="border-surface-3 space-y-2 border-t pt-6 text-sm text-gray-600 dark:text-gray-400">
-  <p>{t("web.lookalike.ownership")}</p>
-  <p>{t("web.lookalike.footer.operated")}</p>
+  <p set:html={ownership} />
 </div>

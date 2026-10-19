@@ -59,8 +59,8 @@ const lead = t("web.lookalike.lead", { hostname: hostnameSlot });
     {t("web.lookalike.purpose")}
   </p>
 
-  {/* Aligned task rows separate questions from guidance without ranking either task. */}
-  <div class="task-options mb-4 space-y-6">
+  {/* Aligned task rows separate questions from guidance without ranking any task. */}
+  <div class="task-options mb-10 space-y-6">
     <section class="md:grid md:grid-cols-[1fr_2fr] md:gap-8">
       <h2 class="mb-3 font-sans text-xl font-semibold text-gray-900 dark:text-gray-100">
         {t("web.lookalike.recipient.heading")}
@@ -77,49 +77,56 @@ const lead = t("web.lookalike.lead", { hostname: hostnameSlot });
         {t("web.lookalike.sender.heading")}
       </h2>
       <div>
-        {/* Small word boundaries aid recognition without changing the copied hostname. */}
+        {/* Weight, not space, marks the brand's own word boundary (Onetime | Secret).
+            A visible gap gets typed as a space, which turns the address into a
+            search query, and "one time" primes hyphenated lookalikes. Mapped so
+            Prettier cannot put whitespace between the parts. */}
         <p
-          class="official-address mb-3 font-sans font-medium text-gray-900 dark:text-gray-100"
+          class="official-address mb-3 font-sans font-normal text-gray-900 dark:text-gray-100"
           dir="ltr">
-          {["one", "time", "secret.com"].map((part) => (
-            <span>{part}</span>
+          {["onetime", "secret.com"].map((part, i) => (
+            <span class:list={{ "font-bold": i === 0 }}>{part}</span>
           ))}
         </p>
         <p class="text-base leading-relaxed text-gray-700 dark:text-gray-300">
           {t("web.lookalike.recognise.bookmark")}
         </p>
+        <p class="mt-3 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+          {t("web.lookalike.recognise.https")}
+        </p>
+      </div>
+    </section>
+
+    <section
+      class="border-t border-gray-300 pt-6 md:grid md:grid-cols-[1fr_2fr] md:gap-8
+        dark:border-gray-700">
+      <h2 class="mb-3 font-sans text-xl font-semibold text-gray-900 dark:text-gray-100">
+        {t("web.lookalike.exposed.heading")}
+      </h2>
+      <div>
+        <p class="text-base leading-relaxed text-gray-700 dark:text-gray-300">
+          {t("web.lookalike.exposed.body")}
+        </p>
+        <details class="mt-2 text-base leading-relaxed text-gray-700 dark:text-gray-300">
+          <summary
+            class="cursor-pointer py-2 font-medium underline underline-offset-4
+              hover:text-gray-950 focus-visible:outline-2 focus-visible:outline-offset-4
+              focus-visible:outline-current dark:hover:text-white">
+            {t("web.lookalike.exposed.stepsHeading")}
+          </summary>
+          <ul class="mt-3 list-disc space-y-3 pl-6">
+            <li>{t("web.lookalike.exposed.passwords")}</li>
+            <li>{t("web.lookalike.exposed.tokens")}</li>
+            <li>{t("web.lookalike.exposed.other")}</li>
+            <li>{t("web.lookalike.exposed.work")}</li>
+          </ul>
+          <p class="mt-4">{t("web.lookalike.exposed.reporting")}</p>
+        </details>
       </div>
     </section>
   </div>
-  <p class="mb-8 max-w-prose text-sm leading-relaxed text-gray-700 dark:text-gray-300">
-    {t("web.lookalike.recognise.https")}
-  </p>
 
-  <section class="mb-10 border-y border-gray-300 py-6 sm:py-8 dark:border-gray-700">
-    <h2 class="mb-3 font-sans text-xl font-semibold text-gray-900 dark:text-gray-100">
-      {t("web.lookalike.exposed.heading")}
-    </h2>
-    <p class="mb-4 text-lg leading-relaxed text-gray-700 dark:text-gray-300">
-      {t("web.lookalike.exposed.body")}
-    </p>
-    <details class="text-base leading-relaxed text-gray-700 dark:text-gray-300">
-      <summary
-        class="cursor-pointer py-2 font-medium underline underline-offset-4
-          hover:text-gray-950 focus-visible:outline-2 focus-visible:outline-offset-4
-          focus-visible:outline-current dark:hover:text-white">
-        {t("web.lookalike.exposed.stepsHeading")}
-      </summary>
-      <ul class="mt-3 list-disc space-y-3 pl-6">
-        <li>{t("web.lookalike.exposed.passwords")}</li>
-        <li>{t("web.lookalike.exposed.tokens")}</li>
-        <li>{t("web.lookalike.exposed.other")}</li>
-        <li>{t("web.lookalike.exposed.work")}</li>
-      </ul>
-      <p class="mt-4">{t("web.lookalike.exposed.reporting")}</p>
-    </details>
-  </section>
-
-  <section>
+  <section class="border-t border-gray-300 pt-6 sm:pt-8 dark:border-gray-700">
     <h2 class="mb-3 font-sans text-lg font-semibold text-gray-900 dark:text-gray-100">
       {t("web.lookalike.recognise.heading")}
     </h2>
@@ -169,11 +176,7 @@ const lead = t("web.lookalike.lead", { hostname: hostnameSlot });
   .official-address {
     font-size: clamp(1.25rem, 3vw, 1.5rem);
     line-height: 1.25;
-    letter-spacing: -0.025em;
+    letter-spacing: 0.01em;
     white-space: nowrap;
-  }
-
-  .official-address span + span {
-    margin-inline-start: 0.12em;
   }
 </style>
