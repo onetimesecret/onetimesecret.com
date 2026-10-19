@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -111,3 +111,9 @@ Before committing any changes, run:
 
 - Design issues and solutions: [DESIGN_TODOS.md](./DESIGN_TODOS.md)
 - Sentry implementation: [SENTRY-IMPLEMENTATION.md](./SENTRY-IMPLEMENTATION.md)
+
+## Terms and phrases to avoid
+
+Do not use any of the following terms (unless it is precisely the word needed) or phrases or sentence structures:
+- holds, claims, lands, carries, travels
+- "A isn't only B, but also C"
