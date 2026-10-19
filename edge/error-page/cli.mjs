@@ -164,7 +164,7 @@ Commands:
   probe         deploy the current page if needed, verify the update, then
                 create or reuse one persistent preview rule per serving hostname,
                 scoped to a random URL. Normal traffic and configured origin are
-                unchanged. Prints a stable manual preview URL and unique test URLs.
+                unchanged. Prints a manual preview URL and unique automated test URLs.
                 Requires BUNNY_API_KEY; retries for propagation. Verified rules
                 remain on failure or interruption; only unverified new installs
                 are cleaned up. Duplicate or malformed managed rules are rejected.
@@ -683,8 +683,11 @@ export async function probeRegion(
 
 /** @param {Probe} p */
 function describeProbe(p) {
-  const status = p.status ? String(p.status) : "---";
-  return `${p.region.padEnd(3)} ${p.host.padEnd(24)} ${status}  ${p.detail}`;
+  if (p.outcome === "served") {
+    return `  PASS: custom page verified — HTTP ${p.status} (expected), pull zone ${p.zone}`;
+  }
+  const status = p.status ? `HTTP ${p.status}` : "no HTTP response";
+  return `  NOT VERIFIED: ${status} — ${p.detail}`;
 }
 
 /**
@@ -1056,6 +1059,12 @@ async function probeCommand({
   overrides,
 }) {
   const marker = pageMarker(html);
+  log(
+    "Error-page probe: an intentional HTTP 5xx is expected, not a test failure.",
+  );
+  log(
+    "Only preview URLs trigger the simulated outage; normal traffic is unaffected.",
+  );
   for (const [i, s] of selected.entries()) {
     let code = 0;
     let cleanup;
@@ -1077,6 +1086,7 @@ async function probeCommand({
           `${s.region}: no attached serving hostname for the selected zone`,
         );
       }
+      log(`\n${s.region} — ${host} (pull zone ${fresh.Id})`);
       const preview = managedProbeRules(fresh).get(host);
       if (plan.action === "update") {
         signal?.throwIfAborted();
@@ -1093,9 +1103,7 @@ async function probeCommand({
           guid: undefined,
           existingGuids: new Set((fresh.EdgeRules ?? []).map((r) => r.Guid)),
         };
-        log(
-          `${s.region}: installing request-scoped probe ${token} on zone ${fresh.Id}`,
-        );
+        log("  Preview rule: creating a URL-scoped rule...");
         // Guid is an update selector, not a client-assigned creation ID.
         const created = await bunny(
           client,
@@ -1121,9 +1129,7 @@ async function probeCommand({
             "probe rule read-back does not match the scoped rule",
           );
         }
-        log(
-          `${s.region}: Bunny assigned probe rule ${cleanup.guid} on zone ${fresh.Id}`,
-        );
+        log(`  Preview rule: created ${cleanup.guid} (verifying installation)`);
         const withoutProbe = {
           ...installed,
           EdgeRules: (installed.EdgeRules ?? []).filter(
@@ -1144,12 +1150,13 @@ async function probeCommand({
         // From this point the verified preview is persistent, even on interruption.
         cleanup = undefined;
       } else {
-        log(
-          `${s.region}: reusing preview rule ${preview.rule.Guid} on zone ${fresh.Id}`,
-        );
+        log(`  Preview rule: reusing ${preview.rule.Guid}`);
       }
       const baseUrl = `https://${host}/.well-known/ots-error-page-probe/${token}`;
-      log(`${s.region}: manual preview URL ${baseUrl}/manual (retained)`);
+      log(
+        "  Preview rule stays installed after exit; the manual URL remains available.",
+      );
+      log(`  Manual preview URL: ${baseUrl}/manual`);
       const runToken = randomUUID();
       const servingSignal = AbortSignal.any([
         ...(signal ? [signal] : []),
@@ -1159,7 +1166,7 @@ async function probeCommand({
         signal?.throwIfAborted();
         // Unique paths defeat cached responses even when query strings are ignored.
         const url = `${baseUrl}/${runToken}/${attempt}`;
-        log(`${s.region}: probe URL ${url}`);
+        log(`  Attempt ${attempt + 1}/12 — automated test URL: ${url}`);
         result = await probeRegion(client.fetch, s.region, host, marker, {
           url,
           expectedZone: fresh.Id,
@@ -1170,10 +1177,12 @@ async function probeCommand({
         signal?.throwIfAborted();
         if (result.outcome === "served") break;
         if (servingSignal.aborted || attempt === 11) break;
+        log("  Retrying in 5s to allow for edge rule propagation...");
         await sleep(5000, servingSignal);
       }
       if (result?.outcome !== "served") {
         code = 1;
+        log(`  FAIL: custom page not verified for ${s.region}.`);
         if (result) log(probeAdvice([result]));
       }
     } catch (err) {
@@ -1204,7 +1213,9 @@ async function probeCommand({
       return code;
     }
   }
-  log(`Custom page served for ${selected.map((s) => s.region).join(", ")}.`);
+  log(
+    `\nPASS: custom error page verified for ${selected.map((s) => s.region).join(", ")}.`,
+  );
   return 0;
 }
 

@@ -375,11 +375,16 @@ one region at a time:
    and never restores a saved rule list over concurrent edits. Any failure
    stops the command before the next region.
 
-The command prints a stable **manual preview URL** ending in `/manual`, plus
-an exact URL before each automated serving attempt. These URLs remain usable
-when the command exits because the verified rule stays installed. They return
-an intentional `5xx` response with the custom page, not a successful `200`.
-Propagation can still be pending if the automated serving check failed.
+Output is grouped by region, serving hostname and pull zone. Open the **Manual
+preview URL** ending in `/manual` to inspect the page in a browser. Each numbered
+attempt also prints its **automated test URL**, a unique path to avoid cached responses.
+Both URLs intentionally trigger an HTTP `5xx`; `PASS` means the custom page was
+verified, not that the server returned `200`. Unsuccessful attempts print
+`NOT VERIFIED`, followed by a retry notice or a final `FAIL` and troubleshooting advice.
+
+The verified preview rule stays installed after exit, so the manual URL remains
+available. Only preview URLs trigger the simulated outage; normal traffic is
+unaffected. Propagation can still be pending if the automated serving check failed.
 
 To retire a preview, delete only its logged server-assigned rule GUID in Bunny
 or via `DELETE /pullzone/{id}/edgerules/{guid}`, then read the zone back to

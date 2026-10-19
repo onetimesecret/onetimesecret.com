@@ -1553,10 +1553,36 @@ describe("main", () => {
         expect(await code).toBe(0);
         const regions = args.length ? args : Object.keys(REGIONAL_HOSTS);
         expect(log.mock.calls.at(-1)?.[0]).toBe(
-          `Custom page served for ${regions.join(", ")}.`,
+          `\nPASS: custom error page verified for ${regions.join(", ")}.`,
         );
       },
     );
+
+    it("explains expected errors, preview retention and successful verification", async () => {
+      const fake = fakeProbe();
+      const { code, log } = run(["probe", "nz"], fake.fetch);
+
+      expect(await code).toBe(0);
+      const lines = log.mock.calls.map(([line]) => String(line));
+      expect(lines).toContain(
+        "Error-page probe: an intentional HTTP 5xx is expected, not a test failure.",
+      );
+      expect(lines).toContain(
+        "Only preview URLs trigger the simulated outage; normal traffic is unaffected.",
+      );
+      expect(lines).toContain(
+        "  Preview rule stays installed after exit; the manual URL remains available.",
+      );
+      expect(lines).toContain(
+        `\nnz — ${REGIONAL_HOSTS.nz} (pull zone ${fake.created[0].id})`,
+      );
+      expect(lines).toContain(
+        `  PASS: custom page verified — HTTP 502 (expected), pull zone ${fake.created[0].id}`,
+      );
+      expect(
+        lines.some((line) => /Retrying|NOT VERIFIED|FAIL:|bogus/.test(line)),
+      ).toBe(false);
+    });
 
     it("reuses a stable manual URL without writes and uses fresh serving paths on every run", async () => {
       const fake = fakeProbe();
@@ -1566,15 +1592,13 @@ describe("main", () => {
         expect(await code).toBe(0);
         const line = log.mock.calls
           .map(([line]) => String(line))
-          .find((line) => line.startsWith("nz: manual preview URL "))!;
+          .find((line) => line.startsWith("  Manual preview URL: "))!;
         manualUrls.push(line);
       }
       expect(new Set(manualUrls).size).toBe(1);
       const { id, rule } = fake.created[0];
       const base = `https://${REGIONAL_HOSTS.nz}/.well-known/ots-error-page-probe/${probeToken(rule)}`;
-      expect(manualUrls[0]).toBe(
-        `nz: manual preview URL ${base}/manual (retained)`,
-      );
+      expect(manualUrls[0]).toBe(`  Manual preview URL: ${base}/manual`);
       const urls = fake.requests
         .filter((r) => r.url.hostname !== "api.bunny.net")
         .map((r) => r.url);
@@ -1633,7 +1657,7 @@ describe("main", () => {
         );
         expect(await code).toBe(kind === "interruption" ? 2 : 1);
         expect(log).toHaveBeenCalledWith(
-          expect.stringContaining("manual preview URL"),
+          expect.stringContaining("Manual preview URL:"),
         );
         expect(fake.posts).toEqual([]);
         expect(fake.store.get(nz.Id)!.EdgeRules).toEqual(nz.EdgeRules);
@@ -1919,8 +1943,12 @@ describe("main", () => {
       );
       const urls = log.mock.calls
         .map(([line]) => line as string)
-        .filter((line) => line.startsWith("nz: probe URL "));
-      expect(urls).toEqual(requests.map((r) => `nz: probe URL ${r.url.href}`));
+        .filter((line) => line.includes(" — automated test URL: "));
+      expect(urls).toEqual(
+        requests.map(
+          (r, i) => `  Attempt ${i + 1}/12 — automated test URL: ${r.url.href}`,
+        ),
+      );
       expect(new Set(fake.serving.map((s) => s.guid)).size).toBe(1);
       expect(sleep).toHaveBeenCalledTimes(2);
       expect(sleep.mock.calls.every(([ms]) => ms > 0)).toBe(true);
@@ -2678,7 +2706,7 @@ describe("main", () => {
       expect(fake.serving).toEqual([]);
       expectRetained(fake, fake.created[0].id, fake.created[0].rule.Guid);
       expect(log).toHaveBeenCalledWith(
-        expect.stringContaining("manual preview URL"),
+        expect.stringContaining("Manual preview URL:"),
       );
     });
 
