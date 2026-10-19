@@ -41,7 +41,10 @@ import { jurisdictions } from "../../../src/data/ops/jurisdictions";
 
 const PAGE = "<html>\n<body>\n{{status_code}}\n</body>\n</html>";
 const SCRIPT = resolve(import.meta.dirname, "../../../edge/error-page/cli.mjs");
-const TEMPLATE = resolve(import.meta.dirname, "../../../edge/error-page/regional.html");
+const TEMPLATE = resolve(
+  import.meta.dirname,
+  "../../../edge/error-page/regional.html",
+);
 
 type FakeZone = Record<string, unknown> & {
   Id: number;
@@ -49,7 +52,11 @@ type FakeZone = Record<string, unknown> & {
   Hostnames: { Value: string }[];
 };
 
-function zone(id: number, hosts: string[], extra: Record<string, unknown> = {}): FakeZone {
+function zone(
+  id: number,
+  hosts: string[],
+  extra: Record<string, unknown> = {},
+): FakeZone {
   return {
     Id: id,
     Name: `zone-${id}`,
@@ -68,7 +75,9 @@ describe("REGIONAL_HOSTS", () => {
       uk: "uk.onetimesecret.com",
     });
     for (const [region, host] of Object.entries(REGIONAL_HOSTS)) {
-      const j = jurisdictions.find((x) => x.identifier.toLowerCase() === region);
+      const j = jurisdictions.find(
+        (x) => x.identifier.toLowerCase() === region,
+      );
       expect(j?.domain).toBe(host);
       expect(j?.comingSoon).toBeFalsy();
     }
@@ -105,7 +114,10 @@ describe("selectRegionalZones", () => {
     const zones = [zone(2, ["eu.onetimesecret.com"])];
 
     const attempt = () =>
-      selectRegionalZones(zones, { eu: REGIONAL_HOSTS.eu, ca: REGIONAL_HOSTS.ca });
+      selectRegionalZones(zones, {
+        eu: REGIONAL_HOSTS.eu,
+        ca: REGIONAL_HOSTS.ca,
+      });
 
     expect(attempt).toThrow(/ca\.onetimesecret\.com/);
     expect(attempt).toThrow(/BUNNY_PULL_ZONE_CA=/);
@@ -118,13 +130,23 @@ describe("selectRegionalZones", () => {
     const zones = [zone(2, ["eu.onetimesecret.com"]), shield];
 
     it("resolves the region to the zone by name, case-insensitively", () => {
-      const selected = selectRegionalZones(zones, { nz: REGIONAL_HOSTS.nz }, { nz: "X9K2M4P1" });
+      const selected = selectRegionalZones(
+        zones,
+        { nz: REGIONAL_HOSTS.nz },
+        { nz: "X9K2M4P1" },
+      );
 
-      expect(selected).toEqual([{ region: "nz", host: REGIONAL_HOSTS.nz, zone: shield }]);
+      expect(selected).toEqual([
+        { region: "nz", host: REGIONAL_HOSTS.nz, zone: shield },
+      ]);
     });
 
     it("resolves the region to the zone by numeric ID", () => {
-      const selected = selectRegionalZones(zones, { nz: REGIONAL_HOSTS.nz }, { nz: "7" });
+      const selected = selectRegionalZones(
+        zones,
+        { nz: REGIONAL_HOSTS.nz },
+        { nz: "7" },
+      );
 
       expect(selected.map((s) => s.zone.Id)).toEqual([7]);
     });
@@ -134,38 +156,54 @@ describe("selectRegionalZones", () => {
 
       const selected = selectRegionalZones(zones, hosts, { nz: "x9k2m4p1" });
 
-      expect(selected.map((s) => [s.region, s.zone.Id])).toEqual([["eu", 2], ["nz", 7]]);
+      expect(selected.map((s) => [s.region, s.zone.Id])).toEqual([
+        ["eu", 2],
+        ["nz", 7],
+      ]);
     });
 
     it("fails when no zone has that name or ID", () => {
-      expect(() => selectRegionalZones(zones, { nz: REGIONAL_HOSTS.nz }, { nz: "nope" }))
-        .toThrow(/No pull zone named or numbered "nope" \(given for nz\)/);
-      expect(() => selectRegionalZones(zones, { nz: REGIONAL_HOSTS.nz }, { nz: "99" }))
-        .toThrow(/"99"/);
+      expect(() =>
+        selectRegionalZones(zones, { nz: REGIONAL_HOSTS.nz }, { nz: "nope" }),
+      ).toThrow(/No pull zone named or numbered "nope" \(given for nz\)/);
+      expect(() =>
+        selectRegionalZones(zones, { nz: REGIONAL_HOSTS.nz }, { nz: "99" }),
+      ).toThrow(/"99"/);
     });
 
     it("refuses a zone that carries another region's hostname", () => {
-      expect(() => selectRegionalZones(zones, { nz: REGIONAL_HOSTS.nz }, { nz: "zone-2" }))
-        .toThrow(/carries eu\.onetimesecret\.com, the eu hostname/);
+      expect(() =>
+        selectRegionalZones(zones, { nz: REGIONAL_HOSTS.nz }, { nz: "zone-2" }),
+      ).toThrow(/carries eu\.onetimesecret\.com, the eu hostname/);
     });
 
     it("accepts a zone that carries its own region's hostname", () => {
-      const selected = selectRegionalZones(zones, { eu: REGIONAL_HOSTS.eu }, { eu: "2" });
+      const selected = selectRegionalZones(
+        zones,
+        { eu: REGIONAL_HOSTS.eu },
+        { eu: "2" },
+      );
 
       expect(selected.map((s) => s.zone.Id)).toEqual([2]);
     });
   });
 
   it("refuses a hostname attached to two zones", () => {
-    const zones = [zone(2, ["eu.onetimesecret.com"]), zone(9, ["eu.onetimesecret.com"])];
+    const zones = [
+      zone(2, ["eu.onetimesecret.com"]),
+      zone(9, ["eu.onetimesecret.com"]),
+    ];
 
-    expect(() => selectRegionalZones(zones, { eu: REGIONAL_HOSTS.eu })).toThrow(/two pull zones/);
+    expect(() => selectRegionalZones(zones, { eu: REGIONAL_HOSTS.eu })).toThrow(
+      /two pull zones/,
+    );
   });
 
   it("never selects the marketing zone", () => {
-    const zones = [zone(1, ["onetimesecret.com"]), ...Object.values(REGIONAL_HOSTS).map(
-      (host, i) => zone(10 + i, [host]),
-    )];
+    const zones = [
+      zone(1, ["onetimesecret.com"]),
+      ...Object.values(REGIONAL_HOSTS).map((host, i) => zone(10 + i, [host])),
+    ];
 
     const ids = selectRegionalZones(zones).map((s) => s.zone.Id);
 
@@ -195,7 +233,10 @@ describe("planZone", () => {
     expect(crlf).not.toBe(PAGE); // the fixture really has internal line breaks
 
     const plan = planZone(
-      selected({ ErrorPageEnableCustomCode: true, ErrorPageCustomCode: `\r\n${crlf}\r\n` }),
+      selected({
+        ErrorPageEnableCustomCode: true,
+        ErrorPageCustomCode: `\r\n${crlf}\r\n`,
+      }),
       `${PAGE}\n`,
     );
 
@@ -208,22 +249,35 @@ describe("planZone", () => {
       PAGE,
     );
 
-    expect([plan.action, plan.reason]).toEqual(["update", "custom error page disabled"]);
+    expect([plan.action, plan.reason]).toEqual([
+      "update",
+      "custom error page disabled",
+    ]);
   });
 
   it("updates a zone with no page at all", () => {
     const plan = planZone(selected({ ErrorPageEnableCustomCode: true }), PAGE);
 
-    expect([plan.action, plan.reason]).toEqual(["update", "page content differs"]);
+    expect([plan.action, plan.reason]).toEqual([
+      "update",
+      "page content differs",
+    ]);
   });
 
   it("updates a zone whose page differs", () => {
     const plan = planZone(
-      selected({ ErrorPageEnableCustomCode: true, ErrorPageCustomCode: "<html>old</html>" }),
+      selected({
+        ErrorPageEnableCustomCode: true,
+        ErrorPageCustomCode: "<html>old</html>",
+      }),
       PAGE,
     );
 
-    expect([plan.action, plan.id, plan.host]).toEqual(["update", 2, REGIONAL_HOSTS.eu]);
+    expect([plan.action, plan.id, plan.host]).toEqual([
+      "update",
+      2,
+      REGIONAL_HOSTS.eu,
+    ]);
   });
 });
 
@@ -283,7 +337,10 @@ describe("pickRegions", () => {
   });
 
   it("accepts region codes in any case", () => {
-    expect(pickRegions(["EU", "Uk"])).toEqual({ eu: REGIONAL_HOSTS.eu, uk: REGIONAL_HOSTS.uk });
+    expect(pickRegions(["EU", "Uk"])).toEqual({
+      eu: REGIONAL_HOSTS.eu,
+      uk: REGIONAL_HOSTS.uk,
+    });
   });
 
   it("rejects a region that has no live zone", () => {
@@ -309,11 +366,15 @@ describe("parsePullZoneList", () => {
   });
 
   it("accepts a paginated object when there is no further page", () => {
-    expect(parsePullZoneList({ Items: zones, HasMoreItems: false })).toBe(zones);
+    expect(parsePullZoneList({ Items: zones, HasMoreItems: false })).toBe(
+      zones,
+    );
   });
 
   it("refuses to work from a partial list", () => {
-    expect(() => parsePullZoneList({ Items: zones, HasMoreItems: true })).toThrow(/pagination/);
+    expect(() =>
+      parsePullZoneList({ Items: zones, HasMoreItems: true }),
+    ).toThrow(/pagination/);
   });
 
   it.each([null, "zones", 42, {}, { Items: "nope" }])("rejects %j", (data) => {
@@ -343,7 +404,9 @@ describe("unexpectedChanges", () => {
   });
 
   it("names every other field that changed, was added, or was dropped", () => {
-    const rest = Object.fromEntries(Object.entries(before).filter(([k]) => k !== "OriginUrl"));
+    const rest = Object.fromEntries(
+      Object.entries(before).filter(([k]) => k !== "OriginUrl"),
+    );
     const after = {
       ...rest,
       Hostnames: [],
@@ -374,18 +437,26 @@ describe("cli.mjs under plain node", () => {
   // node's own type stripping too, and the "run when executed directly" guard
   // has to fire. One --help run pins both.
   it("loads and runs --help", () => {
-    const out = execFileSync(process.execPath, [SCRIPT, "--help"], { encoding: "utf8" });
+    const out = execFileSync(process.execPath, [SCRIPT, "--help"], {
+      encoding: "utf8",
+    });
 
-    expect(out).toMatch(/^Usage: pnpm edge:error-page:<push\|verify\|deploy\|probe>/);
+    expect(out).toMatch(
+      /^Usage: pnpm edge:error-page:<push\|verify\|deploy\|probe>/,
+    );
     expect(out).toContain("BUNNY_PULL_ZONE_<REGION>");
     expect(out).toContain(Object.keys(REGIONAL_HOSTS).join(", "));
     for (const c of COMMANDS) expect(out).toMatch(new RegExp(`^  ${c} `, "m"));
   });
 
   it("names every pnpm script for its command", () => {
-    const pkg = JSON.parse(readFileSync(resolve(SCRIPT, "../../../package.json"), "utf8"));
+    const pkg = JSON.parse(
+      readFileSync(resolve(SCRIPT, "../../../package.json"), "utf8"),
+    );
     for (const c of COMMANDS) {
-      expect(pkg.scripts[`edge:error-page:${c}`]).toBe(`node edge/error-page/cli.mjs ${c}`);
+      expect(pkg.scripts[`edge:error-page:${c}`]).toBe(
+        `node edge/error-page/cli.mjs ${c}`,
+      );
     }
   });
 });
@@ -401,7 +472,8 @@ describe("loadDotenv", () => {
 
   function root(files: Record<string, string>) {
     dir = mkdtempSync(join(tmpdir(), "push-dotenv-"));
-    for (const [name, body] of Object.entries(files)) writeFileSync(join(dir, name), body);
+    for (const [name, body] of Object.entries(files))
+      writeFileSync(join(dir, name), body);
     return dir;
   }
 
@@ -411,7 +483,10 @@ describe("loadDotenv", () => {
   });
 
   it("lets .env.local override .env, and the environment override both", () => {
-    const r = root({ ".env": `${KEY}=from-env\n`, ".env.local": `${KEY}=from-local\n` });
+    const r = root({
+      ".env": `${KEY}=from-env\n`,
+      ".env.local": `${KEY}=from-local\n`,
+    });
 
     loadDotenv(r);
     expect(process.env[KEY]).toBe("from-local");
@@ -431,7 +506,9 @@ describe("regional.html", () => {
   });
 
   it("only animates for visitors without a reduced-motion preference", () => {
-    const gated = html.match(/@media \(prefers-reduced-motion: no-preference\) \{[\s\S]*?\n {6}\}/);
+    const gated = html.match(
+      /@media \(prefers-reduced-motion: no-preference\) \{[\s\S]*?\n {6}\}/,
+    );
     expect(gated).not.toBeNull();
     const outside = html.replace(gated![0], "");
     expect(outside).not.toMatch(/animation:/);
@@ -474,9 +551,9 @@ describe("servingCheck", () => {
 
 describe("pageMarker", () => {
   it("is the template's title element", () => {
-    expect(pageMarker("<html><title>Onetime Secret - Service Error</title></html>")).toBe(
-      "<title>Onetime Secret - Service Error</title>",
-    );
+    expect(
+      pageMarker("<html><title>Onetime Secret - Service Error</title></html>"),
+    ).toBe("<title>Onetime Secret - Service Error</title>");
   });
 
   it("refuses a template without one", () => {
@@ -487,20 +564,34 @@ describe("pageMarker", () => {
 describe("probeRegion", () => {
   const marker = "<title>Onetime Secret - Service Error</title>";
   const bunny = { "CDN-PullZone": "6421160", "CDN-Cache": "MISS" };
-  const page = (status: number, body: string, headers: Record<string, string> = bunny) =>
-    vi.fn(async () => new Response(body, { status, headers })) as unknown as typeof fetch;
-  const probe = (f: typeof fetch) => probeRegion(f, "nz", "nz.onetimesecret.com", marker);
+  const page = (
+    status: number,
+    body: string,
+    headers: Record<string, string> = bunny,
+  ) =>
+    vi.fn(
+      async () => new Response(body, { status, headers }),
+    ) as unknown as typeof fetch;
+  const probe = (f: typeof fetch) =>
+    probeRegion(f, "nz", "nz.onetimesecret.com", marker);
 
   it("reports the pull zone Bunny answered from", async () => {
     const p = await probe(page(502, `<html>${marker}</html>`));
 
-    expect(p).toMatchObject({ outcome: "served", zone: "6421160", detail: /via pull zone 6421160/ });
+    expect(p).toMatchObject({
+      outcome: "served",
+      zone: "6421160",
+      detail: /via pull zone 6421160/,
+    });
   });
 
   it("calls an answer without Bunny's headers a hostname that bypasses the zone", async () => {
     const p = await probe(page(200, "<html>app</html>", {}));
 
-    expect(p).toMatchObject({ outcome: "direct", detail: /does not route through the zone/ });
+    expect(p).toMatchObject({
+      outcome: "direct",
+      detail: /does not route through the zone/,
+    });
   });
 
   it("reports the custom page on a 5xx carrying the title with placeholders filled", async () => {
@@ -517,21 +608,32 @@ describe("probeRegion", () => {
     await probe(f);
 
     expect(f).toHaveBeenCalledTimes(1);
-    const [url, init] = (f as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls[0];
+    const [url, init] = (
+      f as unknown as { mock: { calls: [string, RequestInit][] } }
+    ).mock.calls[0];
     expect(url).toBe("https://nz.onetimesecret.com/");
     expect(init.redirect).toBe("manual");
   });
 
   it("calls a 2xx or 3xx the origin answering, whatever the body says", async () => {
     // The app's own homepage also says "Onetime Secret"; that must not count.
-    expect(await probe(page(200, `<html>${marker}</html>`))).toMatchObject({ outcome: "origin" });
-    expect(await probe(page(302, ""))).toMatchObject({ status: 302, outcome: "origin" });
+    expect(await probe(page(200, `<html>${marker}</html>`))).toMatchObject({
+      outcome: "origin",
+    });
+    expect(await probe(page(302, ""))).toMatchObject({
+      status: 302,
+      outcome: "origin",
+    });
     expect((await probe(page(200, "app"))).detail).toMatch(/cache MISS/);
   });
 
   it("distinguishes a 5xx that is not the page from one with an unfilled placeholder", async () => {
-    expect(await probe(page(503, "<html>Bunny default</html>"))).toMatchObject({ outcome: "other" });
-    expect(await probe(page(502, `${marker}{{status_code}}`))).toMatchObject({ outcome: "unfilled" });
+    expect(await probe(page(503, "<html>Bunny default</html>"))).toMatchObject({
+      outcome: "other",
+    });
+    expect(await probe(page(502, `${marker}{{status_code}}`))).toMatchObject({
+      outcome: "unfilled",
+    });
   });
 
   it("turns a failed request into an outcome rather than throwing", async () => {
@@ -539,13 +641,20 @@ describe("probeRegion", () => {
       throw new Error("ECONNRESET");
     }) as unknown as typeof fetch;
 
-    expect(await probe(f)).toMatchObject({ status: 0, outcome: "error", detail: /ECONNRESET/ });
+    expect(await probe(f)).toMatchObject({
+      status: 0,
+      outcome: "error",
+      detail: /ECONNRESET/,
+    });
   });
 });
 
 describe("main", () => {
   const template = normalize(
-    readFileSync(resolve(import.meta.dirname, "../../../edge/error-page/regional.html"), "utf8"),
+    readFileSync(
+      resolve(import.meta.dirname, "../../../edge/error-page/regional.html"),
+      "utf8",
+    ),
   );
 
   /** In-memory Bunny: a zone list plus a store the POSTs write into. */
@@ -555,22 +664,28 @@ describe("main", () => {
   ) {
     const store = new Map(zones.map((z) => [z.Id, { ...z }]));
     const posts: { id: number; body: Record<string, unknown> }[] = [];
-    const fetch = vi.fn(async (input: string | URL | Request, init: RequestInit = {}) => {
-      const path = new URL(String(input)).pathname;
-      const json = (status: number, body: unknown) =>
-        new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
-      if (path === "/pullzone") return json(200, [...store.values()]);
-      const id = Number(path.split("/").pop());
-      if (init.method === "POST") {
-        if (opts.failIds?.includes(id)) return new Response("boom", { status: 500 });
-        const body = JSON.parse(String(init.body)) as Record<string, unknown>;
-        posts.push({ id, body });
-        // `sideEffect` simulates an API that resets unrelated fields on update.
-        store.set(id, { ...store.get(id)!, ...body, ...opts.sideEffect });
+    const fetch = vi.fn(
+      async (input: string | URL | Request, init: RequestInit = {}) => {
+        const path = new URL(String(input)).pathname;
+        const json = (status: number, body: unknown) =>
+          new Response(JSON.stringify(body), {
+            status,
+            headers: { "Content-Type": "application/json" },
+          });
+        if (path === "/pullzone") return json(200, [...store.values()]);
+        const id = Number(path.split("/").pop());
+        if (init.method === "POST") {
+          if (opts.failIds?.includes(id))
+            return new Response("boom", { status: 500 });
+          const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+          posts.push({ id, body });
+          // `sideEffect` simulates an API that resets unrelated fields on update.
+          store.set(id, { ...store.get(id)!, ...body, ...opts.sideEffect });
+          return json(200, store.get(id));
+        }
         return json(200, store.get(id));
-      }
-      return json(200, store.get(id));
-    });
+      },
+    );
     return { fetch, posts, store };
   }
 
@@ -578,7 +693,13 @@ describe("main", () => {
     const log = vi.fn();
     const error = vi.fn();
     const loadEnv = vi.fn();
-    const code = main(argv, { env, fetch: fetch as typeof globalThis.fetch, loadEnv, log, error });
+    const code = main(argv, {
+      env,
+      fetch: fetch as typeof globalThis.fetch,
+      loadEnv,
+      log,
+      error,
+    });
     return { code, log, error, loadEnv };
   }
 
@@ -591,7 +712,10 @@ describe("main", () => {
 
   const liveZones = () =>
     Object.values(REGIONAL_HOSTS).map((host, i) =>
-      zone(10 + i, [host], { ErrorPageEnableCustomCode: true, ErrorPageCustomCode: template }),
+      zone(10 + i, [host], {
+        ErrorPageEnableCustomCode: true,
+        ErrorPageCustomCode: template,
+      }),
     );
 
   it("prints usage and exits 0 on --help without touching the network", async () => {
@@ -614,7 +738,11 @@ describe("main", () => {
 
   it("fails without BUNNY_API_KEY", async () => {
     const { fetch } = fakeBunny([]);
-    const { code, loadEnv } = run(["push"], fetch, {} as { BUNNY_API_KEY: string });
+    const { code, loadEnv } = run(
+      ["push"],
+      fetch,
+      {} as { BUNNY_API_KEY: string },
+    );
 
     expect(await rejection(code)).toMatch(/BUNNY_API_KEY is not set/);
     expect(loadEnv).toHaveBeenCalledTimes(1);
@@ -626,7 +754,9 @@ describe("main", () => {
     await run(["push"], fetch, { BUNNY_API_KEY: "secret" }).code;
 
     for (const [, init] of fetch.mock.calls) {
-      expect((init as RequestInit).headers).toEqual(expect.objectContaining({ AccessKey: "secret" }));
+      expect((init as RequestInit).headers).toEqual(
+        expect.objectContaining({ AccessKey: "secret" }),
+      );
       expect((init as RequestInit).signal instanceof AbortSignal).toBe(true);
     }
   });
@@ -648,7 +778,9 @@ describe("main", () => {
 
     expect(await code).toBe(1);
     expect(posts).toEqual([]);
-    expect(log).toHaveBeenCalledWith("1 zone(s) differ. Re-run with --apply to push.");
+    expect(log).toHaveBeenCalledWith(
+      "1 zone(s) differ. Re-run with --apply to push.",
+    );
   });
 
   it("pushes only the drifted zones with --apply, then verifies", async () => {
@@ -661,7 +793,10 @@ describe("main", () => {
     expect(await code).toBe(0);
     expect(posts.map((p) => p.id)).toEqual([zones[0].Id, zones[3].Id]);
     for (const { body } of posts) {
-      expect(body).toEqual({ ErrorPageEnableCustomCode: true, ErrorPageCustomCode: template });
+      expect(body).toEqual({
+        ErrorPageEnableCustomCode: true,
+        ErrorPageCustomCode: template,
+      });
     }
     expect(log).toHaveBeenCalledWith("2 zone(s) pushed, 0 failed.");
   });
@@ -673,7 +808,9 @@ describe("main", () => {
     const { code } = run(["push", "--apply", "UK"], fetch);
 
     expect(await code).toBe(0);
-    expect(posts.map((p) => p.id)).toEqual([zones[Object.keys(REGIONAL_HOSTS).indexOf("uk")].Id]);
+    expect(posts.map((p) => p.id)).toEqual([
+      zones[Object.keys(REGIONAL_HOSTS).indexOf("uk")].Id,
+    ]);
   });
 
   it("pushes to the zone named in the environment when it lacks the hostname", async () => {
@@ -685,7 +822,9 @@ describe("main", () => {
     const { fetch, posts } = fakeBunny(zones);
 
     const without = run(["push", "--apply"], fetch);
-    expect(await rejection(without.code)).toMatch(/nz\.onetimesecret\.com.*BUNNY_PULL_ZONE_NZ/);
+    expect(await rejection(without.code)).toMatch(
+      /nz\.onetimesecret\.com.*BUNNY_PULL_ZONE_NZ/,
+    );
     expect(posts).toEqual([]);
 
     const env = { BUNNY_API_KEY: "k", BUNNY_PULL_ZONE_NZ: "x9k2m4p1" };
@@ -724,18 +863,23 @@ describe("main", () => {
     const { fetch } = fakeBunny([]);
 
     expect(await rejection(run([], fetch).code)).toMatch(/Unknown command ""/);
-    expect(await rejection(run(["sync"], fetch).code)).toMatch(/Unknown command "sync"/);
+    expect(await rejection(run(["sync"], fetch).code)).toMatch(
+      /Unknown command "sync"/,
+    );
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it.each(["verify", "deploy", "probe"])("rejects --apply for %s", async (command) => {
-    const { fetch } = fakeBunny([]);
+  it.each(["verify", "deploy", "probe"])(
+    "rejects --apply for %s",
+    async (command) => {
+      const { fetch } = fakeBunny([]);
 
-    const message = await rejection(run([command, "--apply"], fetch).code);
+      const message = await rejection(run([command, "--apply"], fetch).code);
 
-    expect(message).toMatch(/--apply is for push only/);
-    expect(fetch).not.toHaveBeenCalled();
-  });
+      expect(message).toMatch(/--apply is for push only/);
+      expect(fetch).not.toHaveBeenCalled();
+    },
+  );
 
   it("keeps going after a failed zone and exits 2", async () => {
     const zones = liveZones();
@@ -745,19 +889,27 @@ describe("main", () => {
 
     expect(await code).toBe(2);
     expect(posts).toHaveLength(zones.length - 1);
-    expect(error).toHaveBeenCalledWith(expect.stringMatching(/FAILED — POST .* HTTP 500: boom/));
-    expect(log).toHaveBeenCalledWith(`${zones.length - 1} zone(s) pushed, 1 failed.`);
+    expect(error).toHaveBeenCalledWith(
+      expect.stringMatching(/FAILED — POST .* HTTP 500: boom/),
+    );
+    expect(log).toHaveBeenCalledWith(
+      `${zones.length - 1} zone(s) pushed, 1 failed.`,
+    );
   });
 
   it("fails a zone whose update changed a field it did not send", async () => {
     const zones = liveZones();
     zones[0].ErrorPageEnableCustomCode = false;
     zones[0].OriginUrl = "https://origin";
-    const { fetch, store } = fakeBunny(zones, { sideEffect: { OriginUrl: null } });
+    const { fetch, store } = fakeBunny(zones, {
+      sideEffect: { OriginUrl: null },
+    });
     const { code, error } = run(["push", "--apply"], fetch);
 
     expect(await code).toBe(2);
-    expect(error).toHaveBeenCalledWith(expect.stringMatching(/also changed OriginUrl/));
+    expect(error).toHaveBeenCalledWith(
+      expect.stringMatching(/also changed OriginUrl/),
+    );
     // The page itself did land; the exit code is about the collateral change.
     expect(store.get(zones[0].Id)?.ErrorPageCustomCode).toBe(template);
   });
@@ -772,7 +924,9 @@ describe("main", () => {
       expect(posts).toEqual([]);
       expect(log).toHaveBeenCalledWith("All zones verified.");
       const lines = log.mock.calls.map((c) => String(c[0]));
-      expect(lines.filter((l) => / {2}OK\n {4}origin/.test(l))).toHaveLength(zones.length);
+      expect(lines.filter((l) => / {2}OK\n {4}origin/.test(l))).toHaveLength(
+        zones.length,
+      );
       expect(lines.at(-1)).toBe("All zones verified.");
       expect(lines.at(-2)).toContain(
         `pnpm edge:error-page:probe ${Object.keys(REGIONAL_HOSTS).join(" ")}`,
@@ -789,8 +943,11 @@ describe("main", () => {
       expect(await code).toBe(1);
       expect(posts).toEqual([]);
       const lines = log.mock.calls.map((c) => String(c[0]));
-      const failing = (id: number) => lines.find((l) => l.includes(`zone ${id} `)) ?? "";
-      expect(failing(zones[0].Id)).toContain("FAIL (custom error page disabled)");
+      const failing = (id: number) =>
+        lines.find((l) => l.includes(`zone ${id} `)) ?? "";
+      expect(failing(zones[0].Id)).toContain(
+        "FAIL (custom error page disabled)",
+      );
       expect(failing(zones[2].Id)).toContain("FAIL (page content differs)");
       expect(log).toHaveBeenCalledWith("2 zone(s) failed verification.");
     });
@@ -816,8 +973,12 @@ describe("main", () => {
       nz.Hostnames = [{ Value: "x9k2m4p1.b-cdn.net" }];
       const { fetch } = fakeBunny(zones);
 
-      expect(await run(["verify", "nz"], fetch).code.then(() => "ok", (e: Error) => e.message))
-        .toMatch(/BUNNY_PULL_ZONE_NZ/);
+      expect(
+        await run(["verify", "nz"], fetch).code.then(
+          () => "ok",
+          (e: Error) => e.message,
+        ),
+      ).toMatch(/BUNNY_PULL_ZONE_NZ/);
       expect(await run(["verify", `nz=${nz.Id}`], fetch).code).toBe(0);
     });
   });
@@ -834,9 +995,15 @@ describe("main", () => {
       expect(posts.map((p) => p.id)).toEqual([zones[0].Id, zones[3].Id]);
       expect(error).not.toHaveBeenCalled();
       const lines = log.mock.calls.map((c) => String(c[0]));
-      expect(lines.filter((l) => / {2}OK\n {4}origin/.test(l))).toHaveLength(zones.length);
-      expect(lines.filter((l) => l.endsWith(", nothing to push"))).toHaveLength(zones.length - 2);
-      expect(lines.at(-1)).toBe(`${zones.length} zone(s) deployed and verified.`);
+      expect(lines.filter((l) => / {2}OK\n {4}origin/.test(l))).toHaveLength(
+        zones.length,
+      );
+      expect(lines.filter((l) => l.endsWith(", nothing to push"))).toHaveLength(
+        zones.length - 2,
+      );
+      expect(lines.at(-1)).toBe(
+        `${zones.length} zone(s) deployed and verified.`,
+      );
       expect(lines.at(-2)).toContain("take the origin down");
     });
 
@@ -851,7 +1018,9 @@ describe("main", () => {
       const eu = zones[Object.keys(REGIONAL_HOSTS).indexOf("eu")].Id;
       expect(posts.map((p) => p.id)).toEqual([uk, eu]);
       // Every request for uk precedes every request for eu: no interleaving.
-      const paths = fetch.mock.calls.map(([u]) => new URL(String(u)).pathname).slice(1);
+      const paths = fetch.mock.calls
+        .map(([u]) => new URL(String(u)).pathname)
+        .slice(1);
       const lastUk = paths.lastIndexOf(`/pullzone/${uk}`);
       const firstEu = paths.indexOf(`/pullzone/${eu}`);
       expect(lastUk).toBeLessThan(firstEu);
@@ -865,7 +1034,9 @@ describe("main", () => {
 
       expect(await code).toBe(2);
       expect(posts.map((p) => p.id)).toEqual([zones[0].Id]);
-      expect(error).toHaveBeenCalledWith(expect.stringMatching(/FAILED — POST .* HTTP 500/));
+      expect(error).toHaveBeenCalledWith(
+        expect.stringMatching(/FAILED — POST .* HTTP 500/),
+      );
       const rest = Object.keys(REGIONAL_HOSTS).slice(2).join(", ");
       expect(error).toHaveBeenCalledWith(
         `Stopped before ${rest}; nothing was written to those zones.`,
@@ -873,49 +1044,72 @@ describe("main", () => {
       expect(log).toHaveBeenCalledWith(
         `1 zone(s) deployed, 1 failed, ${zones.length - 2} not attempted.`,
       );
-      const touched = new Set(fetch.mock.calls.map(([u]) => new URL(String(u)).pathname));
-      for (const z of zones.slice(2)) expect(touched.has(`/pullzone/${z.Id}`)).toBe(false);
+      const touched = new Set(
+        fetch.mock.calls.map(([u]) => new URL(String(u)).pathname),
+      );
+      for (const z of zones.slice(2))
+        expect(touched.has(`/pullzone/${z.Id}`)).toBe(false);
     });
 
     it("treats a collateral change on one zone as a failure and stops there", async () => {
       const zones = liveZones();
       for (const z of zones) z.ErrorPageEnableCustomCode = false;
       zones[0].OriginUrl = "https://origin";
-      const { fetch, posts } = fakeBunny(zones, { sideEffect: { OriginUrl: null } });
+      const { fetch, posts } = fakeBunny(zones, {
+        sideEffect: { OriginUrl: null },
+      });
       const { code, error } = run(["deploy"], fetch);
 
       expect(await code).toBe(2);
       expect(posts.map((p) => p.id)).toEqual([zones[0].Id]);
-      expect(error).toHaveBeenCalledWith(expect.stringMatching(/also changed OriginUrl/));
+      expect(error).toHaveBeenCalledWith(
+        expect.stringMatching(/also changed OriginUrl/),
+      );
     });
   });
 
   describe("probe", () => {
     const marker = "<title>Onetime Secret - Service Error</title>";
     /** The public hostnames as the pull zones answer them, by host. */
-    function fakeEdge(answers: Record<string, { status: number; body: string }>) {
+    function fakeEdge(
+      answers: Record<string, { status: number; body: string }>,
+    ) {
       return vi.fn(async (input: string | URL | Request) => {
         const { host } = new URL(String(input));
-        const a = answers[host] ?? { status: 200, body: "<html><title>Onetime Secret</title></html>" };
+        const a = answers[host] ?? {
+          status: 200,
+          body: "<html><title>Onetime Secret</title></html>",
+        };
         return new Response(a.body, {
           status: a.status,
           headers: { "CDN-PullZone": "1", "CDN-Cache": "MISS" },
         });
       });
     }
-    const served = { status: 502, body: `<html>${marker}<div>502</div></html>` };
+    const served = {
+      status: 502,
+      body: `<html>${marker}<div>502</div></html>`,
+    };
     const allServed = () =>
       Object.fromEntries(Object.values(REGIONAL_HOSTS).map((h) => [h, served]));
 
     it("needs no API key, reads no zones, and exits 0 when every region serves the page", async () => {
       const fetch = fakeEdge(allServed());
-      const { code, log, loadEnv } = run(["probe"], fetch, {} as { BUNNY_API_KEY: string });
+      const { code, log, loadEnv } = run(
+        ["probe"],
+        fetch,
+        {} as { BUNNY_API_KEY: string },
+      );
 
       expect(await code).toBe(0);
       expect(loadEnv).not.toHaveBeenCalled();
       const urls = fetch.mock.calls.map((c) => String(c[0]));
-      expect(urls).toEqual(Object.values(REGIONAL_HOSTS).map((h) => `https://${h}/`));
-      expect(log).toHaveBeenLastCalledWith("Every region served the custom page.");
+      expect(urls).toEqual(
+        Object.values(REGIONAL_HOSTS).map((h) => `https://${h}/`),
+      );
+      expect(log).toHaveBeenLastCalledWith(
+        "Every region served the custom page.",
+      );
     });
 
     it("exits 1 and says nothing was proven when the origin is up", async () => {
@@ -925,19 +1119,28 @@ describe("main", () => {
       expect(await code).toBe(1);
       expect(fetch).toHaveBeenCalledTimes(1);
       const lines = log.mock.calls.map((c) => String(c[0]));
-      expect(lines[0]).toMatch(/^nz {2}nz\.onetimesecret\.com\s+200 {2}via pull zone 1, cache MISS/);
+      expect(lines[0]).toMatch(
+        /^nz {2}nz\.onetimesecret\.com\s+200 {2}via pull zone 1, cache MISS/,
+      );
       expect(lines.at(-2)).toMatch(/nothing proven/);
-      expect(lines.at(-1)).toMatch(/set the zone's origin URL to a\nclosed port/);
+      expect(lines.at(-1)).toMatch(
+        /set the zone's origin URL to a\nclosed port/,
+      );
     });
 
     it("exits 1 and names the region that served something else", async () => {
       const answers = allServed();
-      answers[REGIONAL_HOSTS.eu] = { status: 503, body: "<html>bunny default</html>" };
+      answers[REGIONAL_HOSTS.eu] = {
+        status: 503,
+        body: "<html>bunny default</html>",
+      };
       const { code, log } = run(["probe"], fakeEdge(answers));
 
       expect(await code).toBe(1);
       const lines = log.mock.calls.map((c) => String(c[0]));
-      expect(lines.find((l) => l.startsWith("eu "))).toMatch(/503 {2}via pull zone 1: not the custom page/);
+      expect(lines.find((l) => l.startsWith("eu "))).toMatch(
+        /503 {2}via pull zone 1: not the custom page/,
+      );
       expect(lines.at(-2)).toBe("1 region(s) did not serve the custom page.");
       expect(lines.at(-1)).toMatch(/Re-run verify/);
     });
@@ -947,14 +1150,20 @@ describe("main", () => {
       const { code, log } = run(["probe", "nz=be2169e1-7.b-cdn.net"], fetch);
 
       expect(await code).toBe(0);
-      expect(fetch.mock.calls.map((c) => String(c[0]))).toEqual(["https://be2169e1-7.b-cdn.net/"]);
-      expect(log.mock.calls[0][0]).toMatch(/^nz {2}be2169e1-7\.b-cdn\.net\s+502 {2}via pull zone 1: custom page served/);
+      expect(fetch.mock.calls.map((c) => String(c[0]))).toEqual([
+        "https://be2169e1-7.b-cdn.net/",
+      ]);
+      expect(log.mock.calls[0][0]).toMatch(
+        /^nz {2}be2169e1-7\.b-cdn\.net\s+502 {2}via pull zone 1: custom page served/,
+      );
     });
 
     it("rejects a zone name or ID where a hostname is expected", async () => {
       const fetch = fakeEdge({});
 
-      expect(await rejection(run(["probe", "nz=123"], fetch).code)).toMatch(/region=hostname.*nz=123/);
+      expect(await rejection(run(["probe", "nz=123"], fetch).code)).toMatch(
+        /region=hostname.*nz=123/,
+      );
       expect(fetch).not.toHaveBeenCalled();
     });
   });

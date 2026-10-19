@@ -46,7 +46,11 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { bunny, loadDotenv, REQUEST_TIMEOUT_MS } from "../../scripts/lib/bunny-api.mjs";
+import {
+  bunny,
+  loadDotenv,
+  REQUEST_TIMEOUT_MS,
+} from "../../scripts/lib/bunny-api.mjs";
 // Node strips the type annotations at import time (engines: node >= 26), so
 // the plain-JS script reads the same inventory as the edge scripts and the
 // client instead of keeping its own copy.
@@ -110,7 +114,9 @@ export function parseRegionArgs(args) {
     if (eq !== -1) {
       const ref = arg.slice(eq + 1).trim();
       if (!region || !ref) {
-        throw new Error(`Malformed argument "${arg}"; expected region=<zone name or ID>`);
+        throw new Error(
+          `Malformed argument "${arg}"; expected region=<zone name or ID>`,
+        );
       }
       refs[region] = ref;
     }
@@ -245,7 +251,9 @@ export function selectRegionalZones(zones, hosts = REGIONAL_HOSTS, refs = {}) {
   for (const [region, host] of Object.entries(hosts)) {
     const ref = refs[region];
     if (ref !== undefined) {
-      const zone = /^\d+$/.test(ref) ? byId.get(ref) : byName.get(ref.toLowerCase());
+      const zone = /^\d+$/.test(ref)
+        ? byId.get(ref)
+        : byName.get(ref.toLowerCase());
       if (!zone) {
         throw new Error(
           `No pull zone named or numbered "${ref}" (given for ${region}). ` +
@@ -254,7 +262,9 @@ export function selectRegionalZones(zones, hosts = REGIONAL_HOSTS, refs = {}) {
       }
       // A zone named for one region must not be another region's zone. The
       // check is against every live region, not just the ones requested.
-      const zoneHosts = (zone.Hostnames ?? []).map((h) => h.Value.toLowerCase());
+      const zoneHosts = (zone.Hostnames ?? []).map((h) =>
+        h.Value.toLowerCase(),
+      );
       const other = Object.entries(REGIONAL_HOSTS).find(
         ([r, h]) => r !== region && zoneHosts.includes(h),
       );
@@ -276,7 +286,9 @@ export function selectRegionalZones(zones, hosts = REGIONAL_HOSTS, refs = {}) {
   }
   if (missing.length) {
     const hostList = missing.map((r) => hosts[r]).join(", ");
-    const envList = missing.map((r) => `${zoneEnvVar(r)}=<zone name or ID>`).join(" ");
+    const envList = missing
+      .map((r) => `${zoneEnvVar(r)}=<zone name or ID>`)
+      .join(" ");
     const argList = missing.map((r) => `${r}=<zone name or ID>`).join(" ");
     throw new Error(
       `No pull zone carries hostname(s): ${hostList}. A zone behind Bunny Shield ` +
@@ -384,9 +396,14 @@ async function applyZone(client, plan, html) {
   });
   /** @type {PullZone} */
   const after = await bunny(client, `/pullzone/${plan.id}`);
-  const verified = planZone({ region: plan.region, host: plan.host, zone: after }, html);
+  const verified = planZone(
+    { region: plan.region, host: plan.host, zone: after },
+    html,
+  );
   if (verified.action !== "up-to-date") {
-    throw new Error(`${plan.host}: pushed, but read-back still says "${verified.reason}"`);
+    throw new Error(
+      `${plan.host}: pushed, but read-back still says "${verified.reason}"`,
+    );
   }
   const changed = unexpectedChanges(before, after);
   if (changed.length) {
@@ -399,7 +416,10 @@ async function applyZone(client, plan, html) {
 
 /** @param {ZonePlan} plan */
 function describe(plan) {
-  const state = plan.action === "up-to-date" ? "up-to-date" : `needs update (${plan.reason})`;
+  const state =
+    plan.action === "up-to-date"
+      ? "up-to-date"
+      : `needs update (${plan.reason})`;
   return `${prefix(plan)}  ${state}`;
 }
 
@@ -470,7 +490,10 @@ Config and content checks by hand: edge/README.md, "Regional error page".
  */
 export function pageMarker(html) {
   const m = /<title>[^<]*<\/title>/i.exec(html);
-  if (!m) throw new Error("regional.html has no <title>; the probe needs one to recognise the page");
+  if (!m)
+    throw new Error(
+      "regional.html has no <title>; the probe needs one to recognise the page",
+    );
   return m[0];
 }
 
@@ -516,9 +539,18 @@ export async function probeRegion(fetchImpl, region, host, marker) {
     cache = res.headers.get("cdn-cache") ?? undefined;
   } catch (err) {
     // Node's fetch says "fetch failed" and keeps the reason (DNS, TLS, reset) in cause.
-    const cause = err instanceof Error && err.cause instanceof Error ? `: ${err.cause.message.trim()}` : "";
+    const cause =
+      err instanceof Error && err.cause instanceof Error
+        ? `: ${err.cause.message.trim()}`
+        : "";
     const detail = err instanceof Error ? err.message : String(err);
-    return { region, host, status: 0, outcome: "error", detail: `request failed: ${detail}${cause}` };
+    return {
+      region,
+      host,
+      status: 0,
+      outcome: "error",
+      detail: `request failed: ${detail}${cause}`,
+    };
   }
   const via = zone ? `via pull zone ${zone}` : "not via Bunny";
   if (!zone) {
@@ -543,7 +575,14 @@ export async function probeRegion(fetchImpl, region, host, marker) {
     };
   }
   if (!isPage) {
-    return { region, host, status, outcome: "other", zone, detail: `${via}: not the custom page` };
+    return {
+      region,
+      host,
+      status,
+      outcome: "other",
+      zone,
+      detail: `${via}: not the custom page`,
+    };
   }
   // The template's own hide script and header comment mention "{{", so only
   // the real placeholder tokens count as unfilled.
@@ -557,7 +596,14 @@ export async function probeRegion(fetchImpl, region, host, marker) {
       detail: `${via}: custom page served with a placeholder Bunny did not fill`,
     };
   }
-  return { region, host, status, outcome: "served", zone, detail: `${via}: custom page served` };
+  return {
+    region,
+    host,
+    status,
+    outcome: "served",
+    zone,
+    detail: `${via}: custom page served`,
+  };
 }
 
 /** @param {Probe} p */
@@ -596,7 +642,9 @@ function probeAdvice(notServed) {
     );
   }
   if (outcomes.has("error")) {
-    lines.push("A failed request never reached Bunny; the reason is on the region's line above.");
+    lines.push(
+      "A failed request never reached Bunny; the reason is on the region's line above.",
+    );
   }
   return lines.join("\n");
 }
@@ -635,7 +683,9 @@ async function pushCommand({ client, selected, html, apply, log, error }) {
       log(`${plan.host}: pushed and verified`);
     } catch (err) {
       failed.push(plan.host);
-      error(`${plan.host}: FAILED — ${err instanceof Error ? err.message : err}`);
+      error(
+        `${plan.host}: FAILED — ${err instanceof Error ? err.message : err}`,
+      );
     }
   }
   const pushed = pending.length - failed.length;
@@ -683,12 +733,18 @@ async function deployCommand({ client, selected, html, log, error }) {
       if (!v.ok) throw new Error(`verification failed: ${v.plan.reason}`);
       done.push(v.plan);
     } catch (err) {
-      error(`${plan.host}: FAILED — ${err instanceof Error ? err.message : err}`);
+      error(
+        `${plan.host}: FAILED — ${err instanceof Error ? err.message : err}`,
+      );
       const remaining = selected.slice(i + 1).map((r) => r.region);
       if (remaining.length) {
-        error(`Stopped before ${remaining.join(", ")}; nothing was written to those zones.`);
+        error(
+          `Stopped before ${remaining.join(", ")}; nothing was written to those zones.`,
+        );
       }
-      log(`${done.length} zone(s) deployed, 1 failed, ${remaining.length} not attempted.`);
+      log(
+        `${done.length} zone(s) deployed, 1 failed, ${remaining.length} not attempted.`,
+      );
       return 2;
     }
   }
@@ -763,15 +819,21 @@ export async function main(argv, deps = {}) {
   }
   const unknownFlags = args.filter((a) => a.startsWith("-") && a !== "--apply");
   if (unknownFlags.length) {
-    throw new Error(`Unknown option(s): ${unknownFlags.join(", ")}\n\n${USAGE}`);
+    throw new Error(
+      `Unknown option(s): ${unknownFlags.join(", ")}\n\n${USAGE}`,
+    );
   }
   const apply = args.includes("--apply");
   if (apply && command !== "push") {
-    const why = { verify: "verify never writes", deploy: "deploy always pushes" }[command] ??
-      `${command} never writes`;
+    const why =
+      { verify: "verify never writes", deploy: "deploy always pushes" }[
+        command
+      ] ?? `${command} never writes`;
     throw new Error(`--apply is for push only; ${why}. Drop the flag.`);
   }
-  const { regions, refs: argRefs } = parseRegionArgs(args.filter((a) => !a.startsWith("-")));
+  const { regions, refs: argRefs } = parseRegionArgs(
+    args.filter((a) => !a.startsWith("-")),
+  );
   const hosts = pickRegions(regions);
 
   if (command === "probe") {
@@ -784,7 +846,12 @@ export async function main(argv, deps = {}) {
       );
     }
     const html = await readFile(TEMPLATE_PATH, "utf8");
-    return probeCommand({ fetch: fetchImpl, hosts: { ...hosts, ...argRefs }, html, log });
+    return probeCommand({
+      fetch: fetchImpl,
+      hosts: { ...hosts, ...argRefs },
+      html,
+      log,
+    });
   }
 
   loadEnv();
@@ -799,7 +866,9 @@ export async function main(argv, deps = {}) {
   const html = normalize(await readFile(TEMPLATE_PATH, "utf8"));
   const lost = REQUIRED_PLACEHOLDERS.filter((p) => !html.includes(p));
   if (lost.length) {
-    throw new Error(`regional.html lost its ${lost.join(" and ")} placeholder(s)`);
+    throw new Error(
+      `regional.html lost its ${lost.join(" and ")} placeholder(s)`,
+    );
   }
 
   // Command line beats environment, per region.
@@ -817,7 +886,10 @@ export async function main(argv, deps = {}) {
 // argv[1] is realpath'd because import.meta.url already is, and a symlinked
 // checkout must not turn the script into a silent no-op.
 // Sets exitCode rather than calling exit() so buffered output drains when piped.
-if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) {
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href
+) {
   main(process.argv.slice(2)).then(
     (code) => {
       process.exitCode = code;
