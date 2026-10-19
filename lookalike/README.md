@@ -338,9 +338,15 @@ domain anyone would guess goes in `config/domains.ts` instead, with
    pnpm lookalike:dns:check example.tld
    ```
 
-Both commands need `BUNNY_API_KEY`. Without domain arguments they take every
-domain in `config/domains.ts` plus `LOOKALIKE_DOMAINS` from `.env`, so a
-change to the record set reaches every domain with one `pnpm lookalike:dns:set`.
+Both commands need `BUNNY_API_KEY` with write access: on a signed zone
+`check` reads the DS through Bunny's enable-DNSSEC call, which changes nothing
+there. Without domain arguments `check` takes every domain in
+`config/domains.ts` plus `LOOKALIKE_DOMAINS` from `.env`; `set` takes them only
+with `--all`, so a change to the record set reaches every domain with one
+`pnpm lookalike:dns:set --all`. Re-running `set` on a signed zone prints its DS
+again. Both print every domain they work on, the secret ones included, so
+neither belongs in a public CI log until each hostname is masked (see "Not yet
+automated").
 
 The record set is `RECORDS` in `scripts/lookalike-dns.mjs`:
 

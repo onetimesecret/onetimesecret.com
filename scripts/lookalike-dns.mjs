@@ -8,19 +8,30 @@
 //   pnpm lookalike:dns:check onetimesecret.co   # one or more domains
 //   pnpm lookalike:dns:set onetimesecret.co     # make the zone match RECORDS
 //   pnpm lookalike:dns:set example.tld --create # add the zone first
+//   pnpm lookalike:dns:set --all                # every domain in the inventory
 //
 // The record set is RECORDS below. `set` makes the names it manages (@, *,
-// _dmarc) hold exactly those records: it adds what is missing, corrects what
-// differs and deletes anything else at those names. Records at other names are
-// listed and left alone. It also turns on DNSSEC signing and prints the DS
-// record for the registrar. `check` writes nothing: it compares the zone with
-// RECORDS through the API, then asks a public resolver what the world sees,
-// which is where a wrong delegation, a missing DS or a stale cache shows up.
+// _dmarc) hold exactly those values: it adds what is missing, corrects what
+// differs and deletes anything else at those names. TTLs are not compared, so
+// a record with the right value and another TTL is left alone. Records at
+// other names are listed and left alone. It also turns on DNSSEC signing and
+// prints the DS record for the registrar. `check` changes nothing: it compares
+// the zone with RECORDS through the API, then asks a public resolver what the
+// world sees, which is where a wrong delegation, a missing DS or a stale cache
+// shows up. Bunny has no read-only call for a zone's DS, so on a signed zone
+// `check` reads it through the enable-DNSSEC POST, which changes nothing on a
+// zone already signed (see the API list below).
 //
-// Without domain arguments both commands take the inventory: LOOKALIKE_DOMAINS
-// in config/domains.ts plus the LOOKALIKE_DOMAINS environment variable, which
-// holds the domains kept out of the repository (same format as the secret of
-// that name: bare hostnames, separated by whitespace).
+// The inventory is LOOKALIKE_DOMAINS in config/domains.ts plus the
+// LOOKALIKE_DOMAINS environment variable, which holds the domains kept out of
+// the repository (same format as the secret of that name: bare hostnames,
+// separated by whitespace). `check` takes it when no domain is named; `set`
+// only with --all, since it deletes records on every zone it touches.
+//
+// Both commands print every domain they work on, the secret ones included.
+// Do not run them in a CI job whose log is public without first masking each
+// hostname (::add-mask::); GitHub masks the secret's whole value, not each
+// line of it. See "Not yet automated" in lookalike/README.md.
 //
 // Needs BUNNY_API_KEY, from the environment or the repo-root .env / .env.local,
 // like the edge:error-page scripts.
@@ -28,7 +39,7 @@
 // Bunny API surface used (docs.bunny.net OpenAPI spec and Bunny's own
 // Terraform provider, 2026-10):
 //   GET    /dnszone                       → zones, { Items, HasMoreItems }
-//   POST   /dnszone                       → add a zone, body { Domain }
+//   POST   /dnszone                       → add a zone, body { Domain }; returns it
 //   GET    /dnszone/{id}                  → one zone with Records[]
 //   PUT    /dnszone/{id}/records          → add a record
 //   POST   /dnszone/{id}/records/{rid}    → update a record
@@ -43,16 +54,13 @@ import { realpathSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
 import { LOOKALIKE_DOMAINS } from "../config/domains.ts";
-import { API_BASE, loadDotenv } from "../edge/error-page/cli.mjs";
+import { bunny, loadDotenv, REQUEST_TIMEOUT_MS } from "./lib/bunny-api.mjs";
 
 /** The lookalike pull zone's own hostname; apex and wildcard both point here. */
 export const CDN_HOSTNAME = "onetimesecret-lookalikes.b-cdn.net";
 
 /** TTL for records this script adds or corrects. */
 const TTL = 3600;
-
-/** Bunny and Google answer within seconds; anything longer is a hung connection. */
-const REQUEST_TIMEOUT_MS = 30_000;
 
 /** Google's JSON DNS API: unquoted TXT data, the AD bit, and a Comment on SERVFAIL. */
 export const DOH_URL = "https://dns.google/resolve";
@@ -77,7 +85,12 @@ export const RECORD_TYPES = Object.freeze([
 
 /**
  * What every lookalike domain carries. A CNAME at the apex is legal on Bunny
- * DNS, which answers it as flattened A/AAAA records. The mail records stop the
+ * DNS, which answers it as flattened A/AAAA records ("When either [CNAME or
+ * Pull Zone record] is used at the zone apex, Bunny DNS automatically flattens
+ * it", bunny.net/docs/dns/records); the Flatten type in RECORD_TYPES is not
+ * needed for that. Bunny's own CLI uses a PullZone record (PullZoneId) at the
+ * apex instead, the fallback should the CNAME refuse to sit next to the apex
+ * MX, TXT and CAA, which the docs do not address. The mail records stop the
  * domain sending or receiving mail; CAA limits issuance to the CA Bunny uses
  * (`issue` also covers wildcard certificates while no `issuewild` is set).
  * @type {readonly Rec[]}
@@ -96,22 +109,26 @@ export const MANAGED_NAMES = Object.freeze([...new Set(RECORDS.map((r) => r.name
 
 export const COMMANDS = Object.freeze(["check", "set"]);
 
-const USAGE = `Usage: pnpm lookalike:dns:<check|set> [--create] [domain ...]
+const USAGE = `Usage: pnpm lookalike:dns:<check|set> [--create] [--all | domain ...]
 
 Keeps the Bunny DNS zone of each lookalike domain equal to the record set in
 scripts/lookalike-dns.mjs (RECORDS).
 
 Commands:
   check         compare each zone with the record set, then query a public
-                resolver for delegation, records and DNSSEC. Writes nothing;
-                exit 1 if anything differs.
+                resolver for delegation, records and DNSSEC. Changes nothing;
+                exit 1 if anything differs. On a signed zone it reads the DS
+                through Bunny's enable-DNSSEC call (a POST that changes
+                nothing on a signed zone), so the API key needs write access.
   set           add, correct and delete records at @, * and _dmarc until the
                 zone matches, read it back, and enable DNSSEC. Records at other
                 names are left alone. Prints the DS record for the registrar.
 
 Arguments:
-  domain ...    the domains to work on; default: LOOKALIKE_DOMAINS from
-                config/domains.ts plus the LOOKALIKE_DOMAINS variable
+  domain ...    the domains to work on
+  --all         every domain: LOOKALIKE_DOMAINS from config/domains.ts plus
+                the LOOKALIKE_DOMAINS variable. check takes these when no
+                domain is named; set needs --all or named domains
   --create      set only: add a Bunny DNS zone for a domain that has none
   --help        show this text
 
@@ -184,8 +201,10 @@ export function fromBunny(r, domain) {
 
 /** @param {Rec} want @returns {Record<string, unknown>} AddDnsRecordModel */
 export function toBunny(want) {
+  const type = RECORD_TYPES.indexOf(want.type);
+  if (type === -1) throw new Error(`Unknown record type "${want.type}"`);
   return {
-    Type: RECORD_TYPES.indexOf(want.type),
+    Type: type,
     Name: want.name,
     Value: want.value,
     Ttl: TTL,
@@ -200,7 +219,12 @@ function sameKey(a, b) {
   return a.type === b.type && a.name === b.name && (a.type !== "CAA" || a.tag === b.tag);
 }
 
-/** @param {Rec} have @param {Rec} want */
+/**
+ * TTL is deliberately not compared: a record with the right value is left as
+ * it is whatever its TTL. TTL only sets how long a change takes to reach
+ * resolvers, and correcting it would rewrite every record of an imported zone.
+ * @param {Rec} have @param {Rec} want
+ */
 function sameValue(have, want) {
   return (
     have.value === want.value &&
@@ -285,35 +309,7 @@ export function describeStep(step) {
   return `  zone    other   ${show(have)}  (not managed, left alone)`;
 }
 
-/**
- * @typedef {object} Client
- * @property {string} apiKey
- * @property {typeof fetch} fetch
- */
-
-/**
- * @param {Client} client
- * @param {string} path
- * @param {{ method?: string, body?: unknown }} [init]
- */
-async function bunny(client, path, { method = "GET", body } = {}) {
-  const res = await client.fetch(`${API_BASE}${path}`, {
-    method,
-    headers: {
-      AccessKey: client.apiKey,
-      Accept: "application/json",
-      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
-    },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-  });
-  if (!res.ok) {
-    const text = (await res.text()).slice(0, 300);
-    throw new Error(`${method} ${path} → HTTP ${res.status}${text ? `: ${text}` : ""}`);
-  }
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
-}
+/** @typedef {import("./lib/bunny-api.mjs").Client} Client */
 
 /**
  * Every zone on the account, refusing to work from a partial list.
@@ -336,19 +332,38 @@ async function listZones(client) {
  */
 
 /**
- * The DS from Bunny's DnsSecDsRecordModel. DigestType is typed as a string
- * there; a name such as "SHA256" is mapped to its number.
+ * One number of a DS as Bunny sends it: 13, "2", "SHA256", "SHA-256" or
+ * "SHA256 (2)", the form Bunny's Terraform provider parses. Anything else
+ * throws, so a registrar is never handed NaN.
+ * @param {string} field
+ * @param {unknown} raw
+ * @param {Record<string, number>} [names]
+ */
+function dsNumber(field, raw, names = {}) {
+  const text = String(raw ?? "").trim();
+  const digits = /^(\d+)$/.exec(text) ?? /\((\d+)\)$/.exec(text);
+  const n = digits ? Number(digits[1]) : names[text.toUpperCase().replace(/-/g, "")];
+  if (!Number.isInteger(n)) {
+    throw new Error(`Unexpected DS ${field} from Bunny: ${JSON.stringify(raw)}`);
+  }
+  return n;
+}
+
+/**
+ * The DS from Bunny's DnsSecDsRecordModel.
  * @param {Record<string, any>} info
  * @returns {Ds}
  */
 export function dsFromBunny(info) {
-  const raw = String(info.DigestType ?? "");
-  const named = { "SHA1": 1, "SHA256": 2, "SHA384": 4 }[raw.toUpperCase().replace(/-/g, "")];
+  const digest = String(info.Digest ?? "").toUpperCase();
+  if (!/^[0-9A-F]+$/.test(digest)) {
+    throw new Error(`Unexpected DS digest from Bunny: ${JSON.stringify(info.Digest)}`);
+  }
   return {
-    keyTag: Number(info.KeyTag),
-    algorithm: Number(info.Algorithm),
-    digestType: /^\d+$/.test(raw) ? Number(raw) : (named ?? NaN),
-    digest: String(info.Digest ?? "").toUpperCase(),
+    keyTag: dsNumber("key tag", info.KeyTag),
+    algorithm: dsNumber("algorithm", info.Algorithm),
+    digestType: dsNumber("digest type", info.DigestType, { SHA1: 1, SHA256: 2, SHA384: 4 }),
+    digest,
   };
 }
 
@@ -376,6 +391,9 @@ function sameDs(a, b) {
 }
 
 const DNS_TYPES = Object.freeze({ A: 1, NS: 2, CNAME: 5, MX: 15, TXT: 16, DS: 43, CAA: 257 });
+
+/** Response codes a resolver gives instead of an answer. */
+const RCODES = Object.freeze({ 1: "FORMERR", 2: "SERVFAIL", 3: "NXDOMAIN", 5: "REFUSED" });
 
 /**
  * @typedef {object} Answer
@@ -407,19 +425,47 @@ export async function query(fetchImpl, name, type) {
   };
 }
 
+/** @param {Answer} answer why a query got no answer, as one phrase */
+function rcode(answer) {
+  const name = RCODES[answer.status] ?? `RCODE ${answer.status}`;
+  return `${name}${answer.comment ? `: ${answer.comment}` : ""}`;
+}
+
+/**
+ * An answer in compared form. Hostnames compare without case and with one
+ * trailing dot, as fromBunny compares them in the zone, so a target the zone
+ * accepts never fails in public; TXT and CAA values keep their case.
+ * @param {string} type
+ * @param {string} data
+ */
+function canonical(type, data) {
+  const host = (/** @type {string} */ h) => `${stripDot(h)}.`;
+  if (type === "CNAME") return host(data);
+  if (type === "MX") {
+    const [preference, exchange = ""] = data.trim().split(/\s+/);
+    return `${preference} ${host(exchange)}`;
+  }
+  return data;
+}
+
 /**
  * @typedef {object} Expectation one public query and the answers it should get
  * @property {string} name fully qualified
  * @property {keyof typeof DNS_TYPES} type
- * @property {string[] | null} expect the whole answer set; null for "any answer"
+ * @property {string[]} expect the whole answer set, in canonical form; empty
+ *   when `via` is set
+ * @property {string} [via] instead of a set: a hostname whose A answer the
+ *   answer must share an address with
  * @property {string} label type and relative name, for the output line
  */
 
 /**
  * The public answer each wanted record should produce, grouped by name and
  * type so a set compares whole (an extra CAA or a second SPF shows up). The
- * apex CNAME is flattened, so all that can be asked of it is an A answer; the
- * wildcard is asked through a random label that has no records of its own.
+ * apex CNAME is flattened, so its A answer must share an address with what
+ * the target itself resolves to; a parked page or a previous host's address
+ * does not. The wildcard is asked through a random label that has no records
+ * of its own.
  * @param {string} domain
  * @param {string} label random label for the wildcard
  * @param {readonly Rec[]} [wanted]
@@ -434,18 +480,22 @@ export function publicExpectations(domain, label, wanted = RECORDS) {
     const owner = r.name === "*" ? label : r.name;
     const name = owner ? `${owner}.${domain}` : domain;
     const answer =
-      r.type === "CNAME" ? `${r.value}.`
-      : r.type === "MX" ? `${r.priority} ${r.value === "." ? "." : `${r.value}.`}`
+      r.type === "MX" ? `${r.priority} ${r.value}`
       : r.type === "CAA" ? `${r.flags} ${r.tag} "${r.value}"`
       : r.value;
     const key = `${name} ${type}`;
     const group = groups.get(key) ?? {
       name,
       type,
-      expect: apexCname ? null : [],
+      expect: [],
+      ...(apexCname ? { via: r.value } : {}),
       label: `${type.padEnd(5)} ${(r.name || "@").padEnd(6)}`,
     };
-    if (group.expect) group.expect.push(answer);
+    // An apex A next to the apex CNAME would be checked as neither.
+    if (apexCname ? group.expect.length : group.via) {
+      throw new Error("RECORDS: an apex A cannot sit next to the apex CNAME");
+    }
+    if (!apexCname) group.expect.push(canonical(type, answer));
     groups.set(key, group);
   }
   return [...groups.values()];
@@ -477,33 +527,57 @@ export async function checkPublic(fetchImpl, domain, zone, label) {
     findings.push({ ok, line: `  public  ${state}  ${what}${detail ? `  ${detail}` : ""}` });
   };
 
-  const ns = await query(fetchImpl, domain, "NS");
-  const seen = ns.data.map(stripDot).sort();
-  const want = zone.nameservers.map(stripDot).sort();
-  const delegated = seen.join(" ") === want.join(" ");
-  add(delegated, `NS           ${seen.join(" ") || "(none)"}`,
-    delegated ? "" : `(set the registrar's nameservers to ${want.join(" ")})`);
+  // The queries are independent and go to one resolver, so they run at once;
+  // the findings still come out in this order.
+  const expectations = publicExpectations(domain, label);
+  const targets = [...new Set(expectations.flatMap((e) => (e.via ? [e.via] : [])))];
+  const [ns, answers, targetAnswers, dsAnswer] = await Promise.all([
+    query(fetchImpl, domain, "NS"),
+    Promise.all(expectations.map((e) => query(fetchImpl, e.name, e.type))),
+    Promise.all(targets.map((t) => query(fetchImpl, t, "A"))),
+    query(fetchImpl, domain, "DS"),
+  ]);
+  const addresses = new Map(targets.map((t, i) => [t, targetAnswers[i]]));
+
+  if (ns.status !== 0) {
+    add(false, "NS", rcode(ns));
+  } else {
+    const seen = ns.data.map(stripDot).sort();
+    const want = zone.nameservers.map(stripDot).sort();
+    const delegated = seen.join(" ") === want.join(" ");
+    add(delegated, `NS           ${seen.join(" ") || "(none)"}`,
+      delegated ? "" : `(set the registrar's nameservers to ${want.join(" ")})`);
+  }
 
   let apex;
-  for (const { name, type, expect, label: what } of publicExpectations(domain, label)) {
-    const answer = await query(fetchImpl, name, type);
+  for (const [i, { name, type, expect, via, label: what }] of expectations.entries()) {
+    const answer = answers[i];
     if (type === "A" && name === domain) apex = answer;
-    if (answer.status === 2) {
-      add(false, what, `SERVFAIL${answer.comment ? `: ${answer.comment}` : ""}`);
+    if (answer.status !== 0) {
+      add(false, what, rcode(answer));
       continue;
     }
-    if (expect === null) {
-      add(answer.data.length > 0, `${what} ${answer.data.join(" ") || "(no answer)"}`);
+    const got = answer.data.map((d) => canonical(type, d)).sort();
+    const target = via ? addresses.get(via) : undefined;
+    if (via && target) {
+      const shared = got.some((a) => target.data.includes(a));
+      const theirs = target.status !== 0 ? rcode(target) : target.data.join(" ") || "none";
+      add(shared, `${what} ${got.join(" ") || "(no answer)"}`,
+        shared ? "" : `(want an address of ${via}, which has ${theirs})`);
       continue;
     }
-    const got = [...answer.data].sort();
     const ok = got.join("\n") === [...expect].sort().join("\n");
     add(ok, `${what} ${got.map((d) => JSON.stringify(d)).join(" ") || "(no answer)"}`,
       ok ? "" : `(want ${expect.map((d) => JSON.stringify(d)).join(" ")})`);
   }
 
-  const parent = (await query(fetchImpl, domain, "DS")).data.map(parseDs);
-  if (!zone.ds) {
+  const parent = dsAnswer.data.map(parseDs);
+  if (dsAnswer.status !== 0) {
+    // Without an answer there is no telling whether the registry holds a DS;
+    // advice to add one could leave a second, mismatched DS at the registrar.
+    add(false, "DNSSEC", `the DS query got ${rcode(dsAnswer)}; the registry's DS is ` +
+      "unknown, so change nothing at the registrar on this result");
+  } else if (!zone.ds) {
     add(false, "DNSSEC", parent.length
       ? "the registry has a DS but the zone is unsigned, so validating resolvers SERVFAIL; " +
         "run set to sign it, or remove the DS at the registrar"
@@ -620,17 +694,19 @@ async function applySteps(client, zone, steps, log) {
  *   log: (line: string) => void }} run
  */
 async function setDomain({ client, domain, zone, create, log }) {
-  if (!zone) {
-    if (!create) {
-      throw new Error(`no Bunny DNS zone; re-run with --create to add one`);
-    }
-    await bunny(client, "/dnszone", { method: "POST", body: { Domain: domain } });
-    zone = (await listZones(client)).find((z) => z.Domain.toLowerCase() === domain);
+  if (zone) {
+    log(`${domain}  zone ${zone.Id}`);
+  } else {
+    if (!create) throw new Error("no Bunny DNS zone; re-run with --create to add one");
+    const created = await bunny(client, "/dnszone", { method: "POST", body: { Domain: domain } });
+    // The response is the new zone; the list is the fallback should it ever not be.
+    zone = Number.isInteger(created?.Id)
+      ? created
+      : (await listZones(client)).find((z) => z.Domain.toLowerCase() === domain);
     if (!zone) throw new Error("zone created, but it is not in the zone list");
     log(`${domain}  created zone ${zone.Id}`);
   }
   const fresh = await getZone(client, zone.Id);
-  log(`${domain}  zone ${zone.Id}`);
   const steps = zoneSteps(fresh);
   const changes = steps.filter(isChange);
   for (const step of steps.filter((s) => s.action === "other")) log(describeStep(step));
@@ -639,10 +715,12 @@ async function setDomain({ client, domain, zone, create, log }) {
     ? `  ${changes.length} change(s) applied, read-back matches`
     : "  records already match");
 
-  if (!after.DnsSecEnabled) {
-    const ds = dsFromBunny(await bunny(client, `/dnszone/${zone.Id}/dnssec`, { method: "POST" }));
-    log(`  DNSSEC enabled. Add this DS at the registrar: ${showDs(ds)}`);
-  }
+  // On a signed zone the call changes nothing and returns the DS, so a re-run
+  // after an unfinished registrar step still prints what to enter there.
+  const ds = dsFromBunny(await bunny(client, `/dnszone/${zone.Id}/dnssec`, { method: "POST" }));
+  log(after.DnsSecEnabled
+    ? `  DNSSEC on. The registrar's DS must be: ${showDs(ds)}`
+    : `  DNSSEC enabled. Add this DS at the registrar: ${showDs(ds)}`);
   log(`  registrar nameservers: ${nameservers(after).join(" ")}`);
 }
 
@@ -659,8 +737,8 @@ async function setDomain({ client, domain, zone, create, log }) {
 /**
  * @param {string[]} argv the command, then its arguments
  * @param {Deps} [deps]
- * @returns {Promise<number>} exit code: 0 clean, 1 check found problems,
- *   2 a set failed
+ * @returns {Promise<number>} exit code: 0 clean, 1 check found problems or
+ *   could not finish a domain, 2 a set failed
  */
 export async function main(argv, deps = {}) {
   const {
@@ -681,15 +759,23 @@ export async function main(argv, deps = {}) {
     const expected = COMMANDS.join(", ");
     throw new Error(`Unknown command "${command ?? ""}"; expected ${expected}\n\n${USAGE}`);
   }
-  const unknownFlags = args.filter((a) => a.startsWith("-") && a !== "--create");
+  const unknownFlags = args.filter((a) => a.startsWith("-") && !["--create", "--all"].includes(a));
   if (unknownFlags.length) {
     throw new Error(`Unknown option(s): ${unknownFlags.join(", ")}\n\n${USAGE}`);
   }
   const create = args.includes("--create");
   if (create && command !== "set") throw new Error("--create is for set only; check never writes.");
+  const named = args.filter((a) => !a.startsWith("-"));
+  const all = args.includes("--all");
+  if (all && named.length) throw new Error("Name domains or pass --all, not both.");
+  // set deletes records on every zone it touches, so the whole inventory takes
+  // an explicit --all rather than a forgotten argument.
+  if (command === "set" && !all && !named.length) {
+    throw new Error("Name the domains to set, or pass --all for the whole inventory.");
+  }
 
   loadEnv();
-  const domains = pickDomains(args.filter((a) => !a.startsWith("-")), env);
+  const domains = pickDomains(named, env);
   const apiKey = env.BUNNY_API_KEY;
   if (!apiKey) {
     throw new Error("BUNNY_API_KEY is not set. Export it or add it to .env (see .env.example).");
@@ -697,26 +783,32 @@ export async function main(argv, deps = {}) {
   const client = { apiKey, fetch: fetchImpl };
   const zones = await listZones(client);
   const zoneFor = (/** @type {string} */ d) => zones.find((z) => z.Domain.toLowerCase() === d);
+  const message = (/** @type {unknown} */ err) => (err instanceof Error ? err.message : err);
 
+  // Both commands keep going past a failed domain so one run reports all of
+  // them; set is idempotent, so a re-run picks up whatever is still pending.
   if (command === "check") {
     let problems = 0;
     for (const domain of domains) {
-      const zone = zoneFor(domain);
-      problems += await checkDomain({ client, fetch: fetchImpl, domain, zone, random, log });
+      try {
+        const zone = zoneFor(domain);
+        problems += await checkDomain({ client, fetch: fetchImpl, domain, zone, random, log });
+      } catch (err) {
+        problems += 1;
+        error(`${domain}: CHECK FAILED — ${message(err)}`);
+      }
     }
     log(problems ? `${problems} problem(s).` : "All domains match.");
     return problems ? 1 : 0;
   }
 
-  // Keep going past a failed domain so one run reports all of them; set is
-  // idempotent, so a re-run picks up whatever is still pending.
   const failed = [];
   for (const domain of domains) {
     try {
       await setDomain({ client, domain, zone: zoneFor(domain), create, log });
     } catch (err) {
       failed.push(domain);
-      error(`${domain}: FAILED — ${err instanceof Error ? err.message : err}`);
+      error(`${domain}: FAILED — ${message(err)}`);
     }
   }
   log(`${domains.length - failed.length} domain(s) set, ${failed.length} failed.` +

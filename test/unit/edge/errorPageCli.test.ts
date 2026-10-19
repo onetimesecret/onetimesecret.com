@@ -23,7 +23,6 @@ import {
   EXPECTED_CHANGES,
   REGIONAL_HOSTS,
   envZoneRefs,
-  loadDotenv,
   main,
   pageMarker,
   probeRegion,
@@ -37,6 +36,7 @@ import {
   unexpectedChanges,
   zoneEnvVar,
 } from "../../../edge/error-page/cli.mjs";
+import { loadDotenv } from "../../../scripts/lib/bunny-api.mjs";
 import { jurisdictions } from "../../../src/data/ops/jurisdictions";
 
 const PAGE = "<html>\n<body>\n{{status_code}}\n</body>\n</html>";
