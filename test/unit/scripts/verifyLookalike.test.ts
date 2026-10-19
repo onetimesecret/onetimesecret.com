@@ -171,6 +171,41 @@ describe("checkPage", () => {
       expect(check(html)).toEqual([]);
     });
 
+    it("fails an outbound link inside <template> content", () => {
+      const html = variant(
+        VALID,
+        "</article>",
+        `</article>
+        <template><div><a href="https://x">x</a></div></template>`,
+      );
+      expect(check(html)).toEqual([
+        `${PAGE}: link is not a local language switch: https://x`,
+      ]);
+    });
+
+    it("fails an outbound <area>", () => {
+      const html = variant(
+        VALID,
+        "</article>",
+        `</article>
+        <map name="m"><area href="https://x" alt="x"></map>`,
+      );
+      expect(check(html)).toEqual([
+        `${PAGE}: link is not a local language switch: https://x`,
+      ]);
+    });
+
+    it("fails a meta refresh redirect, whatever the attribute's case", () => {
+      const html = variant(
+        VALID,
+        "<title>",
+        `<meta http-equiv="Refresh" content="0;url=https://x"><title>`,
+      );
+      expect(check(html)).toEqual([
+        `${PAGE}: <meta http-equiv="refresh"> would redirect the visitor`,
+      ]);
+    });
+
     it("reads single-quoted hrefs instead of reporting them missing", () => {
       expect(check(variant(VALID, `href="/de/"`, `href='/de/'`))).toEqual([]);
       expect(check(variant(VALID, `href="/de/"`, `href='https://x'`))).toEqual([

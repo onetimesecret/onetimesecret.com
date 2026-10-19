@@ -19,7 +19,8 @@
 //     guidance and recovery before optional education, the recipient guidance
 //     and exposure warning outside any disclosure, every disclosure collapsed
 //   - the official address shown is the canonical hostname (config/domains.ts)
-//   - only local language links
+//   - only local language links (<a> and <area>, also inside <template>),
+//     and no <meta http-equiv="refresh"> redirect
 // Over the output as a whole:
 //   - exactly the expected pages (/, /{lang}/ for each language, 404.html)
 //   - no JavaScript or stylesheet files: everything is inline, no islands
@@ -30,15 +31,8 @@
 //
 // Usage: node scripts/verify-lookalike.mjs [distDir]   (default: ./dist-lookalike)
 
-import {
-  existsSync,
-  readdirSync,
-  readFileSync,
-  realpathSync,
-  statSync,
-} from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
-import { pathToFileURL } from "node:url";
 
 import { JSDOM } from "jsdom";
 
@@ -115,6 +109,18 @@ function languageNavProblem(window, label) {
     return "the <article> comes before the <nav>";
   }
   return null;
+}
+
+/**
+ * Every <a> and <area> under `root`, including inside <template> content,
+ * which querySelectorAll does not enter and a script can clone into the page.
+ */
+function linksIn(root) {
+  const links = [...root.querySelectorAll("a, area")];
+  for (const template of root.querySelectorAll("template")) {
+    links.push(...linksIn(template.content));
+  }
+  return links;
 }
 
 /**
@@ -290,8 +296,16 @@ export function checkPage(
     }
   }
 
+  if (
+    [...document.querySelectorAll("meta[http-equiv]")].some(
+      (meta) => meta.getAttribute("http-equiv").toLowerCase() === "refresh",
+    )
+  ) {
+    fail(where('<meta http-equiv="refresh"> would redirect the visitor'));
+  }
+
   const languagePaths = new Set(["/", ...languages.map((code) => `/${code}/`)]);
-  for (const anchor of document.querySelectorAll("a")) {
+  for (const anchor of linksIn(document)) {
     const href = anchor.getAttribute("href");
     if (!languagePaths.has(href)) {
       fail(
@@ -431,11 +445,6 @@ function main(argv = process.argv.slice(2)) {
   );
 }
 
-// Run only as an entry point, so tests can import checkPage.
-// argv[1] is realpath'd because import.meta.url already is.
-if (
-  process.argv[1] &&
-  import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href
-) {
-  main();
-}
+// Run only as an entry point, so tests can import checkPage. import.meta.main
+// (Node >= 24.2) follows symlinks and is false under `node -e` or an importer.
+if (import.meta.main) main();
