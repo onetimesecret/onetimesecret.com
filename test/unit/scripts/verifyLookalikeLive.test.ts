@@ -22,8 +22,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   HSTS_MIN_MAX_AGE,
   checkUrl,
+  cspHeaderProblem,
   describeFailure,
   hstsProblem,
+  isRootPage,
   listChecks,
   missingHeaders,
   runChecks,
@@ -43,6 +45,12 @@ const GOOD_HEADERS = {
   "x-robots-tag": "noindex",
   "content-security-policy": "frame-ancestors 'none'",
   "strict-transport-security": "max-age=31536000; includeSubDomains",
+};
+
+/** What the roots get: the X-Robots-Tag edge rule leaves `/` and `/{lang}/` out. */
+const NO_ROBOTS_HEADERS = {
+  "content-security-policy": GOOD_HEADERS["content-security-policy"],
+  "strict-transport-security": GOOD_HEADERS["strict-transport-security"],
 };
 
 type Route = {
@@ -132,6 +140,16 @@ describe("servedPath", () => {
   });
 });
 
+describe("isRootPage", () => {
+  it("matches / and /{lang}/ only", () => {
+    expect(isRootPage("index.html")).toBe(true);
+    expect(isRootPage("de/index.html")).toBe(true);
+    expect(isRootPage("404.html")).toBe(false);
+    expect(isRootPage("robots.txt")).toBe(false);
+    expect(isRootPage("etc/img/index.html")).toBe(false);
+  });
+});
+
 describe("listChecks", () => {
   it("checks every file by its URL, and 404.html through an unknown path", () => {
     const checks = listChecks(distDir, { random: () => "abc123" });
@@ -191,6 +209,31 @@ describe("missingHeaders", () => {
     expect(
       missingHeaders({ ...GOOD_HEADERS, "x-robots-tag": "NoIndex, nofollow" }),
     ).toEqual([]);
+  });
+});
+
+describe("cspHeaderProblem", () => {
+  it("accepts the directives the README puts in the header", () => {
+    const value = "frame-ancestors 'none'; form-action 'none'; connect-src 'none'; base-uri 'none'";
+    expect(cspHeaderProblem(value)).toBeNull();
+  });
+
+  it("names a directive that would block the inline script or styles", () => {
+    expect(
+      cspHeaderProblem(
+        "default-src 'self'; form-action 'none'; connect-src 'none'; frame-ancestors 'none'",
+      ),
+    ).toBe("sets default-src, which blocks the page's inline script and styles");
+    expect(cspHeaderProblem("frame-ancestors 'none'; Script-Src 'self'; style-src 'self'")).toBe(
+      "sets script-src, style-src, which blocks the page's inline script and styles",
+    );
+  });
+
+  it("fails a response whose CSP header carries default-src 'self'", async () => {
+    const value = "default-src 'self'; frame-ancestors 'none'";
+    expect(missingHeaders({ ...GOOD_HEADERS, "content-security-policy": value })).toEqual([
+      `content-security-policy ${cspHeaderProblem(value)} (got "${value}")`,
+    ]);
   });
 });
 
@@ -257,6 +300,25 @@ describe("runChecks", () => {
     expect(failures[0].reason).toMatch(/^served \d+ bytes, built \d+ bytes$/);
   });
 
+  it("accepts the one LF Bunny's custom 404 page appends, on the 404 check only", async () => {
+    const { fetch } = fakeFetch(
+      { ...GOOD_ROUTES, "/de/": { body: `${DE}\n`, headers: GOOD_HEADERS } },
+      { status: 404, body: `${NOT_FOUND}\n`, headers: GOOD_HEADERS },
+    );
+    const failures = await runChecks(listChecks(distDir), { distDir, base: BASE, fetch });
+    expect(failures).toHaveLength(1);
+    expect(failures[0].check.file).toBe("de/index.html");
+  });
+
+  it("fails an unknown path with any other extra bytes", async () => {
+    for (const body of [`${NOT_FOUND}\n\n`, `${NOT_FOUND} `, `\n${NOT_FOUND}`]) {
+      const { fetch } = fakeFetch(GOOD_ROUTES, { status: 404, body, headers: GOOD_HEADERS });
+      const failures = await runChecks(listChecks(distDir), { distDir, base: BASE, fetch });
+      expect(failures).toHaveLength(1);
+      expect(failures[0].check.file).toBe("404.html");
+    }
+  });
+
   it("fails a byte-identical page that lacks the edge-rule headers", async () => {
     const { fetch } = fakeFetch({
       ...GOOD_ROUTES,
@@ -268,6 +330,29 @@ describe("runChecks", () => {
     expect(failures[0].reason).toBe(
       "content-security-policy is not set; strict-transport-security is not set",
     );
+  });
+
+  it("does not require x-robots-tag on the roots, which the edge rule leaves out", async () => {
+    const { fetch } = fakeFetch({
+      ...GOOD_ROUTES,
+      "/": { body: ROOT, headers: NO_ROBOTS_HEADERS },
+      "/en/": { body: EN, headers: NO_ROBOTS_HEADERS },
+      "/de/": { body: DE, headers: NO_ROBOTS_HEADERS },
+    });
+    const failures = await runChecks(listChecks(distDir), { distDir, base: BASE, fetch });
+    expect(failures).toEqual([]);
+  });
+
+  it("requires x-robots-tag on every other path, the unknown path included", async () => {
+    const { fetch } = fakeFetch(
+      { ...GOOD_ROUTES, "/robots.txt": { body: ROBOTS, headers: NO_ROBOTS_HEADERS } },
+      { status: 404, body: NOT_FOUND, headers: NO_ROBOTS_HEADERS },
+    );
+    const failures = await runChecks(listChecks(distDir), { distDir, base: BASE, fetch });
+    expect(failures.map(({ check, reason }) => [check.file, reason])).toEqual([
+      ["robots.txt", "x-robots-tag is not set"],
+      ["404.html", "x-robots-tag is not set"],
+    ]);
   });
 
   it("fails a font served without the headers the pages carry", async () => {

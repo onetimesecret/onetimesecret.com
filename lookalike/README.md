@@ -167,31 +167,32 @@ nothing.
 
 ### Response headers
 
-**Current policy:** all pages emit `noindex, nofollow`, and the live verification
-requires `X-Robots-Tag: noindex` on every response. Keep that header on all paths
-until an indexing-policy change is implemented and deployed together.
+The headers are two edge rules on the pull zone. The rules already have the
+shape the indexing policy in `docs/.lookalike-domain-defense-playbook.txt`
+needs; the pages do not. Every page, roots included, still carries
+`<meta name="robots" content="noindex, nofollow">`, so nothing on these domains
+is indexable. The roots become indexable only once each domain has its own
+page: the playbook makes uniqueness the condition, and today every domain
+serves the same bytes.
 
-**Proposed root exception (not implemented):** the policy in
-`docs/.lookalike-domain-defense-playbook.txt` would allow indexing of the roots
-so a domain search may surface the notice, while other paths retain noindex.
-The table and matching rules below describe that proposal, not the current
-configuration. Headers apply to fonts, images and the 404 fallback as well as pages.
+**Rule 1, base headers.** Condition: _Request URL_ matches `*`, so fonts,
+images and the 404 fallback get them too. One _Set Response Header_ action per
+header:
 
-| Header                      | Value                                                                               |
-| --------------------------- | ----------------------------------------------------------------------------------- |
-| `X-Robots-Tag`              | `noindex, follow` on every path except the roots `/` and `/{lang}/`, which get none |
-| `Content-Security-Policy`   | `frame-ancestors 'none'; form-action 'none'; connect-src 'none'; base-uri 'none'`   |
-| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains; preload`                                      |
-| `Referrer-Policy`           | `no-referrer`                                                                       |
-| `Cache-Control`             | `public, max-age=300, stale-while-revalidate=86400, stale-if-error=604800`          |
-| `Link`                      | not set at all; a `rel="canonical"` by header is as wrong as one in the page        |
+| Header                      | Value                                                                             |
+| --------------------------- | --------------------------------------------------------------------------------- |
+| `Content-Security-Policy`   | `frame-ancestors 'none'; form-action 'none'; connect-src 'none'; base-uri 'none'` |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains; preload`                                    |
+| `Referrer-Policy`           | `no-referrer`                                                                     |
+| `Cache-Control`             | `public, max-age=300, stale-while-revalidate=86400, stale-if-error=604800`        |
 
-`X-Robots-Tag` is one rule, not a catch-all plus an override: Bunny's Set
-Response Header action is cumulative, so a second matching rule adds a
-header and cannot remove the first. The rule sets `X-Robots-Tag` to
-`noindex, follow` with a Request URL trigger set to **Match None** and one
-anchored Lua pattern per root (the trigger path includes the scheme and
-host, `*` crosses slashes, and the query string is ignored):
+**Rule 2, `X-Robots-Tag`.** One action, `X-Robots-Tag: noindex, follow`.
+Condition: **Match none** over one _Request URL_ condition set to **Match
+any**, with one anchored Lua pattern per root. Setting both to Match none
+cancels out and puts the header on the roots only. The `pattern:` prefix is
+required: without it Bunny reads the value as a URL and refuses it ("The
+trigger path is not a valid URL"). The trigger path includes the scheme and
+host, and the query string is ignored:
 
 ```text
 pattern:^https://[^/]+/$
@@ -201,17 +202,31 @@ pattern:^https://[^/]+/es/$
 pattern:^https://[^/]+/fr/$
 ```
 
-Listing the languages rather than `[a-z][a-z]` keeps a two-letter phishing
+It is one rule, not a catch-all plus an override: Set Response Header is
+cumulative, so a second matching rule adds a header and cannot remove the
+first. Listing the languages rather than `%a%a` keeps a two-letter phishing
 path like `/id/` out of the exception. Add a line when a language is added.
-Check with `curl -sI` that `/` and `/en/` have no `X-Robots-Tag` and that
-`/en`, `/favicon.ico`, `/404.html` and `/secret/anything/` do. The CSP header carries only directives the page's meta tag cannot
-(`frame-ancestors`) or that restate the "accepts no data" claim. It has no
-`default-src 'self'`: every delivered policy is enforced, so a header
-`default-src 'self'` would block the inline hostname script and inline
-styles that the meta tag's `'unsafe-inline'` allows. `includeSubDomains` is
-right because the wildcard hostname lands every subdomain on this zone;
-submit each domain to the HSTS preload list once it is stable.
-`stale-if-error` keeps the notice served if the storage zone is unreachable.
+Plain-HTTP requests match no pattern, so their 301 to HTTPS carries the
+header. Check with:
+
+```sh
+for p in / /en/ /de/ /en /favicon.ico /404.html /secret/x/; do
+  printf '%-14s ' "$p"; curl -sI "https://onetimesecret.io$p" | grep -i x-robots || echo '(none)'
+done
+```
+
+`/` and `/{lang}/` print `(none)`; everything else prints `noindex, follow`.
+
+`Link` is not set at all: a `rel="canonical"` by header is as wrong as one in
+the page, and a literal `Link: none` is a malformed header. The CSP header
+carries only directives the page's meta tag cannot (`frame-ancestors`) or that
+restate the "accepts no data" claim. It has no `default-src`: every delivered
+policy is enforced, so a header `default-src 'self'` blocks the inline
+hostname script and inline styles that the meta tag's `'unsafe-inline'`
+allows, and the page renders unstyled. `includeSubDomains` is right because
+the wildcard hostname lands every subdomain on this zone; submit each domain
+to the HSTS preload list once it is stable. `stale-if-error` keeps the notice
+served if the storage zone is unreachable.
 
 Status codes: the roots answer 200, every unknown path answers 404 with the
 notice as its body and `X-Robots-Tag: noindex`. Never redirect from a
@@ -219,14 +234,17 @@ lookalike to onetimesecret.com, not even for deep links: a redirect hands the
 phishing link's click to the real site with no warning, and an
 attacker-chosen path could launder a link through it.
 
-The checks in this repository have not caught up with the root exception:
-`verify-lookalike` requires a `noindex` meta tag on every page and
-`verify-lookalike-live` requires `X-Robots-Tag: noindex` on every response,
-roots included. To allow root indexing, update `layouts/NoticeLayout.astro`,
-both gates and the edge rules together. Omitting the root header does not
-override its existing noindex meta tag. Reconcile `nofollow` in the meta tag
-with the proposed `follow` header at the same time. Indexing remains a crawler
-decision.
+To make the roots indexable once per-domain pages exist, change these
+together; the edge rules stay as they are:
+
+- `layouts/NoticeLayout.astro`: `index, follow` on `/` and `/{lang}/`, and
+  `noindex, follow` on `404.html`, which today is byte-identical to the root
+  page, so the layout needs a flag to tell them apart.
+- `verify-lookalike`: roots must not carry `noindex`; `404.html` must.
+- `verify-lookalike-live`: roots must not carry `X-Robots-Tag: noindex`.
+  Today it only stops requiring the header there.
+
+Indexing remains a crawler decision.
 
 ### GitHub
 
@@ -255,11 +273,17 @@ CDN, not in this repository:
   in the response) and fails at once.
 - an unknown path (`/secret/verify-lookalike-live-<random>`) answers 404
   with the body of `404.html`: the storage zone's custom 404 path is set.
-- every response carries `X-Robots-Tag: noindex`, `frame-ancestors 'none'`
-  and `Strict-Transport-Security`, fonts and images included, and the HSTS
+  Bunny appends one LF to the file when it serves it this way, and the check
+  allows that byte and nothing else.
+- every response carries `frame-ancestors 'none'` and
+  `Strict-Transport-Security`, and every response but the roots carries
+  `X-Robots-Tag: noindex`, fonts and images included. The roots stay noindex
+  through their meta tag, which `verify-lookalike` requires and the byte
+  comparison carries to the live page. The HSTS
   `max-age` is parsed: `max-age=0` switches HSTS off and fails, as does
-  anything under six months. `Referrer-Policy` and `Cache-Control` are not
-  checked yet, and the root exception above is not known to it yet either.
+  anything under six months. A CSP header that sets `default-src`,
+  `script-src` or `style-src` fails too: it blocks the page's inline script
+  and styles. `Referrer-Policy` and `Cache-Control` are not checked yet.
 
 A deploy whose zone is missing any of these fails loudly rather than shipping a
 notice site that is indexable, framable or dead on a phishing path.
