@@ -24,7 +24,7 @@ const EAGER_ISLANDS_UNHYDRATED =
   'astro-island[ssr][client="load"], astro-island[ssr][client="only"]';
 
 /** Console noise from third parties that is not a hydration signal. */
-const IGNORED_ERRORS = [/ERR_BLOCKED_BY_CLIENT/i, /sentry/i, /spotlight/i];
+const IGNORED_ERRORS = [/ERR_BLOCKED_BY_CLIENT/i, /sentry/i];
 
 /**
  * Start collecting console and page errors on `page`. The returned array is
