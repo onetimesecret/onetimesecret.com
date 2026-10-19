@@ -87,14 +87,50 @@ export function hstsProblem(value) {
 }
 
 /**
+ * Directives the CSP header must leave to the page's meta tag. Every delivered
+ * policy is enforced, so a header `default-src 'self'` blocks the inline
+ * hostname script and the inline stylesheet that the meta tag's
+ * `'unsafe-inline'` allows: the page renders unstyled and says "this address"
+ * (seen on the zone 2026-10-18). `default-src` covers both by fallback.
+ */
+export const META_ONLY_CSP_DIRECTIVES = Object.freeze([
+  "default-src",
+  "script-src",
+  "script-src-elem",
+  "script-src-attr",
+  "style-src",
+  "style-src-elem",
+  "style-src-attr",
+]);
+
+/**
+ * Why a Content-Security-Policy header would break the page, or null when it
+ * would not. Directive names compare case-insensitively (CSP3 section 2.2).
+ */
+export function cspHeaderProblem(value) {
+  const names = value
+    .split(";")
+    .map((directive) => directive.trim().split(/\s+/)[0].toLowerCase())
+    .filter(Boolean);
+  const blocking = META_ONLY_CSP_DIRECTIVES.filter((name) => names.includes(name));
+  if (blocking.length === 0) return null;
+  return `sets ${blocking.join(", ")}, which blocks the page's inline script and styles`;
+}
+
+/**
  * Headers every response must carry, with the token each must contain and,
  * where a token is not proof enough, a check of the value. They are set as
  * edge rules on the pull zone (lookalike/README.md, "Deploying"), so they are
  * checked here and not in verify-lookalike.
+ *
+ * `exceptRoots`: the X-Robots-Tag rule leaves out `/` and `/{lang}/`, so the
+ * header is not required there. Those pages stay noindex through their meta
+ * tag, which verify-lookalike requires and the byte comparison here carries
+ * to the live page.
  */
 export const REQUIRED_HEADERS = Object.freeze([
-  { name: "x-robots-tag", token: "noindex" },
-  { name: "content-security-policy", token: "frame-ancestors 'none'" },
+  { name: "x-robots-tag", token: "noindex", exceptRoots: true },
+  { name: "content-security-policy", token: "frame-ancestors 'none'", check: cspHeaderProblem },
   { name: "strict-transport-security", token: "max-age=", check: hstsProblem },
 ]);
 
@@ -115,6 +151,11 @@ export function servedPath(file) {
   if (file === "index.html") return "/";
   if (file.endsWith("/index.html")) return `/${file.slice(0, -"index.html".length)}`;
   return `/${file}`;
+}
+
+/** A root page: `/` or `/{lang}/`, the paths the X-Robots-Tag rule leaves out. */
+export function isRootPage(file) {
+  return /^(?:[^/]+\/)?index\.html$/.test(file);
 }
 
 /**
@@ -189,6 +230,23 @@ export async function fetchPage(
   }
 }
 
+/**
+ * Whether the served body is the built file. Byte for byte, except that a
+ * storage zone answering an unknown path with its custom 404 page appends one
+ * LF to the file (observed 2026-10-18: `/404.html` by its own path comes back
+ * exact, `/secret/<random>` comes back one `\n` longer). That one byte is
+ * accepted on the 404 check only; anything else is still a rewrite.
+ */
+export function bodyMatches(served, built, check) {
+  if (served.equals(built)) return true;
+  return (
+    check.status === 404 &&
+    served.length === built.length + 1 &&
+    served[served.length - 1] === 0x0a &&
+    served.subarray(0, built.length).equals(built)
+  );
+}
+
 /** Header names in `headers` compare case-insensitively; fetch lowercases them. */
 export function missingHeaders(headers, required = REQUIRED_HEADERS) {
   const missing = [];
@@ -234,7 +292,7 @@ export async function runChecks(
       failures.push({ check, live, reason: `HTTP ${live.status}, expected ${check.status}` });
       continue;
     }
-    if (!live.body.equals(local)) {
+    if (!bodyMatches(live.body, local, check)) {
       failures.push({
         check,
         live,
@@ -242,7 +300,10 @@ export async function runChecks(
       });
       continue;
     }
-    const missing = missingHeaders(live.headers, required);
+    const needed = isRootPage(check.file)
+      ? required.filter(({ exceptRoots }) => !exceptRoots)
+      : required;
+    const missing = missingHeaders(live.headers, needed);
     if (missing.length > 0) {
       failures.push({ check, live, reason: missing.join("; ") });
     }
@@ -340,6 +401,8 @@ export function describeFailure({ base, checks, failures }) {
     "    custom 404 path is not /404.html.",
     "  - a missing header: add it as an edge rule on the pull zone. On a font",
     "    or image only: the rule is scoped to HTML; apply it to every response.",
+    "  - content-security-policy that sets default-src, script-src or style-src:",
+    "    remove those directives from the edge rule; the page's meta tag owns them.",
     "  - strict-transport-security with max-age=0 or a short max-age: raise it",
     `    to at least ${HSTS_MIN_MAX_AGE} seconds.`,
   ];
