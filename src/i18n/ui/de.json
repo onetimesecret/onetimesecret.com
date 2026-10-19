@@ -498,7 +498,10 @@
         "toggle": "Diese Domain mit der echten vergleichen",
         "real": "Die echte Adresse",
         "this": "Diese Adresse",
-        "legend": "Die Hervorhebungen zeigen, wo sich die Domainnamen unterscheiden."
+        "legend": "Die Hervorhebungen zeigen, wo sich die Domainnamen unterscheiden.",
+        "srAdded": "(zusätzlich: {chars})",
+        "srChanged": "({chars} statt {expected})",
+        "srMissing": "(fehlt: {expected})"
       },
       "exposed": {
         "heading": "Bereits vertrauliche Informationen geteilt?",

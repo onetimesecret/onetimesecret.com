@@ -498,7 +498,10 @@
         "toggle": "Comparar este dominio con el real",
         "real": "La dirección real",
         "this": "Esta dirección",
-        "legend": "Las partes resaltadas muestran dónde difieren los nombres de dominio."
+        "legend": "Las partes resaltadas muestran dónde difieren los nombres de dominio.",
+        "srAdded": "(sobra: {chars})",
+        "srChanged": "({chars} en lugar de {expected})",
+        "srMissing": "(falta: {expected})"
       },
       "exposed": {
         "heading": "¿Ya has compartido información confidencial?",

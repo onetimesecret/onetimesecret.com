@@ -170,7 +170,7 @@ const csp = [
             href={language.href}
             hreflang={language.code}
             lang={language.code}
-            class="inline-block py-2 underline underline-offset-4
+            class="inline-block py-3 underline underline-offset-4
               hover:text-gray-950 focus-visible:outline-2 focus-visible:outline-offset-4
               focus-visible:outline-current dark:hover:text-white">
             {language.name}
@@ -190,7 +190,8 @@ const csp = [
       // Name the domain the visitor is actually on. Rendered server-side with a
       // generic fallback so the sentence reads correctly without JavaScript,
       // and so one build serves every lookalike domain.
-      // Deliberate: IDNs stay in location.hostname's punycode (xn--) form, never a homograph.
+      // Deliberate: IDNs stay in location.hostname's punycode (xn--) form and are
+      // never rendered as Unicode.
       (function () {
         var host = window.location.hostname;
         if (!host) return;

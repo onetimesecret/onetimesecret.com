@@ -498,7 +498,10 @@
         "toggle": "Comparer ce domaine avec le vrai",
         "real": "La vraie adresse",
         "this": "Cette adresse",
-        "legend": "Les parties surlignées montrent où les noms de domaine diffèrent."
+        "legend": "Les parties surlignées montrent où les noms de domaine diffèrent.",
+        "srAdded": "(en trop : {chars})",
+        "srChanged": "({chars} au lieu de {expected})",
+        "srMissing": "(manquant : {expected})"
       },
       "exposed": {
         "heading": "Vous avez déjà partagé des informations sensibles ?",

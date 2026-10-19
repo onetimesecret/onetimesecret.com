@@ -498,7 +498,10 @@
         "toggle": "Compare this domain with the real one",
         "real": "The real address",
         "this": "This address",
-        "legend": "Highlights show where the domain names differ."
+        "legend": "Highlights show where the domain names differ.",
+        "srAdded": "(extra: {chars})",
+        "srChanged": "({chars} instead of {expected})",
+        "srMissing": "(missing: {expected})"
       },
       "exposed": {
         "heading": "Already shared sensitive information?",

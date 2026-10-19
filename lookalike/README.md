@@ -97,8 +97,8 @@ the deploy workflow install dev dependencies (`pnpm install
 
 Under "What is this page?", a collapsed "Compare this domain with the real
 one" disclosure opens a side-by-side comparison of the real domain and the
-visited hostname with the differing characters marked.
-Nothing about it is written per domain:
+visited hostname with the differing characters marked. Nothing about it is
+written per domain:
 
 - `lookalike/lib/domainDiff.ts` picks the real domain the hostname is closest
   to (canonical first, then the live regional domains), strips the common
@@ -111,6 +111,10 @@ Nothing about it is written per domain:
   reduced-motion state. The real domain is only dotted-underlined, and the
   prominent copy in the heading is never touched: the reader should learn the
   real address, not a decorated version of it.
+- Screen readers hear the visited address's differences as words instead of
+  highlights, spelled letter by letter ("extra: s", "l instead of i",
+  "missing: m"; `web.lookalike.diff.sr*`), since a misspelled domain read
+  aloud sounds like the real one.
 - The block stays hidden when there is nothing to teach: on the real site, on
   `localhost`, on an IP address, or when less than 70% of the real domain
   survives in the hostname (`RECOGNISABLE_RATIO`).
@@ -270,8 +274,10 @@ the Bunny dashboard per the checklist below.
 ## Per-domain checklist
 
 Record the domain in `LOOKALIKE_DOMAINS` (`config/domains.ts`) when it is
-acquired; `test/unit/lookalike/domains.test.ts` checks the entry's shape. Then
-on the domain's DNS:
+acquired, with `registered` set to the registry creation date from WHOIS or
+RDAP (for a domain bought from a previous holder, that predates our
+ownership); `test/unit/lookalike/domains.test.ts` checks the entry's shape.
+Then on the domain's DNS:
 
 - `A`/`CNAME` for the apex and `*` to the pull zone
 - `TXT "v=spf1 -all"` at the apex: no host may send mail as this domain

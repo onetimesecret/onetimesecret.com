@@ -96,6 +96,18 @@ describe("toSegments", () => {
       "gap",
     ]);
   });
+
+  it("keeps the real characters a change or a gap stands in for", () => {
+    const segments = toSegments(ops, "actual");
+    expect(
+      segments
+        .filter((s) => s.expected !== undefined)
+        .map((s) => [s.kind, s.expected]),
+    ).toEqual([
+      ["changed", "i"],
+      ["gap", "m"],
+    ]);
+  });
 });
 
 describe("normalizeHostname", () => {
