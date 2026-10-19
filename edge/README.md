@@ -255,8 +255,8 @@ The page is built for the moment the regional origin is down:
   so a renamed placeholder degrades to a blank line rather than `{{…}}`.
 - English only. The regional apps are localized; this page is deliberately not.
 
-`edge/error-page/cli.mjs` keeps the five zones from drifting, through three
-pnpm scripts that take the same arguments:
+`edge/error-page/cli.mjs` keeps the five zones from drifting, through four
+pnpm scripts with region selection:
 
 ```bash
 # BUNNY_API_KEY from the environment, .env.local or .env (declared in
@@ -265,7 +265,7 @@ pnpm edge:error-page:push              # report: which zones differ (exit 1 if a
 pnpm edge:error-page:push --apply      # push regional.html to every zone that differs
 pnpm edge:error-page:verify            # check every zone; writes nothing
 pnpm edge:error-page:deploy            # push then verify, one region at a time
-pnpm edge:error-page:probe             # with the origin down: is the page actually served?
+pnpm edge:error-page:probe [regions]   # automated serving check; omit regions for all
 pnpm edge:error-page:probe nz=<host>   # probe this hostname for the region (see below)
 pnpm edge:error-page:deploy eu uk      # limit to some regions (any command)
 pnpm edge:error-page:deploy nz=<zone>  # name the pull zone for a region (name or ID)
@@ -282,7 +282,9 @@ the zone itself has a generated, non-guessable name and only its
 `*.b-cdn.net` hostname. Those zones are named per region, by
 `BUNNY_PULL_ZONE_<REGION>` (`BUNNY_PULL_ZONE_NZ=<name or ID>`, declared in
 `.env.example`, read from the same sources as `BUNNY_API_KEY`) or by a
-`region=zone` argument, which wins over the environment. A region with no
+`region=zone` argument for push, verify or deploy, which wins over the
+environment. For probe, `region=hostname` selects an attached serving hostname;
+use `BUNNY_PULL_ZONE_<REGION>` to name a Shield zone. A region with no
 zone, a hostname on two zones, an unknown zone name or ID, or a named zone
 that carries another region's hostname aborts before anything is written.
 
@@ -302,8 +304,9 @@ Re-running is idempotent and only touches zones that still differ.
 `verify` writes nothing. It reads each zone fresh, applies the same check as
 the push read-back (page enabled, content equal to the file), prints the
 zone's origin and hostnames for eyeballing, and exits `1` if any zone fails.
-When every zone passes it ends by naming the `probe` for those regions, the
-one check that needs the origin down.
+When every zone passes it prints the next `probe` command for those regions.
+It remains strictly a read-only configuration check; it does not run a
+serving probe or instruct you to take the origin down.
 
 `deploy` is push and verify for one region at a time, in the order given:
 read the zone fresh, push if it differs, verify, then the next region. It
@@ -311,30 +314,83 @@ stops at the first failure, including a collateral change caught by the
 read-back diff, and says which regions it did not reach. A push that
 misbehaves on one production zone is therefore never repeated on the next.
 Zones already up to date are only verified. This is the command to run after
-changing `regional.html`.
+changing `regional.html`. Like `verify`, it prints the next `probe` command
+but does not run it automatically.
 
-`probe` is the serving check. It fetches `https://<host>/` once per region,
-straight through the pull zone with no API key and no zone lookup, and
-classifies the answer: a 2xx or 3xx is the origin answering and proves
-nothing about the page, a 5xx carrying the template's `<title>` with every
-placeholder filled is the custom page, any other 5xx is not. It exits `0`
-only when every region served the page, so a run with the origin up fails
-and says so instead of passing by accident. Bunny serves the custom page
-only for errors it generates itself (origin unreachable or timed out); a
-`500` from the app passes through untouched. So the probe means something
-only with the origin down, or its `OriginUrl` temporarily pointed at a
-closed port (restore it in the same session). Each region line says which
-pull zone answered (Bunny's `CDN-PullZone` header) and the cache status; a
-hostname whose answer carries neither is not routed through Bunny at all,
-and no origin outage will show the page there. Probe the zone's own
-hostname instead, `nz=be2169e1-7.b-cdn.net`, which `verify` prints, and
-look at the DNS. When a run proves nothing the probe ends by saying what to
-do about it.
+### Automated serving check
 
-Exit codes for all four: `0` clean, `1` drift found by `push` without
-`--apply`, a zone failed `verify`, or `probe` did not see the page from
-every region, `2` a push failed, `deploy` stopped, or the script could not
-run.
+The usual workflow needs only these commands, with the same regions on each:
+
+```bash
+pnpm edge:error-page:deploy eu uk
+pnpm edge:error-page:probe eu uk
+# If configuration is already deployed, use verify then probe instead.
+```
+
+No dashboard changes or normal-traffic outage are required. Bunny serves
+this page for errors it generates itself; a `500` from the app passes
+through untouched. `probe` creates that failure only for its own requests,
+one region at a time:
+
+1. Requires `BUNNY_API_KEY`, loaded from the same environment, `.env.local`
+   or `.env` sources as the other commands. It discovers the selected zones
+   as `deploy` does, including `BUNNY_PULL_ZONE_<REGION>` overrides, then
+   reads each zone fresh and checks that the stored template matches the
+   local file and custom error pages are enabled. Drift fails without
+   installing a rule; run `deploy` first.
+2. Uses the public hostname if attached to the selected zone; otherwise,
+   for Shield zones, automatically uses an attached `*.b-cdn.net` hostname.
+   It never guesses a hostname. The existing `region=hostname` probe
+   override remains available, but that hostname must be attached to the
+   selected zone.
+3. Installs and reads back a temporary request-scoped edge rule matching
+   only `https://<host>/.well-known/ots-error-page-probe/<random-UUID>/*`.
+   This UUID is a local correlation token, not the rule's ID. Creation omits
+   `Guid`: Bunny assigns it and returns it with HTTP `201`. Supplying a new
+   `Guid` instead selects an update and returns `pullZone.edge_rule_not_found`.
+   Its `OriginUrl` action points to `https://error-page-probe.invalid`, a
+   reserved `.invalid` domain. Scoped actions disable caching and bypass
+   Perma-Cache. The zone's configured `OriginUrl`, existing rules and normal
+   traffic are not changed; read-back also checks for collateral changes.
+4. Makes up to 12 serving attempts with five-second waits between attempts,
+   within a 90-second per-region serving deadline. Each attempt uses a fresh
+   path under the UUID to avoid cached responses. Success requires HTTP
+   `5xx`, the expected `CDN-PullZone` ID, and the **full local template** with
+   only `{{status_code}}` and `{{status_title}}` substituted consistently.
+   The filled code must equal the HTTP status; a matching title alone is
+   not enough.
+5. Always attempts cleanup after installation is attempted, even after an
+   ambiguous install timeout or failure, or a caught `SIGINT`/`SIGTERM`.
+   Cleanup deletes the server-assigned rule GUID, then uses a fresh `GET`
+   to verify its absence. When that GUID is known, read errors cannot prevent
+   deletion. If the create response was lost or did not contain a valid GUID,
+   cleanup first discovers it by the unique `OTS error-page probe <token>`
+   Description, excluding all pre-existing rule IDs. The URL token is never
+   used as a deletion ID. Cleanup makes up to three attempts. A `DELETE`
+   error is tolerated only if the `GET` confirms the rule is already absent.
+   It never restores a saved rule list over concurrent edits. Any failure
+   stops the command before the next region.
+
+The command logs the zone ID, local probe token and, after read-back, Bunny's
+assigned rule GUID. Cleanup cannot be guaranteed
+on `SIGKILL`, power loss or another uncatchable termination. A leftover rule
+is still scoped only to the unpredictable probe URL, not normal traffic.
+If cleanup fails, the command prints recovery using those logged values:
+`DELETE /pullzone/{id}/edgerules/{guid}`. If the GUID could not be discovered,
+it instead identifies the exact Description to find. Delete only the
+server-assigned GUID for that probe, then read the zone back to confirm absence.
+
+Official API references: [add or update an edge rule][add-edge-rule] and
+[delete an edge rule][delete-edge-rule].
+
+[add-edge-rule]: https://docs.bunny.net/reference/pullzonepublic_addedgerule
+[delete-edge-rule]: https://docs.bunny.net/reference/pullzonepublic_deleteedgerule
+
+Probe exit codes: `0` only when all selected regions served the page and
+cleanup was confirmed; `1` for configuration drift or a failed serving
+check; `2` for API, setup or cleanup failure, or interruption. For the other
+commands: `0` clean; `1` drift found by `push` without `--apply` or a failed
+`verify`; `2` a push failed, `deploy` stopped, or the script could not run.
 
 `test/unit/edge/errorPageCli.test.ts` covers zone resolution, drift
 planning, the zone-list parsing, the read-back diff, the probe's
@@ -343,12 +399,12 @@ end.
 
 ### Checking a zone by hand
 
-For the day the script is not trusted, the same checks against the API
-directly. `ZONE` is the pull zone ID, `HOST` the region's public hostname
-(both are in the `verify` output).
+For troubleshooting stored configuration, the same read-only checks can be
+made against the API directly. `ZONE` is the pull zone ID from the `verify`
+output. These checks do not replace the automated serving probe.
 
 ```bash
-ZONE=6421160 HOST=nz.onetimesecret.com
+ZONE=6421160
 
 # What Bunny stores for the zone (BUNNY_API_KEY in the shell)
 curl -s -H "AccessKey: $BUNNY_API_KEY" -H "Accept: application/json" \
@@ -362,29 +418,17 @@ curl -s -H "AccessKey: $BUNNY_API_KEY" -H "Accept: application/json" \
   | jq -r '.ErrorPageCustomCode' | diff - edge/error-page/regional.html && echo match
 ```
 
-In the dashboard: dash.bunny.net, CDN, the zone, its custom error page
-setting shows the same toggle and HTML.
+### Historical serving result and validation limits
 
-Seeing the page served is what `probe` does; by hand it is one request
-with the origin down. The homepage of the app also says "Onetime Secret",
-so the title is the line to look for, together with the status:
+On 2026-09-07, the old probe against `nz=be2169e1-7.b-cdn.net` saw Bunny
+serve `502` with the custom page and filled placeholders because the
+origin's Caddy lacked a certificate for that hostname. The public NZ
+hostname returned the app. That incidental TLS failure is historical, not
+part of the recommended testing strategy; the automated probe now induces
+its own request-scoped failure.
 
-```bash
-curl -sS -w 'status %{http_code}\n' "https://$HOST/" | grep -E 'Service Error|^status '
-```
-
-A `status 502` or `504` with a `Service Error` title line is the custom
-page. A `status 200` with no title line is the app, and proves nothing.
-
-Verified against the nz zone on 2026-09-07 with `probe nz=be2169e1-7.b-cdn.net`:
-the origin's Caddy has no certificate for the `b-cdn.net` name, Bunny's
-fetch fails the TLS handshake, and Bunny answers `502` with the custom page,
-`{{status_code}}` filled as `502` and `{{status_title}}` as `Bad Gateway`.
-Through `nz.onetimesecret.com` the same zone (`6421160`) reaches the origin
-and returns the app, which is the "origin answered" case.
-Still not verified: the exact set of statuses Bunny routes through the page
-(origin-unreachable 502/504 and Bunny's own errors are the documented case;
-a `500` the origin itself returns passes through untouched).
+No live production probe has been run for this implementation. The exact
+set of statuses Bunny routes through the custom page remains unverified.
 
 ## Country to jurisdiction mapping
 
