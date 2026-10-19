@@ -5,15 +5,15 @@
  * The canonical production domain - always used for SEO tags
  * (canonical URL, og:url, hreflang links)
  */
-export const CANONICAL_ORIGIN = 'https://onetimesecret.com';
+export const CANONICAL_ORIGIN = "https://onetimesecret.com";
 
 /**
  * Hostnames that indicate a staging/development environment.
  * The banner will show on any hostname containing these substrings.
  */
 export const STAGING_HOSTNAMES = [
-  'onetimesecret.dev',  // Staging deployment
-  'onetime.dev',        // Local development (web.onetime.dev)
+  "onetimesecret.dev", // Staging deployment
+  "onetime.dev", // Local development (web.onetime.dev)
 ] as const;
 
 /**
@@ -22,53 +22,29 @@ export const STAGING_HOSTNAMES = [
  * attacks where an attacker could create domains like onetimesecret.dev.attacker.com
  */
 export function isStagingHostname(hostname: string): boolean {
-  return STAGING_HOSTNAMES.some(staging =>
-    hostname === staging || hostname.endsWith(`.${staging}`)
+  return STAGING_HOSTNAMES.some(
+    (staging) => hostname === staging || hostname.endsWith(`.${staging}`),
   );
 }
 
 /**
- * A lookalike domain Onetime Secret owns: a misspelling or alternate TLD of
- * onetimesecret.com. Each one serves the notice site built by
- * astro.lookalike.config.ts.
+ * Whether `hostname` is one of `domains` or a subdomain of one. `domains` are
+ * the lookalike domains Onetime Secret owns: misspellings and alternate TLDs
+ * of onetimesecret.com, each serving the notice site built by
+ * astro.lookalike.config.ts. Same strict matching as isStagingHostname(): a
+ * substring test would let `example-lookalike.tld.attacker.com` pass.
  *
- * This list is the inventory. The notice pages do not read it (they show
- * `location.hostname` in the browser, so one build serves every domain); it
- * exists so the CDN hostname set, the DNS probe and the DNS hardening
- * checklist in lookalike/README.md have one source of truth to reconcile
- * against. Add a domain here when it is acquired.
- */
-export interface LookalikeDomain {
-  /** Bare registrable hostname, lowercase, no scheme or path. */
-  domain: string;
-  /**
-   * Registry creation date, YYYY-MM-DD. For a domain bought from a previous
-   * holder this predates Onetime Secret's ownership.
-   */
-  registered: string;
-  /** Optional internal note. */
-  note?: string;
-}
-
-export const LOOKALIKE_DOMAINS: readonly LookalikeDomain[] = [
-  // `registered` from WHOIS on 2026-10-18.
-  { domain: "onetimesecret.ca", registered: "2025-03-05" },
-  { domain: "onetimesecret.co", registered: "2025-12-26" },
-  { domain: "onetimesecret.io", registered: "2025-12-26" },
-  { domain: "onetimesecret.nl", registered: "2026-10-17" },
-];
-
-/**
- * Whether `hostname` is one of the owned lookalike domains or a subdomain of
- * one. Same strict matching as isStagingHostname(): a substring test would let
- * `example-lookalike.tld.attacker.com` pass.
+ * The list itself is not kept in this repository, so the repository does not
+ * advertise it. It is the `LOOKALIKE_DOMAINS` secret of the `lookalike` GitHub
+ * environment (see lookalike/README.md). The notice pages do not need it: they
+ * show `location.hostname` in the browser, so one build serves every domain.
  */
 export function isLookalikeHostname(
   hostname: string,
-  domains: readonly LookalikeDomain[] = LOOKALIKE_DOMAINS,
+  domains: readonly string[],
 ): boolean {
   const host = hostname.trim().toLowerCase().replace(/\.$/, "");
   return domains.some(
-    ({ domain }) => host === domain || host.endsWith(`.${domain}`),
+    (domain) => host === domain || host.endsWith(`.${domain}`),
   );
 }
