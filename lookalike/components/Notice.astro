@@ -17,12 +17,7 @@
 import DomainDiff from "./DomainDiff.astro";
 import { createLocaleI18n, type MessageSchema } from "@/i18n";
 import { jurisdictions } from "@/data/ops/jurisdictions";
-import {
-  DEFAULT_LANGUAGE,
-  LANGUAGE_META,
-  SUPPORTED_LANGUAGES,
-  type SupportedLanguage,
-} from "@config/astro/i18n";
+import { type SupportedLanguage } from "@config/astro/i18n";
 
 export interface Props {
   lang: SupportedLanguage;
@@ -41,16 +36,6 @@ const regionalDomains = jurisdictions
   .filter((j) => !j.comingSoon)
   .map((j) => j.domain);
 
-// Language access precedes the warning: visitors must not read an unfamiliar
-// language all the way to the footer to discover instructions they can use.
-const otherLanguages = SUPPORTED_LANGUAGES.filter((code) => code !== lang).map(
-  (code) => ({
-    code,
-    name: LANGUAGE_META[code].name,
-    href: code === DEFAULT_LANGUAGE ? "/" : `/${code}/`,
-  }),
-);
-
 // The hostname is only known in the browser. Rendered as a placeholder with
 // a generic fallback and filled in by the inline script in NoticeLayout.
 const hostnameSlot = `<strong data-lookalike-hostname dir="ltr" class="font-semibold break-all text-gray-900 dark:text-gray-100">${t(
@@ -60,19 +45,6 @@ const lead = t("web.lookalike.lead", { hostname: hostnameSlot });
 ---
 
 <article class="mx-auto w-full max-w-3xl px-4 pt-6 pb-10 sm:px-6 sm:pt-8">
-  <nav
-    aria-label={t("web.lookalike.languages")}
-    class="mb-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-600 dark:text-gray-400">
-    {otherLanguages.map((language) => (
-      <a
-        href={language.href}
-        hreflang={language.code}
-        lang={language.code}
-        class="inline-block py-2 underline underline-offset-4">
-        {language.name}
-      </a>
-    ))}
-  </nav>
   <p class="text-brand-600 dark:text-brand-400 mb-3 text-sm font-semibold tracking-wide uppercase">
     {t("web.lookalike.eyebrow")}
   </p>
@@ -88,7 +60,7 @@ const lead = t("web.lookalike.lead", { hostname: hostnameSlot });
   </p>
 
   {/* Aligned task rows separate questions from guidance without ranking either task. */}
-  <div class="task-options mb-6 space-y-6">
+  <div class="task-options mb-4 space-y-6">
     <section class="md:grid md:grid-cols-[1fr_2fr] md:gap-8">
       <h2 class="mb-3 font-sans text-xl font-semibold text-gray-900 dark:text-gray-100">
         {t("web.lookalike.recipient.heading")}
@@ -119,7 +91,7 @@ const lead = t("web.lookalike.lead", { hostname: hostnameSlot });
       </div>
     </section>
   </div>
-  <p class="mb-8 max-w-prose text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+  <p class="mb-8 max-w-prose text-sm leading-relaxed text-gray-700 dark:text-gray-300">
     {t("web.lookalike.recognise.https")}
   </p>
 

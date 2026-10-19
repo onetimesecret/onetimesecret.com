@@ -471,20 +471,21 @@
       "title": "This is not onetimesecret.com",
       "description": "This domain belongs to Onetime Secret. It displays a notice, not the secret-sharing service.",
       "eyebrow": "Domain notice",
+      "headerLabel": "Onetime Secret?",
       "heading": "This is not onetimesecret.com",
       "hostnameFallback": "this address",
       "lead": "You are visiting {hostname}.",
       "purpose": "This is a notice, not the secret-sharing service. You cannot create or view secrets here.",
       "ownership": "Onetime Secret owns this domain.",
       "recipient": {
-        "heading": "Trying to open a secret someone sent you?",
+        "heading": "Did a link send you here?",
         "body": "Contact the sender through a channel you already know and ask them to confirm the link. Do not try to fix the address by changing letters."
       },
       "sender": {
         "heading": "Want to create a secret?"
       },
       "recognise": {
-        "heading": "Understand this address",
+        "heading": "What is this page?",
         "exact": "Check the full hostname in your browser’s address bar. Our main website is onetimesecret.com.",
         "regionalHeading": "Official regional service addresses",
         "regional": "Our secret-sharing service runs on these regional domains:",

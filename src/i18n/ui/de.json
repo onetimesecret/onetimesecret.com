@@ -471,20 +471,21 @@
       "title": "Dies ist nicht onetimesecret.com",
       "description": "Diese Domain gehört Onetime Secret. Sie zeigt einen Hinweis, nicht den Dienst zum Teilen von Geheimnissen.",
       "eyebrow": "Hinweis zur Domain",
+      "headerLabel": "Onetime Secret?",
       "heading": "Dies ist nicht onetimesecret.com",
       "hostnameFallback": "diese Adresse",
       "lead": "Sie besuchen {hostname}.",
       "purpose": "Dies ist ein Hinweis, nicht der Dienst zum Teilen von Geheimnissen. Sie können hier keine Geheimnisse erstellen oder ansehen.",
       "ownership": "Diese Domain gehört Onetime Secret.",
       "recipient": {
-        "heading": "Ein Geheimnis öffnen, das Ihnen jemand geschickt hat?",
+        "heading": "Hat Sie ein Link hierher geführt?",
         "body": "Kontaktieren Sie die Person, die Ihnen den Link geschickt hat, über einen Ihnen bereits bekannten Kanal und bitten Sie um Bestätigung des Links. Versuchen Sie nicht, die Adresse durch Ändern von Buchstaben zu korrigieren."
       },
       "sender": {
         "heading": "Möchten Sie ein Geheimnis erstellen?"
       },
       "recognise": {
-        "heading": "Diese Adresse verstehen",
+        "heading": "Was ist diese Seite?",
         "exact": "Prüfen Sie den vollständigen Hostnamen in der Adressleiste Ihres Browsers. Unsere Hauptwebsite ist onetimesecret.com.",
         "regionalHeading": "Offizielle regionale Adressen des Dienstes",
         "regional": "Unser Dienst zum Teilen von Geheimnissen läuft auf diesen regionalen Domains:",

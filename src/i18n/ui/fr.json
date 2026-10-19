@@ -471,20 +471,21 @@
       "title": "Ceci n'est pas onetimesecret.com",
       "description": "Ce domaine appartient à Onetime Secret. Il affiche un avis, pas le service de partage de secrets.",
       "eyebrow": "Avis concernant le domaine",
+      "headerLabel": "Onetime Secret ?",
       "heading": "Ceci n'est pas onetimesecret.com",
       "hostnameFallback": "cette adresse",
       "lead": "Vous consultez {hostname}.",
       "purpose": "Ceci est un avis, pas le service de partage de secrets. Vous ne pouvez ni créer ni consulter de secrets ici.",
       "ownership": "Ce domaine appartient à Onetime Secret.",
       "recipient": {
-        "heading": "Vous cherchez à ouvrir un secret que l’on vous a envoyé ?",
+        "heading": "Un lien vous a conduit ici ?",
         "body": "Contactez la personne qui vous a envoyé le lien par un canal que vous connaissez déjà et demandez-lui de le confirmer. N’essayez pas de corriger l’adresse en changeant des lettres."
       },
       "sender": {
         "heading": "Vous souhaitez créer un secret ?"
       },
       "recognise": {
-        "heading": "Comprendre cette adresse",
+        "heading": "Qu’est-ce que cette page ?",
         "exact": "Vérifiez le nom d'hôte complet dans la barre d'adresse de votre navigateur. Notre site principal est onetimesecret.com.",
         "regionalHeading": "Adresses régionales officielles du service",
         "regional": "Notre service de partage de secrets fonctionne sur ces domaines régionaux :",

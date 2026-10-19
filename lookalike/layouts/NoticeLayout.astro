@@ -13,6 +13,11 @@
  */
 import OptimizedFonts from "@/components/layout/OptimizedFonts.astro";
 import { AVAILABLE_THEMES } from "@/utils/theme";
+import {
+  DEFAULT_LANGUAGE,
+  LANGUAGE_META,
+  SUPPORTED_LANGUAGES,
+} from "@config/astro/i18n";
 
 // The real site's stylesheets, with Tailwind's class detection narrowed to
 // lookalike/ (see lookalike/styles/tailwind.css).
@@ -23,11 +28,22 @@ export interface Props {
   description: string;
   lang: string;
   dir: "ltr" | "rtl";
-  /** Localized "Onetime Secret" literal for the header mark. */
+  /** Localized question identifying the service the visitor may have expected. */
   brandName: string;
+  languagesLabel: string;
 }
 
-const { title, description, lang, dir, brandName } = Astro.props;
+const { title, description, lang, dir, brandName, languagesLabel } =
+  Astro.props;
+
+// Keep language access ahead of the warning, alongside the site identity.
+const otherLanguages = SUPPORTED_LANGUAGES.filter((code) => code !== lang).map(
+  (code) => ({
+    code,
+    name: LANGUAGE_META[code].name,
+    href: code === DEFAULT_LANGUAGE ? "/" : `/${code}/`,
+  }),
+);
 
 // Inline scripts handle theme, hostname display, and domain comparison.
 // No external scripts, script-initiated connections, or form targets are allowed.
@@ -130,7 +146,9 @@ const csp = [
     <title>{title}</title>
   </head>
   <body class="bg-surface-0 flex min-h-full flex-col overflow-x-hidden">
-    <header class="mx-auto w-full max-w-3xl px-4 pt-8 sm:px-6">
+    <header
+      class="mx-auto flex w-full max-w-3xl flex-col gap-2 px-4 pt-8
+        sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6">
       <div class="inline-flex items-center gap-3">
         <img
           class="h-12 w-auto rounded-lg sm:h-14"
@@ -143,6 +161,22 @@ const csp = [
           {brandName}
         </span>
       </div>
+      <nav
+        aria-label={languagesLabel}
+        class="flex flex-wrap gap-x-5 gap-y-1 ps-15 text-sm text-gray-600
+          sm:justify-end sm:ps-0 dark:text-gray-400">
+        {otherLanguages.map((language) => (
+          <a
+            href={language.href}
+            hreflang={language.code}
+            lang={language.code}
+            class="inline-block py-2 underline underline-offset-4
+              hover:text-gray-950 focus-visible:outline-2 focus-visible:outline-offset-4
+              focus-visible:outline-current dark:hover:text-white">
+            {language.name}
+          </a>
+        ))}
+      </nav>
     </header>
     <main
       id="main-content"

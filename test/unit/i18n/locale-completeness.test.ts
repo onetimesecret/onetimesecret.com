@@ -95,6 +95,7 @@ const ALLOWED_COMMON = [
 const ALLOWED_BY_LANG: Record<Lang, string[]> = {
   de: [
     "status", // "Status"
+    "web.lookalike.headerLabel", // "Onetime Secret?" — brand name with a question mark
     "web.pricing.region", // "Region"
     "web.secrets.passphraseInputLabel", // "Passphrase" — used as-is in de copy
     "web.useCases.itdevops.title", // "IT & DevOps"

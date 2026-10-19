@@ -204,8 +204,14 @@ for (const page of htmlFiles) {
     }
   }
   const article = document.querySelector("article");
-  if (article?.firstElementChild?.tagName !== "NAV") {
-    fail(where("language navigation must precede the warning"));
+  const languageNav = document.querySelector("body > header nav");
+  if (
+    !article ||
+    !languageNav ||
+    languageNav.getAttribute("aria-label") !== messages.languages ||
+    !(languageNav.compareDocumentPosition(article) & 4)
+  ) {
+    fail(where("header language navigation must precede the warning"));
   }
   if (document.querySelector("details[open]")) {
     fail(where("optional explanations must start collapsed"));
