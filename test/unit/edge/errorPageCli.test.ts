@@ -1212,6 +1212,8 @@ describe("main", () => {
     type ProbeZone = FakeZone & { EdgeRules: Rule[] };
     type RequestRecord = { url: URL; method: string };
     type Options = {
+      pageFailure?: boolean;
+      pageEffect?: (z: ProbeZone) => void;
       answer?: (z: ProbeZone, attempt: number, host: string) => Answer | Error;
       createFailure?: "http" | "network" | "timeout";
       installBeforeFailure?: boolean;
@@ -1254,6 +1256,7 @@ describe("main", () => {
           } as ProbeZone,
         ]),
       );
+      const pageWrites: { id: number; body: Record<string, unknown> }[] = [];
       const posts: { id: number; body: RuleBody }[] = [];
       const created: { id: number; rule: Rule }[] = [];
       const deleted: { id: number; guid: string }[] = [];
@@ -1345,6 +1348,18 @@ describe("main", () => {
               ? json(503, { error: "read failed" })
               : json(200, z);
           }
+          if (!rulePath && method === "POST") {
+            const body = JSON.parse(String(init.body)) as Record<
+              string,
+              unknown
+            >;
+            pageWrites.push({ id, body });
+            if (opts.pageFailure)
+              return json(503, { error: "page update failed" });
+            Object.assign(z, body);
+            opts.pageEffect?.(z);
+            return json(200, z);
+          }
           if (rulePath === "addOrUpdate" && method === "POST") {
             const body = JSON.parse(String(init.body)) as RuleBody;
             posts.push({ id, body });
@@ -1406,7 +1421,16 @@ describe("main", () => {
           throw new Error(`Unexpected API write: ${method} ${url.pathname}`);
         },
       );
-      return { fetch, store, posts, created, deleted, serving, requests };
+      return {
+        fetch,
+        store,
+        pageWrites,
+        posts,
+        created,
+        deleted,
+        serving,
+        requests,
+      };
     }
     type FakeProbe = ReturnType<typeof fakeProbe>;
     const nzZone = (zones: FakeZone[]) =>
@@ -1562,6 +1586,7 @@ describe("main", () => {
         method: "GET",
         url: expect.objectContaining({ pathname: "/pullzone" }),
       });
+      expect(fake.pageWrites).toEqual([]);
       expect(fake.created.map((c) => c.id)).toEqual(zones.map((z) => z.Id));
       expect(fake.serving.map((s) => s.host)).toEqual(
         Object.values(REGIONAL_HOSTS),
@@ -1716,20 +1741,100 @@ describe("main", () => {
       ["disabled", { ErrorPageEnableCustomCode: false }],
       ["different content", { ErrorPageCustomCode: "<html>old</html>" }],
     ])(
-      "checks the fresh zone, not the list snapshot, and refuses %s config before installing",
+      "deploys %s config from a fresh read before probing, and skips the update on rerun",
       async (_name, patch) => {
         const zones = liveZones();
+        const nz = nzZone(zones);
         const fake = fakeProbe(zones);
-        Object.assign(fake.store.get(nzZone(zones).Id)!, patch);
-        const { code } = run(["probe", "nz", "eu"], fake.fetch);
+        Object.assign(fake.store.get(nz.Id)!, patch);
 
-        expect(await code).toBe(1);
+        expect(await run(["probe", "nz"], fake.fetch).code).toBe(0);
+        expect(fake.pageWrites).toEqual([
+          {
+            id: nz.Id,
+            body: {
+              ErrorPageEnableCustomCode: true,
+              ErrorPageCustomCode: template,
+            },
+          },
+        ]);
+        const write = fake.requests.findIndex(
+          (r) => r.method === "POST" && r.url.pathname === `/pullzone/${nz.Id}`,
+        );
+        expect(fake.requests[write + 1]).toMatchObject({
+          method: "GET",
+          url: expect.objectContaining({ pathname: `/pullzone/${nz.Id}` }),
+        });
+        expect(fake.serving).toHaveLength(1);
+        expectCleaned(fake, nz.Id, fake.created[0].rule.Guid);
+        expectUntouched(fake, zones[0].Id);
+
+        expect(await run(["probe", "nz"], fake.fetch).code).toBe(0);
+        expect(fake.pageWrites).toHaveLength(1);
+        expect(fake.serving).toHaveLength(2);
+        expectCleaned(fake, nz.Id, fake.created[1].rule.Guid);
+      },
+    );
+
+    it.each<[string, Options]>([
+      ["API failure", { pageFailure: true }],
+      [
+        "content read-back mismatch",
+        {
+          pageEffect: (z) => {
+            z.ErrorPageCustomCode = "<html>old</html>";
+          },
+        },
+      ],
+      [
+        "collateral change",
+        {
+          pageEffect: (z) => {
+            z.OriginUrl = "https://changed.invalid";
+          },
+        },
+      ],
+    ])(
+      "stops before installing a rule or touching the next region after a page update %s",
+      async (_name, options) => {
+        const zones = liveZones();
+        const nz = nzZone(zones);
+        nz.ErrorPageEnableCustomCode = false;
+        const fake = fakeProbe(zones, options);
+        const { code, error } = run(["probe", "nz", "eu"], fake.fetch);
+
+        expect(await code).toBe(2);
+        expect(fake.pageWrites).toHaveLength(1);
         expect(fake.created).toEqual([]);
         expect(fake.deleted).toEqual([]);
         expect(fake.serving).toEqual([]);
         expectUntouched(fake, zones[0].Id);
+        expect(error).toHaveBeenCalledWith(
+          expect.stringContaining("Stopped before eu"),
+        );
       },
     );
+
+    it("deploys, probes and confirms cleanup for each region before updating the next", async () => {
+      const zones = liveZones();
+      for (const z of zones) z.ErrorPageEnableCustomCode = false;
+      const nz = nzZone(zones);
+      const eu = zones[0];
+      const fake = fakeProbe(zones);
+
+      expect(await run(["probe", "nz", "eu"], fake.fetch).code).toBe(0);
+      expect(fake.pageWrites.map((w) => w.id)).toEqual([nz.Id, eu.Id]);
+      expect(fake.serving.map((s) => s.id)).toEqual([nz.Id, eu.Id]);
+      const lastNzRead = fake.requests.findLastIndex(
+        (r) => r.url.pathname === `/pullzone/${nz.Id}`,
+      );
+      const firstEuRead = fake.requests.findIndex(
+        (r) => r.url.pathname === `/pullzone/${eu.Id}`,
+      );
+      expect(lastNzRead).toBeLessThan(firstEuRead);
+      for (const { id, rule } of fake.created)
+        expectCleaned(fake, id, rule.Guid);
+    });
 
     it("preserves unrelated fields, existing rules and a rule concurrently added while serving", async () => {
       const zones = liveZones();

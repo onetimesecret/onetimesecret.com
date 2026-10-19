@@ -265,7 +265,7 @@ pnpm edge:error-page:push              # report: which zones differ (exit 1 if a
 pnpm edge:error-page:push --apply      # push regional.html to every zone that differs
 pnpm edge:error-page:verify            # check every zone; writes nothing
 pnpm edge:error-page:deploy            # push then verify, one region at a time
-pnpm edge:error-page:probe [regions]   # automated serving check; omit regions for all
+pnpm edge:error-page:probe [regions]   # deploy if needed, then test serving; omit regions for all
 pnpm edge:error-page:probe nz=<host>   # probe this hostname for the region (see below)
 pnpm edge:error-page:deploy eu uk      # limit to some regions (any command)
 pnpm edge:error-page:deploy nz=<zone>  # name the pull zone for a region (name or ID)
@@ -313,19 +313,22 @@ read the zone fresh, push if it differs, verify, then the next region. It
 stops at the first failure, including a collateral change caught by the
 read-back diff, and says which regions it did not reach. A push that
 misbehaves on one production zone is therefore never repeated on the next.
-Zones already up to date are only verified. This is the command to run after
-changing `regional.html`. Like `verify`, it prints the next `probe` command
-but does not run it automatically.
+Zones already up to date are only verified. This remains a configuration-only
+command; use `probe` to deploy and test serving in one run.
 
 ### Automated serving check
 
-The usual workflow needs only these commands, with the same regions on each:
+After changing `regional.html`, deploy and test serving with one command:
 
 ```bash
-pnpm edge:error-page:deploy eu uk
 pnpm edge:error-page:probe eu uk
-# If configuration is already deployed, use verify then probe instead.
 ```
+
+For each selected region, `probe` pushes only if the page differs or is disabled,
+verifies the update, tests serving, and confirms cleanup before proceeding to the
+next region. Re-running skips unchanged page updates but always tests serving.
+A failed serving check leaves the deployed page in place; it does not roll back
+page updates.
 
 No dashboard changes or normal-traffic outage are required. Bunny serves
 this page for errors it generates itself; a `500` from the app passes
@@ -335,9 +338,10 @@ one region at a time:
 1. Requires `BUNNY_API_KEY`, loaded from the same environment, `.env.local`
    or `.env` sources as the other commands. It discovers the selected zones
    as `deploy` does, including `BUNNY_PULL_ZONE_<REGION>` overrides, then
-   reads each zone fresh and checks that the stored template matches the
-   local file and custom error pages are enabled. Drift fails without
-   installing a rule; run `deploy` first.
+   reads each zone fresh. If the stored template differs from the local file
+   or custom error pages are disabled, it pushes the page and verifies both
+   the content and absence of collateral changes before installing a rule.
+   An update or read-back failure stops the run before the next region.
 2. Uses the public hostname if attached to the selected zone; otherwise,
    for Shield zones, automatically uses an attached `*.b-cdn.net` hostname.
    It never guesses a hostname. The existing `region=hostname` probe
@@ -391,9 +395,9 @@ Official API references: [add or update an edge rule][add-edge-rule] and
 [delete-edge-rule]: https://docs.bunny.net/reference/pullzonepublic_deleteedgerule
 
 Probe exit codes: `0` only when all selected regions served the page and
-cleanup was confirmed; `1` for configuration drift or a failed serving
-check; `2` for API, setup or cleanup failure, or interruption. For the other
-commands: `0` clean; `1` drift found by `push` without `--apply` or a failed
+cleanup was confirmed; `1` for a failed serving check; `2` for deployment,
+API, setup or cleanup failure, or interruption. For the other commands:
+`0` clean; `1` drift found by `push` without `--apply` or a failed
 `verify`; `2` a push failed, `deploy` stopped, or the script could not run.
 
 `test/unit/edge/errorPageCli.test.ts` covers zone resolution, drift

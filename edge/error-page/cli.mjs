@@ -161,9 +161,9 @@ Commands:
   deploy        push and verify one region at a time, in the order given,
                 stopping at the first failure so it never reaches the next
                 zone. Zones already up to date are only verified.
-  probe         automatically exercise each zone's custom page using a
-                temporary edge rule scoped to a random probe URL. Normal
-                traffic and the configured origin are unchanged. Requires
+  probe         deploy the current page if needed, verify the update, then
+                exercise serving with a temporary rule scoped to a random URL.
+                Normal traffic and the configured origin are unchanged. Requires
                 BUNNY_API_KEY; retries for propagation and removes the rule
                 even on failure. Prints each request URL. Exit 0 only when
                 all pages match.
@@ -426,6 +426,7 @@ async function applyZone(client, plan, html) {
         "Check the zone in dash.bunny.net before pushing again.",
     );
   }
+  return after;
 }
 
 /** @param {ZonePlan} plan */
@@ -1006,105 +1007,104 @@ async function probeCommand({
     let result;
     try {
       signal?.throwIfAborted();
-      const fresh = await bunny(client, `/pullzone/${s.zone.Id}`);
+      let fresh = await bunny(client, `/pullzone/${s.zone.Id}`);
       const plan = planZone({ ...s, zone: fresh }, html);
-      if (plan.action !== "up-to-date") {
-        log(`${describe(plan)}; run pnpm edge:error-page:deploy ${s.region}`);
-        code = 1;
-      } else {
-        const attached = (fresh.Hostnames ?? []).map((h) =>
-          h.Value.toLowerCase(),
+      const attached = (fresh.Hostnames ?? []).map((h) =>
+        h.Value.toLowerCase(),
+      );
+      const host = attached.includes(s.host)
+        ? s.host
+        : overrides[s.region]
+          ? undefined
+          : attached.find((h) => h.endsWith(".b-cdn.net"));
+      if (!host || !/^[a-z0-9.-]+$/i.test(host)) {
+        throw new Error(
+          `${s.region}: no attached serving hostname for the selected zone`,
         );
-        const host = attached.includes(s.host)
-          ? s.host
-          : overrides[s.region]
-            ? undefined
-            : attached.find((h) => h.endsWith(".b-cdn.net"));
-        if (!host || !/^[a-z0-9.-]+$/i.test(host)) {
-          throw new Error(
-            `${s.region}: no attached serving hostname for the selected zone`,
-          );
-        }
+      }
+      if (plan.action === "update") {
         signal?.throwIfAborted();
-        const token = randomUUID();
-        const rule = probeRule(host, fresh, token);
-        cleanup = {
-          rule,
-          guid: undefined,
-          existingGuids: new Set((fresh.EdgeRules ?? []).map((r) => r.Guid)),
-        };
-        log(
-          `${s.region}: installing request-scoped probe ${token} on zone ${fresh.Id}`,
-        );
-        // Guid is an update selector, not a client-assigned creation ID.
-        const created = await bunny(
-          client,
-          `/pullzone/${fresh.Id}/edgerules/addOrUpdate`,
-          {
-            method: "POST",
-            body: rule,
-          },
-        );
-        if (isRuleGuid(created?.Guid)) {
-          if (cleanup.existingGuids.has(created.Guid)) {
-            throw new Error(
-              "Create returned a pre-existing rule GUID; refusing to use it",
-            );
-          }
-          cleanup.guid = created.Guid;
-        }
-        const installed = await bunny(client, `/pullzone/${fresh.Id}`);
-        const storedRule = findProbeRule(installed, cleanup);
-        if (storedRule) cleanup.guid = storedRule.Guid;
-        if (!matchesRule(rule, storedRule)) {
+        log(describe(plan));
+        fresh = await applyZone(client, plan, html);
+        log(`${plan.host}: pushed and verified`);
+      }
+      signal?.throwIfAborted();
+      const token = randomUUID();
+      const rule = probeRule(host, fresh, token);
+      cleanup = {
+        rule,
+        guid: undefined,
+        existingGuids: new Set((fresh.EdgeRules ?? []).map((r) => r.Guid)),
+      };
+      log(
+        `${s.region}: installing request-scoped probe ${token} on zone ${fresh.Id}`,
+      );
+      // Guid is an update selector, not a client-assigned creation ID.
+      const created = await bunny(
+        client,
+        `/pullzone/${fresh.Id}/edgerules/addOrUpdate`,
+        {
+          method: "POST",
+          body: rule,
+        },
+      );
+      if (isRuleGuid(created?.Guid)) {
+        if (cleanup.existingGuids.has(created.Guid)) {
           throw new Error(
-            "probe rule read-back does not match the scoped rule",
+            "Create returned a pre-existing rule GUID; refusing to use it",
           );
         }
-        log(
-          `${s.region}: Bunny assigned probe rule ${cleanup.guid} on zone ${fresh.Id}`,
+        cleanup.guid = created.Guid;
+      }
+      const installed = await bunny(client, `/pullzone/${fresh.Id}`);
+      const storedRule = findProbeRule(installed, cleanup);
+      if (storedRule) cleanup.guid = storedRule.Guid;
+      if (!matchesRule(rule, storedRule)) {
+        throw new Error("probe rule read-back does not match the scoped rule");
+      }
+      log(
+        `${s.region}: Bunny assigned probe rule ${cleanup.guid} on zone ${fresh.Id}`,
+      );
+      const withoutProbe = {
+        ...installed,
+        EdgeRules: (installed.EdgeRules ?? []).filter(
+          (r) => r.Guid !== cleanup.guid,
+        ),
+      };
+      const changed = unexpectedChanges(
+        { ...fresh, EdgeRules: fresh.EdgeRules ?? [] },
+        withoutProbe,
+        ["MonthlyBandwidthUsed", "MonthlyCharges"],
+      );
+      if (changed.length)
+        throw new Error(
+          `probe installation also changed ${changed.join(", ")}`,
         );
-        const withoutProbe = {
-          ...installed,
-          EdgeRules: (installed.EdgeRules ?? []).filter(
-            (r) => r.Guid !== cleanup.guid,
-          ),
-        };
-        const changed = unexpectedChanges(
-          { ...fresh, EdgeRules: fresh.EdgeRules ?? [] },
-          withoutProbe,
-          ["MonthlyBandwidthUsed", "MonthlyCharges"],
-        );
-        if (changed.length)
-          throw new Error(
-            `probe installation also changed ${changed.join(", ")}`,
-          );
 
-        const servingSignal = AbortSignal.any([
-          ...(signal ? [signal] : []),
-          AbortSignal.timeout(90_000),
-        ]);
-        for (let attempt = 0; attempt < 12; attempt++) {
-          signal?.throwIfAborted();
-          // Unique paths defeat cached responses even when query strings are ignored.
-          const url = `https://${host}/.well-known/ots-error-page-probe/${token}/${attempt}`;
-          log(`${s.region}: probe URL ${url}`);
-          result = await probeRegion(client.fetch, s.region, host, marker, {
-            url,
-            expectedZone: fresh.Id,
-            html,
-            signal: servingSignal,
-          });
-          log(describeProbe(result));
-          signal?.throwIfAborted();
-          if (result.outcome === "served") break;
-          if (servingSignal.aborted || attempt === 11) break;
-          await sleep(5000, servingSignal);
-        }
-        if (result?.outcome !== "served") {
-          code = 1;
-          if (result) log(probeAdvice([result]));
-        }
+      const servingSignal = AbortSignal.any([
+        ...(signal ? [signal] : []),
+        AbortSignal.timeout(90_000),
+      ]);
+      for (let attempt = 0; attempt < 12; attempt++) {
+        signal?.throwIfAborted();
+        // Unique paths defeat cached responses even when query strings are ignored.
+        const url = `https://${host}/.well-known/ots-error-page-probe/${token}/${attempt}`;
+        log(`${s.region}: probe URL ${url}`);
+        result = await probeRegion(client.fetch, s.region, host, marker, {
+          url,
+          expectedZone: fresh.Id,
+          html,
+          signal: servingSignal,
+        });
+        log(describeProbe(result));
+        signal?.throwIfAborted();
+        if (result.outcome === "served") break;
+        if (servingSignal.aborted || attempt === 11) break;
+        await sleep(5000, servingSignal);
+      }
+      if (result?.outcome !== "served") {
+        code = 1;
+        if (result) log(probeAdvice([result]));
       }
     } catch (err) {
       error(
@@ -1188,7 +1188,7 @@ export async function main(argv, deps = {}) {
       {
         verify: "verify never writes",
         deploy: "deploy always pushes",
-        probe: "probe manages its own temporary rule",
+        probe: "probe deploys as needed and manages its own temporary rule",
       }[command] ?? `${command} never writes`;
     throw new Error(`--apply is for push only; ${why}. Drop the flag.`);
   }
