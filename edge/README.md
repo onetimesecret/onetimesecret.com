@@ -325,14 +325,15 @@ pnpm edge:error-page:probe eu uk
 ```
 
 For each selected region, `probe` pushes only if the page differs or is disabled,
-verifies the update, tests serving, and confirms cleanup before proceeding to the
-next region. Re-running skips unchanged page updates but always tests serving.
-A failed serving check leaves the deployed page in place; it does not roll back
-page updates.
+verifies the update, creates or reuses a persistent preview rule, then tests
+serving before proceeding to the next region. No separate `deploy` is needed.
+Re-running skips unchanged page updates and reuses the same preview URL, but
+always tests serving with fresh request paths. A failed serving check leaves
+both the deployed page and verified preview rule in place for manual debugging.
 
 No dashboard changes or normal-traffic outage are required. Bunny serves
 this page for errors it generates itself; a `500` from the app passes
-through untouched. `probe` creates that failure only for its own requests,
+through untouched. `probe` creates that failure only under its preview URL,
 one region at a time:
 
 1. Requires `BUNNY_API_KEY`, loaded from the same environment, `.env.local`
@@ -347,46 +348,49 @@ one region at a time:
    It never guesses a hostname. The existing `region=hostname` probe
    override remains available, but that hostname must be attached to the
    selected zone.
-3. Installs and reads back a temporary request-scoped edge rule matching
-   only `https://<host>/.well-known/ots-error-page-probe/<random-UUID>/*`.
-   This UUID is a local correlation token, not the rule's ID. Creation omits
-   `Guid`: Bunny assigns it and returns it with HTTP `201`. Supplying a new
-   `Guid` instead selects an update and returns `pullZone.edge_rule_not_found`.
-   Its `OriginUrl` action points to `https://error-page-probe.invalid`, a
-   reserved `.invalid` domain. Scoped actions disable caching and bypass
-   Perma-Cache. The zone's configured `OriginUrl`, existing rules and normal
-   traffic are not changed; read-back also checks for collateral changes.
+3. Creates and reads back a persistent edge rule matching only
+   `https://<host>/.well-known/ots-error-page-probe/<random-UUID>/*`, or reuses
+   the existing managed rule for that hostname after validating its scope and
+   actions. Duplicate or malformed managed rules stop the command before writes.
+   The UUID is a URL token, not the rule's ID. Creation omits `Guid`: Bunny
+   assigns it and returns it with HTTP `201`. Its `OriginUrl` action points to
+   `https://error-page-probe.invalid`, a reserved `.invalid` domain. Scoped
+   actions disable caching and bypass Perma-Cache. The zone's configured
+   `OriginUrl`, existing rules and normal traffic are not changed; read-back
+   also checks for collateral changes.
 4. Makes up to 12 serving attempts with five-second waits between attempts,
    within a 90-second per-region serving deadline. Each attempt uses a fresh
-   path under the UUID to avoid cached responses. Success requires HTTP
+   path under the UUID, with a new run token on every invocation, to avoid
+   cached responses. Success requires HTTP
    `5xx`, the expected `CDN-PullZone` ID, and the **full local template** with
    only `{{status_code}}` and `{{status_title}}` substituted consistently.
    The filled code must equal the HTTP status; a matching title alone is
    not enough.
-5. Always attempts cleanup after installation is attempted, even after an
-   ambiguous install timeout or failure, or a caught `SIGINT`/`SIGTERM`.
-   Cleanup deletes the server-assigned rule GUID, then uses a fresh `GET`
-   to verify its absence. When that GUID is known, read errors cannot prevent
-   deletion. If the create response was lost or did not contain a valid GUID,
-   cleanup first discovers it by the unique `OTS error-page probe <token>`
-   Description, excluding all pre-existing rule IDs. The URL token is never
-   used as a deletion ID. Cleanup makes up to three attempts. A `DELETE`
-   error is tolerated only if the `GET` confirms the rule is already absent.
-   It never restores a saved rule list over concurrent edits. Any failure
+5. Retains verified preview rules after success, serving failure or a caught
+   `SIGINT`/`SIGTERM`. Cleanup applies only to newly created rules whose
+   installation could not be verified. It deletes the server-assigned GUID,
+   then uses a fresh `GET` to verify absence. If the create response was lost,
+   cleanup discovers the rule by its unique `OTS error-page probe <token>`
+   Description, excluding all pre-existing IDs. It retries up to three times
+   and never restores a saved rule list over concurrent edits. Any failure
    stops the command before the next region.
 
-The command prints the exact URL before each serving attempt, alongside the
-zone ID, local probe token and, after read-back, Bunny's assigned rule GUID.
-These URLs exercise the custom page only while the temporary rule is active;
-opening them after cleanup will reach the origin instead.
+The command prints a stable **manual preview URL** ending in `/manual`, plus
+an exact URL before each automated serving attempt. These URLs remain usable
+when the command exits because the verified rule stays installed. They return
+an intentional `5xx` response with the custom page, not a successful `200`.
+Propagation can still be pending if the automated serving check failed.
 
-Cleanup cannot be guaranteed on `SIGKILL`, power loss or another uncatchable
-termination. A leftover rule is still scoped only to the unpredictable probe
-URL, not normal traffic.
-If cleanup fails, the command prints recovery using those logged values:
-`DELETE /pullzone/{id}/edgerules/{guid}`. If the GUID could not be discovered,
-it instead identifies the exact Description to find. Delete only the
-server-assigned GUID for that probe, then read the zone back to confirm absence.
+To retire a preview, delete only its logged server-assigned rule GUID in Bunny
+or via `DELETE /pullzone/{id}/edgerules/{guid}`, then read the zone back to
+confirm absence. This removes the preview trigger, not the deployed HTML.
+Running `probe` again creates a new preview if the rule has been removed.
+
+Cleanup of an unverified installation cannot be guaranteed on `SIGKILL`, power
+loss or another uncatchable termination. If cleanup fails, the command prints
+recovery using the rule GUID, or the exact Description to find if the GUID is
+unknown. Review that rule before deleting it; never use the URL token as a
+rule ID.
 
 Official API references: [add or update an edge rule][add-edge-rule] and
 [delete an edge rule][delete-edge-rule].
@@ -394,8 +398,8 @@ Official API references: [add or update an edge rule][add-edge-rule] and
 [add-edge-rule]: https://docs.bunny.net/reference/pullzonepublic_addedgerule
 [delete-edge-rule]: https://docs.bunny.net/reference/pullzonepublic_deleteedgerule
 
-Probe exit codes: `0` only when all selected regions served the page and
-cleanup was confirmed; `1` for a failed serving check; `2` for deployment,
+Probe exit codes: `0` only when all selected regions served the page;
+`1` for a failed serving check; `2` for deployment,
 API, setup or cleanup failure, or interruption. For the other commands:
 `0` clean; `1` drift found by `push` without `--apply` or a failed
 `verify`; `2` a push failed, `deploy` stopped, or the script could not run.

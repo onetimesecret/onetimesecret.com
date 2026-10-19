@@ -1287,7 +1287,7 @@ describe("main", () => {
             );
             if (!z) throw new Error(`Unexpected serving host: ${url.hostname}`);
             const match = url.pathname.match(
-              /^\/\.well-known\/ots-error-page-probe\/([^/]+)\/(\d+)$/,
+              /^\/\.well-known\/ots-error-page-probe\/([^/]+)\/[0-9a-f-]+\/(\d+)$/,
             );
             if (!match)
               throw new Error(`Unexpected serving path: ${url.pathname}`);
@@ -1341,7 +1341,7 @@ describe("main", () => {
             if (posts.length > 0 && postInstallReadFailures-- > 0) {
               return json(503, { error: "post-install read failed" });
             }
-            if (serving.length > 0 && cleanupReadFailures-- > 0) {
+            if (deleted.length > 0 && cleanupReadFailures-- > 0) {
               return json(503, { error: "cleanup read failed" });
             }
             return opts.readFailure
@@ -1467,6 +1467,13 @@ describe("main", () => {
       });
     }
 
+    function expectRetained(fake: FakeProbe, id: number, guid: string) {
+      expect(fake.deleted).toEqual([]);
+      expect(fake.store.get(id)!.EdgeRules.some((r) => r.Guid === guid)).toBe(
+        true,
+      );
+    }
+
     function expectUntouched(fake: FakeProbe, id: number) {
       expect(
         fake.requests.some((r) => r.url.pathname.startsWith(`/pullzone/${id}`)),
@@ -1551,6 +1558,235 @@ describe("main", () => {
       },
     );
 
+    it("reuses a stable manual URL without writes and uses fresh serving paths on every run", async () => {
+      const fake = fakeProbe();
+      const manualUrls: string[] = [];
+      for (let i = 0; i < 3; i++) {
+        const { code, log } = run(["probe", "nz"], fake.fetch);
+        expect(await code).toBe(0);
+        const line = log.mock.calls
+          .map(([line]) => String(line))
+          .find((line) => line.startsWith("nz: manual preview URL "))!;
+        manualUrls.push(line);
+      }
+      expect(new Set(manualUrls).size).toBe(1);
+      const { id, rule } = fake.created[0];
+      const base = `https://${REGIONAL_HOSTS.nz}/.well-known/ots-error-page-probe/${probeToken(rule)}`;
+      expect(manualUrls[0]).toBe(
+        `nz: manual preview URL ${base}/manual (retained)`,
+      );
+      const urls = fake.requests
+        .filter((r) => r.url.hostname !== "api.bunny.net")
+        .map((r) => r.url);
+      expect(urls).toHaveLength(3);
+      expect(new Set(urls.map((url) => url.pathname)).size).toBe(3);
+      for (const url of urls) {
+        expect(url.href.startsWith(`${base}/`)).toBe(true);
+        expect(url.search).toBe("");
+        expect(url.pathname.split("/").at(-2)).toMatch(/^[0-9a-f-]{36}$/);
+      }
+      expect(fake.posts).toHaveLength(1);
+      expect(fake.pageWrites).toEqual([]);
+      expectRetained(fake, id, rule.Guid);
+    });
+
+    it("maintains separate stable previews for two serving hosts on the same zone", async () => {
+      const zones = liveZones();
+      const nz = nzZone(zones);
+      const host = "preview.b-cdn.net";
+      nz.Hostnames.push({ Value: host });
+      const fake = fakeProbe(zones);
+      for (const region of ["nz", `nz=${host}`, "nz", `nz=${host}`]) {
+        expect(await run(["probe", region], fake.fetch).code).toBe(0);
+      }
+      expect(fake.posts).toHaveLength(2);
+      expect(fake.store.get(nz.Id)!.EdgeRules).toHaveLength(2);
+      expect(fake.serving.map((s) => s.guid)).toEqual([
+        fake.created[0].rule.Guid,
+        fake.created[1].rule.Guid,
+        fake.created[0].rule.Guid,
+        fake.created[1].rule.Guid,
+      ]);
+      expect(fake.deleted).toEqual([]);
+    });
+
+    it.each(["failure", "interruption"])(
+      "never deletes a preexisting preview on serving %s and prints its manual URL",
+      async (kind) => {
+        const zones = liveZones();
+        const seed = fakeProbe(zones);
+        expect(await run(["probe", "nz"], seed.fetch).code).toBe(0);
+        const nz = nzZone(zones);
+        nz.EdgeRules = structuredClone(seed.store.get(nz.Id)!.EdgeRules);
+        const controller = new AbortController();
+        const fake = fakeProbe(zones, {
+          answer: () => {
+            if (kind === "interruption") controller.abort();
+            return healthy;
+          },
+        });
+        const { code, log } = run(
+          ["probe", "nz", "eu"],
+          fake.fetch,
+          { BUNNY_API_KEY: "k" },
+          { signal: controller.signal },
+        );
+        expect(await code).toBe(kind === "interruption" ? 2 : 1);
+        expect(log).toHaveBeenCalledWith(
+          expect.stringContaining("manual preview URL"),
+        );
+        expect(fake.posts).toEqual([]);
+        expect(fake.store.get(nz.Id)!.EdgeRules).toEqual(nz.EdgeRules);
+        expectRetained(fake, nz.Id, seed.created[0].rule.Guid);
+        expectUntouched(fake, zones[0].Id);
+      },
+    );
+
+    it.each<[string, (rule: Rule, zone: ProbeZone) => void]>([
+      ["duplicate", (r, z) => z.EdgeRules.push({ ...r, Guid: randomUUID() })],
+      [
+        "disabled",
+        (r) => {
+          r.Enabled = false;
+        },
+      ],
+      [
+        "wrong origin",
+        (r) => {
+          r.ActionParameter1 = "https://other.invalid";
+        },
+      ],
+      [
+        "wrong action",
+        (r) => {
+          r.ActionType = 0;
+        },
+      ],
+      [
+        "wrong matching mode",
+        (r) => {
+          r.TriggerMatchingType = 0;
+        },
+      ],
+      [
+        "invalid GUID",
+        (r) => {
+          r.Guid = "invalid";
+        },
+      ],
+      [
+        "invalid order",
+        (r) => {
+          r.OrderIndex = NaN;
+        },
+      ],
+      [
+        "invalid description",
+        (r) => {
+          r.Description = "OTS error-page probe invalid";
+        },
+      ],
+      [
+        "missing triggers",
+        (r) => {
+          r.Triggers = [];
+        },
+      ],
+      [
+        "extra trigger",
+        (r) => {
+          (r.Triggers as unknown[]).push({ Type: 1 });
+        },
+      ],
+      [
+        "broad URL",
+        (r) => {
+          (r.Triggers as Record<string, unknown>[])[0].PatternMatches = [
+            "https://nz.onetimesecret.com/*",
+          ];
+        },
+      ],
+      [
+        "wrong token",
+        (r) => {
+          (r.Triggers as Record<string, unknown>[])[0].PatternMatches = [
+            `https://${REGIONAL_HOSTS.nz}/.well-known/ots-error-page-probe/${randomUUID()}/*`,
+          ];
+        },
+      ],
+      [
+        "extra URL",
+        (r) => {
+          (r.Triggers as { PatternMatches: string[] }[])[0].PatternMatches.push(
+            "https://other.invalid/*",
+          );
+        },
+      ],
+      [
+        "wrong trigger type",
+        (r) => {
+          (r.Triggers as Record<string, unknown>[])[0].Type = 1;
+        },
+      ],
+      [
+        "wrong pattern mode",
+        (r) => {
+          (r.Triggers as Record<string, unknown>[])[0].PatternMatchingType = 1;
+        },
+      ],
+      [
+        "missing cache bypass",
+        (r) => {
+          r.ExtraActions = [];
+        },
+      ],
+      [
+        "extra action",
+        (r) => {
+          (r.ExtraActions as unknown[]).push({ ActionType: 0 });
+        },
+      ],
+      [
+        "nondefault parameter",
+        (r) => {
+          r.ActionParameter2 = "unexpected";
+        },
+      ],
+      [
+        "negated trigger",
+        (r) => {
+          (r.Triggers as Record<string, unknown>[])[0].Negate = true;
+        },
+      ],
+    ])(
+      "rejects a preexisting %s without writes, serving, or deletion",
+      async (_name, mutate) => {
+        const fake = fakeProbe();
+        expect(await run(["probe", "nz"], fake.fetch).code).toBe(0);
+        const { id } = fake.created[0];
+        const z = fake.store.get(id)!;
+        mutate(z.EdgeRules[0], z);
+        z.ErrorPageEnableCustomCode = false;
+        const before = structuredClone(z);
+        fake.requests.length = 0;
+        const { code, error } = run(["probe", "nz", "eu"], fake.fetch);
+        expect(await code).toBe(2);
+        expect(error).toHaveBeenCalledWith(
+          expect.stringMatching(/Malformed|Multiple/),
+        );
+        expect(
+          fake.requests.every(
+            (r) => r.method === "GET" && r.url.hostname === "api.bunny.net",
+          ),
+        ).toBe(true);
+        expect(fake.store.get(id)).toEqual(before);
+        expect(fake.created).toHaveLength(1);
+        expect(fake.serving).toHaveLength(1);
+        expect(fake.deleted).toEqual([]);
+        expect(fake.pageWrites).toEqual([]);
+      },
+    );
+
     it("omits Guid from the raw create POST and uses a fresh URL token, not the server GUID", async () => {
       const fake = fakeProbe();
       const result = await run(["probe", "nz"], fake.fetch).code;
@@ -1568,11 +1804,11 @@ describe("main", () => {
       expect(fake.serving).toEqual([
         { host: REGIONAL_HOSTS.nz, id, guid: rule.Guid, token, attempt: 0 },
       ]);
-      expect(fake.deleted).toEqual([{ id, guid: rule.Guid }]);
-      expectCleaned(fake, id, rule.Guid);
+      expect(fake.deleted).toEqual([]);
+      expectRetained(fake, id, rule.Guid);
     });
 
-    it("loads env, probes every region serially, authenticates only API calls and removes each rule", async () => {
+    it("loads env, probes every region serially, authenticates only API calls and retains each rule", async () => {
       const zones = liveZones();
       for (const z of zones) z.EdgeRules = [existingRule];
       const fake = fakeProbe(zones);
@@ -1642,7 +1878,7 @@ describe("main", () => {
           method: "GET",
           url: expect.objectContaining({ pathname: `/pullzone/${z.Id}` }),
         });
-        expectCleaned(fake, z.Id, rule.Guid);
+        expectRetained(fake, z.Id, rule.Guid);
         if (index < zones.length - 1) {
           const next = fake.requests.findIndex(
             (r) => r.url.pathname === `/pullzone/${zones[index + 1].Id}`,
@@ -1670,7 +1906,7 @@ describe("main", () => {
       }
     });
 
-    it("retries a healthy origin during propagation, then proves the page and cleans up", async () => {
+    it("retries a healthy origin during propagation, then proves the page and retains the preview", async () => {
       const fake = fakeProbe(liveZones(), {
         answer: (_z, attempt) => (attempt < 2 ? healthy : served),
       });
@@ -1689,10 +1925,10 @@ describe("main", () => {
       expect(sleep).toHaveBeenCalledTimes(2);
       expect(sleep.mock.calls.every(([ms]) => ms > 0)).toBe(true);
       expect(fake.created).toHaveLength(1);
-      expectCleaned(fake, fake.created[0].id, fake.created[0].rule.Guid);
+      expectRetained(fake, fake.created[0].id, fake.created[0].rule.Guid);
     });
 
-    it("exhausts twelve healthy responses, cleans up and stops before the next region with exit 1", async () => {
+    it("exhausts twelve healthy responses, retains the preview and stops before the next region with exit 1", async () => {
       const zones = liveZones();
       const fake = fakeProbe(zones, { answer: () => healthy });
       const { code, sleep } = run(["probe", "nz", "eu"], fake.fetch);
@@ -1703,7 +1939,7 @@ describe("main", () => {
       );
       expect(sleep).toHaveBeenCalledTimes(11);
       expect(fake.created).toHaveLength(1);
-      expectCleaned(fake, fake.created[0].id, fake.created[0].rule.Guid);
+      expectRetained(fake, fake.created[0].id, fake.created[0].rule.Guid);
       expectUntouched(fake, zones[0].Id);
     });
 
@@ -1722,7 +1958,7 @@ describe("main", () => {
       ["direct host", { ...served, direct: true }],
       ["failed request", new Error("ECONNRESET")],
     ])(
-      "returns 1 for %s, cleans up and never starts the next region",
+      "returns 1 for %s, retains the preview and never starts the next region",
       async (_name, answer) => {
         const zones = liveZones();
         const fake = fakeProbe(zones, { answer: () => answer });
@@ -1732,7 +1968,7 @@ describe("main", () => {
         expect(fake.serving.length).toBeGreaterThan(0);
         expect(fake.serving.length).toBeLessThanOrEqual(12);
         expect(fake.created).toHaveLength(1);
-        expectCleaned(fake, fake.created[0].id, fake.created[0].rule.Guid);
+        expectRetained(fake, fake.created[0].id, fake.created[0].rule.Guid);
         expectUntouched(fake, zones[0].Id);
       },
     );
@@ -1766,13 +2002,13 @@ describe("main", () => {
           url: expect.objectContaining({ pathname: `/pullzone/${nz.Id}` }),
         });
         expect(fake.serving).toHaveLength(1);
-        expectCleaned(fake, nz.Id, fake.created[0].rule.Guid);
+        expectRetained(fake, nz.Id, fake.created[0].rule.Guid);
         expectUntouched(fake, zones[0].Id);
 
         expect(await run(["probe", "nz"], fake.fetch).code).toBe(0);
         expect(fake.pageWrites).toHaveLength(1);
         expect(fake.serving).toHaveLength(2);
-        expectCleaned(fake, nz.Id, fake.created[1].rule.Guid);
+        expectRetained(fake, nz.Id, fake.created[0].rule.Guid);
       },
     );
 
@@ -1815,7 +2051,7 @@ describe("main", () => {
       },
     );
 
-    it("deploys, probes and confirms cleanup for each region before updating the next", async () => {
+    it("deploys, probes and retains the preview for each region before updating the next", async () => {
       const zones = liveZones();
       for (const z of zones) z.ErrorPageEnableCustomCode = false;
       const nz = nzZone(zones);
@@ -1833,7 +2069,7 @@ describe("main", () => {
       );
       expect(lastNzRead).toBeLessThan(firstEuRead);
       for (const { id, rule } of fake.created)
-        expectCleaned(fake, id, rule.Guid);
+        expectRetained(fake, id, rule.Guid);
     });
 
     it("preserves unrelated fields, existing rules and a rule concurrently added while serving", async () => {
@@ -1864,13 +2100,11 @@ describe("main", () => {
       expect(await run(["probe", "nz"], fake.fetch).code).toBe(0);
       expect(fake.store.get(nz.Id)).toEqual({
         ...before,
-        EdgeRules: [...before.EdgeRules, concurrent],
+        EdgeRules: [...before.EdgeRules, fake.created[0].rule, concurrent],
       });
       expect(fake.created).toHaveLength(1);
-      expect(fake.deleted).toEqual([
-        { id: nz.Id, guid: fake.created[0].rule.Guid },
-      ]);
-      expectCleaned(fake, nz.Id, fake.created[0].rule.Guid);
+      expect(fake.deleted).toEqual([]);
+      expectRetained(fake, nz.Id, fake.created[0].rule.Guid);
     });
 
     it.each(["http", "network", "timeout"] as const)(
@@ -1977,9 +2211,9 @@ describe("main", () => {
         const { rule } = fake.created[0];
         expect(fake.serving).toHaveLength(1);
         expect(fake.serving[0].guid).toBe(rule.Guid);
-        expect(fake.deleted).toEqual([{ id: nz.Id, guid: rule.Guid }]);
-        expectCleaned(fake, nz.Id, rule.Guid);
-        expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([existingRule]);
+        expect(fake.deleted).toEqual([]);
+        expectRetained(fake, nz.Id, rule.Guid);
+        expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([existingRule, rule]);
       },
     );
 
@@ -2109,8 +2343,10 @@ describe("main", () => {
       expect(fake.created).toHaveLength(1);
       expect(fake.created[0].rule).not.toHaveProperty("ReadOnly");
       expect(fake.serving).toHaveLength(1);
-      expectCleaned(fake, nz.Id, fake.created[0].rule.Guid);
-      expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([existingRule]);
+      expectRetained(fake, nz.Id, fake.created[0].rule.Guid);
+      expect(fake.store.get(nz.Id)!.EdgeRules[0]).toEqual(existingRule);
+      expect(await run(["probe", "nz"], fake.fetch).code).toBe(0);
+      expect(fake.created).toHaveLength(1);
     });
 
     it("accepts the named enum schema in readback while retaining numeric enums in the request", async () => {
@@ -2150,8 +2386,10 @@ describe("main", () => {
         ],
       });
       expect(fake.serving).toHaveLength(1);
-      expectCleaned(fake, nz.Id, fake.created[0].rule.Guid);
-      expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([existingRule]);
+      expectRetained(fake, nz.Id, fake.created[0].rule.Guid);
+      expect(fake.store.get(nz.Id)!.EdgeRules[0]).toEqual(existingRule);
+      expect(await run(["probe", "nz"], fake.fetch).code).toBe(0);
+      expect(fake.created).toHaveLength(1);
     });
 
     it("rejects an altered trigger in installation readback, cleans up and stops", async () => {
@@ -2204,9 +2442,12 @@ describe("main", () => {
     });
 
     it("retries transient cleanup failures and succeeds only after confirmed removal", async () => {
-      const fake = fakeProbe(liveZones(), { deleteFailures: 2 });
+      const fake = fakeProbe(liveZones(), {
+        createFailure: "network",
+        deleteFailures: 2,
+      });
 
-      expect(await run(["probe", "nz"], fake.fetch).code).toBe(0);
+      expect(await run(["probe", "nz"], fake.fetch).code).toBe(2);
       expect(fake.deleted).toHaveLength(3);
       expectCleaned(fake, fake.created[0].id, fake.created[0].rule.Guid);
     });
@@ -2221,7 +2462,7 @@ describe("main", () => {
       "bounds cleanup to three tries for %s and stops before the next region with exit 2",
       async (_name, opts) => {
         const zones = liveZones();
-        const fake = fakeProbe(zones, opts);
+        const fake = fakeProbe(zones, { ...opts, createFailure: "network" });
 
         expect(await run(["probe", "nz", "eu"], fake.fetch).code).toBe(2);
         expect(fake.created).toHaveLength(1);
@@ -2238,13 +2479,14 @@ describe("main", () => {
       const nz = nzZone(zones);
       nz.EdgeRules = [existingRule];
       const fake = fakeProbe(zones, {
+        createFailure: "network",
         deleteFailures: 99,
         deleteFailureAfterRemoval: true,
       });
       const { code, error } = run(["probe", "nz"], fake.fetch);
 
-      expect(await code).toBe(0);
-      expect(error).not.toHaveBeenCalled();
+      expect(await code).toBe(2);
+      expect(error).toHaveBeenCalled();
       expect(fake.deleted).toEqual([
         { id: nz.Id, guid: fake.created[0].rule.Guid },
       ]);
@@ -2252,15 +2494,15 @@ describe("main", () => {
       expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([existingRule]);
     });
 
-    it("cleanup failure takes precedence over an unsuccessful serving check", async () => {
+    it("does not attempt cleanup after an unsuccessful serving check", async () => {
       const zones = liveZones();
       const fake = fakeProbe(zones, {
         answer: () => healthy,
         deleteFailures: 99,
       });
 
-      expect(await run(["probe", "nz", "eu"], fake.fetch).code).toBe(2);
-      expect(fake.deleted).toHaveLength(3);
+      expect(await run(["probe", "nz", "eu"], fake.fetch).code).toBe(1);
+      expectRetained(fake, fake.created[0].id, fake.created[0].rule.Guid);
       expectUntouched(fake, zones[0].Id);
     });
 
@@ -2278,12 +2520,13 @@ describe("main", () => {
       "retries after DELETE succeeds but the first cleanup read fails (missing rule DELETE %s)",
       async (deleteMissingStatus) => {
         const fake = fakeProbe(liveZones(), {
+          createFailure: "network",
           cleanupReadFailures: 1,
           deleteMissingStatus,
         });
         const { code, sleep } = run(["probe", "nz"], fake.fetch);
 
-        expect(await code).toBe(0);
+        expect(await code).toBe(2);
         expect(fake.created).toHaveLength(1);
         const { id, rule } = fake.created[0];
         expect(fake.deleted).toEqual([
@@ -2292,9 +2535,8 @@ describe("main", () => {
         ]);
         expect(sleep).toHaveBeenCalledTimes(1);
         expectCleaned(fake, id, rule.Guid);
-        const serving = fake.requests.findLastIndex(
-          (r) => r.url.hostname !== "api.bunny.net",
-        );
+        const serving =
+          fake.requests.findIndex((r) => r.method === "DELETE") - 1;
         expect(fake.requests.slice(serving + 1).map((r) => r.method)).toEqual([
           "DELETE",
           "GET",
@@ -2309,6 +2551,7 @@ describe("main", () => {
       const nz = nzZone(zones);
       nz.EdgeRules = [existingRule];
       const fake = fakeProbe(zones, {
+        createFailure: "network",
         cleanupReadFailures: 99,
         deleteMissingStatus: 404,
       });
@@ -2320,10 +2563,8 @@ describe("main", () => {
         Array.from({ length: 3 }, () => ({ id: nz.Id, guid })),
       );
       expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([existingRule]);
-      // Installation has its own readback; only reads after serving are cleanup attempts.
-      const serving = fake.requests.findLastIndex(
-        (r) => r.url.hostname !== "api.bunny.net",
-      );
+      // Lost creation is discovered before deletion and cleanup verification.
+      const serving = fake.requests.findIndex((r) => r.method === "DELETE") - 1;
       expect(serving).toBeGreaterThan(0);
       const cleanup = fake.requests.slice(serving + 1);
       expect(cleanup.map((r) => r.method)).toEqual([
@@ -2337,7 +2578,7 @@ describe("main", () => {
       expectUntouched(fake, zones[0].Id);
     });
 
-    it("cleans up with a live request signal after cancellation during propagation and stops", async () => {
+    it("retains the preview after cancellation during propagation and stops", async () => {
       const zones = liveZones();
       const fake = fakeProbe(zones, { answer: () => healthy });
       const controller = new AbortController();
@@ -2359,7 +2600,7 @@ describe("main", () => {
       ).toBe(2);
       expect(sleep).toHaveBeenCalledTimes(1);
       expect(fake.serving).toHaveLength(1);
-      expectCleaned(fake, fake.created[0].id, fake.created[0].rule.Guid);
+      expectRetained(fake, fake.created[0].id, fake.created[0].rule.Guid);
       const install = fake.fetch.mock.calls.findIndex(
         ([, init]) => init?.method === "POST",
       );
@@ -2390,7 +2631,7 @@ describe("main", () => {
       expect(fake.serving).toEqual([]);
     });
 
-    it("cancellation during a serving request cleans up and stops with exit 2", async () => {
+    it("cancellation during a serving request retains the preview and stops with exit 2", async () => {
       const zones = liveZones();
       const controller = new AbortController();
       const fake = fakeProbe(zones, {
@@ -2411,8 +2652,34 @@ describe("main", () => {
         ).code,
       ).toBe(2);
       expect(fake.serving).toHaveLength(1);
-      expectCleaned(fake, fake.created[0].id, fake.created[0].rule.Guid);
+      expectRetained(fake, fake.created[0].id, fake.created[0].rule.Guid);
       expectUntouched(fake, zones[0].Id);
+    });
+
+    it("retains a verified install and prints its URL when interrupted during readback", async () => {
+      const fake = fakeProbe();
+      const controller = new AbortController();
+      const fetch = async (
+        input: string | URL | Request,
+        init?: RequestInit,
+      ) => {
+        const response = await fake.fetch(input, init);
+        if (fake.posts.length && (init?.method ?? "GET") === "GET")
+          controller.abort();
+        return response;
+      };
+      const { code, log } = run(
+        ["probe", "nz"],
+        fetch,
+        { BUNNY_API_KEY: "k" },
+        { signal: controller.signal },
+      );
+      expect(await code).toBe(2);
+      expect(fake.serving).toEqual([]);
+      expectRetained(fake, fake.created[0].id, fake.created[0].rule.Guid);
+      expect(log).toHaveBeenCalledWith(
+        expect.stringContaining("manual preview URL"),
+      );
     });
 
     it("cleans up if cancellation occurs while the install response is lost", async () => {
@@ -2484,7 +2751,7 @@ describe("main", () => {
           ],
         }),
       ]);
-      expectCleaned(fake, nz.Id, fake.created[0].rule.Guid);
+      expectRetained(fake, nz.Id, fake.created[0].rule.Guid);
     });
 
     it.each(["name", "id"] as const)(
@@ -2506,7 +2773,7 @@ describe("main", () => {
         expect(fake.serving.map((s) => s.host)).toEqual([
           "be2169e1-7.b-cdn.net",
         ]);
-        expectCleaned(fake, nz.Id, fake.created[0].rule.Guid);
+        expectRetained(fake, nz.Id, fake.created[0].rule.Guid);
       },
     );
 
