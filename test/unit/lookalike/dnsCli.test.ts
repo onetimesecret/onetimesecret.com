@@ -285,6 +285,11 @@ describe("publicExpectations", () => {
     expect(apex).toMatchObject({ via: CDN_HOSTNAME, expect: [] });
   });
 
+  it("writes an MX target as a fully qualified, lower-case hostname", () => {
+    const wanted = [{ type: "MX", name: "", value: "Mail.Example", priority: 10 }];
+    expect(publicExpectations(DOMAIN, "x-probe", wanted)[0].expect).toEqual(["10 mail.example."]);
+  });
+
   it("refuses an apex A next to the apex CNAME, which neither check would cover", () => {
     const wanted = [...RECORDS, { type: "A", name: "", value: "203.0.113.7" }];
     expect(() => publicExpectations(DOMAIN, "x-probe", wanted)).toThrow(/apex A/);
@@ -397,6 +402,22 @@ describe("checkPublic", () => {
     ]);
   });
 
+  it("fails the apex when the pull zone hostname itself does not resolve", async () => {
+    const dns = healthyDns();
+    dns[`${CDN_HOSTNAME} A`] = { Status: 2 };
+    const { failed } = await publicFindings(dns);
+    expect(failed).toEqual([
+      expect.stringContaining(`(want an address of ${CDN_HOSTNAME}, which has SERVFAIL)`),
+    ]);
+  });
+
+  it("fails on any error code, not only SERVFAIL", async () => {
+    const dns = healthyDns();
+    dns[`_dmarc.${DOMAIN} TXT`] = { Status: 3 };
+    const { failed } = await publicFindings(dns);
+    expect(failed).toEqual([expect.stringMatching(/TXT\s+_dmarc\s+NXDOMAIN$/)]);
+  });
+
   it("compares CNAME targets without case or trailing dot, as the zone check does", async () => {
     const dns = healthyDns();
     dns[`x-probe.${DOMAIN} CNAME`] = {
@@ -444,6 +465,15 @@ describe("checkPublic", () => {
       expect.stringContaining("the DS query got SERVFAIL: upstream timeout; the registry's DS"),
     ]);
     expect(failed[0]).not.toContain("add it at the registrar");
+  });
+
+  it("still says an unsigned zone needs signing when the DS query fails", async () => {
+    const dns = healthyDns();
+    dns[`${DOMAIN} DS`] = { Status: 5 };
+    const { failed } = await publicFindings(dns, null);
+    expect(failed).toEqual([
+      expect.stringMatching(/DS query got REFUSED.*The zone is unsigned; run set to sign it$/),
+    ]);
   });
 
   it("asks for the DS at the registrar when a signed zone has none at the registry", async () => {
@@ -638,12 +668,13 @@ describe("main set", () => {
     expect(out).not.toContain(`${DOMAIN}  zone 100`);
   });
 
-  it("finds a created zone in the list when the response carries no ID", async () => {
+  it("finds a created zone in the list when the response is empty", async () => {
     const bunny = fakeBunny([]);
     const original = bunny.handler;
+    // An empty 200 reads as null, not a JSON parse error.
     bunny.handler = (method, path, body) => {
       const out = original(method, path, body);
-      return method === "POST" && path === "/dnszone" ? {} : out;
+      return method === "POST" && path === "/dnszone" ? new Response("", { status: 200 }) : out;
     };
     const { code, out } = await run(["set", "--create", DOMAIN], bunny);
     expect(code).toBe(0);

@@ -576,7 +576,8 @@ export async function checkPublic(fetchImpl, domain, zone, label) {
     // Without an answer there is no telling whether the registry holds a DS;
     // advice to add one could leave a second, mismatched DS at the registrar.
     add(false, "DNSSEC", `the DS query got ${rcode(dsAnswer)}; the registry's DS is ` +
-      "unknown, so change nothing at the registrar on this result");
+      "unknown, so change nothing at the registrar on this result" +
+      (zone.ds ? "" : ". The zone is unsigned; run set to sign it"));
   } else if (!zone.ds) {
     add(false, "DNSSEC", parent.length
       ? "the registry has a DS but the zone is unsigned, so validating resolvers SERVFAIL; " +
