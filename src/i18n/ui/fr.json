@@ -474,9 +474,9 @@
       "headerLabel": "Onetime Secret ?",
       "heading": "Ceci n'est pas onetimesecret.com",
       "hostnameFallback": "cette adresse",
-      "lead": "Vous consultez {hostname}.",
+      "lead": "Vous consultez {hostname}. Elle ressemble à l'adresse de Onetime Secret, mais ce n'est pas la vraie.",
       "purpose": "Ceci est un avis, pas le service de partage de secrets. Vous ne pouvez ni créer ni consulter de secrets ici.",
-      "ownership": "Ce domaine appartient à Onetime Secret.",
+      "ownership": "Ce domaine ({hostname}) appartient à Onetime Secret.",
       "recipient": {
         "heading": "Un lien vous a conduit ici ?",
         "body": "Contactez la personne qui vous a envoyé le lien par un canal que vous connaissez déjà et demandez-lui de le confirmer. N’essayez pas de corriger l’adresse en changeant des lettres."
@@ -489,7 +489,7 @@
         "exact": "Vérifiez le nom d'hôte complet dans la barre d'adresse de votre navigateur. Notre site principal est onetimesecret.com.",
         "regionalHeading": "Adresses régionales officielles du service",
         "regional": "Notre service de partage de secrets fonctionne sur ces domaines régionaux :",
-        "bookmark": "Saisissez https://onetimesecret.com dans la barre d'adresse de votre navigateur ou utilisez un favori que vous avez déjà vérifié.",
+        "bookmark": "Saisissez cette adresse dans la barre d'adresse de votre navigateur ou utilisez un favori que vous avez déjà vérifié.",
         "https": "Un logo familier, HTTPS ou une place en tête des résultats de recherche ne prouve pas qui exploite un site web. Cela vaut aussi pour cet avis.",
         "noLinksHeading": "Pourquoi n’y a-t-il pas de lien vers le service ?",
         "noLinks": "Un logo familier ou un message rassurant peut être copié. Ni l’un ni l’autre ne prouve qu’une page est authentique, même si elle apparaît en tête des résultats de recherche. Cette page ne propose volontairement aucun lien vers le service : prenez l’habitude de vérifier l’adresse de manière indépendante, plutôt que de faire confiance à un lien parce que la page semble officielle. Faites preuve de la même prudence envers cette page."
@@ -502,7 +502,7 @@
       },
       "exposed": {
         "heading": "Vous avez déjà partagé des informations sensibles ?",
-        "body": "Si vous avez saisi un mot de passe, une clé d’accès ou d’autres informations privées sur un site web dont vous ne pouvez pas vérifier l’authenticité, considérez ces informations comme potentiellement exposées.",
+        "body": "Si vous avez saisi un mot de passe, une clé d’accès ou d’autres informations privées sur ce domaine ou sur un site web dont vous ne pouvez pas vérifier l’authenticité, considérez ces informations comme exposées. Changez le mot de passe ou remplacez la clé, et prévenez la personne avec qui vous les avez partagées.",
         "stepsHeading": "Que faire ensuite",
         "passwords": "Mots de passe : Ouvrez le service concerné depuis son application officielle ou une adresse à laquelle vous faites déjà confiance. Modifiez le mot de passe, modifiez-le aussi partout où vous l’avez réutilisé et fermez les autres sessions si cette option est disponible.",
         "tokens": "Clés ou jetons d’accès : Révoquez-les et remplacez-les via le service qui les a émis.",
@@ -510,10 +510,7 @@
         "work": "Informations professionnelles : Contactez aussi rapidement l’équipe informatique ou de sécurité de votre organisation, si elle en dispose, même en cas de doute.",
         "reporting": "N’incluez pas de mots de passe, de clés d’accès ni le contenu de secrets dans un e-mail ordinaire ou un message d’assistance."
       },
-      "languages": "Langue",
-      "footer": {
-        "operated": "Maintenu par Onetime Secret pour protéger ses utilisateurs."
-      }
+      "languages": "Langue"
     }
   },
   "changelog": {
