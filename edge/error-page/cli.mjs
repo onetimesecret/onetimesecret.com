@@ -46,15 +46,11 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
+import { bunny, loadDotenv, REQUEST_TIMEOUT_MS } from "../../scripts/lib/bunny-api.mjs";
 // Node strips the type annotations at import time (engines: node >= 26), so
 // the plain-JS script reads the same inventory as the edge scripts and the
 // client instead of keeping its own copy.
 import { jurisdictions } from "../../src/data/ops/jurisdictions.ts";
-
-export const API_BASE = "https://api.bunny.net";
-
-/** Bunny answers within a few seconds; anything longer is a hung connection. */
-const REQUEST_TIMEOUT_MS = 30_000;
 
 /**
  * Region code → pull zone hostname, derived from the canonical jurisdiction
@@ -136,7 +132,6 @@ export const EXPECTED_CHANGES = Object.freeze([
 ]);
 
 const TEMPLATE_PATH = join(import.meta.dirname, "regional.html");
-const ROOT_DIR = join(import.meta.dirname, "..", "..");
 
 /** Placeholders the template must keep, or Bunny serves a page with no status. */
 const REQUIRED_PLACEHOLDERS = ["{{status_code}}", "{{status_title}}"];
@@ -361,53 +356,7 @@ export function unexpectedChanges(before, after, expected = EXPECTED_CHANGES) {
     .sort();
 }
 
-/**
- * Loads the repo-root .env.local and .env the way .envrc does for direnv
- * users, so both paths see the same variables. Node never overrides a variable
- * already in the environment, so loading .env.local first gives the same
- * precedence as direnv: environment > .env.local > .env. A missing file is the
- * normal case in CI and is silently fine.
- * @param {string} [rootDir] where the files live; the repo root by default
- */
-export function loadDotenv(rootDir = ROOT_DIR) {
-  for (const name of [".env.local", ".env"]) {
-    try {
-      process.loadEnvFile(join(rootDir, name));
-    } catch (err) {
-      if (err?.code !== "ENOENT") throw err;
-    }
-  }
-}
-
-/**
- * @typedef {object} Client
- * @property {string} apiKey
- * @property {typeof fetch} fetch
- */
-
-/**
- * @param {Client} client
- * @param {string} path
- * @param {{ method?: string, body?: unknown }} [init]
- */
-async function bunny(client, path, { method = "GET", body } = {}) {
-  const res = await client.fetch(`${API_BASE}${path}`, {
-    method,
-    headers: {
-      AccessKey: client.apiKey,
-      Accept: "application/json",
-      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
-    },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-  });
-  if (!res.ok) {
-    const text = (await res.text()).slice(0, 300);
-    throw new Error(`${method} ${path} → HTTP ${res.status}${text ? `: ${text}` : ""}`);
-  }
-  if (res.status === 204) return null;
-  return res.json();
-}
+/** @typedef {import("../../scripts/lib/bunny-api.mjs").Client} Client */
 
 /**
  * @param {Client} client

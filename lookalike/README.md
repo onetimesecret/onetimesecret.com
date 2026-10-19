@@ -159,7 +159,9 @@ nothing.
 1. One storage zone for `dist-lookalike/`, custom 404 path `/404.html`.
 2. One pull zone over it. Every lookalike domain, and a wildcard for each
    (`*.example.tld`), is a hostname on this zone with a free SSL certificate.
-   Any subdomain then lands on the notice too.
+   Any subdomain then lands on the notice too. Bunny issues the free wildcard
+   certificate only for a domain whose DNS is a Bunny DNS zone; on any other
+   DNS host a subdomain gets the `*.b-cdn.net` certificate and a TLS error.
 3. Edge rules setting the response headers below on every response, not
    only HTML.
 4. Bunny Optimizer off, as on every zone for this site (docs/deployment.md).
@@ -304,26 +306,63 @@ notice site that is indexable, framable or dead on a phishing path.
 
 A reconciliation script that reads `LOOKALIKE_DOMAINS` from
 `config/domains.ts` and from the secret, and reports or applies the hostname
-set on the pull zone, the way `edge/error-page/cli.mjs` reports drift. It must
-not print the secret's hostnames: the log is public, and GitHub masks the
-secret's value, not each hostname taken from it, so it masks each one with
-`::add-mask::` first. Until then, hostnames are added in the Bunny dashboard
-per the checklist below.
+set on the pull zone, the way `scripts/lookalike-dns.mjs` does for DNS
+records. It must not print the secret's hostnames: the log is public, and
+GitHub masks the secret's value, not each hostname taken from it, so it masks
+each one with `::add-mask::` first. Until then, hostnames are added in the
+Bunny dashboard per the checklist below.
 
 ## Per-domain checklist
 
 Add the domain to the `LOOKALIKE_DOMAINS` secret when it is acquired. Only a
 domain anyone would guess goes in `config/domains.ts` instead, with
 `registered` set to the registry creation date from WHOIS or RDAP;
-`test/unit/lookalike/domains.test.ts` checks the entry's shape. Then on the
-domain's DNS:
+`test/unit/lookalike/domains.test.ts` checks the entry's shape. Then:
 
-- `A`/`CNAME` for the apex and `*` to the pull zone
+1. Create the Bunny DNS zone and its records. It prints the DS record and
+   the nameservers for the registrar:
+
+   ```sh
+   pnpm lookalike:dns:set example.tld --create
+   ```
+
+2. At the registrar, remove any DS record left by the previous DNS host,
+   then set the nameservers to the two printed. Once the registry shows them,
+   add the printed DS. A DS that does not match the zone's key makes every
+   validating resolver answer SERVFAIL for the whole domain.
+3. Add `example.tld` and `*.example.tld` as hostnames on the pull zone, each
+   with a free certificate.
+4. Check, once the registry changes have propagated:
+
+   ```sh
+   pnpm lookalike:dns:check example.tld
+   ```
+
+Both commands need `BUNNY_API_KEY` with write access: on a signed zone
+`check` reads the DS through Bunny's enable-DNSSEC call, which changes nothing
+there. Without domain arguments `check` takes every domain in
+`config/domains.ts` plus `LOOKALIKE_DOMAINS` from `.env`; `set` takes them only
+with `--all`, so a change to the record set reaches every domain with one
+`pnpm lookalike:dns:set --all`. Re-running `set` on a signed zone prints its DS
+again. Both print every domain they work on, the secret ones included, so
+neither belongs in a public CI log until each hostname is masked (see "Not yet
+automated").
+
+The record set is `RECORDS` in `scripts/lookalike-dns.mjs`:
+
+- `CNAME` for the apex and `*` to the pull zone's `b-cdn.net` hostname;
+  Bunny DNS answers the apex one as flattened `A`/`AAAA` records
 - `TXT "v=spf1 -all"` at the apex: no host may send mail as this domain
 - `TXT "v=DMARC1; p=reject"` at `_dmarc`
 - a null MX (`MX 0 .`): the domain receives no mail either
-- `CAA` restricting issuance to the CDN's certificate authority
-- DNSSEC if the registrar supports it
+- `CAA 0 issue "letsencrypt.org"`, the CA Bunny uses. `issue` also governs
+  wildcard certificates while there is no `issuewild`, so there is none.
+- DNSSEC signing
+
+`set` owns the names `@`, `*` and `_dmarc`: it deletes anything else there.
+Records at other names are listed and left alone. Record values go in without
+quotes: Bunny publishes a typed quote as part of the value, and
+`"v=spf1 -all"` with its quotes is not an SPF record.
 
 Without the mail records a domain that sends no mail can still be used to
 send phishing email that appears to come from it.

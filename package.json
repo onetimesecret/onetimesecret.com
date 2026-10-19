@@ -33,6 +33,8 @@
     "lint:quick": "pnpm run lint:base --cache-location ./node_modules/.cache/eslint --cache 'src/**/*.{mjs,ts}' 'scripts/**/*.mjs' './*.{mjs,ts,js}'",
     "lint:quick:fix": "pnpm run lint:base --fix 'src/**/*.{mjs,ts}' 'scripts/**/*.mjs' './*.{mjs,ts,d.ts,js}'",
     "lint:tests": "pnpm run lint:base 'test/**/*.{mjs,ts,vue}'",
+    "lookalike:dns:check": "node scripts/lookalike-dns.mjs check",
+    "lookalike:dns:set": "node scripts/lookalike-dns.mjs set",
     "preview": "astro preview --host",
     "preview:lookalike": "astro preview --config astro.lookalike.config.ts --host",
     "type-check:base": "vue-tsc --noEmit",
