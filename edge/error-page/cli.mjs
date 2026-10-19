@@ -3,14 +3,15 @@
 //
 // Keeps the custom error page of every regional pull zone equal to
 // edge/error-page/regional.html, so the five zones never drift from the file
-// in git or from each other. Three pnpm scripts run this file with a command:
+// in git or from each other. Four pnpm scripts run this file with a command:
 //
 //   pnpm edge:error-page:push              # report drift, exit 1 if any differs
 //   pnpm edge:error-page:push --apply      # push the file to every zone that differs
 //   pnpm edge:error-page:verify            # check every zone, print the manual checks
 //   pnpm edge:error-page:deploy            # push then verify, one region at a time
+//   pnpm edge:error-page:probe             # exercise serving with a scoped origin failure
 //
-// All three take the same region arguments:
+// All four accept region selection; probe overrides are hostnames, not zone IDs:
 //
 //   pnpm edge:error-page:deploy eu uk        # limit to some regions
 //   pnpm edge:error-page:deploy nz=<zone>    # name the zone for a region (name or ID)
@@ -41,9 +42,11 @@
 // against the zone as it was before, and any change outside the two fields
 // sent is reported as an error (see `unexpectedChanges`).
 
+import { randomUUID } from "node:crypto";
 import { realpathSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 import { pathToFileURL } from "node:url";
 
 import {
@@ -154,22 +157,21 @@ Commands:
                 With --apply, push the file to every zone that differs and
                 read each one back.
   verify        read every zone and check its page is enabled and equal to
-                the file; writes nothing. Ends with the one check left to
-                do by hand: seeing the page served.
+                the file; writes nothing. Use probe to check actual serving.
   deploy        push and verify one region at a time, in the order given,
                 stopping at the first failure so it never reaches the next
                 zone. Zones already up to date are only verified.
-  probe         fetch each region's public URL and report whether Bunny
-                served the custom page. Only meaningful with the origin
-                down: Bunny substitutes the page for its own errors, never
-                for the app's. Needs no API key; exit 1 unless every region
-                served it.
+  probe         automatically exercise each zone's custom page using a
+                temporary edge rule scoped to a random probe URL. Normal
+                traffic and the configured origin are unchanged. Requires
+                BUNNY_API_KEY; retries for propagation and removes the rule
+                even on failure. Exit 0 only when all pages match.
 
-Arguments, the same for all three:
+Arguments:
   --apply       push only: write to the zones that differ
   --help        show this text
   region ...    limit to these regions: ${Object.keys(REGIONAL_HOSTS).join(", ")}
-  region=zone   use this pull zone (name or numeric ID) for the region,
+  region=zone   push/verify/deploy: use this pull zone (name or ID) for the region,
                 e.g. nz=shield-3f9a2c or nz=123456; overrides the environment
   region=host   probe only: fetch this hostname for the region instead of
                 the public one, e.g. nz=be2169e1-7.b-cdn.net when the public
@@ -281,6 +283,17 @@ export function selectRegionalZones(zones, hosts = REGIONAL_HOSTS, refs = {}) {
     if (!zone) {
       missing.push(region);
       continue;
+    }
+    const other = Object.entries(REGIONAL_HOSTS).find(
+      ([r, h]) =>
+        r !== region &&
+        (zone.Hostnames ?? []).some((v) => v.Value.toLowerCase() === h),
+    );
+    if (other) {
+      throw new Error(
+        `Pull zone ${zone.Name} (${zone.Id}), selected for ${region}, carries ` +
+          `${other[1]}, the ${other[0]} hostname; refusing to probe another region's zone`,
+      );
     }
     selected.push({ region, host, zone });
   }
@@ -464,20 +477,15 @@ function describeVerification(v) {
 }
 
 /**
- * The one check the script cannot run on its own: Bunny serves the custom
- * page only for errors it generates itself (origin unreachable or timed
- * out), so seeing it served takes an origin that is down. Printed after
- * verify and after a successful deploy, naming the probe for the regions
- * just handled. The config and content checks by hand live in
- * edge/README.md; the script just ran them.
+ * Printed after configuration verification: probe exercises serving with a
+ * request-scoped origin failure, without taking the regional app down.
  * @param {ZonePlan[]} plans
  */
 export function servingCheck(plans) {
   const regions = plans.map((p) => p.region).join(" ");
   return `
-Bunny serves this page only for errors it generates itself (origin down or
-timed out); a 500 from the app passes through untouched. To see it served,
-take the origin down, then:
+Bunny serves this page only for errors it generates itself; a 500 from the app passes through
+untouched. Exercise serving automatically (temporary request-scoped rule, no origin outage):
   pnpm edge:error-page:probe ${regions}
 Config and content checks by hand: edge/README.md, "Regional error page".
 `;
@@ -498,11 +506,36 @@ export function pageMarker(html) {
 }
 
 /**
+ * Match the complete template, allowing only Bunny's two substitutions.
+ * Every status code must equal the HTTP status, and repeated titles must agree.
+ * @param {string} html
+ * @param {string} body
+ * @param {number} status
+ */
+function matchesRenderedPage(html, body, status) {
+  let titleSeen = false;
+  const pattern = normalize(html)
+    .split(/(\{\{status_code\}\}|\{\{status_title\}\})/)
+    .map((part) => {
+      if (part === "{{status_code}}") return String(status);
+      if (part === "{{status_title}}") {
+        if (titleSeen) return "\\1";
+        titleSeen = true;
+        return "([^<>{}\\r\\n]+)";
+      }
+      return part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    })
+    .join("");
+  const match = new RegExp(`^${pattern}$`).exec(normalize(body));
+  return !!match && (!titleSeen || !!match[1]?.trim());
+}
+
+/**
  * @typedef {object} Probe
  * @property {string} region
  * @property {string} host
  * @property {number} status 0 when the request itself failed
- * @property {"served" | "origin" | "direct" | "other" | "unfilled" | "error"} outcome
+ * @property {"served" | "origin" | "direct" | "other" | "unfilled" | "content" | "wrong-zone" | "error"} outcome
  * @property {string} detail
  * @property {string} [zone] the pull zone ID Bunny reported, when it answered
  */
@@ -518,10 +551,17 @@ export function pageMarker(html) {
  * @param {string} region
  * @param {string} host
  * @param {string} marker
+ * @param {{url?: string, expectedZone?: number, html?: string, signal?: AbortSignal}} [options]
  * @returns {Promise<Probe>}
  */
-export async function probeRegion(fetchImpl, region, host, marker) {
-  const url = `https://${host}/`;
+export async function probeRegion(
+  fetchImpl,
+  region,
+  host,
+  marker,
+  options = {},
+) {
+  const url = options.url ?? `https://${host}/`;
   let status;
   let body;
   let zone;
@@ -531,7 +571,12 @@ export async function probeRegion(fetchImpl, region, host, marker) {
       redirect: "manual",
       cache: "no-store",
       headers: { Accept: "text/html" },
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      signal: options.signal
+        ? AbortSignal.any([
+            options.signal,
+            AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+          ])
+        : AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
     status = res.status;
     body = await res.text();
@@ -560,6 +605,19 @@ export async function probeRegion(fetchImpl, region, host, marker) {
       status,
       outcome: "direct",
       detail: `${via}: no CDN-PullZone header, so ${host} does not route through the zone`,
+    };
+  }
+  if (
+    options.expectedZone !== undefined &&
+    zone !== String(options.expectedZone)
+  ) {
+    return {
+      region,
+      host,
+      status,
+      outcome: "wrong-zone",
+      zone,
+      detail: `${via}: expected pull zone ${options.expectedZone}`,
     };
   }
   const isPage = body.includes(marker);
@@ -596,6 +654,19 @@ export async function probeRegion(fetchImpl, region, host, marker) {
       detail: `${via}: custom page served with a placeholder Bunny did not fill`,
     };
   }
+  if (
+    options.html !== undefined &&
+    !matchesRenderedPage(options.html, body, status)
+  ) {
+    return {
+      region,
+      host,
+      status,
+      outcome: "content",
+      zone,
+      detail: `${via}: custom page content differs from regional.html`,
+    };
+  }
   return {
     region,
     host,
@@ -622,23 +693,30 @@ function probeAdvice(notServed) {
   const lines = [];
   if (outcomes.has("origin")) {
     lines.push(
-      "Bunny substitutes the custom page only for errors it generates itself, so a healthy",
-      "origin never shows it. To exercise it: in dash.bunny.net set the zone's origin URL to a",
-      "closed port (or stop the origin), re-run this probe, then restore the origin URL.",
+      "The probe rule did not produce an origin failure before retries ran out.",
+      "Check edge rule propagation or conflicting rules; the production origin was not changed.",
     );
   }
   if (outcomes.has("direct")) {
     lines.push(
       "A hostname that does not route through Bunny cannot show the page whatever the origin",
-      "does. Probe the zone's own hostname instead, region=<name>.b-cdn.net (verify prints it),",
-      "and check the DNS for the public hostname.",
+      "does. Check the public hostname's DNS and the zone's attached hostnames.",
     );
   }
-  if (outcomes.has("other") || outcomes.has("unfilled")) {
+  if (
+    outcomes.has("other") ||
+    outcomes.has("unfilled") ||
+    outcomes.has("content")
+  ) {
     lines.push(
       "A 5xx without the page, or with a bare placeholder, means the zone is not serving what",
       "verify says it stores. Re-run verify for that region; a cached copy (CDN-Cache HIT) can",
       "also stand in for the origin until it expires or is purged.",
+    );
+  }
+  if (outcomes.has("wrong-zone")) {
+    lines.push(
+      "The serving response came from a different pull zone; check the hostname routing.",
     );
   }
   if (outcomes.has("error")) {
@@ -754,33 +832,307 @@ async function deployCommand({ client, selected, html, log, error }) {
 }
 
 /**
- * No API, no zone lookup: one GET per region through its public hostname.
- * Exit 0 only when every region served the custom page, so a run with the
- * origin up fails loudly instead of passing by accident.
- * @param {{ fetch: typeof fetch, hosts: Record<string, string>, html: string,
- *   log: (line: string) => void }} run
+ * Use a reserved .invalid origin, not a failure of the real application, to
+ * exercise Bunny's own error handling. The unpredictable URL scope is the
+ * safety boundary, including if the process is killed before cleanup.
+ * Enum values: Bunny's public OpenAPI EdgeRuleActionType / TriggerTypes.
+ * @param {string} host
+ * @param {PullZone & {EdgeRules?: object[]}} zone
+ * @param {string} token local correlation token, not Bunny's rule GUID
  */
-async function probeCommand({ fetch: fetchImpl, hosts, html, log }) {
-  const marker = pageMarker(html);
-  const results = [];
-  for (const [region, host] of Object.entries(hosts)) {
-    results.push(await probeRegion(fetchImpl, region, host, marker));
-  }
-  for (const p of results) log(describeProbe(p));
+function probeRule(host, zone, token) {
+  return {
+    ActionType: 2,
+    ActionParameter1: "https://error-page-probe.invalid",
+    Enabled: true,
+    Description: `OTS error-page probe ${token}`,
+    OrderIndex:
+      Math.min(0, ...(zone.EdgeRules ?? []).map((r) => r.OrderIndex ?? 0)) - 1,
+    TriggerMatchingType: 1,
+    Triggers: [
+      {
+        Type: 0,
+        PatternMatchingType: 0,
+        PatternMatches: [
+          `https://${host}/.well-known/ots-error-page-probe/${token}/*`,
+        ],
+      },
+    ],
+    ExtraActions: [
+      { ActionType: 3, ActionParameter1: "0" },
+      { ActionType: 15, ActionParameter1: "" },
+    ],
+  };
+}
 
-  const notServed = results.filter((p) => p.outcome !== "served");
-  if (notServed.length === 0) {
-    log("Every region served the custom page.");
-    return 0;
+/** Compare sent fields while allowing the API to add default/null fields. */
+function matchesRule(expected, actual, key = "") {
+  // Bunny publishes both numeric (public API) and named (core API) enums.
+  const names = {
+    ActionType: { OriginUrl: 2, OverrideCacheTime: 3, BypassPermaCache: 15 },
+    Type: { Url: 0 },
+    PatternMatchingType: { MatchAny: 0 },
+    TriggerMatchingType: { MatchAll: 1 },
+  };
+  if (typeof actual === "string" && names[key]?.[actual] !== undefined) {
+    actual = names[key][actual];
   }
-  const inconclusive = notServed.every((p) => p.outcome === "origin");
-  log(
-    inconclusive
-      ? `${notServed.length} region(s) answered from the origin; nothing proven.`
-      : `${notServed.length} region(s) did not serve the custom page.`,
+  if (Array.isArray(expected)) {
+    return (
+      Array.isArray(actual) &&
+      actual.length === expected.length &&
+      expected.every((value, i) => matchesRule(value, actual[i]))
+    );
+  }
+  if (expected && typeof expected === "object") {
+    return (
+      actual &&
+      typeof actual === "object" &&
+      Object.entries(expected).every(([key, value]) =>
+        matchesRule(value, actual[key], key),
+      )
+    );
+  }
+  return expected === actual;
+}
+
+/** @param {unknown} value */
+function isRuleGuid(value) {
+  return (
+    typeof value === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      value,
+    )
   );
-  log(`\n${probeAdvice(notServed)}`);
-  return 1;
+}
+
+/**
+ * Recover ownership after a lost create response using the unique Description.
+ * A pre-existing rule can never become ours, even if its Description changes.
+ */
+function findProbeRule(zone, { rule, existingGuids }) {
+  const matches = (zone.EdgeRules ?? []).filter(
+    (r) => r.Description === rule.Description && !existingGuids.has(r.Guid),
+  );
+  if (matches.length > 1)
+    throw new Error(`Multiple rules match ${rule.Description}`);
+  const found = matches[0];
+  if (found && !isRuleGuid(found.Guid))
+    throw new Error("Probe rule has an invalid server GUID");
+  return found;
+}
+
+/**
+ * Delete the server-assigned GUID, never the local URL token. When the create
+ * response was lost, first discover that GUID from the unique Description.
+ * Never restore a saved rule list over concurrent edits.
+ * @param {Client} client
+ * @param {number} id
+ * @param {{rule: object, guid?: string, existingGuids: Set<string>}} cleanup
+ * @param {(ms: number, signal?: AbortSignal) => Promise<unknown>} sleep
+ */
+async function removeProbeRule(client, id, cleanup, sleep) {
+  let failure;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      if (!cleanup.guid) {
+        const zone = await bunny(client, `/pullzone/${id}`);
+        const found = findProbeRule(zone, cleanup);
+        if (!found) {
+          // A timed-out create may commit after the first empty discovery read.
+          if (attempt < 2) {
+            await sleep(1000);
+            continue;
+          }
+          return;
+        }
+        cleanup.guid = found.Guid;
+      }
+      const guid = cleanup.guid;
+      let deletionFailure;
+      try {
+        // A known server GUID can be deleted even if discovery reads fail.
+        await bunny(client, `/pullzone/${id}/edgerules/${guid}`, {
+          method: "DELETE",
+        });
+      } catch (err) {
+        deletionFailure = err;
+      }
+      const after = await bunny(client, `/pullzone/${id}`);
+      if ((after.EdgeRules ?? []).some((r) => r.Guid === guid)) {
+        throw (
+          deletionFailure ??
+          new Error("deleted probe rule still present in read-back")
+        );
+      }
+      return;
+    } catch (err) {
+      failure = err;
+      // Cleanup deliberately ignores cancellation so Ctrl-C cannot strand a rule.
+      if (attempt < 2) await sleep(1000);
+    }
+  }
+  throw new Error(
+    `Could not confirm cleanup of ${cleanup.rule.Description} from zone ${id}: ` +
+      `${failure instanceof Error ? failure.message : failure}. ` +
+      (cleanup.guid
+        ? `Recovery: DELETE /pullzone/${id}/edgerules/${cleanup.guid}. `
+        : "Recovery: find the rule by that exact Description and delete its server GUID. ") +
+      "Only the random probe URL is affected.",
+  );
+}
+
+/**
+ * Exercise one production zone at a time without changing its configured
+ * origin or taking it down. Normal traffic never matches the temporary rule.
+ * @param {Run & {sleep: (ms: number, signal?: AbortSignal) => Promise<unknown>,
+ *   signal?: AbortSignal, overrides: Record<string, string>}} run
+ */
+async function probeCommand({
+  client,
+  selected,
+  html,
+  log,
+  error,
+  sleep,
+  signal,
+  overrides,
+}) {
+  const marker = pageMarker(html);
+  for (const [i, s] of selected.entries()) {
+    let code = 0;
+    let cleanup;
+    let result;
+    try {
+      signal?.throwIfAborted();
+      const fresh = await bunny(client, `/pullzone/${s.zone.Id}`);
+      const plan = planZone({ ...s, zone: fresh }, html);
+      if (plan.action !== "up-to-date") {
+        log(`${describe(plan)}; run pnpm edge:error-page:deploy ${s.region}`);
+        code = 1;
+      } else {
+        const attached = (fresh.Hostnames ?? []).map((h) =>
+          h.Value.toLowerCase(),
+        );
+        const host = attached.includes(s.host)
+          ? s.host
+          : overrides[s.region]
+            ? undefined
+            : attached.find((h) => h.endsWith(".b-cdn.net"));
+        if (!host || !/^[a-z0-9.-]+$/i.test(host)) {
+          throw new Error(
+            `${s.region}: no attached serving hostname for the selected zone`,
+          );
+        }
+        signal?.throwIfAborted();
+        const token = randomUUID();
+        const rule = probeRule(host, fresh, token);
+        cleanup = {
+          rule,
+          guid: undefined,
+          existingGuids: new Set((fresh.EdgeRules ?? []).map((r) => r.Guid)),
+        };
+        log(
+          `${s.region}: installing request-scoped probe ${token} on zone ${fresh.Id}`,
+        );
+        // Guid is an update selector, not a client-assigned creation ID.
+        const created = await bunny(
+          client,
+          `/pullzone/${fresh.Id}/edgerules/addOrUpdate`,
+          {
+            method: "POST",
+            body: rule,
+          },
+        );
+        if (isRuleGuid(created?.Guid)) {
+          if (cleanup.existingGuids.has(created.Guid)) {
+            throw new Error(
+              "Create returned a pre-existing rule GUID; refusing to use it",
+            );
+          }
+          cleanup.guid = created.Guid;
+        }
+        const installed = await bunny(client, `/pullzone/${fresh.Id}`);
+        const storedRule = findProbeRule(installed, cleanup);
+        if (storedRule) cleanup.guid = storedRule.Guid;
+        if (!matchesRule(rule, storedRule)) {
+          throw new Error(
+            "probe rule read-back does not match the scoped rule",
+          );
+        }
+        log(
+          `${s.region}: Bunny assigned probe rule ${cleanup.guid} on zone ${fresh.Id}`,
+        );
+        const withoutProbe = {
+          ...installed,
+          EdgeRules: (installed.EdgeRules ?? []).filter(
+            (r) => r.Guid !== cleanup.guid,
+          ),
+        };
+        const changed = unexpectedChanges(
+          { ...fresh, EdgeRules: fresh.EdgeRules ?? [] },
+          withoutProbe,
+          ["MonthlyBandwidthUsed", "MonthlyCharges"],
+        );
+        if (changed.length)
+          throw new Error(
+            `probe installation also changed ${changed.join(", ")}`,
+          );
+
+        const servingSignal = AbortSignal.any([
+          ...(signal ? [signal] : []),
+          AbortSignal.timeout(90_000),
+        ]);
+        for (let attempt = 0; attempt < 12; attempt++) {
+          signal?.throwIfAborted();
+          // Unique paths defeat cached responses even when query strings are ignored.
+          result = await probeRegion(client.fetch, s.region, host, marker, {
+            url: `https://${host}/.well-known/ots-error-page-probe/${token}/${attempt}`,
+            expectedZone: fresh.Id,
+            html,
+            signal: servingSignal,
+          });
+          log(describeProbe(result));
+          signal?.throwIfAborted();
+          if (result.outcome === "served") break;
+          if (servingSignal.aborted || attempt === 11) break;
+          await sleep(5000, servingSignal);
+        }
+        if (result?.outcome !== "served") {
+          code = 1;
+          if (result) log(probeAdvice([result]));
+        }
+      }
+    } catch (err) {
+      error(
+        `${s.region}: FAILED — ${err instanceof Error ? err.message : err}`,
+      );
+      code = 2;
+    } finally {
+      if (cleanup) {
+        try {
+          await removeProbeRule(client, s.zone.Id, cleanup, sleep);
+          log(`${s.region}: probe rule absent (cleanup verified)`);
+        } catch (err) {
+          error(
+            `${s.region}: FAILED — ${err instanceof Error ? err.message : err}`,
+          );
+          code = 2;
+        }
+      }
+    }
+    if (signal?.aborted) code = 2;
+    if (code) {
+      const remaining = selected.slice(i + 1).map((r) => r.region);
+      if (remaining.length)
+        error(
+          `Stopped before ${remaining.join(", ")}; those zones were not probed.`,
+        );
+      return code;
+    }
+  }
+  log("Every region served the custom page.");
+  return 0;
 }
 
 /**
@@ -790,6 +1142,8 @@ async function probeCommand({ fetch: fetchImpl, hosts, html, log }) {
  * @property {() => void} [loadEnv]
  * @property {(line: string) => void} [log]
  * @property {(line: string) => void} [error]
+ * @property {(ms: number, signal?: AbortSignal) => Promise<unknown>} [sleep]
+ * @property {AbortSignal} [signal]
  */
 
 /**
@@ -805,6 +1159,8 @@ export async function main(argv, deps = {}) {
     loadEnv = loadDotenv,
     log = console.log,
     error = console.error,
+    sleep = (ms, signal) => delay(ms, undefined, { signal }),
+    signal,
   } = deps;
 
   if (argv.includes("--help") || argv.includes("-h")) {
@@ -826,15 +1182,17 @@ export async function main(argv, deps = {}) {
   const apply = args.includes("--apply");
   if (apply && command !== "push") {
     const why =
-      { verify: "verify never writes", deploy: "deploy always pushes" }[
-        command
-      ] ?? `${command} never writes`;
+      {
+        verify: "verify never writes",
+        deploy: "deploy always pushes",
+        probe: "probe manages its own temporary rule",
+      }[command] ?? `${command} never writes`;
     throw new Error(`--apply is for push only; ${why}. Drop the flag.`);
   }
   const { regions, refs: argRefs } = parseRegionArgs(
     args.filter((a) => !a.startsWith("-")),
   );
-  const hosts = pickRegions(regions);
+  let hosts = pickRegions(regions);
 
   if (command === "probe") {
     // region=host swaps in the hostname to fetch, for a public hostname that
@@ -845,13 +1203,7 @@ export async function main(argv, deps = {}) {
         `probe takes region=hostname, not a zone name or ID: ${bad.map(([r, h]) => `${r}=${h}`).join(", ")}`,
       );
     }
-    const html = await readFile(TEMPLATE_PATH, "utf8");
-    return probeCommand({
-      fetch: fetchImpl,
-      hosts: { ...hosts, ...argRefs },
-      html,
-      log,
-    });
+    hosts = { ...hosts, ...argRefs };
   }
 
   loadEnv();
@@ -872,11 +1224,17 @@ export async function main(argv, deps = {}) {
   }
 
   // Command line beats environment, per region.
-  const refs = { ...envZoneRefs(env, hosts), ...argRefs };
+  const refs = {
+    ...envZoneRefs(env, hosts),
+    ...(command === "probe" ? {} : argRefs),
+  };
   const zones = await listPullZones(client);
   const selected = selectRegionalZones(zones, hosts, refs);
   const run = { client, selected, html, apply, log, error };
 
+  if (command === "probe") {
+    return probeCommand({ ...run, sleep, signal, overrides: argRefs });
+  }
   if (command === "verify") return verifyCommand(run);
   if (command === "deploy") return deployCommand(run);
   return pushCommand(run);
@@ -890,13 +1248,28 @@ if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href
 ) {
-  main(process.argv.slice(2)).then(
-    (code) => {
-      process.exitCode = code;
-    },
-    (err) => {
-      console.error(err instanceof Error ? err.message : err);
-      process.exitCode = 2;
-    },
-  );
+  const controller = new AbortController();
+  const interrupt = () =>
+    controller.abort(new Error("Interrupted; cleaning up the probe rule"));
+  const isProbe = process.argv[2] === "probe";
+  if (isProbe) {
+    process.on("SIGINT", interrupt);
+    process.on("SIGTERM", interrupt);
+  }
+  main(process.argv.slice(2), { signal: controller.signal })
+    .finally(() => {
+      if (isProbe) {
+        process.off("SIGINT", interrupt);
+        process.off("SIGTERM", interrupt);
+      }
+    })
+    .then(
+      (code) => {
+        process.exitCode = code;
+      },
+      (err) => {
+        console.error(err instanceof Error ? err.message : err);
+        process.exitCode = 2;
+      },
+    );
 }

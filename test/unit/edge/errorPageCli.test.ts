@@ -2,7 +2,7 @@
  * @file errorPageCli.test.ts
  * @description Unit tests for edge/error-page/cli.mjs: which pull zones a
  * region resolves to, when a zone counts as out of date, how the zone list is
- * parsed, and what the push, verify and deploy commands decide to write. The
+ * parsed, and what push, verify, deploy and scoped probe commands decide to write. The
  * HTTP layer is exercised through an injected fetch so no test reaches the
  * Bunny API.
  *
@@ -14,6 +14,7 @@
  */
 
 import { execFileSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -24,15 +25,15 @@ import {
   REGIONAL_HOSTS,
   envZoneRefs,
   main,
-  pageMarker,
-  probeRegion,
-  servingCheck,
   normalize,
+  pageMarker,
   parsePullZoneList,
   parseRegionArgs,
   pickRegions,
   planZone,
+  probeRegion,
   selectRegionalZones,
+  servingCheck,
   unexpectedChanges,
   zoneEnvVar,
 } from "../../../edge/error-page/cli.mjs";
@@ -187,6 +188,17 @@ describe("selectRegionalZones", () => {
       expect(selected.map((s) => s.zone.Id)).toEqual([2]);
     });
   });
+
+  it.each([REGIONAL_HOSTS.eu, "eu-zone.b-cdn.net"])(
+    "rejects by-host selection of %s for another region",
+    (host) => {
+      const zones = [zone(2, [REGIONAL_HOSTS.eu, "eu-zone.b-cdn.net"])];
+
+      expect(() => selectRegionalZones(zones, { nz: host })).toThrow(
+        /selected for nz.*the eu hostname/,
+      );
+    },
+  );
 
   it("refuses a hostname attached to two zones", () => {
     const zones = [
@@ -539,6 +551,7 @@ describe("servingCheck", () => {
     expect(text).toContain("pnpm edge:error-page:probe nz eu");
     expect(text).not.toContain("ZONE=");
     expect(text).not.toContain("api.bunny.net");
+    expect(text).not.toMatch(/take the origin down|closed port/i);
   });
 
   it("says when the page is served and where the by-hand checks live", () => {
@@ -649,6 +662,104 @@ describe("probeRegion", () => {
   });
 });
 
+describe("probeRegion scoped options", () => {
+  const html = normalize(readFileSync(TEMPLATE, "utf8"));
+  const filled = html
+    .replaceAll("{{status_code}}", "502")
+    .replaceAll("{{status_title}}", "Bad Gateway");
+  const url =
+    "https://nz.onetimesecret.com/.well-known/ots-error-page-probe/test/0";
+
+  function check(body: string, zone = "6421160", status = 502) {
+    const fetch = vi.fn(
+      async () =>
+        new Response(body, {
+          status,
+          headers: { "CDN-PullZone": zone },
+        }),
+    );
+    const controller = new AbortController();
+    const result = probeRegion(
+      fetch,
+      "nz",
+      "nz.onetimesecret.com",
+      pageMarker(html),
+      {
+        url,
+        expectedZone: 6421160,
+        html,
+        signal: controller.signal,
+      },
+    );
+    return { result, fetch };
+  }
+
+  it("uses the explicit URL without a serving credential and accepts the full filled template", async () => {
+    const { result, fetch } = check(filled);
+
+    expect(await result).toMatchObject({
+      outcome: "served",
+      status: 502,
+      zone: "6421160",
+    });
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const [input, init] = fetch.mock.calls[0] as unknown as [
+      string,
+      RequestInit,
+    ];
+    expect(input).toBe(url);
+    expect(init.redirect).toBe("manual");
+    expect(new Headers(init.headers).has("AccessKey")).toBe(false);
+  });
+
+  it("rejects the correct page answered from a different pull zone", async () => {
+    expect(await check(filled, "99").result).toMatchObject({
+      outcome: "wrong-zone",
+      zone: "99",
+    });
+  });
+
+  it.each<[string, () => string]>([
+    ["only the title", () => `<html>${pageMarker(html)}</html>`],
+    [
+      "a changed body",
+      () => filled.replace("</body>", "<p>changed</p></body>"),
+    ],
+  ])("rejects %s even though the title matches", async (_name, body) => {
+    expect(await check(body()).result).toMatchObject({ outcome: "content" });
+  });
+
+  it("still distinguishes unfilled placeholders from a full-content mismatch", async () => {
+    expect(await check(html).result).toMatchObject({ outcome: "unfilled" });
+  });
+
+  it("does not accept a healthy response even when the full body matches", async () => {
+    expect(await check(filled, "6421160", 200).result).toMatchObject({
+      outcome: "origin",
+    });
+  });
+
+  it("passes cancellation to the serving request", async () => {
+    const controller = new AbortController();
+    const fetch = vi.fn(async () => {
+      controller.abort();
+      throw new DOMException("cancelled", "AbortError");
+    });
+
+    expect(
+      await probeRegion(fetch, "nz", "nz.onetimesecret.com", pageMarker(html), {
+        url,
+        expectedZone: 6421160,
+        html,
+        signal: controller.signal,
+      }),
+    ).toMatchObject({ outcome: "error" });
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const [, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
+    expect(init.signal?.aborted).toBe(true);
+  });
+});
+
 describe("main", () => {
   const template = normalize(
     readFileSync(
@@ -689,18 +800,33 @@ describe("main", () => {
     return { fetch, posts, store };
   }
 
-  function run(argv: string[], fetch: unknown, env = { BUNNY_API_KEY: "k" }) {
+  function run(
+    argv: string[],
+    fetch: unknown,
+    env: Record<string, string> = { BUNNY_API_KEY: "k" },
+    deps: {
+      sleep?: (ms: number, signal?: AbortSignal) => Promise<void>;
+      signal?: AbortSignal;
+    } = {},
+  ) {
     const log = vi.fn();
     const error = vi.fn();
     const loadEnv = vi.fn();
+    const noDelay: (
+      ms: number,
+      signal?: AbortSignal,
+    ) => Promise<void> = async () => {};
+    const sleep = vi.fn(noDelay);
     const code = main(argv, {
       env,
       fetch: fetch as typeof globalThis.fetch,
       loadEnv,
       log,
       error,
+      sleep,
+      ...deps,
     });
-    return { code, log, error, loadEnv };
+    return { code, log, error, loadEnv, sleep };
   }
 
   /** The rejection message of a promise, or "resolved" when it did not reject. */
@@ -877,6 +1003,8 @@ describe("main", () => {
       const message = await rejection(run([command, "--apply"], fetch).code);
 
       expect(message).toMatch(/--apply is for push only/);
+      if (command === "probe")
+        expect(message).not.toMatch(/probe never writes/);
       expect(fetch).not.toHaveBeenCalled();
     },
   );
@@ -1004,7 +1132,8 @@ describe("main", () => {
       expect(lines.at(-1)).toBe(
         `${zones.length} zone(s) deployed and verified.`,
       );
-      expect(lines.at(-2)).toContain("take the origin down");
+      expect(lines.at(-2)).toContain("pnpm edge:error-page:probe");
+      expect(lines.at(-2)).not.toContain("take the origin down");
     });
 
     it("works one region at a time, in the order given", async () => {
@@ -1069,102 +1198,1269 @@ describe("main", () => {
   });
 
   describe("probe", () => {
-    const marker = "<title>Onetime Secret - Service Error</title>";
-    /** The public hostnames as the pull zones answer them, by host. */
-    function fakeEdge(
-      answers: Record<string, { status: number; body: string }>,
-    ) {
-      return vi.fn(async (input: string | URL | Request) => {
-        const { host } = new URL(String(input));
-        const a = answers[host] ?? {
-          status: 200,
-          body: "<html><title>Onetime Secret</title></html>",
-        };
-        return new Response(a.body, {
-          status: a.status,
-          headers: { "CDN-PullZone": "1", "CDN-Cache": "MISS" },
+    type RuleBody = Record<string, unknown> & {
+      Guid?: string;
+      OrderIndex: number;
+    };
+    type Rule = RuleBody & { Guid: string };
+    type Answer = {
+      status: number;
+      body: string;
+      zone?: string;
+      direct?: boolean;
+    };
+    type ProbeZone = FakeZone & { EdgeRules: Rule[] };
+    type RequestRecord = { url: URL; method: string };
+    type Options = {
+      answer?: (z: ProbeZone, attempt: number, host: string) => Answer | Error;
+      createFailure?: "http" | "network" | "timeout";
+      installBeforeFailure?: boolean;
+      installEffect?: (z: ProbeZone, rule: Rule) => void;
+      createResponse?: (rule: Rule) => unknown;
+      postInstallReadFailures?: number;
+      deleteFailures?: number;
+      deleteFailureAfterRemoval?: boolean;
+      deleteMissingStatus?: 204 | 404;
+      retainDeletedRule?: boolean;
+      readFailure?: boolean;
+      cleanupReadFailures?: number;
+    };
+    const served: Answer = {
+      status: 502,
+      body: template
+        .replaceAll("{{status_code}}", "502")
+        .replaceAll("{{status_title}}", "Bad Gateway"),
+    };
+    const healthy: Answer = {
+      status: 200,
+      body: "<html>healthy origin</html>",
+    };
+    const existingRule: Rule = {
+      Guid: "11111111-1111-4111-8111-111111111111",
+      OrderIndex: -7,
+      ActionType: 0,
+      ActionParameter1: "https://existing.invalid",
+      Enabled: true,
+    };
+
+    /** Separate list snapshots, fresh zone reads, scoped rule writes and public serving. */
+    function fakeProbe(zones = liveZones(), opts: Options = {}) {
+      const store = new Map(
+        zones.map((z) => [
+          z.Id,
+          {
+            ...structuredClone(z),
+            EdgeRules: structuredClone((z.EdgeRules ?? []) as Rule[]),
+          } as ProbeZone,
+        ]),
+      );
+      const posts: { id: number; body: RuleBody }[] = [];
+      const created: { id: number; rule: Rule }[] = [];
+      const deleted: { id: number; guid: string }[] = [];
+      const serving: {
+        host: string;
+        id: number;
+        guid: string;
+        token: string;
+        attempt: number;
+      }[] = [];
+      const requests: RequestRecord[] = [];
+      let deleteFailures = opts.deleteFailures ?? 0;
+      let cleanupReadFailures = opts.cleanupReadFailures ?? 0;
+      let postInstallReadFailures = opts.postInstallReadFailures ?? 0;
+      const json = (status: number, body: unknown) =>
+        new Response(JSON.stringify(body), {
+          status,
+          headers: { "Content-Type": "application/json" },
         });
+      const fetch = vi.fn(
+        async (input: string | URL | Request, init: RequestInit = {}) => {
+          const url = new URL(String(input));
+          const method = init.method ?? "GET";
+          requests.push({ url, method });
+          if (url.origin !== "https://api.bunny.net") {
+            const z = [...store.values()].find((z) =>
+              z.Hostnames.some((h) => h.Value === url.hostname),
+            );
+            if (!z) throw new Error(`Unexpected serving host: ${url.hostname}`);
+            const match = url.pathname.match(
+              /^\/\.well-known\/ots-error-page-probe\/([^/]+)\/(\d+)$/,
+            );
+            if (!match)
+              throw new Error(`Unexpected serving path: ${url.pathname}`);
+            const [, token, attemptText] = match;
+            const rule = z.EdgeRules.find((r) => {
+              const triggers = r.Triggers as
+                { PatternMatches?: string[] }[] | undefined;
+              return (
+                r.Description === `OTS error-page probe ${token}` &&
+                triggers?.[0]?.PatternMatches?.includes(
+                  `${url.origin}/.well-known/ots-error-page-probe/${token}/*`,
+                )
+              );
+            });
+            if (!rule)
+              throw new Error(
+                "Serving requested without its scoped rule installed",
+              );
+            const attempt = Number(attemptText);
+            serving.push({
+              host: url.hostname,
+              id: z.Id,
+              guid: rule.Guid,
+              token,
+              attempt,
+            });
+            const answer = opts.answer?.(z, attempt, url.hostname) ?? served;
+            if (answer instanceof Error) throw answer;
+            return new Response(answer.body, {
+              status: answer.status,
+              headers: answer.direct
+                ? {}
+                : {
+                    "CDN-PullZone": answer.zone ?? String(z.Id),
+                    "CDN-Cache": "MISS",
+                  },
+            });
+          }
+          if (url.pathname === "/pullzone" && method === "GET") {
+            return json(200, zones);
+          }
+          const match = url.pathname.match(
+            /^\/pullzone\/(\d+)(?:\/edgerules\/(.+))?$/,
+          );
+          if (!match) throw new Error(`Unexpected API path: ${url.pathname}`);
+          const id = Number(match[1]);
+          const z = store.get(id);
+          if (!z) return json(404, { error: "no zone" });
+          const rulePath = match[2];
+          if (!rulePath && method === "GET") {
+            if (posts.length > 0 && postInstallReadFailures-- > 0) {
+              return json(503, { error: "post-install read failed" });
+            }
+            if (serving.length > 0 && cleanupReadFailures-- > 0) {
+              return json(503, { error: "cleanup read failed" });
+            }
+            return opts.readFailure
+              ? json(503, { error: "read failed" })
+              : json(200, z);
+          }
+          if (rulePath === "addOrUpdate" && method === "POST") {
+            const body = JSON.parse(String(init.body)) as RuleBody;
+            posts.push({ id, body });
+            const existing = body.Guid
+              ? z.EdgeRules.find((r) => r.Guid === body.Guid)
+              : undefined;
+            // addOrUpdate treats a supplied GUID as an update, never as a new identifier.
+            if (body.Guid && !existing) {
+              return json(404, { ErrorKey: "pullZone.edge_rule_not_found" });
+            }
+            let guid = existing?.Guid ?? randomUUID();
+            while (
+              !existing &&
+              (z.EdgeRules.some((r) => r.Guid === guid) ||
+                body.Description === `OTS error-page probe ${guid}` ||
+                created.some((c) => c.rule.Guid === guid))
+            )
+              guid = randomUUID();
+            const rule: Rule = { ...body, Guid: guid };
+            if (!opts.createFailure || opts.installBeforeFailure !== false) {
+              const storedRule = structuredClone(rule);
+              if (existing)
+                z.EdgeRules[z.EdgeRules.indexOf(existing)] = storedRule;
+              else {
+                z.EdgeRules.push(storedRule);
+                created.push({ id, rule: structuredClone(rule) });
+              }
+              opts.installEffect?.(z, storedRule);
+            }
+            if (opts.createFailure === "http")
+              return json(503, { error: "install failed" });
+            if (opts.createFailure === "network")
+              throw new Error("ECONNRESET after install");
+            if (opts.createFailure === "timeout") {
+              throw new DOMException("install timed out", "TimeoutError");
+            }
+            return json(
+              existing ? 200 : 201,
+              opts.createResponse ? opts.createResponse(rule) : rule,
+            );
+          }
+          if (rulePath && method === "DELETE") {
+            deleted.push({ id, guid: rulePath });
+            const present = z.EdgeRules.some((r) => r.Guid === rulePath);
+            if (!present && opts.deleteMissingStatus === 404) {
+              return json(404, { error: "rule already absent" });
+            }
+            if (deleteFailures-- > 0) {
+              if (opts.deleteFailureAfterRemoval) {
+                z.EdgeRules = z.EdgeRules.filter((r) => r.Guid !== rulePath);
+              }
+              return json(503, { error: "delete failed" });
+            }
+            if (!opts.retainDeletedRule) {
+              z.EdgeRules = z.EdgeRules.filter((r) => r.Guid !== rulePath);
+            }
+            return new Response(null, { status: 204 });
+          }
+          throw new Error(`Unexpected API write: ${method} ${url.pathname}`);
+        },
+      );
+      return { fetch, store, posts, created, deleted, serving, requests };
+    }
+    type FakeProbe = ReturnType<typeof fakeProbe>;
+    const nzZone = (zones: FakeZone[]) =>
+      zones.find((z) =>
+        z.Hostnames.some((h) => h.Value === REGIONAL_HOSTS.nz),
+      )!;
+
+    function probeToken(rule: RuleBody) {
+      const token = String(rule.Description).replace(
+        /^OTS error-page probe /,
+        "",
+      );
+      expect(rule.Description).toBe(`OTS error-page probe ${token}`);
+      expect(token).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+      );
+      return token;
+    }
+
+    function expectCleaned(fake: FakeProbe, id: number, guid: string) {
+      expect(fake.deleted).toEqual(expect.arrayContaining([{ id, guid }]));
+      expect(fake.store.get(id)!.EdgeRules.some((r) => r.Guid === guid)).toBe(
+        false,
+      );
+      const index = fake.requests.findLastIndex(
+        (r) =>
+          r.method === "DELETE" &&
+          r.url.pathname === `/pullzone/${id}/edgerules/${guid}`,
+      );
+      // Delete the server-assigned GUID, never the URL token; then confirm absence.
+      expect(fake.requests[index + 1]).toMatchObject({
+        method: "GET",
+        url: expect.objectContaining({ pathname: `/pullzone/${id}` }),
       });
     }
-    const served = {
-      status: 502,
-      body: `<html>${marker}<div>502</div></html>`,
-    };
-    const allServed = () =>
-      Object.fromEntries(Object.values(REGIONAL_HOSTS).map((h) => [h, served]));
 
-    it("needs no API key, reads no zones, and exits 0 when every region serves the page", async () => {
-      const fetch = fakeEdge(allServed());
-      const { code, log, loadEnv } = run(
-        ["probe"],
-        fetch,
-        {} as { BUNNY_API_KEY: string },
+    function expectUntouched(fake: FakeProbe, id: number) {
+      expect(
+        fake.requests.some((r) => r.url.pathname.startsWith(`/pullzone/${id}`)),
+      ).toBe(false);
+      expect(fake.serving.some((s) => s.id === id)).toBe(false);
+    }
+
+    it("models Bunny rejecting an unknown POST Guid with the production 404 error", async () => {
+      const zones = liveZones();
+      const nz = nzZone(zones);
+      nz.EdgeRules = [existingRule];
+      const fake = fakeProbe(zones);
+      const response = await fake.fetch(
+        `https://api.bunny.net/pullzone/${nz.Id}/edgerules/addOrUpdate`,
+        {
+          method: "POST",
+          body: JSON.stringify({ ...existingRule, Guid: randomUUID() }),
+        },
       );
 
-      expect(await code).toBe(0);
-      expect(loadEnv).not.toHaveBeenCalled();
-      const urls = fetch.mock.calls.map((c) => String(c[0]));
-      expect(urls).toEqual(
-        Object.values(REGIONAL_HOSTS).map((h) => `https://${h}/`),
-      );
-      expect(log).toHaveBeenLastCalledWith(
-        "Every region served the custom page.",
-      );
+      expect(response.status).toBe(404);
+      expect(await response.json()).toEqual({
+        ErrorKey: "pullZone.edge_rule_not_found",
+      });
+      expect(fake.created).toEqual([]);
+      expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([existingRule]);
     });
 
-    it("exits 1 and says nothing was proven when the origin is up", async () => {
-      const fetch = fakeEdge({});
-      const { code, log } = run(["probe", "nz"], fetch);
-
-      expect(await code).toBe(1);
-      expect(fetch).toHaveBeenCalledTimes(1);
-      const lines = log.mock.calls.map((c) => String(c[0]));
-      expect(lines[0]).toMatch(
-        /^nz {2}nz\.onetimesecret\.com\s+200 {2}via pull zone 1, cache MISS/,
-      );
-      expect(lines.at(-2)).toMatch(/nothing proven/);
-      expect(lines.at(-1)).toMatch(
-        /set the zone's origin URL to a\nclosed port/,
-      );
-    });
-
-    it("exits 1 and names the region that served something else", async () => {
-      const answers = allServed();
-      answers[REGIONAL_HOSTS.eu] = {
-        status: 503,
-        body: "<html>bunny default</html>",
+    it("models Bunny creating without Guid with HTTP 201 and a distinct server UUID", async () => {
+      const fake = fakeProbe();
+      const id = nzZone(liveZones()).Id;
+      const token = randomUUID();
+      const body: RuleBody = {
+        ...existingRule,
+        Description: `OTS error-page probe ${token}`,
       };
-      const { code, log } = run(["probe"], fakeEdge(answers));
-
-      expect(await code).toBe(1);
-      const lines = log.mock.calls.map((c) => String(c[0]));
-      expect(lines.find((l) => l.startsWith("eu "))).toMatch(
-        /503 {2}via pull zone 1: not the custom page/,
+      delete body.Guid;
+      const response = await fake.fetch(
+        `https://api.bunny.net/pullzone/${id}/edgerules/addOrUpdate`,
+        { method: "POST", body: JSON.stringify(body) },
       );
-      expect(lines.at(-2)).toBe("1 region(s) did not serve the custom page.");
-      expect(lines.at(-1)).toMatch(/Re-run verify/);
+      const rule = (await response.json()) as Rule;
+
+      expect(response.status).toBe(201);
+      expect(rule).toMatchObject(body);
+      expect(rule.Guid).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+      );
+      expect(rule.Guid).not.toBe(token);
+      expect(fake.created).toEqual([{ id, rule }]);
+      expect(fake.store.get(id)!.EdgeRules).toEqual([rule]);
     });
 
-    it("fetches a substitute hostname given as region=host", async () => {
-      const fetch = fakeEdge({ "be2169e1-7.b-cdn.net": served });
-      const { code, log } = run(["probe", "nz=be2169e1-7.b-cdn.net"], fetch);
+    it("models Bunny permitting updates only to an existing Guid", async () => {
+      const zones = liveZones();
+      const nz = nzZone(zones);
+      nz.EdgeRules = [existingRule];
+      const fake = fakeProbe(zones);
+      const body = { ...existingRule, Description: "updated existing rule" };
+      const response = await fake.fetch(
+        `https://api.bunny.net/pullzone/${nz.Id}/edgerules/addOrUpdate`,
+        { method: "POST", body: JSON.stringify(body) },
+      );
+
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual(body);
+      expect(fake.created).toEqual([]);
+      expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([body]);
+    });
+
+    it("omits Guid from the raw create POST and uses a fresh URL token, not the server GUID", async () => {
+      const fake = fakeProbe();
+      const result = await run(["probe", "nz"], fake.fetch).code;
+      const post = fake.fetch.mock.calls.find(
+        ([, init]) => init?.method === "POST",
+      )!;
+      const body = JSON.parse(String(post[1]?.body)) as RuleBody;
+
+      expect(body).not.toHaveProperty("Guid");
+      const token = probeToken(body);
+      expect(result).toBe(0);
+      expect(fake.created).toHaveLength(1);
+      const { id, rule } = fake.created[0];
+      expect(rule.Guid).not.toBe(token);
+      expect(fake.serving).toEqual([
+        { host: REGIONAL_HOSTS.nz, id, guid: rule.Guid, token, attempt: 0 },
+      ]);
+      expect(fake.deleted).toEqual([{ id, guid: rule.Guid }]);
+      expectCleaned(fake, id, rule.Guid);
+    });
+
+    it("loads env, probes every region serially, authenticates only API calls and removes each rule", async () => {
+      const zones = liveZones();
+      for (const z of zones) z.EdgeRules = [existingRule];
+      const fake = fakeProbe(zones);
+      const { code, loadEnv } = run(["probe"], fake.fetch, {
+        BUNNY_API_KEY: "secret",
+      });
 
       expect(await code).toBe(0);
-      expect(fetch.mock.calls.map((c) => String(c[0]))).toEqual([
-        "https://be2169e1-7.b-cdn.net/",
-      ]);
-      expect(log.mock.calls[0][0]).toMatch(
-        /^nz {2}be2169e1-7\.b-cdn\.net\s+502 {2}via pull zone 1: custom page served/,
+      expect(loadEnv).toHaveBeenCalledTimes(1);
+      expect(fake.requests[0]).toMatchObject({
+        method: "GET",
+        url: expect.objectContaining({ pathname: "/pullzone" }),
+      });
+      expect(fake.created.map((c) => c.id)).toEqual(zones.map((z) => z.Id));
+      expect(fake.serving.map((s) => s.host)).toEqual(
+        Object.values(REGIONAL_HOSTS),
       );
+      expect(new Set(fake.created.map((c) => c.rule.Guid)).size).toBe(
+        zones.length,
+      );
+      expect(new Set(fake.created.map((c) => probeToken(c.rule))).size).toBe(
+        zones.length,
+      );
+      for (const [index, z] of zones.entries()) {
+        const { rule } = fake.created[index];
+        expect(rule.Guid).toMatch(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+        );
+        const token = probeToken(rule);
+        const host = Object.values(REGIONAL_HOSTS)[index];
+        expect(rule.Guid).not.toBe(token);
+        expect(fake.posts[index].body).not.toHaveProperty("Guid");
+        expect(rule).toMatchObject({
+          ActionType: 2,
+          ActionParameter1: "https://error-page-probe.invalid",
+          Enabled: true,
+          TriggerMatchingType: 1,
+          Triggers: [
+            {
+              Type: 0,
+              PatternMatchingType: 0,
+              PatternMatches: [
+                `https://${host}/.well-known/ots-error-page-probe/${token}/*`,
+              ],
+            },
+          ],
+          ExtraActions: [
+            { ActionType: 3, ActionParameter1: "0" },
+            { ActionType: 15, ActionParameter1: "" },
+          ],
+        });
+        expect(rule.OrderIndex).toBeLessThan(existingRule.OrderIndex);
+        expect(fake.serving[index]).toEqual({
+          host,
+          id: z.Id,
+          guid: rule.Guid,
+          token,
+          attempt: 0,
+        });
+        const install = fake.requests.findIndex(
+          (r) =>
+            r.method === "POST" &&
+            r.url.pathname === `/pullzone/${z.Id}/edgerules/addOrUpdate`,
+        );
+        expect(fake.requests[install - 1]).toMatchObject({
+          method: "GET",
+          url: expect.objectContaining({ pathname: `/pullzone/${z.Id}` }),
+        });
+        expectCleaned(fake, z.Id, rule.Guid);
+        if (index < zones.length - 1) {
+          const next = fake.requests.findIndex(
+            (r) => r.url.pathname === `/pullzone/${zones[index + 1].Id}`,
+          );
+          const last = fake.requests.findLastIndex(
+            (r) => r.url.pathname === `/pullzone/${z.Id}`,
+          );
+          expect(last).toBeLessThan(next);
+        }
+      }
+      for (const [input, init] of fake.fetch.mock.calls) {
+        const url = new URL(String(input));
+        const headers = new Headers(init?.headers);
+        expect(headers.get("AccessKey")).toBe(
+          url.hostname === "api.bunny.net" ? "secret" : null,
+        );
+        if (url.hostname !== "api.bunny.net")
+          expect(init?.redirect).toBe("manual");
+        if (init?.method === "POST") {
+          expect(url.pathname).toMatch(
+            /^\/pullzone\/\d+\/edgerules\/addOrUpdate$/,
+          );
+          expect(JSON.parse(String(init?.body))).not.toHaveProperty("Guid");
+        }
+      }
     });
 
-    it("rejects a zone name or ID where a hostname is expected", async () => {
-      const fetch = fakeEdge({});
+    it("retries a healthy origin during propagation, then proves the page and cleans up", async () => {
+      const fake = fakeProbe(liveZones(), {
+        answer: (_z, attempt) => (attempt < 2 ? healthy : served),
+      });
+      const { code, sleep } = run(["probe", "nz"], fake.fetch);
 
-      expect(await rejection(run(["probe", "nz=123"], fetch).code)).toMatch(
-        /region=hostname.*nz=123/,
+      expect(await code).toBe(0);
+      expect(fake.serving.map((s) => s.attempt)).toEqual([0, 1, 2]);
+      expect(new Set(fake.serving.map((s) => s.guid)).size).toBe(1);
+      expect(sleep).toHaveBeenCalledTimes(2);
+      expect(sleep.mock.calls.every(([ms]) => ms > 0)).toBe(true);
+      expect(fake.created).toHaveLength(1);
+      expectCleaned(fake, fake.created[0].id, fake.created[0].rule.Guid);
+    });
+
+    it("exhausts twelve healthy responses, cleans up and stops before the next region with exit 1", async () => {
+      const zones = liveZones();
+      const fake = fakeProbe(zones, { answer: () => healthy });
+      const { code, sleep } = run(["probe", "nz", "eu"], fake.fetch);
+
+      expect(await code).toBe(1);
+      expect(fake.serving.map((s) => s.attempt)).toEqual(
+        Array.from({ length: 12 }, (_, i) => i),
       );
-      expect(fetch).not.toHaveBeenCalled();
+      expect(sleep).toHaveBeenCalledTimes(11);
+      expect(fake.created).toHaveLength(1);
+      expectCleaned(fake, fake.created[0].id, fake.created[0].rule.Guid);
+      expectUntouched(fake, zones[0].Id);
+    });
+
+    it.each<[string, Answer | Error]>([
+      ["noncustom", { status: 503, body: "<html>Bunny default</html>" }],
+      ["unfilled", { status: 502, body: template }],
+      [
+        "content mismatch",
+        { ...served, body: served.body.replace("</body>", "changed</body>") },
+      ],
+      [
+        "title only",
+        { status: 502, body: `<html>${pageMarker(template)}</html>` },
+      ],
+      ["wrong zone", { ...served, zone: "999999" }],
+      ["direct host", { ...served, direct: true }],
+      ["failed request", new Error("ECONNRESET")],
+    ])(
+      "returns 1 for %s, cleans up and never starts the next region",
+      async (_name, answer) => {
+        const zones = liveZones();
+        const fake = fakeProbe(zones, { answer: () => answer });
+        const { code } = run(["probe", "nz", "eu"], fake.fetch);
+
+        expect(await code).toBe(1);
+        expect(fake.serving.length).toBeGreaterThan(0);
+        expect(fake.serving.length).toBeLessThanOrEqual(12);
+        expect(fake.created).toHaveLength(1);
+        expectCleaned(fake, fake.created[0].id, fake.created[0].rule.Guid);
+        expectUntouched(fake, zones[0].Id);
+      },
+    );
+
+    it.each<[string, Record<string, unknown>]>([
+      ["disabled", { ErrorPageEnableCustomCode: false }],
+      ["different content", { ErrorPageCustomCode: "<html>old</html>" }],
+    ])(
+      "checks the fresh zone, not the list snapshot, and refuses %s config before installing",
+      async (_name, patch) => {
+        const zones = liveZones();
+        const fake = fakeProbe(zones);
+        Object.assign(fake.store.get(nzZone(zones).Id)!, patch);
+        const { code } = run(["probe", "nz", "eu"], fake.fetch);
+
+        expect(await code).toBe(1);
+        expect(fake.created).toEqual([]);
+        expect(fake.deleted).toEqual([]);
+        expect(fake.serving).toEqual([]);
+        expectUntouched(fake, zones[0].Id);
+      },
+    );
+
+    it("preserves unrelated fields, existing rules and a rule concurrently added while serving", async () => {
+      const zones = liveZones();
+      const nz = nzZone(zones);
+      Object.assign(nz, {
+        OriginUrl: "https://real-origin.invalid",
+        EnableGeoZoneEU: true,
+        CacheControlMaxAgeOverride: 3600,
+        EdgeRules: [
+          existingRule,
+          { ...existingRule, Guid: "other-rule", OrderIndex: 3 },
+        ],
+      });
+      const concurrent = {
+        ...existingRule,
+        Guid: "concurrent-rule",
+        OrderIndex: 20,
+      };
+      const fake = fakeProbe(zones, {
+        answer: (z) => {
+          z.EdgeRules.push(concurrent);
+          return served;
+        },
+      });
+      const before = structuredClone(fake.store.get(nz.Id)!);
+
+      expect(await run(["probe", "nz"], fake.fetch).code).toBe(0);
+      expect(fake.store.get(nz.Id)).toEqual({
+        ...before,
+        EdgeRules: [...before.EdgeRules, concurrent],
+      });
+      expect(fake.created).toHaveLength(1);
+      expect(fake.deleted).toEqual([
+        { id: nz.Id, guid: fake.created[0].rule.Guid },
+      ]);
+      expectCleaned(fake, nz.Id, fake.created[0].rule.Guid);
+    });
+
+    it.each(["http", "network", "timeout"] as const)(
+      "cleans up ambiguous server success after a %s install failure and stops with exit 2",
+      async (createFailure) => {
+        const zones = liveZones();
+        const fake = fakeProbe(zones, { createFailure });
+
+        expect(await run(["probe", "nz", "eu"], fake.fetch).code).toBe(2);
+        expect(fake.created).toHaveLength(1);
+        expect(fake.serving).toEqual([]);
+        const { id, rule } = fake.created[0];
+        expectCleaned(fake, id, rule.Guid);
+        expect(fake.deleted).toEqual([{ id, guid: rule.Guid }]);
+        expect(rule.Guid).not.toBe(probeToken(rule));
+        const install = fake.requests.findIndex((r) => r.method === "POST");
+        expect(fake.requests.slice(install + 1).map((r) => r.method)).toEqual([
+          "GET",
+          "DELETE",
+          "GET",
+        ]);
+        expectUntouched(fake, zones[0].Id);
+      },
+    );
+
+    it("retries discovery when a timed-out create commits after the first empty read", async () => {
+      const zones = liveZones();
+      const nz = nzZone(zones);
+      const fake = fakeProbe(zones, {
+        createFailure: "network",
+        installBeforeFailure: false,
+      });
+      const fetch = async (
+        input: string | URL | Request,
+        init: RequestInit = {},
+      ) => {
+        const response = await fake.fetch(input, init);
+        const url = new URL(String(input));
+        if (
+          url.pathname === `/pullzone/${nz.Id}` &&
+          fake.posts.length &&
+          !fake.created.length
+        ) {
+          // The first read is already serialized empty; creation commits just afterward.
+          const rule: Rule = { ...fake.posts[0].body, Guid: randomUUID() };
+          fake.store.get(nz.Id)!.EdgeRules.push(rule);
+          fake.created.push({ id: nz.Id, rule });
+        }
+        return response;
+      };
+      const { code, sleep } = run(["probe", "nz", "eu"], fetch);
+
+      expect(await code).toBe(2);
+      expect(fake.created).toHaveLength(1);
+      expectCleaned(fake, nz.Id, fake.created[0].rule.Guid);
+      expect(sleep).toHaveBeenCalledTimes(1);
+      expectUntouched(fake, zones[0].Id);
+    });
+
+    it.each([204, 404] as const)(
+      "confirms absence without DELETE after rejected creation (missing rule DELETE would be %s)",
+      async (deleteMissingStatus) => {
+        const zones = liveZones();
+        const fake = fakeProbe(zones, {
+          createFailure: "http",
+          installBeforeFailure: false,
+          deleteMissingStatus,
+        });
+        const { code } = run(["probe", "nz"], fake.fetch);
+
+        expect(await code).toBe(2);
+        expect(fake.posts).toHaveLength(1);
+        expect(fake.posts[0].body).not.toHaveProperty("Guid");
+        expect(fake.created).toEqual([]);
+        expect(fake.deleted).toEqual([]);
+        expect(fake.store.get(nzZone(zones).Id)!.EdgeRules).toEqual([]);
+        const install = fake.requests.findIndex((r) => r.method === "POST");
+        expect(fake.requests.slice(install + 1).map((r) => r.method)).toEqual([
+          "GET",
+          "GET",
+          "GET",
+        ]);
+      },
+    );
+
+    it.each(["omitted", "empty", "invalid"] as const)(
+      "discovers the server GUID by unique Description when the response Guid is %s",
+      async (kind) => {
+        const zones = liveZones();
+        const nz = nzZone(zones);
+        nz.EdgeRules = [existingRule];
+        const fake = fakeProbe(zones, {
+          createResponse: (rule) => {
+            const body: RuleBody = { ...rule };
+            delete body.Guid;
+            return kind === "omitted"
+              ? body
+              : { ...body, Guid: kind === "empty" ? "" : "invalid" };
+          },
+        });
+
+        expect(await run(["probe", "nz"], fake.fetch).code).toBe(0);
+        expect(fake.created).toHaveLength(1);
+        const { rule } = fake.created[0];
+        expect(fake.serving).toHaveLength(1);
+        expect(fake.serving[0].guid).toBe(rule.Guid);
+        expect(fake.deleted).toEqual([{ id: nz.Id, guid: rule.Guid }]);
+        expectCleaned(fake, nz.Id, rule.Guid);
+        expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([existingRule]);
+      },
+    );
+
+    it("never trusts a returned pre-existing GUID or deletes that rule during discovery", async () => {
+      const zones = liveZones();
+      const nz = nzZone(zones);
+      nz.EdgeRules = [existingRule];
+      const fake = fakeProbe(zones, {
+        createResponse: (rule) => ({ ...rule, Guid: existingRule.Guid }),
+        // Even a matching description cannot confer ownership of a pre-existing GUID.
+        installEffect: (z, rule) => {
+          z.EdgeRules.find((r) => r.Guid === existingRule.Guid)!.Description =
+            rule.Description;
+        },
+      });
+
+      expect(await run(["probe", "nz", "eu"], fake.fetch).code).toBe(2);
+      expect(fake.serving).toEqual([]);
+      expect(fake.created).toHaveLength(1);
+      const { rule } = fake.created[0];
+      expect(fake.deleted).toEqual([{ id: nz.Id, guid: rule.Guid }]);
+      expectCleaned(fake, nz.Id, rule.Guid);
+      expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([
+        { ...existingRule, Description: rule.Description },
+      ]);
+      expectUntouched(fake, zones[0].Id);
+    });
+
+    it("uses a known returned GUID for direct cleanup even when installation readback fails", async () => {
+      const fake = fakeProbe(liveZones(), { postInstallReadFailures: 1 });
+
+      expect(await run(["probe", "nz"], fake.fetch).code).toBe(2);
+      expect(fake.created).toHaveLength(1);
+      expect(fake.serving).toEqual([]);
+      const { id, rule } = fake.created[0];
+      expect(fake.deleted).toEqual([{ id, guid: rule.Guid }]);
+      expectCleaned(fake, id, rule.Guid);
+      const install = fake.requests.findIndex((r) => r.method === "POST");
+      expect(fake.requests.slice(install + 1).map((r) => r.method)).toEqual([
+        "GET",
+        "DELETE",
+        "GET",
+      ]);
+    });
+
+    it("bounds discovery to three reads without deleting a token when the create response is lost", async () => {
+      const zones = liveZones();
+      const nz = nzZone(zones);
+      nz.EdgeRules = [existingRule];
+      const fake = fakeProbe(zones, {
+        createFailure: "network",
+        postInstallReadFailures: 99,
+      });
+      const { code, sleep } = run(["probe", "nz", "eu"], fake.fetch);
+
+      expect(await code).toBe(2);
+      expect(fake.created).toHaveLength(1);
+      expect(fake.deleted).toEqual([]);
+      expect(fake.serving).toEqual([]);
+      const install = fake.requests.findIndex((r) => r.method === "POST");
+      expect(fake.requests.slice(install + 1).map((r) => r.method)).toEqual([
+        "GET",
+        "GET",
+        "GET",
+      ]);
+      expect(sleep).toHaveBeenCalledTimes(2);
+      expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([
+        existingRule,
+        fake.created[0].rule,
+      ]);
+      expectUntouched(fake, zones[0].Id);
+    });
+
+    it("discovers and removes an altered-trigger rule by Description after a lost create response", async () => {
+      const zones = liveZones();
+      const nz = nzZone(zones);
+      nz.EdgeRules = [existingRule];
+      const fake = fakeProbe(zones, {
+        createFailure: "network",
+        installEffect: (_z, rule) => {
+          const triggers = rule.Triggers as Record<string, unknown>[];
+          triggers[0].PatternMatches = [`https://${REGIONAL_HOSTS.nz}/*`];
+        },
+      });
+
+      expect(await run(["probe", "nz", "eu"], fake.fetch).code).toBe(2);
+      expect(fake.created).toHaveLength(1);
+      const { rule } = fake.created[0];
+      expect(fake.deleted).toEqual([{ id: nz.Id, guid: rule.Guid }]);
+      expectCleaned(fake, nz.Id, rule.Guid);
+      expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([existingRule]);
+      expect(fake.serving).toEqual([]);
+      expectUntouched(fake, zones[0].Id);
+    });
+
+    it("accepts API-added default and null fields in the installed rule readback", async () => {
+      const zones = liveZones();
+      const nz = nzZone(zones);
+      nz.EdgeRules = [existingRule];
+      const installEffect = vi.fn((_z: ProbeZone, rule: Rule) => {
+        Object.assign(rule, {
+          ActionParameter2: null,
+          ActionParameter3: null,
+          ReadOnly: false,
+        });
+        rule.Triggers = (rule.Triggers as Record<string, unknown>[]).map(
+          (trigger) => ({
+            ...trigger,
+            Parameter1: null,
+          }),
+        );
+        rule.ExtraActions = (
+          rule.ExtraActions as Record<string, unknown>[]
+        ).map((action) => ({
+          ...action,
+          ActionParameter2: null,
+          ActionParameter3: null,
+          ReadOnly: false,
+        }));
+      });
+      const fake = fakeProbe(zones, { installEffect });
+      const { code, error } = run(["probe", "nz"], fake.fetch);
+
+      expect(await code).toBe(0);
+      expect(installEffect).toHaveBeenCalledTimes(1);
+      expect(error).not.toHaveBeenCalled();
+      expect(fake.created).toHaveLength(1);
+      expect(fake.created[0].rule).not.toHaveProperty("ReadOnly");
+      expect(fake.serving).toHaveLength(1);
+      expectCleaned(fake, nz.Id, fake.created[0].rule.Guid);
+      expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([existingRule]);
+    });
+
+    it("accepts the named enum schema in readback while retaining numeric enums in the request", async () => {
+      const zones = liveZones();
+      const nz = nzZone(zones);
+      nz.EdgeRules = [existingRule];
+      const installEffect = vi.fn((_z: ProbeZone, rule: Rule) => {
+        const triggers = rule.Triggers as Record<string, unknown>[];
+        const actions = rule.ExtraActions as Record<string, unknown>[];
+        const namedSchema = {
+          ActionType: "OriginUrl",
+          TriggerMatchingType: "MatchAll",
+          Triggers: [
+            { ...triggers[0], Type: "Url", PatternMatchingType: "MatchAny" },
+          ],
+          ExtraActions: [
+            { ...actions[0], ActionType: "OverrideCacheTime" },
+            { ...actions[1], ActionType: "BypassPermaCache" },
+          ],
+        };
+        Object.assign(rule, namedSchema);
+      });
+      const fake = fakeProbe(zones, { installEffect });
+      const { code, error } = run(["probe", "nz"], fake.fetch);
+
+      expect(await code).toBe(0);
+      expect(installEffect).toHaveBeenCalledTimes(1);
+      expect(error).not.toHaveBeenCalled();
+      expect(fake.created).toHaveLength(1);
+      expect(fake.created[0].rule).toMatchObject({
+        ActionType: 2,
+        TriggerMatchingType: 1,
+        Triggers: [{ Type: 0, PatternMatchingType: 0 }],
+        ExtraActions: [
+          { ActionType: 3, ActionParameter1: "0" },
+          { ActionType: 15, ActionParameter1: "" },
+        ],
+      });
+      expect(fake.serving).toHaveLength(1);
+      expectCleaned(fake, nz.Id, fake.created[0].rule.Guid);
+      expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([existingRule]);
+    });
+
+    it("rejects an altered trigger in installation readback, cleans up and stops", async () => {
+      const zones = liveZones();
+      const nz = nzZone(zones);
+      nz.EdgeRules = [existingRule];
+      const fake = fakeProbe(zones, {
+        installEffect: (_z, rule) => {
+          const triggers = rule.Triggers as Record<string, unknown>[];
+          triggers[0].PatternMatches = ["https://nz.onetimesecret.com/*"];
+        },
+      });
+      const { code, error } = run(["probe", "nz", "eu"], fake.fetch);
+
+      expect(await code).toBe(2);
+      expect(error).toHaveBeenCalledWith(
+        expect.stringMatching(/probe rule read-back does not match/),
+      );
+      expect(fake.created).toHaveLength(1);
+      expect(fake.serving).toEqual([]);
+      expectCleaned(fake, nz.Id, fake.created[0].rule.Guid);
+      expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([existingRule]);
+      expectUntouched(fake, zones[0].Id);
+    });
+
+    it("detects a collateral OriginUrl change during installation and cleans up without restoring the zone", async () => {
+      const zones = liveZones();
+      const nz = nzZone(zones);
+      nz.OriginUrl = "https://real-origin.invalid";
+      nz.EdgeRules = [existingRule];
+      const fake = fakeProbe(zones, {
+        installEffect: (z) => {
+          z.OriginUrl = "https://changed-origin.invalid";
+        },
+      });
+      const { code, error } = run(["probe", "nz", "eu"], fake.fetch);
+
+      expect(await code).toBe(2);
+      expect(error).toHaveBeenCalledWith(
+        expect.stringMatching(/probe installation also changed OriginUrl/),
+      );
+      expect(fake.created).toHaveLength(1);
+      expect(fake.serving).toEqual([]);
+      expectCleaned(fake, nz.Id, fake.created[0].rule.Guid);
+      expect(fake.store.get(nz.Id)!.OriginUrl).toBe(
+        "https://changed-origin.invalid",
+      );
+      expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([existingRule]);
+      expectUntouched(fake, zones[0].Id);
+    });
+
+    it("retries transient cleanup failures and succeeds only after confirmed removal", async () => {
+      const fake = fakeProbe(liveZones(), { deleteFailures: 2 });
+
+      expect(await run(["probe", "nz"], fake.fetch).code).toBe(0);
+      expect(fake.deleted).toHaveLength(3);
+      expectCleaned(fake, fake.created[0].id, fake.created[0].rule.Guid);
+    });
+
+    it.each<[string, Options]>([
+      ["DELETE errors", { deleteFailures: 99 }],
+      [
+        "successful DELETE that leaves the rule present",
+        { retainDeletedRule: true },
+      ],
+    ])(
+      "bounds cleanup to three tries for %s and stops before the next region with exit 2",
+      async (_name, opts) => {
+        const zones = liveZones();
+        const fake = fakeProbe(zones, opts);
+
+        expect(await run(["probe", "nz", "eu"], fake.fetch).code).toBe(2);
+        expect(fake.created).toHaveLength(1);
+        expect(fake.deleted).toHaveLength(3);
+        expect(fake.store.get(nzZone(zones).Id)!.EdgeRules).toEqual(
+          expect.arrayContaining([fake.created[0].rule]),
+        );
+        expectUntouched(fake, zones[0].Id);
+      },
+    );
+
+    it("accepts a DELETE error only after a fresh read confirms the own rule is absent", async () => {
+      const zones = liveZones();
+      const nz = nzZone(zones);
+      nz.EdgeRules = [existingRule];
+      const fake = fakeProbe(zones, {
+        deleteFailures: 99,
+        deleteFailureAfterRemoval: true,
+      });
+      const { code, error } = run(["probe", "nz"], fake.fetch);
+
+      expect(await code).toBe(0);
+      expect(error).not.toHaveBeenCalled();
+      expect(fake.deleted).toEqual([
+        { id: nz.Id, guid: fake.created[0].rule.Guid },
+      ]);
+      expectCleaned(fake, nz.Id, fake.created[0].rule.Guid);
+      expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([existingRule]);
+    });
+
+    it("cleanup failure takes precedence over an unsuccessful serving check", async () => {
+      const zones = liveZones();
+      const fake = fakeProbe(zones, {
+        answer: () => healthy,
+        deleteFailures: 99,
+      });
+
+      expect(await run(["probe", "nz", "eu"], fake.fetch).code).toBe(2);
+      expect(fake.deleted).toHaveLength(3);
+      expectUntouched(fake, zones[0].Id);
+    });
+
+    it("returns 2 for a fresh zone read failure without installing or serving the next region", async () => {
+      const zones = liveZones();
+      const fake = fakeProbe(zones, { readFailure: true });
+
+      expect(await run(["probe", "nz", "eu"], fake.fetch).code).toBe(2);
+      expect(fake.created).toEqual([]);
+      expect(fake.serving).toEqual([]);
+      expectUntouched(fake, zones[0].Id);
+    });
+
+    it.each([204, 404] as const)(
+      "retries after DELETE succeeds but the first cleanup read fails (missing rule DELETE %s)",
+      async (deleteMissingStatus) => {
+        const fake = fakeProbe(liveZones(), {
+          cleanupReadFailures: 1,
+          deleteMissingStatus,
+        });
+        const { code, sleep } = run(["probe", "nz"], fake.fetch);
+
+        expect(await code).toBe(0);
+        expect(fake.created).toHaveLength(1);
+        const { id, rule } = fake.created[0];
+        expect(fake.deleted).toEqual([
+          { id, guid: rule.Guid },
+          { id, guid: rule.Guid },
+        ]);
+        expect(sleep).toHaveBeenCalledTimes(1);
+        expectCleaned(fake, id, rule.Guid);
+        const serving = fake.requests.findLastIndex(
+          (r) => r.url.hostname !== "api.bunny.net",
+        );
+        expect(fake.requests.slice(serving + 1).map((r) => r.method)).toEqual([
+          "DELETE",
+          "GET",
+          "DELETE",
+          "GET",
+        ]);
+      },
+    );
+
+    it("removes its own rule but returns 2 after three failed cleanup verification reads", async () => {
+      const zones = liveZones();
+      const nz = nzZone(zones);
+      nz.EdgeRules = [existingRule];
+      const fake = fakeProbe(zones, {
+        cleanupReadFailures: 99,
+        deleteMissingStatus: 404,
+      });
+
+      expect(await run(["probe", "nz", "eu"], fake.fetch).code).toBe(2);
+      expect(fake.created).toHaveLength(1);
+      const guid = fake.created[0].rule.Guid;
+      expect(fake.deleted).toEqual(
+        Array.from({ length: 3 }, () => ({ id: nz.Id, guid })),
+      );
+      expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([existingRule]);
+      // Installation has its own readback; only reads after serving are cleanup attempts.
+      const serving = fake.requests.findLastIndex(
+        (r) => r.url.hostname !== "api.bunny.net",
+      );
+      expect(serving).toBeGreaterThan(0);
+      const cleanup = fake.requests.slice(serving + 1);
+      expect(cleanup.map((r) => r.method)).toEqual([
+        "DELETE",
+        "GET",
+        "DELETE",
+        "GET",
+        "DELETE",
+        "GET",
+      ]);
+      expectUntouched(fake, zones[0].Id);
+    });
+
+    it("cleans up with a live request signal after cancellation during propagation and stops", async () => {
+      const zones = liveZones();
+      const fake = fakeProbe(zones, { answer: () => healthy });
+      const controller = new AbortController();
+      const sleep = vi.fn(async () => {
+        controller.abort();
+        throw new DOMException("cancelled", "AbortError");
+      });
+
+      expect(
+        await run(
+          ["probe", "nz", "eu"],
+          fake.fetch,
+          { BUNNY_API_KEY: "k" },
+          {
+            signal: controller.signal,
+            sleep,
+          },
+        ).code,
+      ).toBe(2);
+      expect(sleep).toHaveBeenCalledTimes(1);
+      expect(fake.serving).toHaveLength(1);
+      expectCleaned(fake, fake.created[0].id, fake.created[0].rule.Guid);
+      const install = fake.fetch.mock.calls.findIndex(
+        ([, init]) => init?.method === "POST",
+      );
+      for (const [input, init] of fake.fetch.mock.calls.slice(install + 1)) {
+        if (new URL(String(input)).hostname === "api.bunny.net") {
+          expect(init?.signal?.aborted).not.toBe(true);
+        }
+      }
+      expectUntouched(fake, zones[0].Id);
+    });
+
+    it("does not install or serve when already cancelled", async () => {
+      const fake = fakeProbe();
+      const controller = new AbortController();
+      controller.abort();
+
+      expect(
+        await run(
+          ["probe", "nz"],
+          fake.fetch,
+          { BUNNY_API_KEY: "k" },
+          {
+            signal: controller.signal,
+          },
+        ).code,
+      ).toBe(2);
+      expect(fake.created).toEqual([]);
+      expect(fake.serving).toEqual([]);
+    });
+
+    it("cancellation during a serving request cleans up and stops with exit 2", async () => {
+      const zones = liveZones();
+      const controller = new AbortController();
+      const fake = fakeProbe(zones, {
+        answer: () => {
+          controller.abort();
+          return new DOMException("cancelled while serving", "AbortError");
+        },
+      });
+
+      expect(
+        await run(
+          ["probe", "nz", "eu"],
+          fake.fetch,
+          { BUNNY_API_KEY: "k" },
+          {
+            signal: controller.signal,
+          },
+        ).code,
+      ).toBe(2);
+      expect(fake.serving).toHaveLength(1);
+      expectCleaned(fake, fake.created[0].id, fake.created[0].rule.Guid);
+      expectUntouched(fake, zones[0].Id);
+    });
+
+    it("cleans up if cancellation occurs while the install response is lost", async () => {
+      const zones = liveZones();
+      const fake = fakeProbe(zones);
+      const controller = new AbortController();
+      const fetch = vi.fn(
+        async (input: string | URL | Request, init?: RequestInit) => {
+          const response = await fake.fetch(input, init);
+          if (init?.method === "POST") {
+            controller.abort();
+            throw new DOMException("cancelled after install", "AbortError");
+          }
+          return response;
+        },
+      );
+
+      expect(
+        await run(
+          ["probe", "nz", "eu"],
+          fetch,
+          { BUNNY_API_KEY: "k" },
+          {
+            signal: controller.signal,
+          },
+        ).code,
+      ).toBe(2);
+      expect(fake.serving).toEqual([]);
+      expectCleaned(fake, fake.created[0].id, fake.created[0].rule.Guid);
+      expectUntouched(fake, zones[0].Id);
+    });
+
+    it.each([REGIONAL_HOSTS.eu, "eu-zone.b-cdn.net"])(
+      "rejects nz=%s when its zone carries the eu public hostname, before any writes",
+      async (host) => {
+        const zones = liveZones();
+        const eu = zones.find((z) =>
+          z.Hostnames.some((h) => h.Value === REGIONAL_HOSTS.eu),
+        )!;
+        eu.Hostnames.push({ Value: "eu-zone.b-cdn.net" });
+        const fake = fakeProbe(zones);
+
+        expect(
+          await rejection(run(["probe", "nz=" + host], fake.fetch).code),
+        ).toMatch(/selected for nz.*the eu hostname/);
+        expect(fake.created).toEqual([]);
+        expect(fake.deleted).toEqual([]);
+        expect(fake.serving).toEqual([]);
+        expect(fake.requests.every((r) => r.method === "GET")).toBe(true);
+        expectUntouched(fake, eu.Id);
+      },
+    );
+
+    it("uses region=host as a hostname override without changing the selected zone", async () => {
+      const zones = liveZones();
+      const nz = nzZone(zones);
+      nz.Hostnames.push({ Value: "be2169e1-7.b-cdn.net" });
+      const fake = fakeProbe(zones);
+
+      expect(
+        await run(["probe", "nz=be2169e1-7.b-cdn.net"], fake.fetch).code,
+      ).toBe(0);
+      expect(fake.created.map((c) => c.id)).toEqual([nz.Id]);
+      expect(fake.serving.map((s) => s.host)).toEqual(["be2169e1-7.b-cdn.net"]);
+      expect(fake.created[0].rule.Triggers).toEqual([
+        expect.objectContaining({
+          PatternMatches: [
+            `https://be2169e1-7.b-cdn.net/.well-known/ots-error-page-probe/${probeToken(fake.created[0].rule)}/*`,
+          ],
+        }),
+      ]);
+      expectCleaned(fake, nz.Id, fake.created[0].rule.Guid);
+    });
+
+    it.each(["name", "id"] as const)(
+      "selects a Shield zone by env %s and automatically uses its attached b-cdn hostname",
+      async (ref) => {
+        const zones = liveZones();
+        const nz = nzZone(zones);
+        nz.Name = "shield-random-name";
+        nz.Hostnames = [{ Value: "be2169e1-7.b-cdn.net" }];
+        const fake = fakeProbe(zones);
+
+        expect(
+          await run(["probe", "nz"], fake.fetch, {
+            BUNNY_API_KEY: "k",
+            BUNNY_PULL_ZONE_NZ: ref === "name" ? nz.Name : String(nz.Id),
+          }).code,
+        ).toBe(0);
+        expect(fake.created.map((c) => c.id)).toEqual([nz.Id]);
+        expect(fake.serving.map((s) => s.host)).toEqual([
+          "be2169e1-7.b-cdn.net",
+        ]);
+        expectCleaned(fake, nz.Id, fake.created[0].rule.Guid);
+      },
+    );
+
+    it("prefers the attached public hostname even when the env-selected zone also has a b-cdn host", async () => {
+      const zones = liveZones();
+      const nz = nzZone(zones);
+      nz.Hostnames.unshift({ Value: "be2169e1-7.b-cdn.net" });
+      const fake = fakeProbe(zones);
+
+      expect(
+        await run(["probe", "nz"], fake.fetch, {
+          BUNNY_API_KEY: "k",
+          BUNNY_PULL_ZONE_NZ: String(nz.Id),
+        }).code,
+      ).toBe(0);
+      expect(fake.serving.map((s) => s.host)).toEqual([REGIONAL_HOSTS.nz]);
+    });
+
+    it("combines an env zone reference with an explicit serving hostname", async () => {
+      const zones = liveZones();
+      const nz = nzZone(zones);
+      nz.Hostnames = [
+        { Value: "be2169e1-7.b-cdn.net" },
+        { Value: "probe.example.net" },
+      ];
+      const fake = fakeProbe(zones);
+
+      expect(
+        await run(["probe", "nz=probe.example.net"], fake.fetch, {
+          BUNNY_API_KEY: "k",
+          BUNNY_PULL_ZONE_NZ: nz.Name,
+        }).code,
+      ).toBe(0);
+      expect(fake.created.map((c) => c.id)).toEqual([nz.Id]);
+      expect(fake.serving.map((s) => s.host)).toEqual(["probe.example.net"]);
+    });
+
+    it.each([
+      "https://nz.onetimesecret.com",
+      "nz.onetimesecret.com/path",
+      "nz.onetimesecret.com:443",
+      "user@nz.onetimesecret.com",
+      "nz.onetimesecret.com?probe=1",
+      "nz.onetimesecret.com#fragment",
+    ])(
+      "rejects invalid hostname override %s before any writes",
+      async (host) => {
+        const zones = liveZones();
+        const nz = nzZone(zones);
+        const fake = fakeProbe(zones);
+        const { code } = run(["probe", "nz=" + host, "eu"], fake.fetch, {
+          BUNNY_API_KEY: "k",
+          BUNNY_PULL_ZONE_NZ: String(nz.Id),
+        });
+
+        expect(await code).toBe(2);
+        expect(fake.created).toEqual([]);
+        expect(fake.deleted).toEqual([]);
+        expect(fake.serving).toEqual([]);
+        expect(fake.requests.some((r) => r.method !== "GET")).toBe(false);
+        expectUntouched(fake, zones[0].Id);
+      },
+    );
+
+    it("rejects a numeric zone ID where a hostname is expected", async () => {
+      const fake = fakeProbe();
+
+      expect(
+        await rejection(run(["probe", "nz=123"], fake.fetch).code),
+      ).toMatch(/region=hostname.*nz=123/);
+      expect(fake.fetch).not.toHaveBeenCalled();
+    });
+
+    it("requires BUNNY_API_KEY after loading env and before any network request", async () => {
+      const fake = fakeProbe();
+      const { code, loadEnv } = run(["probe", "nz"], fake.fetch, {});
+
+      expect(await rejection(code)).toMatch(/BUNNY_API_KEY is not set/);
+      expect(loadEnv).toHaveBeenCalledTimes(1);
+      expect(fake.fetch).not.toHaveBeenCalled();
     });
   });
 });
