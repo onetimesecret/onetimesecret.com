@@ -11,8 +11,12 @@ import {
 } from "@config/domains";
 
 const fixture: LookalikeDomain[] = [
-  { domain: "onetimesecret.example", acquired: "2026-01-01" },
-  { domain: "0netimesecret.test", acquired: "2026-02-01", note: "digit zero" },
+  { domain: "onetimesecret.example", registered: "2026-01-01" },
+  {
+    domain: "0netimesecret.test",
+    registered: "2026-02-01",
+    note: "digit zero",
+  },
 ];
 
 describe("isLookalikeHostname", () => {
@@ -59,10 +63,10 @@ describe("LOOKALIKE_DOMAINS registry", () => {
     }
   });
 
-  it("dates each acquisition as YYYY-MM-DD", () => {
-    for (const { domain, acquired } of LOOKALIKE_DOMAINS) {
-      expect(acquired, domain).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      expect(Number.isNaN(Date.parse(acquired)), domain).toBe(false);
+  it("dates each registration as YYYY-MM-DD", () => {
+    for (const { domain, registered } of LOOKALIKE_DOMAINS) {
+      expect(registered, domain).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(Number.isNaN(Date.parse(registered)), domain).toBe(false);
     }
   });
 

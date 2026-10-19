@@ -146,25 +146,25 @@ const csp = [
     <title>{title}</title>
   </head>
   <body class="bg-surface-0 flex min-h-full flex-col overflow-x-hidden">
+    {/* The nav shares the brand name's grid column, so on narrow screens it lines up
+        under the name whatever the logo's width. From sm it takes a third column. */}
     <header
-      class="mx-auto flex w-full max-w-3xl flex-col gap-2 px-4 pt-8
-        sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6">
-      <div class="inline-flex items-center gap-3">
-        <img
-          class="h-12 w-auto rounded-lg sm:h-14"
-          src="/etc/img/onetime-logo-md.png"
-          alt=""
-          width="640"
-          height="640"
-        />
-        <span class="font-brand text-2xl font-semibold text-gray-900 dark:text-gray-100">
-          {brandName}
-        </span>
-      </div>
+      class="mx-auto grid w-full max-w-3xl grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2
+        px-4 pt-8 sm:grid-cols-[auto_auto_1fr] sm:px-6">
+      <img
+        class="h-12 w-auto rounded-lg sm:h-14"
+        src="/etc/img/onetime-logo-md.png"
+        alt=""
+        width="640"
+        height="640"
+      />
+      <span class="font-brand text-2xl font-semibold text-gray-900 dark:text-gray-100">
+        {brandName}
+      </span>
       <nav
         aria-label={languagesLabel}
-        class="flex flex-wrap gap-x-5 gap-y-1 ps-15 text-sm text-gray-600
-          sm:justify-end sm:ps-0 dark:text-gray-400">
+        class="col-start-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-gray-600
+          sm:col-start-3 sm:justify-end dark:text-gray-400">
         {otherLanguages.map((language) => (
           <a
             href={language.href}
@@ -190,6 +190,7 @@ const csp = [
       // Name the domain the visitor is actually on. Rendered server-side with a
       // generic fallback so the sentence reads correctly without JavaScript,
       // and so one build serves every lookalike domain.
+      // Deliberate: IDNs stay in location.hostname's punycode (xn--) form, never a homograph.
       (function () {
         var host = window.location.hostname;
         if (!host) return;

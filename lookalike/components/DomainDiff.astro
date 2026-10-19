@@ -44,7 +44,10 @@ const realDomains = [
   data-lookalike-diff
   data-lookalike-real={realDomains}
   class="lookalike-diff mt-6 text-lg leading-relaxed text-gray-700 dark:text-gray-300">
-  <summary class="text-brand-600 dark:text-brand-400 inline-block cursor-pointer font-semibold underline underline-offset-4">
+  <summary
+    class="text-brand-600 dark:text-brand-400 inline-block cursor-pointer font-semibold underline
+      underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4
+      focus-visible:outline-current">
     {t("web.lookalike.diff.toggle")}
   </summary>
   <dl class="bg-surface-1 mt-4 grid gap-x-6 gap-y-3 rounded-lg p-5 sm:grid-cols-[auto_1fr] sm:p-6">

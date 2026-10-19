@@ -482,15 +482,15 @@
         "body": "Kontaktieren Sie die Person, die Ihnen den Link geschickt hat, über einen Ihnen bereits bekannten Kanal und bitten Sie um Bestätigung des Links. Versuchen Sie nicht, die Adresse durch Ändern von Buchstaben zu korrigieren."
       },
       "sender": {
-        "heading": "Möchten Sie ein Geheimnis erstellen?"
+        "heading": "Möchten Sie ein Geheimnis erstellen?",
+        "body": "Geben Sie diese Adresse in die Adressleiste Ihres Browsers ein oder verwenden Sie ein Lesezeichen, das Sie zuvor überprüft haben.",
+        "https": "Ein vertrautes Logo, HTTPS oder ein Platz ganz oben in den Suchergebnissen beweist nicht, wer eine Website betreibt. Das gilt auch für diesen Hinweis."
       },
       "recognise": {
         "heading": "Was ist diese Seite?",
         "exact": "Prüfen Sie den vollständigen Hostnamen in der Adressleiste Ihres Browsers. Unsere Hauptwebsite ist onetimesecret.com.",
         "regionalHeading": "Offizielle regionale Adressen des Dienstes",
         "regional": "Unser Dienst zum Teilen von Geheimnissen läuft auf diesen regionalen Domains:",
-        "bookmark": "Geben Sie diese Adresse in die Adressleiste Ihres Browsers ein oder verwenden Sie ein Lesezeichen, das Sie zuvor überprüft haben.",
-        "https": "Ein vertrautes Logo, HTTPS oder ein Platz ganz oben in den Suchergebnissen beweist nicht, wer eine Website betreibt. Das gilt auch für diesen Hinweis.",
         "noLinksHeading": "Warum gibt es keinen Link zum Dienst?",
         "noLinks": "Ein vertrautes Logo oder eine beruhigende Nachricht lässt sich kopieren. Beides beweist nicht, dass eine Seite echt ist, auch wenn sie in den Suchergebnissen an erster Stelle steht. Diese Seite enthält bewusst keinen Link zum Dienst: Gewöhnen Sie sich an, die Adresse unabhängig zu prüfen, statt einem Link zu vertrauen, weil die Seite offiziell aussieht. Seien Sie auch bei dieser Seite vorsichtig."
       },

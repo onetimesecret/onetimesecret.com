@@ -482,15 +482,15 @@
         "body": "Contactez la personne qui vous a envoyé le lien par un canal que vous connaissez déjà et demandez-lui de le confirmer. N’essayez pas de corriger l’adresse en changeant des lettres."
       },
       "sender": {
-        "heading": "Vous souhaitez créer un secret ?"
+        "heading": "Vous souhaitez créer un secret ?",
+        "body": "Saisissez cette adresse dans la barre d'adresse de votre navigateur ou utilisez un favori que vous avez déjà vérifié.",
+        "https": "Un logo familier, HTTPS ou une place en tête des résultats de recherche ne prouve pas qui exploite un site web. Cela vaut aussi pour cet avis."
       },
       "recognise": {
         "heading": "Qu’est-ce que cette page ?",
         "exact": "Vérifiez le nom d'hôte complet dans la barre d'adresse de votre navigateur. Notre site principal est onetimesecret.com.",
         "regionalHeading": "Adresses régionales officielles du service",
         "regional": "Notre service de partage de secrets fonctionne sur ces domaines régionaux :",
-        "bookmark": "Saisissez cette adresse dans la barre d'adresse de votre navigateur ou utilisez un favori que vous avez déjà vérifié.",
-        "https": "Un logo familier, HTTPS ou une place en tête des résultats de recherche ne prouve pas qui exploite un site web. Cela vaut aussi pour cet avis.",
         "noLinksHeading": "Pourquoi n’y a-t-il pas de lien vers le service ?",
         "noLinks": "Un logo familier ou un message rassurant peut être copié. Ni l’un ni l’autre ne prouve qu’une page est authentique, même si elle apparaît en tête des résultats de recherche. Cette page ne propose volontairement aucun lien vers le service : prenez l’habitude de vérifier l’adresse de manière indépendante, plutôt que de faire confiance à un lien parce que la page semble officielle. Faites preuve de la même prudence envers cette page."
       },

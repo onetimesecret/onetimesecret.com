@@ -79,16 +79,25 @@ removal from every index.
 - exactly the expected pages (`/`, `/{lang}/` per language, `404.html`), each
   with the right `lang` attribute and the hostname placeholder; every anchor
   is a local language-switch link, never an outbound link
+- the h2 headings appear in task order (link recipient, secret sender,
+  exposure, then "What is this page?"), the recipient and exposure guidance
+  is visible without JavaScript and outside any `<details>`, no `<details>`
+  starts open, the language navigation precedes the notice, and the large
+  official address reads exactly the canonical hostname
 - no `.js`, `.css`, sitemap, llms.txt or webmanifest files, and every other
   file within the allowlist in `integration.ts`: a listed file exactly, or
   anything under a listed directory (`favicon.svg.bak` does not pass)
 - `robots.txt` allows crawling and advertises no sitemap
 
+The structural checks parse each page with `jsdom`, a devDependency. CI and
+the deploy workflow install dev dependencies (`pnpm install
+--frozen-lockfile`); the gate does not run after `pnpm install --prod`.
+
 ## Showing the difference
 
-Below the "how to recognise the real site" list, a collapsed "Show what is
-different about this address" link opens a side-by-side comparison of the
-real domain and the visited hostname with the differing characters marked.
+Under "What is this page?", a collapsed "Compare this domain with the real
+one" disclosure opens a side-by-side comparison of the real domain and the
+visited hostname with the differing characters marked.
 Nothing about it is written per domain:
 
 - `lookalike/lib/domainDiff.ts` picks the real domain the hostname is closest
@@ -209,10 +218,11 @@ attacker-chosen path could launder a link through it.
 The checks in this repository have not caught up with the root exception:
 `verify-lookalike` requires a `noindex` meta tag on every page and
 `verify-lookalike-live` requires `X-Robots-Tag: noindex` on every response,
-roots included. To allow root indexing, update `layouts/NoticeLayout.astro`, both gates and the
-edge rules together. Omitting the root header does not override its existing
-noindex meta tag. Reconcile `nofollow` in the meta tag with the proposed
-`follow` header at the same time. Indexing remains a crawler decision.
+roots included. To allow root indexing, update `layouts/NoticeLayout.astro`,
+both gates and the edge rules together. Omitting the root header does not
+override its existing noindex meta tag. Reconcile `nofollow` in the meta tag
+with the proposed `follow` header at the same time. Indexing remains a crawler
+decision.
 
 ### GitHub
 
@@ -276,15 +286,18 @@ send phishing email that appears to come from it.
 ## Wording
 
 The copy says the domain is owned by Onetime Secret, that it is not the
-official service, and that visitors cannot create or view secrets here. It says nothing about a domain's history,
-how it was acquired, or anyone who held it before. Keep it that way: the text
-is generic across every domain, carries no claim that would need per-domain
-evidence, and explains nothing about how these domains are handled.
+official service, and that visitors cannot create or view secrets here. It
+says nothing about a domain's history, how it was acquired, or anyone who held
+it before. Keep it that way: the text is generic across every domain, carries
+no claim that would need per-domain evidence, and explains nothing about how
+these domains are handled. It also avoids self-vouching claims (such as "this
+page sends no data") that an imposter's copy could repeat word for word.
 
 There are no outbound links, including on the logo, in the footer, or in the
 recovery guidance. Only local language switching remains linked. Visitors are
 instructed to type the official address or use a previously verified bookmark,
 not to trust a destination suggested by an official-looking notice. The large
-address uses subtle CSS spacing between `one`, `time` and `secret.com`, keeping
-`.com` attached and the text `onetimesecret.com` intact for copying. Recovery guidance covers possible
-exposure on any unofficial domain without asserting that a breach occurred.
+address is one unbroken string taken from `CANONICAL_ORIGIN`, with `onetime`
+in bold: weight marks the word boundary because a visible gap gets typed as a
+space. Recovery guidance is conditional ("if you entered...") and does not
+assert that a breach occurred.

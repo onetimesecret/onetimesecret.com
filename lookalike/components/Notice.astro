@@ -18,6 +18,7 @@ import DomainDiff from "./DomainDiff.astro";
 import { createLocaleI18n, type MessageSchema } from "@/i18n";
 import { jurisdictions } from "@/data/ops/jurisdictions";
 import { type SupportedLanguage } from "@config/astro/i18n";
+import { CANONICAL_ORIGIN } from "@config/domains";
 
 export interface Props {
   lang: SupportedLanguage;
@@ -42,6 +43,19 @@ const hostnameSlot = `<strong data-lookalike-hostname dir="ltr" class="font-semi
   "web.lookalike.hostnameFallback",
 )}</strong>`;
 const lead = t("web.lookalike.lead", { hostname: hostnameSlot });
+
+// The address senders should type, from the same source as DomainDiff. Only a
+// hostname that starts with the brand's first word gets the bold split; any
+// other canonical hostname renders as one plain part.
+const officialHostname = new URL(CANONICAL_ORIGIN).hostname;
+const brandWord = "onetime";
+const officialAddressParts =
+  officialHostname.startsWith(brandWord) && officialHostname !== brandWord
+    ? [
+        { text: brandWord, bold: true },
+        { text: officialHostname.slice(brandWord.length), bold: false },
+      ]
+    : [{ text: officialHostname, bold: false }];
 ---
 
 <article class="mx-auto w-full max-w-3xl px-4 pt-6 pb-10 sm:px-6 sm:pt-8">
@@ -60,8 +74,8 @@ const lead = t("web.lookalike.lead", { hostname: hostnameSlot });
   </p>
 
   {/* Aligned task rows separate questions from guidance without ranking any task. */}
-  <div class="task-options mb-10 space-y-6">
-    <section class="md:grid md:grid-cols-[1fr_2fr] md:gap-8">
+  <div class="my-10 space-y-6">
+    <section class="min-w-0 wrap-anywhere md:grid md:grid-cols-[1fr_2fr] md:gap-8">
       <h2 class="mb-3 font-sans text-xl font-semibold text-gray-900 dark:text-gray-100">
         {t("web.lookalike.recipient.heading")}
       </h2>
@@ -71,8 +85,8 @@ const lead = t("web.lookalike.lead", { hostname: hostnameSlot });
     </section>
 
     <section
-      class="border-t border-gray-300 pt-6 md:grid md:grid-cols-[1fr_2fr] md:gap-8
-        dark:border-gray-700">
+      class="min-w-0 border-t border-gray-300 pt-6 wrap-anywhere md:grid md:grid-cols-[1fr_2fr]
+        md:gap-8 dark:border-gray-700">
       <h2 class="mb-3 font-sans text-xl font-semibold text-gray-900 dark:text-gray-100">
         {t("web.lookalike.sender.heading")}
       </h2>
@@ -82,24 +96,26 @@ const lead = t("web.lookalike.lead", { hostname: hostnameSlot });
             search query, and "one time" primes hyphenated lookalikes. Mapped so
             Prettier cannot put whitespace between the parts. */}
         <p
-          class="official-address mb-3 font-sans font-normal text-gray-900 dark:text-gray-100"
+          data-official-address
+          class="mb-3 font-sans text-xl leading-tight font-normal tracking-[0.01em]
+            whitespace-nowrap text-gray-900 sm:text-2xl dark:text-gray-100"
           dir="ltr">
-          {["onetime", "secret.com"].map((part, i) => (
-            <span class:list={{ "font-bold": i === 0 }}>{part}</span>
+          {officialAddressParts.map((part) => (
+            <span class:list={{ "font-bold": part.bold }}>{part.text}</span>
           ))}
         </p>
         <p class="text-base leading-relaxed text-gray-700 dark:text-gray-300">
-          {t("web.lookalike.recognise.bookmark")}
+          {t("web.lookalike.sender.body")}
         </p>
         <p class="mt-3 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
-          {t("web.lookalike.recognise.https")}
+          {t("web.lookalike.sender.https")}
         </p>
       </div>
     </section>
 
     <section
-      class="border-t border-gray-300 pt-6 md:grid md:grid-cols-[1fr_2fr] md:gap-8
-        dark:border-gray-700">
+      class="min-w-0 border-t border-gray-300 pt-6 wrap-anywhere md:grid md:grid-cols-[1fr_2fr]
+        md:gap-8 dark:border-gray-700">
       <h2 class="mb-3 font-sans text-xl font-semibold text-gray-900 dark:text-gray-100">
         {t("web.lookalike.exposed.heading")}
       </h2>
@@ -138,7 +154,9 @@ const lead = t("web.lookalike.lead", { hostname: hostnameSlot });
       initialMessages={initialMessages}
     />
     <details class="mt-4 text-base leading-relaxed text-gray-700 dark:text-gray-300">
-      <summary class="cursor-pointer py-2 font-semibold underline underline-offset-4">
+      <summary
+        class="cursor-pointer py-2 font-semibold underline underline-offset-4
+          focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current">
         {t("web.lookalike.recognise.regionalHeading")}
       </summary>
       <p class="mt-3">{t("web.lookalike.recognise.regional")}</p>
@@ -155,28 +173,12 @@ const lead = t("web.lookalike.lead", { hostname: hostnameSlot });
       </ul>
     </details>
     <details class="mt-4 text-base leading-relaxed text-gray-700 dark:text-gray-300">
-      <summary class="cursor-pointer py-2 font-semibold underline underline-offset-4">
+      <summary
+        class="cursor-pointer py-2 font-semibold underline underline-offset-4
+          focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current">
         {t("web.lookalike.recognise.noLinksHeading")}
       </summary>
       <p class="mt-3">{t("web.lookalike.recognise.noLinks")}</p>
     </details>
   </section>
 </article>
-
-<style>
-  .task-options {
-    margin-block-start: 2.5rem;
-  }
-
-  .task-options section {
-    min-width: 0;
-    overflow-wrap: anywhere;
-  }
-
-  .official-address {
-    font-size: clamp(1.25rem, 3vw, 1.5rem);
-    line-height: 1.25;
-    letter-spacing: 0.01em;
-    white-space: nowrap;
-  }
-</style>

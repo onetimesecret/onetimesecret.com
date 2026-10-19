@@ -41,18 +41,21 @@ export function isStagingHostname(hostname: string): boolean {
 export interface LookalikeDomain {
   /** Bare registrable hostname, lowercase, no scheme or path. */
   domain: string;
-  /** Date Onetime Secret acquired the domain, YYYY-MM-DD. */
-  acquired: string;
+  /**
+   * Registry creation date, YYYY-MM-DD. For a domain bought from a previous
+   * holder this predates Onetime Secret's ownership.
+   */
+  registered: string;
   /** Optional internal note. */
   note?: string;
 }
 
 export const LOOKALIKE_DOMAINS: readonly LookalikeDomain[] = [
-  // `acquired` is the registry creation date from WHOIS on 2026-10-18.
-  { domain: "onetimesecret.ca", acquired: "2025-03-05" },
-  { domain: "onetimesecret.co", acquired: "2025-12-26" },
-  { domain: "onetimesecret.io", acquired: "2025-12-26" },
-  { domain: "onetimesecret.nl", acquired: "2026-10-17" },
+  // `registered` from WHOIS on 2026-10-18.
+  { domain: "onetimesecret.ca", registered: "2025-03-05" },
+  { domain: "onetimesecret.co", registered: "2025-12-26" },
+  { domain: "onetimesecret.io", registered: "2025-12-26" },
+  { domain: "onetimesecret.nl", registered: "2026-10-17" },
 ];
 
 /**
