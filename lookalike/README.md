@@ -262,6 +262,18 @@ A `lookalike` environment with the same secret names as `production` and
   live check. The zone's `b-cdn.net` hostname works before any domain points
   at it.
 
+And one secret no workflow reads yet, `LOOKALIKE_DOMAINS`: the lookalike
+domains not listed in `LOOKALIKE_DOMAINS` in `config/domains.ts`, one bare
+lowercase hostname per line (no scheme, path, trailing dot or commas). The
+repository lists only the obvious ones, such as `onetimesecret.co`; the rest
+stay in the secret so the full inventory is not advertised. A variable would
+not do: it is printed unmasked in the public Actions log. A saved secret
+cannot be read back, so changing it means entering its whole list again:
+
+```sh
+gh secret set LOOKALIKE_DOMAINS --env lookalike < domains.txt
+```
+
 ### What `scripts/verify-lookalike-live.mjs` proves after every deploy
 
 The three things `verify-lookalike` cannot see because they are decided on the
@@ -290,18 +302,21 @@ notice site that is indexable, framable or dead on a phishing path.
 
 ### Not yet automated
 
-A reconciliation script that reads `LOOKALIKE_DOMAINS` in `config/domains.ts`
-and reports or applies the hostname set on the pull zone, the way
-`edge/error-page/cli.mjs` reports drift. Until then, hostnames are added in
-the Bunny dashboard per the checklist below.
+A reconciliation script that reads `LOOKALIKE_DOMAINS` from
+`config/domains.ts` and from the secret, and reports or applies the hostname
+set on the pull zone, the way `edge/error-page/cli.mjs` reports drift. It must
+not print the secret's hostnames: the log is public, and GitHub masks the
+secret's value, not each hostname taken from it, so it masks each one with
+`::add-mask::` first. Until then, hostnames are added in the Bunny dashboard
+per the checklist below.
 
 ## Per-domain checklist
 
-Record the domain in `LOOKALIKE_DOMAINS` (`config/domains.ts`) when it is
-acquired, with `registered` set to the registry creation date from WHOIS or
-RDAP (for a domain bought from a previous holder, that predates our
-ownership); `test/unit/lookalike/domains.test.ts` checks the entry's shape.
-Then on the domain's DNS:
+Add the domain to the `LOOKALIKE_DOMAINS` secret when it is acquired. Only a
+domain anyone would guess goes in `config/domains.ts` instead, with
+`registered` set to the registry creation date from WHOIS or RDAP;
+`test/unit/lookalike/domains.test.ts` checks the entry's shape. Then on the
+domain's DNS:
 
 - `A`/`CNAME` for the apex and `*` to the pull zone
 - `TXT "v=spf1 -all"` at the apex: no host may send mail as this domain

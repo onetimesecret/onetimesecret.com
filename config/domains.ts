@@ -5,15 +5,15 @@
  * The canonical production domain - always used for SEO tags
  * (canonical URL, og:url, hreflang links)
  */
-export const CANONICAL_ORIGIN = 'https://onetimesecret.com';
+export const CANONICAL_ORIGIN = "https://onetimesecret.com";
 
 /**
  * Hostnames that indicate a staging/development environment.
  * The banner will show on any hostname containing these substrings.
  */
 export const STAGING_HOSTNAMES = [
-  'onetimesecret.dev',  // Staging deployment
-  'onetime.dev',        // Local development (web.onetime.dev)
+  "onetimesecret.dev", // Staging deployment
+  "onetime.dev", // Local development (web.onetime.dev)
 ] as const;
 
 /**
@@ -22,8 +22,8 @@ export const STAGING_HOSTNAMES = [
  * attacks where an attacker could create domains like onetimesecret.dev.attacker.com
  */
 export function isStagingHostname(hostname: string): boolean {
-  return STAGING_HOSTNAMES.some(staging =>
-    hostname === staging || hostname.endsWith(`.${staging}`)
+  return STAGING_HOSTNAMES.some(
+    (staging) => hostname === staging || hostname.endsWith(`.${staging}`),
   );
 }
 
@@ -32,11 +32,13 @@ export function isStagingHostname(hostname: string): boolean {
  * onetimesecret.com. Each one serves the notice site built by
  * astro.lookalike.config.ts.
  *
- * This list is the inventory. The notice pages do not read it (they show
- * `location.hostname` in the browser, so one build serves every domain); it
- * exists so the CDN hostname set, the DNS probe and the DNS hardening
- * checklist in lookalike/README.md have one source of truth to reconcile
- * against. Add a domain here when it is acquired.
+ * LOOKALIKE_DOMAINS lists only the obvious ones. The rest are kept out of this
+ * public repository, so it does not advertise them, in the `LOOKALIKE_DOMAINS`
+ * secret of the `lookalike` GitHub environment (see lookalike/README.md). The
+ * two together are the inventory the CDN hostname set, the DNS probe and the
+ * DNS hardening checklist reconcile against. The notice pages read neither:
+ * they show `location.hostname` in the browser, so one build serves every
+ * domain.
  */
 export interface LookalikeDomain {
   /** Bare registrable hostname, lowercase, no scheme or path. */
@@ -52,10 +54,8 @@ export interface LookalikeDomain {
 
 export const LOOKALIKE_DOMAINS: readonly LookalikeDomain[] = [
   // `registered` from WHOIS on 2026-10-18.
-  { domain: "onetimesecret.ca", registered: "2025-03-05" },
   { domain: "onetimesecret.co", registered: "2025-12-26" },
   { domain: "onetimesecret.io", registered: "2025-12-26" },
-  { domain: "onetimesecret.nl", registered: "2026-10-17" },
 ];
 
 /**
