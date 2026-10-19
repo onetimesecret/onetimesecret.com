@@ -1513,6 +1513,20 @@ describe("main", () => {
       expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([body]);
     });
 
+    it.each([{ args: ["nz"] }, { args: ["eu", "uk"] }, { args: [] }])(
+      "names only the probed regions in the success summary ($args)",
+      async ({ args }) => {
+        const fake = fakeProbe();
+        const { code, log } = run(["probe", ...args], fake.fetch);
+
+        expect(await code).toBe(0);
+        const regions = args.length ? args : Object.keys(REGIONAL_HOSTS);
+        expect(log.mock.calls.at(-1)?.[0]).toBe(
+          `Custom page served for ${regions.join(", ")}.`,
+        );
+      },
+    );
+
     it("omits Guid from the raw create POST and uses a fresh URL token, not the server GUID", async () => {
       const fake = fakeProbe();
       const result = await run(["probe", "nz"], fake.fetch).code;

@@ -1134,7 +1134,7 @@ async function probeCommand({
       return code;
     }
   }
-  log("Every region served the custom page.");
+  log(`Custom page served for ${selected.map((s) => s.region).join(", ")}.`);
   return 0;
 }
 
