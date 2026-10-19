@@ -2,9 +2,22 @@
 
 import { describe, expect, it } from "vitest";
 
-import { CANONICAL_ORIGIN, isLookalikeHostname } from "@config/domains";
+import {
+  CANONICAL_ORIGIN,
+  isLookalikeHostname,
+  isStagingHostname,
+  LOOKALIKE_DOMAINS,
+  type LookalikeDomain,
+} from "@config/domains";
 
-const fixture = ["onetimesecret.example", "0netimesecret.test"];
+const fixture: LookalikeDomain[] = [
+  { domain: "onetimesecret.example", registered: "2026-01-01" },
+  {
+    domain: "0netimesecret.test",
+    registered: "2026-02-01",
+    note: "digit zero",
+  },
+];
 
 describe("isLookalikeHostname", () => {
   it("matches an owned domain exactly and as a parent of subdomains", () => {
@@ -34,6 +47,37 @@ describe("isLookalikeHostname", () => {
   it("never matches the real site", () => {
     const real = new URL(CANONICAL_ORIGIN).hostname;
     expect(isLookalikeHostname(real, fixture)).toBe(false);
-    expect(isLookalikeHostname(`eu.${real}`, fixture)).toBe(false);
+    expect(isLookalikeHostname(real)).toBe(false);
+    expect(isLookalikeHostname(`eu.${real}`)).toBe(false);
+  });
+});
+
+describe("LOOKALIKE_DOMAINS registry", () => {
+  const real = new URL(CANONICAL_ORIGIN).hostname;
+
+  it("holds bare lowercase hostnames with no scheme, path or trailing dot", () => {
+    for (const { domain } of LOOKALIKE_DOMAINS) {
+      expect(domain).toMatch(
+        /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/,
+      );
+    }
+  });
+
+  it("dates each registration as YYYY-MM-DD", () => {
+    for (const { domain, registered } of LOOKALIKE_DOMAINS) {
+      expect(registered, domain).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(Number.isNaN(Date.parse(registered)), domain).toBe(false);
+    }
+  });
+
+  it("has no duplicates and never lists the real or staging hostnames", () => {
+    const domains = LOOKALIKE_DOMAINS.map((d) => d.domain);
+    expect(new Set(domains).size).toBe(domains.length);
+    for (const domain of domains) {
+      expect(domain === real || domain.endsWith(`.${real}`), domain).toBe(
+        false,
+      );
+      expect(isStagingHostname(domain), domain).toBe(false);
+    }
   });
 });

@@ -28,23 +28,47 @@ export function isStagingHostname(hostname: string): boolean {
 }
 
 /**
- * Whether `hostname` is one of `domains` or a subdomain of one. `domains` are
- * the lookalike domains Onetime Secret owns: misspellings and alternate TLDs
- * of onetimesecret.com, each serving the notice site built by
- * astro.lookalike.config.ts. Same strict matching as isStagingHostname(): a
- * substring test would let `example-lookalike.tld.attacker.com` pass.
+ * A lookalike domain Onetime Secret owns: a misspelling or alternate TLD of
+ * onetimesecret.com. Each one serves the notice site built by
+ * astro.lookalike.config.ts.
  *
- * The list itself is not kept in this repository, so the repository does not
- * advertise it. It is the `LOOKALIKE_DOMAINS` secret of the `lookalike` GitHub
- * environment (see lookalike/README.md). The notice pages do not need it: they
- * show `location.hostname` in the browser, so one build serves every domain.
+ * LOOKALIKE_DOMAINS lists only the obvious ones. The rest are kept out of this
+ * public repository, so it does not advertise them, in the `LOOKALIKE_DOMAINS`
+ * secret of the `lookalike` GitHub environment (see lookalike/README.md). The
+ * two together are the inventory the CDN hostname set, the DNS probe and the
+ * DNS hardening checklist reconcile against. The notice pages read neither:
+ * they show `location.hostname` in the browser, so one build serves every
+ * domain.
+ */
+export interface LookalikeDomain {
+  /** Bare registrable hostname, lowercase, no scheme or path. */
+  domain: string;
+  /**
+   * Registry creation date, YYYY-MM-DD. For a domain bought from a previous
+   * holder this predates Onetime Secret's ownership.
+   */
+  registered: string;
+  /** Optional internal note. */
+  note?: string;
+}
+
+export const LOOKALIKE_DOMAINS: readonly LookalikeDomain[] = [
+  // `registered` from WHOIS on 2026-10-18.
+  { domain: "onetimesecret.co", registered: "2025-12-26" },
+  { domain: "onetimesecret.io", registered: "2025-12-26" },
+];
+
+/**
+ * Whether `hostname` is one of the owned lookalike domains or a subdomain of
+ * one. Same strict matching as isStagingHostname(): a substring test would let
+ * `example-lookalike.tld.attacker.com` pass.
  */
 export function isLookalikeHostname(
   hostname: string,
-  domains: readonly string[],
+  domains: readonly LookalikeDomain[] = LOOKALIKE_DOMAINS,
 ): boolean {
   const host = hostname.trim().toLowerCase().replace(/\.$/, "");
   return domains.some(
-    (domain) => host === domain || host.endsWith(`.${domain}`),
+    ({ domain }) => host === domain || host.endsWith(`.${domain}`),
   );
 }
