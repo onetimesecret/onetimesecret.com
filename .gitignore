@@ -78,7 +78,6 @@ etc/config*
 .eslintcache
 .continuerc.json
 tsconfig.tsbuildinfo
-CLAUDE.md
 
 # Environment files
 .env*
