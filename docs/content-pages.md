@@ -132,14 +132,17 @@ The adapter preserves source units: GitHub/Forgejo/Gitea return **bytes** and th
 component calculates shares; GitLab returns **percentages**, used directly without
 inventing byte counts. Languages are ordered by share. Only shares **at least 1%** are
 shown initially; smaller shares appear behind a localized “Show more” / “Show less”
-button in every display style. The cutoff uses the unrounded share, so 0.9999% stays
+button in every display style. If no share reaches 1%, all of them are shown and
+there is no button. The cutoff uses the unrounded share, so 0.9999% stays
 collapsed even if its formatted percentage rounds to 1%. Percentages and chart widths
 are never renormalized. Collapsed bar segments leave unused track space. The button
 supports keyboard activation and exposes its state through `aria-expanded`; it is
 omitted when there are no smaller shares. Without JavaScript, all languages remain
 visible and the inactive toggle stays hidden. An empty
 response displays “No languages detected”; a failed request displays “Language
-statistics unavailable” alongside the repository link and emits a build warning.
+statistics unavailable” alongside the repository link and emits a build warning
+naming the error type (never its message). In GitHub Actions the warning is a
+workflow annotation, so a degraded page shows up in the run summary.
 Requests have an eight-second timeout and are shared within the build process.
 
 Commit facts are included in every style by default. The count covers the default

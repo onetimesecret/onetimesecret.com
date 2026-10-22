@@ -1,10 +1,9 @@
 ---
-import { randomUUID } from "node:crypto";
-
 import type { SupportedLanguage } from "@config/astro/i18n";
 
 import en from "@/i18n/ui/en.json";
 import { getLocaleFromUrl } from "@/i18n/utils";
+import { renderScopedId } from "@/utils/elementId";
 import {
   fetchRepositoryLanguages,
   normalizeLanguages,
@@ -39,13 +38,24 @@ const {
   style: displayStyle = "text",
 } = Astro.props;
 const repository = resolveRepository(Astro.props);
+// Reserve the id before any await so render order, not fetch timing, decides it.
+const candidateDisclosureId = renderScopedId(
+  Astro.locals,
+  "repository-languages",
+);
 const messages =
   lang === "en" ? en : (await import(`../i18n/ui/${lang}.json`)).default;
-const text = messages["repository-facts"];
+// A lagging locale falls back to English labels instead of failing the build.
+const text: (typeof en)["repository-facts"] = {
+  ...en["repository-facts"],
+  ...messages["repository-facts"],
+};
 const percent = new Intl.NumberFormat(lang, {
   style: "percent",
   maximumSignificantDigits: 3,
 });
+// process.env: import.meta.env cannot resolve a runtime key and inlines private values
+// into the build output.
 const token = tokenEnv ? process.env[tokenEnv] : undefined;
 async function load<T>(
   name: string,
@@ -54,9 +64,17 @@ async function load<T>(
   try {
     if (tokenEnv && !token) throw new Error("Missing repository API token.");
     return await fetcher();
-  } catch {
-    // Keep API errors and credentials out of generated HTML and build logs.
-    console.warn(`[RepositoryFacts] ${name} unavailable for ${repository.url}`);
+  } catch (error) {
+    // Keep API errors and credentials out of generated HTML and build logs; log only
+    // the error name (TimeoutError, SyntaxError, TypeError) as a debugging hint.
+    const kind = error instanceof Error ? error.name : typeof error;
+    const message = `${name} unavailable for ${repository.url} (${kind})`;
+    // Surface the degraded page as a workflow annotation in GitHub Actions builds.
+    const prefix =
+      process.env.GITHUB_ACTIONS === "true"
+        ? "::warning title=RepositoryFacts::"
+        : "[RepositoryFacts] ";
+    console.warn(`${prefix}${message}`);
     return undefined;
   }
 }
@@ -116,11 +134,12 @@ const rows = breakdown?.languages.map(({ language, share }) => {
     color: `hsl(${hues.get(language) ?? hash % 360} 65% 55%)`,
   };
 });
-const primaryRows = rows?.filter(({ share }) => share >= 1) ?? [];
-const secondaryRows = rows?.filter(({ share }) => share < 1) ?? [];
-const disclosureId = secondaryRows.length
-  ? `repository-languages-${randomUUID()}`
-  : undefined;
+// Collapse shares below 1% only when something remains visible above the cutoff.
+const collapsible = rows?.some(({ share }) => share >= 1) ?? false;
+const isSecondary = (share: number) => collapsible && share < 1;
+const primaryRows = rows?.filter(({ share }) => !isSecondary(share)) ?? [];
+const secondaryRows = rows?.filter(({ share }) => isSecondary(share)) ?? [];
+const disclosureId = secondaryRows.length ? candidateDisclosureId : undefined;
 const summarize = (group: typeof primaryRows) =>
   group.map(({ language, formatted }) => `${language} ${formatted}`).join(", ");
 const rowGroups = secondaryRows.length
@@ -181,9 +200,12 @@ const status = breakdown ? text.empty : text.unavailable;
     {commits !== false && (
       <span
         class="repository-inline-activity"
-        title={text["default-branch"]}
         data-commit-facts>
         {" · "}
+        <span
+          class="sr-only"
+          set:text={`${text["default-branch"]}: `}
+        />
         {text.commits}: {formattedCount}
         {" · "}
         {text["latest-commit"]}:{" "}
@@ -261,7 +283,7 @@ const status = breakdown ? text.empty : text.unavailable;
               {rows.map(({ language, share, color }) => (
                 <span
                   data-language={language}
-                  data-language-secondary={share < 1 ? "" : undefined}
+                  data-language-secondary={isSecondary(share) ? "" : undefined}
                   style={`width: ${share}%; background-color: ${color}`}
                 />
               ))}
@@ -329,34 +351,14 @@ const status = breakdown ? text.empty : text.unavailable;
 )}
 
 <script>
+  import { attachLanguageDisclosure } from "@/scripts/repository-language-disclosure";
+
   class RepositoryLanguageDisclosure extends HTMLElement {
     private cleanup?: () => void;
 
     connectedCallback() {
       this.cleanup?.();
-      const button = this.querySelector<HTMLButtonElement>(
-        "[data-language-toggle]",
-      );
-      const secondary = this.querySelectorAll<HTMLElement>(
-        "[data-language-secondary]",
-      );
-      if (!button || !secondary.length) return;
-
-      const setExpanded = (expanded: boolean) => {
-        secondary.forEach((element) => {
-          element.hidden = !expanded;
-        });
-        button.setAttribute("aria-expanded", String(expanded));
-        button.textContent = expanded
-          ? button.dataset.showLess!
-          : button.dataset.showMore!;
-      };
-      const toggle = () =>
-        setExpanded(button.getAttribute("aria-expanded") !== "true");
-      button.addEventListener("click", toggle);
-      this.cleanup = () => button.removeEventListener("click", toggle);
-      setExpanded(false);
-      button.hidden = false;
+      this.cleanup = attachLanguageDisclosure(this);
     }
 
     disconnectedCallback() {

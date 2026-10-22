@@ -19,6 +19,8 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
+import { attachLanguageDisclosure } from "@/scripts/repository-language-disclosure";
 import {
   isDisallowed,
   starRules,
@@ -42,6 +44,7 @@ let workspace: string;
 let dist: string;
 let builtRobotsRules: ReturnType<typeof starRules>;
 let builtAdvertisedUrls: string[];
+let buildLog: string;
 
 function fixture(path: string, contents: string): void {
   const destination = join(workspace, path);
@@ -312,7 +315,9 @@ const boundary = { Ruby: 98, Boundary: 1, Almost: 0.9999, Tiny: 0.0001 };
       TZ: "America/New_York",
     };
     delete env[missingRepoToken];
-    await run(
+    // Keep warning output in the plain format whether or not CI runs this test.
+    delete env.GITHUB_ACTIONS;
+    const { stdout, stderr } = await run(
       process.execPath,
       [astroBin, "build", "--config", "astro.integration.config.ts"],
       {
@@ -322,6 +327,7 @@ const boundary = { Ruby: 98, Boundary: 1, Almost: 0.9999, Tiny: 0.0001 };
         maxBuffer: 10 * 1024 * 1024,
       },
     );
+    buildLog = `${stdout}\n${stderr}`;
     builtRobotsRules = starRules(
       readFileSync(join(dist, "robots.txt"), "utf8"),
     );
@@ -542,13 +548,17 @@ describe("rendered repository facts", () => {
         expect(text).toContain("Commits");
         expect(text).toContain(french ? "12 345" : "12,345");
         expect(text).toContain(french ? "Dernier commit" : "Latest commit");
-        expect(
-          facts.getAttribute(style === "text" ? "title" : "aria-label"),
-        ).toBe(
-          french
-            ? "Historique de la branche par défaut"
-            : "Default branch history",
-        );
+        const context = french
+          ? "Historique de la branche par défaut"
+          : "Default branch history";
+        if (style === "text") {
+          expect(facts.hasAttribute("title")).toBe(false);
+          expect(facts.querySelector(".sr-only")?.textContent).toBe(
+            `${context}: `,
+          );
+        } else {
+          expect(facts.getAttribute("aria-label")).toBe(context);
+        }
         const time = facts.querySelector("time")!;
         expect(time.getAttribute("datetime")).toBe("2026-10-22T03:30:00.000Z");
         expect(time.textContent).toBe(french ? "22 oct. 2026" : "Oct 22, 2026");
@@ -642,14 +652,11 @@ describe("rendered repository facts", () => {
           ).toEqual(["Almost", "Tiny"]);
         }
       }
+      // Nothing reaches 1%, so every share stays visible without a toggle.
       const small = section.querySelector('[data-disclosure-case="small"]')!;
-      expect(small.querySelector("[data-language-toggle]")).not.toBeNull();
-      expect(
-        small.querySelector("[data-language-secondary][id]")?.textContent,
-      ).toContain("Almost");
-      expect(
-        small.querySelector("ul:not([data-language-secondary])"),
-      ).toBeNull();
+      expect(small.querySelector("[data-language-toggle]")).toBeNull();
+      expect(small.querySelector("[data-language-secondary]")).toBeNull();
+      expect(small.textContent).toMatch(/Almost.*Tiny/s);
       expect(
         section.querySelector('[data-disclosure-case="large"] button'),
       ).toBeNull();
@@ -659,7 +666,7 @@ describe("rendered repository facts", () => {
       const ids = [...document.querySelectorAll("[data-language-toggle]")].map(
         (button) => button.getAttribute("aria-controls"),
       );
-      expect(ids).toHaveLength(9);
+      expect(ids).toHaveLength(6);
       expect(new Set(ids).size).toBe(ids.length);
       for (const [button, lang] of localized) {
         const labels = JSON.parse(
@@ -667,6 +674,54 @@ describe("rendered repository facts", () => {
         )["repository-facts"];
         expect(button.textContent).toBe(labels["show-more"]);
         expect(button.getAttribute("data-show-less")).toBe(labels["show-less"]);
+      }
+    },
+  );
+
+  it.each(["text", "bar", "card"])(
+    "toggles %s disclosure after hydration",
+    (style) => {
+      const section = html("repository-integration").getElementById(
+        `disclosure-${style}`,
+      )!;
+      for (const lang of ["en", "fr"]) {
+        const labels = JSON.parse(
+          readFileSync(join(root, "src/i18n/ui", `${lang}.json`), "utf8"),
+        )["repository-facts"];
+        const disclosure = section.querySelector<HTMLElement>(
+          `[data-disclosure-case="${lang}"] repository-language-disclosure`,
+        )!;
+        const cleanup = attachLanguageDisclosure(disclosure);
+        const button = disclosure.querySelector<HTMLButtonElement>(
+          "[data-language-toggle]",
+        )!;
+        const secondary = [
+          ...disclosure.querySelectorAll<HTMLElement>(
+            "[data-language-secondary]",
+          ),
+        ];
+        expect(secondary.length).toBe(style === "bar" ? 3 : 1);
+        const assertState = (expanded: boolean) => {
+          expect(button.getAttribute("aria-expanded")).toBe(String(expanded));
+          expect(button.textContent).toBe(
+            labels[expanded ? "show-less" : "show-more"],
+          );
+          for (const item of secondary) expect(item.hidden).toBe(!expanded);
+        };
+        expect(button.hidden).toBe(false);
+        assertState(false);
+        button.click();
+        assertState(true);
+        expect(
+          disclosure.ownerDocument.getElementById(
+            button.getAttribute("aria-controls")!,
+          )?.textContent,
+        ).toContain("Tiny");
+        button.click();
+        assertState(false);
+        cleanup();
+        button.click();
+        assertState(false);
       }
     },
   );
@@ -690,6 +745,12 @@ describe("rendered repository facts", () => {
     expect(document.body.textContent).not.toContain(
       "Missing repository API token",
     );
+    expect(buildLog).toContain(
+      "[RepositoryFacts] Language statistics unavailable for " +
+        "https://github.com/team/private (Error)",
+    );
+    expect(buildLog).not.toContain(missingRepoToken);
+    expect(buildLog).not.toContain("Missing repository API token");
   });
 });
 
