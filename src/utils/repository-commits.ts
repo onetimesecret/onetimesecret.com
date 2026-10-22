@@ -1,5 +1,5 @@
 import type { Repository } from "@/utils/repository";
-import { requestRepositoryApi } from "@/utils/repository";
+import { requestCacheKey, requestRepositoryApi } from "@/utils/repository";
 
 export interface RepositoryCommits {
   count: number | null;
@@ -184,11 +184,10 @@ export function fetchRepositoryCommits(
   repository: Repository,
   token?: string,
 ): Promise<RepositoryCommits> {
-  const key = JSON.stringify([
-    repository.languagesUrl,
-    repository.provider,
+  const key = requestCacheKey(
+    [repository.languagesUrl, repository.provider],
     token,
-  ]);
+  );
   let request = requests.get(key);
   if (!request) {
     request = fetchStats(repository, token);

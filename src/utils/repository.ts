@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 export type RepositoryProvider = "github" | "gitlab" | "forgejo" | "gitea";
 export type LanguageUnit = "bytes" | "percent";
 
@@ -42,29 +44,37 @@ export function resolveRepository({
   apiBase,
 }: RepositoryOptions): Repository {
   const url = httpsUrl(repo);
-  const segments = url.pathname
-    .replace(/\/$/, "")
-    .slice(1)
-    .split("/")
-    .map(decodeURIComponent);
+  const invalidPath = new Error(
+    "Expected a repository URL with an owner/group and repository name.",
+  );
+  let segments: string[];
+  try {
+    segments = url.pathname
+      .replace(/\/$/, "")
+      .slice(1)
+      .split("/")
+      .map(decodeURIComponent);
+  } catch {
+    throw invalidPath;
+  }
   if (segments.some((segment) => !segment || /[/\\]/.test(segment))) {
-    throw new Error(
-      "Expected a repository URL with an owner/group and repository name.",
-    );
+    throw invalidPath;
   }
   segments[segments.length - 1] = segments[segments.length - 1].replace(
     /\.git$/,
     "",
   );
   const name = segments.join("/");
-  const detected = {
+  const detected: Partial<Record<string, RepositoryProvider>> = {
     "github.com": "github",
     "gitlab.com": "gitlab",
     "codeberg.org": "forgejo",
-  } as const;
-  const resolvedProvider =
-    provider ?? detected[url.hostname as keyof typeof detected];
-  if (!["github", "gitlab", "forgejo", "gitea"].includes(resolvedProvider)) {
+  };
+  const resolvedProvider = provider ?? detected[url.hostname];
+  if (
+    !resolvedProvider ||
+    !["github", "gitlab", "forgejo", "gitea"].includes(resolvedProvider)
+  ) {
     throw new Error(
       "Set provider to github, gitlab, forgejo, or gitea for this repository host.",
     );
@@ -159,6 +169,12 @@ export function requestRepositoryApi(
   });
 }
 
+/** Key build caches by a token digest so the module-level map holds no credential copy. */
+export function requestCacheKey(parts: string[], token?: string): string {
+  const digest = token && createHash("sha256").update(token).digest("hex");
+  return JSON.stringify([...parts, digest ?? null]);
+}
+
 // Share in-flight requests across repeated MDX uses and localized static pages.
 const requests = new Map<string, Promise<RepositoryLanguages>>();
 
@@ -166,7 +182,10 @@ export function fetchRepositoryLanguages(
   repository: Repository,
   token?: string,
 ): Promise<RepositoryLanguages> {
-  const key = JSON.stringify([repository.languagesUrl, repository.unit, token]);
+  const key = requestCacheKey(
+    [repository.languagesUrl, repository.unit],
+    token,
+  );
   let request = requests.get(key);
   if (!request) {
     request = (async () => {

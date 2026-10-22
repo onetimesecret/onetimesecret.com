@@ -3,6 +3,7 @@
 import type { RepositoryOptions, RepositoryProvider } from "@/utils/repository";
 import {
   normalizeLanguages as normalize,
+  requestCacheKey,
   resolveRepository as resolve,
 } from "@/utils/repository";
 import { rejects } from "node:assert/strict";
@@ -112,6 +113,27 @@ describe("resolveRepository", () => {
     `${repo}%E0%A4`,
   ])("rejects invalid paths: %s", (input) => {
     expect(() => resolve({ repo: input })).toThrow();
+  });
+
+  it.each([`${repo}%ZZ`, `${repo}%E0%A4`])(
+    "reports malformed escapes as invalid paths: %s",
+    (input) => {
+      expect(() => resolve({ repo: input })).toThrow(
+        "Expected a repository URL with an owner/group and repository name.",
+      );
+    },
+  );
+});
+
+describe("requestCacheKey", () => {
+  it("distinguishes tokens without retaining them", () => {
+    const anonymous = requestCacheKey([endpoint]);
+    const a = requestCacheKey([endpoint], "synthetic-a");
+    expect(
+      new Set([anonymous, a, requestCacheKey([endpoint], "synthetic-b")]).size,
+    ).toBe(3);
+    expect(requestCacheKey([endpoint], "synthetic-a")).toBe(a);
+    expect(a).not.toContain("synthetic-a");
   });
 });
 
