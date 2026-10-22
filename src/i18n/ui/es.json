@@ -15,6 +15,11 @@
   "read-our-privacy-policy": "Lea nuestra Política de Privacidad",
   "view-our-terms-and-conditions": "Consulte nuestros Términos y Condiciones",
   "status": "Estado",
+  "repository-facts": {
+    "languages": "Lenguajes del código fuente",
+    "unavailable": "Estadísticas de lenguajes no disponibles",
+    "empty": "No se detectaron lenguajes"
+  },
   "$config": {
     "layout-footer-style": "grid"
   },

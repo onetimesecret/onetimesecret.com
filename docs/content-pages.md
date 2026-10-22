@@ -97,6 +97,61 @@ Factory functions to standardize content page creation:
 - `createContentPage(slug)`: Simple version for common cases
 - `createContentPageFactory(options)`: Advanced version with customization
 
+### RepositoryFacts.astro (MDX)
+
+Display a repository link and its codebase language percentages inline. The component
+fetches statistics during static generation, not in the visitor's browser. It adds no
+client JavaScript or dependencies. Statistics refresh on the next build; they describe
+the repository's analyzed code, not its deployed services or dependencies.
+
+```mdx
+import RepositoryFacts from "@/components/RepositoryFacts.astro";
+
+Source: <RepositoryFacts repo="https://github.com/onetimesecret/onetimesecret" />.
+
+<RepositoryFacts repo="https://gitlab.com/group/subgroup/project" />
+<RepositoryFacts repo="https://codeberg.org/team/project" />
+<RepositoryFacts
+  repo="https://forge.example/team/project"
+  provider="forgejo"
+  apiBase="https://forge.example/api/v1"
+/>
+```
+
+GitHub, GitLab.com, and Codeberg are detected by hostname. For self-hosted instances,
+set `provider` to `github`, `gitlab`, `forgejo`, or `gitea`. Defaults are `/api/v3`
+for GitHub Enterprise, `/api/v4` for GitLab, and `/api/v1` for Forgejo/Gitea;
+`apiBase` overrides the complete API base URL. URLs must use HTTPS and must not
+contain credentials, query strings, or fragments. GitLab supports nested groups.
+Other providers are deliberately unsupported rather than shown as a misleading
+single-language breakdown.
+
+The adapter preserves source units: GitHub/Forgejo/Gitea return **bytes** and the
+component calculates shares; GitLab returns **percentages**, used directly without
+inventing byte counts. All detected languages are shown, ordered by share. An empty
+response displays “No languages detected”; a failed request displays “Language
+statistics unavailable” alongside the repository link and emits a build warning.
+Requests have an eight-second timeout and are shared within the build process.
+
+Optional props:
+
+- `label`: link text (defaults to the owner/group and repository path).
+- `lang`: one of the site's supported locales (defaults to the page URL's locale).
+- `class`: additional CSS classes.
+- `languages`: a pinned language-to-number object, in the provider's source unit.
+  Supplying it avoids the network entirely, including when it is empty. For example,
+  `languages={{ Ruby: 7500, Vue: 2500 }}` with GitHub or Forgejo, or
+  `languages={{ Ruby: 75, Vue: 25 }}` with GitLab. Invalid pinned data fails the build.
+- `tokenEnv`: the name of a **build-only** environment variable for private repos or
+  higher API limits, e.g. `tokenEnv="REPO_STATS_TOKEN"`. Set that secret in the build
+  environment, never in MDX or a `PUBLIC_` variable. GitLab uses `PRIVATE-TOKEN`;
+  other adapters use bearer auth. API redirects are rejected to avoid forwarding
+  credentials. A configured but missing token produces the unavailable state.
+
+Only use trusted repository/API URLs in authored content: build-time requests can
+reach hosts available to the build machine. Publishing statistics from a private
+repository also makes those statistics public in the generated page.
+
 ## Language Fallback Logic
 
 When a user requests a page in a specific language:

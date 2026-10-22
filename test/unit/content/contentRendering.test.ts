@@ -37,6 +37,7 @@ const origin = "https://onetimesecret.com";
 const languages = ["en", "fr", "de", "es"];
 const group = "seo-integration";
 const target = `${origin}/en/about/`;
+const missingRepoToken = "OTS_REPOSITORY_FACTS_FIXTURE_ABSENT_TOKEN";
 let workspace: string;
 let dist: string;
 let builtRobotsRules: ReturnType<typeof starRules>;
@@ -204,12 +205,42 @@ An explicit preview: <Cve id="CVE-2024-4577" preview={{
 }} />.
 `,
     );
+    fixture(
+      "src/pages/repository-integration.astro",
+      `---
+import RepositoryFacts from "@/components/RepositoryFacts.astro";
+---
+<section id="repo-bytes">
+  <RepositoryFacts repo="https://github.com/team/project.git/"
+    languages={{ "<em>Ruby & Co</em>": 300, TypeScript: 100 }} />
+</section>
+<section id="repo-percent">
+  <RepositoryFacts repo="https://gitlab.com/group/sub/project"
+    languages={{ Ruby: 62.5, TypeScript: 12.5 }} />
+</section>
+<section id="repo-forgejo">
+  <RepositoryFacts repo="https://forge.fixture.invalid/team/project"
+    provider="forgejo" label="Forge fixture" languages={{ Go: 1, Rust: 3 }} />
+</section>
+<section id="repo-empty">
+  <RepositoryFacts repo="https://github.com/team/empty" languages={{}} />
+</section>
+<section id="repo-french">
+  <RepositoryFacts repo="https://github.com/team/french" lang="fr"
+    languages={{ Ruby: 125, TypeScript: 875 }} />
+</section>
+<section id="repo-unavailable">
+  <RepositoryFacts repo="https://github.com/team/private" tokenEnv="${missingRepoToken}" />
+</section>
+`,
+    );
     // Do not inherit deployment credentials or upload fixture source maps.
-    const env = {
+    const env: NodeJS.ProcessEnv = {
       ...process.env,
       VITE_BASE_URL: origin,
       SENTRY_AUTH_TOKEN: "",
     };
+    delete env[missingRepoToken];
     await run(
       process.execPath,
       [astroBin, "build", "--config", "astro.integration.config.ts"],
@@ -288,6 +319,68 @@ describe("rendered CVE references", () => {
     expect(tooltips[0].textContent).toContain("remote code execution");
     expect(tooltips[2].textContent).toContain("Custom <em>summary</em>.");
     expect(tooltips[2].querySelector("em")).toBeNull();
+  });
+});
+
+describe("rendered repository facts", () => {
+  it("renders repository links and source units without client hydration", () => {
+    const document = html("repository-integration");
+    expect(document.querySelectorAll("[data-repository-facts]")).toHaveLength(
+      6,
+    );
+    const cases = [
+      ["bytes", "https://github.com/team/project", "bytes"],
+      ["percent", "https://gitlab.com/group/sub/project", "percent"],
+      ["forgejo", "https://forge.fixture.invalid/team/project", "bytes"],
+      ["french", "https://github.com/team/french", "bytes"],
+    ];
+    for (const [id, href, unit] of cases) {
+      const facts = document.querySelector(
+        `#repo-${id} [data-repository-facts]`,
+      );
+      expect(facts?.querySelector("a")?.getAttribute("href")).toBe(href);
+      expect(facts?.getAttribute("data-language-unit")).toBe(unit);
+    }
+    expect(document.querySelector("script, astro-island")).toBeNull();
+  });
+
+  it("preserves percentages, localizes French, and escapes pinned language names", () => {
+    const document = html("repository-integration");
+    const text = (id: string) =>
+      document
+        .getElementById(`repo-${id}`)
+        ?.textContent?.replace(/\s+/g, " ")
+        .trim();
+    expect(text("bytes")).toContain("team/project");
+    expect(text("bytes")).toContain("Codebase languages:");
+    expect(text("bytes")).toContain("<em>Ruby & Co</em> 75%, TypeScript 25%");
+    expect(document.querySelector("#repo-bytes em")).toBeNull();
+    expect(text("percent")).toContain("Ruby 62.5%, TypeScript 12.5%");
+    expect(text("forgejo")).toContain("Forge fixture");
+    expect(text("forgejo")).toContain("Rust 75%, Go 25%");
+    expect(text("french")).toContain("Langages du code source:");
+    expect(text("french")).toContain("TypeScript 87,5 %, Ruby 12,5 %");
+  });
+
+  it("distinguishes empty pinned data from unavailable statistics without exposing errors", () => {
+    const document = html("repository-integration");
+    const empty = document.querySelector("#repo-empty [data-repository-facts]");
+    const unavailable = document.querySelector(
+      "#repo-unavailable [data-repository-facts]",
+    );
+    expect(empty?.textContent).toContain("No languages detected");
+    expect(empty?.getAttribute("data-language-unit")).toBe("bytes");
+    expect(unavailable?.textContent).toContain(
+      "Language statistics unavailable",
+    );
+    expect(unavailable?.hasAttribute("data-language-unit")).toBe(false);
+    expect(unavailable?.querySelector("a")?.getAttribute("href")).toBe(
+      "https://github.com/team/private",
+    );
+    expect(document.body.textContent).not.toContain(missingRepoToken);
+    expect(document.body.textContent).not.toContain(
+      "Missing repository API token",
+    );
   });
 });
 

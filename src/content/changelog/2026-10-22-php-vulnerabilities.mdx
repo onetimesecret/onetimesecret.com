@@ -9,6 +9,7 @@ planned: false
 ---
 
 import Cve from "@/components/Cve.astro";
+import RepositoryFacts from "@/components/RepositoryFacts.astro";
 
 If you're checking whether the recent PHP vulnerabilities affect the services you
 rely on, we can reassure you: Onetime Secret is not affected.
@@ -17,4 +18,6 @@ Onetime Secret does not use PHP. Neither the open-source application nor our hos
 service is affected by <Cve id="CVE-2026-109618" /> or <Cve id="CVE-2026-109619" />.
 
 The application is written in Ruby with a Vue frontend. See the source code and
-language breakdown of [our GitHub repository](https://github.com/onetimesecret/onetimesecret).
+language breakdown of [our GitHub repository](https://github.com/onetimesecret/onetimesecret):
+
+<RepositoryFacts repo="https://github.com/onetimesecret/onetimesecret" style="text" />.

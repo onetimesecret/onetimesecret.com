@@ -1,0 +1,88 @@
+---
+import type { SupportedLanguage } from "@config/astro/i18n";
+
+import en from "@/i18n/ui/en.json";
+import { getLocaleFromUrl } from "@/i18n/utils";
+import {
+  fetchRepositoryLanguages,
+  normalizeLanguages,
+  resolveRepository,
+  type RepositoryLanguages,
+  type RepositoryOptions,
+} from "@/utils/repository";
+
+export interface Props extends RepositoryOptions {
+  label?: string;
+  lang?: SupportedLanguage;
+  class?: string;
+  /** Optional pinned API response: bytes for GitHub/Forgejo/Gitea, percentages for GitLab. */
+  languages?: Record<string, number>;
+  /** Build-only environment variable name; never pass a token literal through MDX. */
+  tokenEnv?: string;
+}
+
+const {
+  label,
+  lang = getLocaleFromUrl(Astro.url),
+  languages,
+  tokenEnv,
+} = Astro.props;
+const repository = resolveRepository(Astro.props);
+const messages =
+  lang === "en" ? en : (await import(`../i18n/ui/${lang}.json`)).default;
+const text = messages["repository-facts"];
+const percent = new Intl.NumberFormat(lang, {
+  style: "percent",
+  maximumSignificantDigits: 3,
+});
+let breakdown: RepositoryLanguages | undefined;
+
+if (languages !== undefined) {
+  breakdown = normalizeLanguages(languages, repository.unit);
+} else {
+  try {
+    const token = tokenEnv ? process.env[tokenEnv] : undefined;
+    if (tokenEnv && !token) throw new Error("Missing repository API token.");
+    breakdown = await fetchRepositoryLanguages(repository, token);
+  } catch {
+    // Keep API errors and credentials out of generated HTML and build logs.
+    console.warn(
+      `[RepositoryFacts] Language statistics unavailable for ${repository.url}`,
+    );
+  }
+}
+---
+
+<span
+  class:list={["repository-facts not-prose text-sm", Astro.props.class]}
+  data-repository-facts
+  data-language-unit={breakdown?.unit}>
+  <a
+    href={repository.url}
+    class="font-medium underline decoration-current/40 underline-offset-2 hover:decoration-current">
+    {label ?? repository.name}
+  </a>{" "}
+  <span class="text-text-secondary">
+    {"("}
+    {breakdown ? (
+      breakdown.languages.length ? (
+        <span>
+          <span class="sr-only">{text.languages}: </span>
+          {breakdown.languages.map(({ language, share }, index) => (
+            <Fragment>
+              {index > 0 && ", "}
+              <span class="whitespace-nowrap">
+                {language} {percent.format(share / 100)}
+              </span>
+            </Fragment>
+          ))}
+        </span>
+      ) : (
+        text.empty
+      )
+    ) : (
+      text.unavailable
+    )}
+    {")"}
+  </span>
+</span>
