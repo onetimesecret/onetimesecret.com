@@ -1410,7 +1410,8 @@ describe("main", () => {
               throw new DOMException("install timed out", "TimeoutError");
             }
             return json(
-              existing ? 200 : 201,
+              // 201 for an update too: Bunny's Terraform provider requires it on both.
+              201,
               opts.createResponse ? opts.createResponse(rule) : rule,
             );
           }
@@ -1551,7 +1552,7 @@ describe("main", () => {
         { method: "POST", body: JSON.stringify(body) },
       );
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(201);
       expect(await response.json()).toEqual(body);
       expect(fake.created).toEqual([]);
       expect(fake.store.get(nz.Id)!.EdgeRules).toEqual([body]);
