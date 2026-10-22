@@ -17,6 +17,38 @@ import viteSSRGlobals from "../../vite-ssr-globals.ts";
 const DEBUG = process.env.VITE_DEBUG === "true";
 
 /**
+ * Spotnote: optional, dev-only UI feedback for coding agents.
+ *
+ * Click an element on the dev server, write what should change, and the agent
+ * gets its exact file, line and column. The plugin stamps
+ * data-spotnote="file:line:col" on elements in .astro and .vue files and
+ * injects a picker (launcher in the bottom-left corner). It does nothing in
+ * `astro build` or under Vitest. Both astro.config.ts and
+ * astro.lookalike.config.ts get it through this file.
+ * https://github.com/harukikuri/spotnote
+ *
+ * It is a devDependency, loaded only when installed: after a --prod install, or
+ * with the package removed, `astro dev` and `astro build` still run. The pin
+ * is exact because `apply` keeping it out of builds is upstream code. Type
+ * checks (`pnpm type-check`, `pnpm check`) cover config/ and still need it.
+ *
+ * MCP server (optional, once per machine) so a local agent picks up notes as
+ * you write them and can reply on them:
+ *
+ *   claude mcp add --scope user spotnote -- npx -y spotnote-mcp
+ *   codex mcp add spotnote -- npx -y spotnote-mcp
+ *
+ * Then ask the agent: "Watch my Spotnote notes." The server listens on
+ * 127.0.0.1:4848 only and saves notes in ~/.spotnote/. If the port is taken,
+ * set SPOTNOTE_PORT to the same free port for the agent and for `pnpm dev`.
+ * Without it, Enter copies the note as a prompt to paste instead.
+ */
+const spotnote = await import("spotnote").then(
+  (m) => m.default,
+  () => null,
+);
+
+/**
  * Creates a Vite configuration for Astro
  * @param astroPath - The root path of the Astro project
  * @param env - Environment variables loaded with Vite's loadEnv
@@ -80,7 +112,7 @@ export function createConfig(
     // Type assertion needed: Multiple Vite versions in dependency tree (6.4.1 and 7.1.12) cause
     // plugin type incompatibilities. This is safe at runtime but TypeScript cannot reconcile the types.
     // TODO: Investigate consolidating Vite versions in pnpm-lock.yaml
-    plugins: [tailwindcss(), viteSSRGlobals()] as any,
+    plugins: [tailwindcss(), viteSSRGlobals(), spotnote?.()] as any,
     resolve: {
       alias: {
         "@": pathResolve(astroPath, "src"),
