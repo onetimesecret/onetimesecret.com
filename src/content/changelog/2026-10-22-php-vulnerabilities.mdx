@@ -1,0 +1,41 @@
+---
+title: "Onetime Secret is not affected by PHP vulnerabilities"
+date: 2026-10-22
+description: >-
+  PHP vulnerabilities CVE-2026-109618 and CVE-2026-109619 do not affect our hosted
+  service, websites, or open-source code.
+category: security
+planned: false
+---
+
+import Cve from "@/components/Cve.astro";
+import RepositoryFacts from "@/components/RepositoryFacts.astro";
+
+If you're checking whether the recent PHP vulnerabilities affect the services you
+rely on, we can reassure you: Onetime Secret is not affected.
+
+Onetime Secret does not use PHP. Neither the open-source application nor our hosted
+service is affected by <Cve id="CVE-2026-109618" /> or <Cve id="CVE-2026-109619" />.
+
+The application is written in Ruby with a Vue frontend. See the source code and
+language breakdown of [our GitHub repository](https://github.com/onetimesecret/onetimesecret):
+
+{/* Pinned GitHub API snapshot from the advisory date: reproducible, offline builds. */}
+<RepositoryFacts
+  repo="https://github.com/onetimesecret/onetimesecret"
+  style="card"
+  languages={{
+    Ruby: 26459361,
+    TypeScript: 9964574,
+    Vue: 3689865,
+    Shell: 769913,
+    Python: 691565,
+    JavaScript: 96271,
+    HTML: 53759,
+    Dockerfile: 41261,
+    CSS: 19101,
+    PLpgSQL: 11114,
+    HCL: 5956,
+  }}
+  commits={{ count: 21523, latestCommitAt: "2026-10-22T07:51:53Z" }}
+/>

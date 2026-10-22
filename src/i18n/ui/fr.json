@@ -15,6 +15,18 @@
   "read-our-privacy-policy": "Lisez notre politique de confidentialité",
   "view-our-terms-and-conditions": "Consultez nos conditions générales",
   "status": "État",
+  "repository-facts": {
+    "languages": "Langages du code source",
+    "unavailable": "Statistiques des langages indisponibles",
+    "empty": "Aucun langage détecté",
+    "commits": "Commits",
+    "latest-commit": "Dernier commit",
+    "default-branch": "Historique de la branche par défaut",
+    "unavailable-value": "Indisponible",
+    "no-commits": "Aucun commit",
+    "show-more": "Afficher plus",
+    "show-less": "Afficher moins"
+  },
   "$config": {
     "layout-footer-style": "grid"
   },
@@ -466,6 +478,54 @@
         "view_pricing": "Voir les tarifs",
         "toggle_animation": "Activer/désactiver l'animation"
       }
+    },
+    "lookalike": {
+      "title": "Ceci n'est pas onetimesecret.com",
+      "description": "Ce domaine appartient à Onetime Secret. Il affiche un avis, pas le service de partage de secrets.",
+      "eyebrow": "Avis concernant le domaine",
+      "headerLabel": "Onetime Secret ?",
+      "heading": "Ceci n'est pas onetimesecret.com",
+      "hostnameFallback": "cette adresse",
+      "lead": "Vous consultez {hostname}. Elle ressemble à l'adresse de Onetime Secret, mais ce n'est pas la vraie.",
+      "purpose": "Ceci est un avis, pas le service de partage de secrets. Vous ne pouvez ni créer ni consulter de secrets ici.",
+      "ownership": "Ce domaine ({hostname}) appartient à Onetime Secret.",
+      "recipient": {
+        "heading": "Un lien vous a conduit ici ?",
+        "body": "Contactez la personne qui vous a envoyé le lien par un canal que vous connaissez déjà et demandez-lui de le confirmer. N’essayez pas de corriger l’adresse en changeant des lettres."
+      },
+      "sender": {
+        "heading": "Vous souhaitez créer un secret ?",
+        "body": "Saisissez cette adresse dans la barre d'adresse de votre navigateur ou utilisez un favori que vous avez déjà vérifié.",
+        "https": "Un logo familier, HTTPS ou une place en tête des résultats de recherche ne prouve pas qui exploite un site web. Cela vaut aussi pour cet avis."
+      },
+      "recognise": {
+        "heading": "Qu’est-ce que cette page ?",
+        "exact": "Vérifiez le nom d'hôte complet dans la barre d'adresse de votre navigateur. Notre site principal est onetimesecret.com.",
+        "regionalHeading": "Adresses régionales officielles du service",
+        "regional": "Notre service de partage de secrets fonctionne sur ces domaines régionaux :",
+        "noLinksHeading": "Pourquoi n’y a-t-il pas de lien vers le service ?",
+        "noLinks": "Un logo familier ou un message rassurant peut être copié. Ni l’un ni l’autre ne prouve qu’une page est authentique, même si elle apparaît en tête des résultats de recherche. Cette page ne propose volontairement aucun lien vers le service : prenez l’habitude de vérifier l’adresse de manière indépendante, plutôt que de faire confiance à un lien parce que la page semble officielle. Faites preuve de la même prudence envers cette page."
+      },
+      "diff": {
+        "toggle": "Comparer ce domaine avec le vrai",
+        "real": "La vraie adresse",
+        "this": "Cette adresse",
+        "legend": "Les parties surlignées montrent où les noms de domaine diffèrent.",
+        "srAdded": "(en trop : {chars})",
+        "srChanged": "({chars} au lieu de {expected})",
+        "srMissing": "(manquant : {expected})"
+      },
+      "exposed": {
+        "heading": "Vous avez déjà partagé des informations sensibles ?",
+        "body": "Si vous avez saisi un mot de passe, une clé d’accès ou d’autres informations privées sur ce domaine ou sur un site web dont vous ne pouvez pas vérifier l’authenticité, considérez ces informations comme exposées. Changez le mot de passe ou remplacez la clé, et prévenez la personne avec qui vous les avez partagées.",
+        "stepsHeading": "Que faire ensuite",
+        "passwords": "Mots de passe : Ouvrez le service concerné depuis son application officielle ou une adresse à laquelle vous faites déjà confiance. Modifiez le mot de passe, modifiez-le aussi partout où vous l’avez réutilisé et fermez les autres sessions si cette option est disponible.",
+        "tokens": "Clés ou jetons d’accès : Révoquez-les et remplacez-les via le service qui les a émis.",
+        "other": "Autres informations privées : Contactez la personne ou le service concerné par un canal connu pour obtenir de l’aide sur les prochaines étapes.",
+        "work": "Informations professionnelles : Contactez aussi rapidement l’équipe informatique ou de sécurité de votre organisation, si elle en dispose, même en cas de doute.",
+        "reporting": "N’incluez pas de mots de passe, de clés d’accès ni le contenu de secrets dans un e-mail ordinaire ou un message d’assistance."
+      },
+      "languages": "Langue"
     }
   },
   "changelog": {

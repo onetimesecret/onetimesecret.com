@@ -79,6 +79,7 @@ const LANGS: Lang[] = ["de", "es", "fr"];
 const ALLOWED_COMMON = [
   "onetime-secret-literal",
   "navigation.docs",
+  "repository-facts.commits", // "Commits" — Git terminology retained in all locales
   "LABELS.blog",
   "web.pricing.tiers.identity.name", // "Identity Plus" — product name
   "web.pricing.tiers.team.name", // "Team Plus" — product name
@@ -95,6 +96,7 @@ const ALLOWED_COMMON = [
 const ALLOWED_BY_LANG: Record<Lang, string[]> = {
   de: [
     "status", // "Status"
+    "web.lookalike.headerLabel", // "Onetime Secret?" — brand name with a question mark
     "web.pricing.region", // "Region"
     "web.secrets.passphraseInputLabel", // "Passphrase" — used as-is in de copy
     "web.useCases.itdevops.title", // "IT & DevOps"

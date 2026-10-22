@@ -21,14 +21,18 @@ A manual deployment requires access to run GitHub Actions workflows for this rep
 
 ## Branches and environments
 
-| Branch    | Workflow                                  | GitHub environment |
-| --------- | ----------------------------------------- | ------------------ |
-| `develop` | `.github/workflows/deploy-staging.yml`    | `staging`          |
-| `main`    | `.github/workflows/deploy-production.yml` | `production`       |
+| Branch    | Workflow                                  | GitHub environment | Deploys           |
+| --------- | ----------------------------------------- | ------------------ | ----------------- |
+| `develop` | `.github/workflows/deploy-staging.yml`    | `staging`          | `dist/`           |
+| `main`    | `.github/workflows/deploy-production.yml` | `production`       | `dist/`           |
+| `main`    | `.github/workflows/deploy-lookalike.yml`  | `lookalike`        | `dist-lookalike/` |
 
-Both workflows run on a push to their branch and can also be started with `workflow_dispatch`.
-A production release merges `develop` into `main`; the push to `main` starts the production
-deployment.
+All three workflows run on a push to their branch and can also be started with
+`workflow_dispatch`. A production release merges `develop` into `main`; the push to `main` starts
+the production deployment. The lookalike workflow runs on the same push only when it touches a
+file the notice site is built from; see the path filter in the workflow and the
+[lookalike README](../lookalike/README.md#deploying). The three environments use the same secret
+names, each scoped to its own storage zone and pull zone.
 
 The deployment workflows do not depend on the CI workflow. Before starting a manual deployment,
 confirm that the commit has passed CI.
@@ -50,8 +54,39 @@ Each deployment workflow:
    the CDN serves differs from `dist/`.
 
 CI runs on pull requests to `main` and `develop`, and on pushes to `develop`. Its build job runs
-the same frozen install, production build, and bundle verification. A separate required job runs
-the browser tests described below.
+the same frozen install, production build, and bundle verification, then builds the notice site
+with `pnpm build:lookalike` and runs `pnpm build:verify:lookalike` on it. A separate required
+job runs the browser tests described below.
+
+## The lookalike notice site
+
+`deploy-lookalike.yml` has the same steps with a different build and different gates:
+
+1. `pnpm build:lookalike` writes `dist-lookalike/`.
+2. `pnpm build:verify:lookalike` checks the output is noindex, scriptless and form-free, and
+   ships nothing outside its allowlist. Nothing is uploaded if it fails.
+3. The upload runs with `remove: true`. The storage zone holds nothing but this build.
+4. After the purge, `pnpm build:verify:lookalike:live` fetches every built file (pages,
+   `robots.txt`, fonts, logo, favicons) from `LOOKALIKE_BASE_URL`, requires each to match the
+   built file byte for byte, requires an unknown path to answer 404 with the body of `404.html`,
+   and requires `X-Robots-Tag: noindex`, `frame-ancestors 'none'` and
+   `Strict-Transport-Security` with a `max-age` of at least six months on every response. Those
+   three headers and the custom 404 path are Bunny zone settings, which is why they are verified
+   rather than assumed.
+
+Runs of this workflow queue instead of cancelling each other. The upload removes files that left
+the build, so a cancelled run could leave the zone empty.
+
+Bunny Optimizer must stay off on the lookalike pull zone as well. Its HTML minifier would rewrite
+the pages and the live check would fail at once, without retrying, when a response carries
+`x-bo-version`.
+
+To run the live check by hand after a deploy:
+
+```bash
+pnpm build:lookalike
+pnpm build:verify:lookalike:live https://<pull-zone-hostname>
+```
 
 ## Validate a production build
 

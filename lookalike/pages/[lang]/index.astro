@@ -1,0 +1,44 @@
+---
+/**
+ * lookalike/pages/[lang]/index.astro
+ *
+ * The notice in each supported language, at the same /{lang}/ paths the real
+ * site uses. getLanguagePaths() loads the locale file per language exactly as
+ * src/pages/[lang]/index.astro does.
+ */
+import Notice from "../../components/Notice.astro";
+import NoticeFooter from "../../components/NoticeFooter.astro";
+import NoticeLayout from "../../layouts/NoticeLayout.astro";
+import { createLocaleI18n, getLanguagePaths, type MessageSchema } from "@/i18n";
+import { LANGUAGE_META, type SupportedLanguage } from "@config/astro/i18n";
+
+export async function getStaticPaths() {
+  return getLanguagePaths();
+}
+
+interface Props {
+  initialMessages: Record<string, MessageSchema>;
+}
+
+const lang = Astro.params.lang as SupportedLanguage;
+const { initialMessages } = Astro.props;
+const t = (await createLocaleI18n(lang, initialMessages)).global.t;
+---
+
+<NoticeLayout
+  title={t("web.lookalike.title")}
+  description={t("web.lookalike.description")}
+  lang={lang}
+  dir={LANGUAGE_META[lang].dir}
+  brandName={t("web.lookalike.headerLabel")}
+  languagesLabel={t("web.lookalike.languages")}>
+  <Notice
+    lang={lang}
+    initialMessages={initialMessages}
+  />
+  <NoticeFooter
+    slot="footer"
+    lang={lang}
+    initialMessages={initialMessages}
+  />
+</NoticeLayout>

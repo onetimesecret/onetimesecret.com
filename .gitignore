@@ -1,5 +1,6 @@
 # build output
 dist/
+dist-lookalike/
 
 # generated types
 .astro/
@@ -20,6 +21,9 @@ pnpm-debug.log*
 *.log
 *.rdb
 *.txt
+# The notice site's robots.txt is source, not output (public/robots.txt
+# was force-added; this keeps the lookalike one from being lost the same way)
+!lookalike/public/robots.txt
 .byebug*
 .ruby-version
 spoom_*
@@ -36,6 +40,7 @@ pnpm-debug.log*
 .continue/
 .devcontainer
 .history
+.playwright-mcp/
 .pnpm/
 .pnpm-store/
 .prompts/
@@ -73,7 +78,6 @@ etc/config*
 .eslintcache
 .continuerc.json
 tsconfig.tsbuildinfo
-CLAUDE.md
 
 # Environment files
 .env*

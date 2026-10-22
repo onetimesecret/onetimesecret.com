@@ -80,6 +80,7 @@ export default tseslint.config(
     ignores: [
       "node_modules/",
       "dist/",
+      "dist-lookalike/", // Build output of `pnpm build:lookalike`
       "edge/dist/", // Build output of `pnpm edge:build`
       "coverage/",
       "*.d.ts", // Ignore TypeScript definition files

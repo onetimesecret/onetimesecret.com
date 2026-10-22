@@ -19,6 +19,8 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
+import { attachLanguageDisclosure } from "@/scripts/repository-language-disclosure";
 import {
   isDisallowed,
   starRules,
@@ -37,10 +39,12 @@ const origin = "https://onetimesecret.com";
 const languages = ["en", "fr", "de", "es"];
 const group = "seo-integration";
 const target = `${origin}/en/about/`;
+const missingRepoToken = "OTS_REPOSITORY_FACTS_FIXTURE_ABSENT_TOKEN";
 let workspace: string;
 let dist: string;
 let builtRobotsRules: ReturnType<typeof starRules>;
 let builtAdvertisedUrls: string[];
+let buildLog: string;
 
 function fixture(path: string, contents: string): void {
   const destination = join(workspace, path);
@@ -188,13 +192,132 @@ const page = await getEntry("useCases", "en/${group}/private");
 />
 `,
     );
+    fixture(
+      "src/pages/cve-integration.mdx",
+      `import Cve from "@/components/Cve.astro";
+
+A four-digit ID: <Cve id="CVE-2024-4577" /> and a longer ID:
+<Cve id="CVE-2026-109618" class="cve-reference" />.
+
+A repeated reference: <Cve id="CVE-2026-109618" />.
+
+An explicit preview: <Cve id="CVE-2024-4577" preview={{
+  title: "Custom advisory title",
+  summary: "Custom <em>summary</em>.",
+  lang: "en",
+}} />.
+`,
+    );
+    fixture(
+      "src/pages/repository-integration.astro",
+      `---
+import RepositoryFacts from "@/components/RepositoryFacts.astro";
+const commitRepo = "https://github.com/team/activity";
+const pinned = { count: 12345, latestCommitAt: "2026-10-21T23:30:00-04:00" };
+const disclosureRepo = "https://gitlab.com/team/disclosure";
+const boundary = { Ruby: 98, Boundary: 1, Almost: 0.9999, Tiny: 0.0001 };
+---
+<section id="repo-bytes">
+  <RepositoryFacts repo="https://github.com/team/project.git/" commits={false}
+    languages={{ "<em>Ruby & Co</em>": 300, TypeScript: 100 }} />
+</section>
+<section id="repo-percent">
+  <RepositoryFacts repo="https://gitlab.com/group/sub/project" commits={false}
+    languages={{ Ruby: 62.5, TypeScript: 12.5 }} />
+</section>
+<section id="repo-forgejo">
+  <RepositoryFacts repo="https://forge.fixture.invalid/team/project" commits={false}
+    provider="forgejo" label="Forge fixture" languages={{ Go: 1, Rust: 3 }} />
+</section>
+<section id="repo-empty">
+  <RepositoryFacts repo="https://github.com/team/empty" commits={false} languages={{}} />
+</section>
+<section id="repo-french">
+  <RepositoryFacts repo="https://github.com/team/french" lang="fr" commits={false}
+    languages={{ Ruby: 125, TypeScript: 875 }} />
+</section>
+<section id="repo-unavailable">
+  <RepositoryFacts repo="https://github.com/team/private" commits={false}
+    tokenEnv="${missingRepoToken}" />
+</section>
+<section id="repo-text">
+  <RepositoryFacts repo="https://github.com/team/project.git/" style="text" commits={false}
+    languages={{ "<em>Ruby & Co</em>": 300, TypeScript: 100 }} />
+</section>
+{(["bar", "card"] as const).map((style) => (
+  <section id={\`repo-\${style}\`}>
+    <RepositoryFacts repo="https://gitlab.com/group/sub/project" style={style} commits={false}
+      languages={{ "<em>Ruby & Co</em>": 12.5, Ruby: 62.5 }} />
+    <div data-state="empty">
+      <RepositoryFacts repo="https://gitlab.com/team/empty" style={style}
+        commits={false} languages={{}} />
+    </div>
+    <div data-state="unavailable">
+      <RepositoryFacts repo="https://gitlab.com/team/private" style={style} commits={false}
+        tokenEnv="${missingRepoToken}" />
+    </div>
+  </section>
+))}
+{(["text", "bar", "card"] as const).map((style) => (
+  <section id={\`commits-\${style}\`}>
+    {(["en", "fr"] as const).map((lang) => (
+      <div data-commit-state={lang}>
+        <RepositoryFacts repo={commitRepo} style={style} lang={lang}
+          languages={{ Ruby: 100 }} commits={pinned} />
+      </div>
+    ))}
+    <div data-commit-state="empty">
+      <RepositoryFacts repo={commitRepo} style={style} languages={{}}
+        commits={{ count: 0, latestCommitAt: null }} />
+    </div>
+    <div data-commit-state="partial">
+      <RepositoryFacts repo={commitRepo} style={style} languages={{ Ruby: 100 }}
+        commits={{ ...pinned, count: null }} />
+    </div>
+    <div data-commit-state="unavailable">
+      <RepositoryFacts repo={commitRepo} style={style} languages={{ Ruby: 100 }}
+        tokenEnv="${missingRepoToken}" />
+    </div>
+    <div data-commit-state="language-unavailable">
+      <RepositoryFacts repo={commitRepo} style={style} commits={pinned}
+        tokenEnv="${missingRepoToken}" />
+    </div>
+    <div data-commit-state="language-empty">
+      <RepositoryFacts repo={commitRepo} style={style} languages={{}} commits={pinned} />
+    </div>
+  </section>
+))}
+{(["text", "bar", "card"] as const).map((style) => (
+  <section id={\`disclosure-\${style}\`}>
+    {(["en", "fr"] as const).map((lang) => (
+      <div data-disclosure-case={lang}>
+        <RepositoryFacts repo={disclosureRepo} style={style} lang={lang}
+          languages={boundary} commits={false} />
+      </div>
+    ))}
+    <div data-disclosure-case="large">
+      <RepositoryFacts repo={disclosureRepo} style={style} commits={false}
+        languages={{ Ruby: 99, Boundary: 1 }} />
+    </div>
+    <div data-disclosure-case="small">
+      <RepositoryFacts repo={disclosureRepo} style={style} commits={false}
+        languages={{ Almost: 0.9999, Tiny: 0.0001 }} />
+    </div>
+  </section>
+))}
+`,
+    );
     // Do not inherit deployment credentials or upload fixture source maps.
-    const env = {
+    const env: NodeJS.ProcessEnv = {
       ...process.env,
       VITE_BASE_URL: origin,
       SENTRY_AUTH_TOKEN: "",
+      TZ: "America/New_York",
     };
-    await run(
+    delete env[missingRepoToken];
+    // Keep warning output in the plain format whether or not CI runs this test.
+    delete env.GITHUB_ACTIONS;
+    const { stdout, stderr } = await run(
       process.execPath,
       [astroBin, "build", "--config", "astro.integration.config.ts"],
       {
@@ -204,6 +327,7 @@ const page = await getEntry("useCases", "en/${group}/private");
         maxBuffer: 10 * 1024 * 1024,
       },
     );
+    buildLog = `${stdout}\n${stderr}`;
     builtRobotsRules = starRules(
       readFileSync(join(dist, "robots.txt"), "utf8"),
     );
@@ -216,6 +340,418 @@ const page = await getEntry("useCases", "en/${group}/private");
 
 afterAll(() => {
   if (workspace) rmSync(workspace, { recursive: true, force: true });
+});
+
+describe("rendered CVE references", () => {
+  it("renders inline nofollow links for four-digit and longer CVE IDs", () => {
+    const document = html("cve-integration");
+    const links = document.querySelectorAll("a");
+
+    expect(links).toHaveLength(4);
+    const ids = [
+      "CVE-2024-4577",
+      "CVE-2026-109618",
+      "CVE-2026-109618",
+      "CVE-2024-4577",
+    ];
+    for (const [index, id] of ids.entries()) {
+      expect(links[index].textContent).toBe(id);
+      expect(links[index].getAttribute("href")).toBe(
+        `https://www.cve.org/CVERecord?id=${id}`,
+      );
+      expect(links[index].getAttribute("rel")).toBe("nofollow");
+      expect(links[index].hasAttribute("target")).toBe(false);
+      expect(links[index].closest("p")).not.toBeNull();
+      for (const className of [
+        "not-prose",
+        "font-mono",
+        "border",
+        "no-underline",
+      ]) {
+        expect(links[index].classList.contains(className)).toBe(true);
+      }
+    }
+    expect(links[1].classList.contains("cve-reference")).toBe(true);
+    expect(links[1].parentElement?.nextSibling?.textContent).toMatch(/^\./);
+    expect(document.querySelector("astro-island")).toBeNull();
+  });
+
+  it("embeds static previews with unique accessible associations and safe text", () => {
+    const document = html("cve-integration");
+    const links = document.querySelectorAll("a");
+    const tooltips = document.querySelectorAll('[role="tooltip"]');
+    expect(tooltips).toHaveLength(3);
+    expect(new Set([...tooltips].map((tooltip) => tooltip.id)).size).toBe(3);
+    expect(links[0].hasAttribute("aria-describedby")).toBe(false);
+
+    for (const link of [...links].slice(1)) {
+      const tooltip = document.getElementById(
+        link.getAttribute("aria-describedby")!,
+      );
+      expect(tooltip?.getAttribute("role")).toBe("tooltip");
+      expect(tooltip?.getAttribute("popover")).toBe("manual");
+      expect(tooltip?.getAttribute("lang")).toBe("en");
+    }
+    expect(tooltips[0].textContent).toContain("RCE via OOM corruption");
+    expect(tooltips[0].textContent).toContain("remote code execution");
+    expect(tooltips[2].textContent).toContain("Custom <em>summary</em>.");
+    expect(tooltips[2].querySelector("em")).toBeNull();
+  });
+});
+
+describe("rendered repository facts", () => {
+  it("renders repository links and source units without client hydration", () => {
+    const document = html("repository-integration");
+    expect(document.querySelectorAll("[data-repository-facts]")).toHaveLength(
+      46,
+    );
+    expect(
+      document.querySelector('[id^="repo-"] [data-commit-facts]'),
+    ).toBeNull();
+    const implicit = document.querySelector(
+      "#repo-bytes [data-repository-facts]",
+    );
+    const explicit = document.querySelector(
+      "#repo-text [data-repository-facts]",
+    );
+    expect(implicit?.tagName).toBe("SPAN");
+    expect(implicit?.getAttribute("data-style")).toBe("text");
+    expect(explicit?.outerHTML).toBe(implicit?.outerHTML);
+    const cases = [
+      ["bytes", "https://github.com/team/project", "bytes"],
+      ["percent", "https://gitlab.com/group/sub/project", "percent"],
+      ["forgejo", "https://forge.fixture.invalid/team/project", "bytes"],
+      ["french", "https://github.com/team/french", "bytes"],
+    ];
+    for (const [id, href, unit] of cases) {
+      const facts = document.querySelector(
+        `#repo-${id} [data-repository-facts]`,
+      );
+      expect(facts?.querySelector("a")?.getAttribute("href")).toBe(href);
+      expect(facts?.getAttribute("data-language-unit")).toBe(unit);
+    }
+    // One shared page script and one bundled disclosure script, not an island.
+    const sources = [...document.querySelectorAll("script")].map(
+      (script) => script.src,
+    );
+    expect(sources).toHaveLength(2);
+    expect(sources).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/\/assets\/page\.[\w-]+\.js$/),
+        expect.stringMatching(/\/assets\/RepositoryFacts\.astro_.*\.js$/),
+      ]),
+    );
+    expect(
+      document.querySelector("astro-island, [data-repository-facts] script"),
+    ).toBeNull();
+  });
+
+  it("preserves percentages, localizes French, and escapes pinned language names", () => {
+    const document = html("repository-integration");
+    const text = (id: string) =>
+      document
+        .getElementById(`repo-${id}`)
+        ?.textContent?.replace(/\s+/g, " ")
+        .trim();
+    expect(text("bytes")).toContain("<em>Ruby & Co</em> 75%, TypeScript 25%");
+    expect(document.querySelector("#repo-bytes em")).toBeNull();
+    expect(text("percent")).toContain("Ruby 62.5%, TypeScript 12.5%");
+    expect(text("forgejo")).toContain("Forge fixture");
+    expect(text("forgejo")).toContain("Rust 75%, Go 25%");
+    expect(text("french")).toContain("Langages du code source:");
+    expect(text("french")).toContain("TypeScript 87,5 %, Ruby 12,5 %");
+  });
+
+  it.each(["bar", "card"])(
+    "renders accessible %s charts without renormalizing",
+    (style) => {
+      const document = html("repository-integration");
+      const section = document.getElementById(`repo-${style}`)!;
+      const visual = section.querySelector("figure")!;
+      expect(visual.getAttribute("data-style")).toBe(style);
+      expect(visual.getAttribute("data-language-unit")).toBe("percent");
+      expect(visual.querySelector("a")?.getAttribute("href")).toBe(
+        "https://gitlab.com/group/sub/project",
+      );
+      expect(visual.querySelector(".repository-label")?.textContent).toBe(
+        "Codebase languages",
+      );
+      const list = visual.querySelector('ul[role="list"]')!;
+      expect(list.closest('[aria-hidden="true"]')).toBeNull();
+      const rows = [...list.querySelectorAll<HTMLElement>("li")];
+      expect(
+        rows.map((row) =>
+          row.querySelector(".language-name")?.textContent?.trim(),
+        ),
+      ).toEqual(["Ruby", "<em>Ruby & Co</em>"]);
+      expect(
+        rows.map((row) => row.querySelector(".language-share")?.textContent),
+      ).toEqual(["62.5%", "12.5%"]);
+      expect(visual.querySelector("em")).toBeNull();
+      const charts = [...visual.querySelectorAll("[data-language-chart]")];
+      expect(charts).toHaveLength(style === "bar" ? 1 : 2);
+      for (const chart of charts)
+        expect(chart.getAttribute("aria-hidden")).toBe("true");
+      const bars = [
+        ...visual.querySelectorAll<HTMLElement>("[data-language-chart] > span"),
+      ];
+      expect(bars.map((bar) => bar.style.width)).toEqual(["62.5%", "12.5%"]);
+      const colors = rows.map((row) =>
+        row.style.getPropertyValue("--language-color"),
+      );
+      expect(colors.every(Boolean)).toBe(true);
+      const other = style === "bar" ? "card" : "bar";
+      const peers = document.querySelectorAll<HTMLElement>(
+        `#repo-${other} > figure li`,
+      );
+      expect(colors).toEqual(
+        [...peers].map((row) => row.style.getPropertyValue("--language-color")),
+      );
+      if (style === "bar") {
+        expect(bars.map((bar) => bar.getAttribute("data-language"))).toEqual([
+          "Ruby",
+          "<em>Ruby & Co</em>",
+        ]);
+        bars.forEach((bar, index) => {
+          expect(bar.getAttribute("style")).toContain(colors[index]);
+        });
+      }
+      for (const [state, message] of [
+        ["empty", "No languages detected"],
+        ["unavailable", "Language statistics unavailable"],
+      ]) {
+        const fallback = section.querySelector(
+          `[data-state="${state}"] figure`,
+        )!;
+        expect(fallback.getAttribute("data-style")).toBe(style);
+        expect(fallback.textContent).toContain(message);
+        expect(fallback.querySelector("[data-language-chart], ul")).toBeNull();
+        expect(fallback.getAttribute("data-language-unit")).toBe(
+          state === "empty" ? "percent" : null,
+        );
+      }
+    },
+  );
+
+  it.each(["text", "bar", "card"])(
+    "localizes %s commit counts and UTC dates",
+    (style) => {
+      const section = html("repository-integration").getElementById(
+        `commits-${style}`,
+      )!;
+      for (const lang of ["en", "fr"]) {
+        const facts = section.querySelector(
+          `[data-commit-state="${lang}"] [data-commit-facts]`,
+        )!;
+        const french = lang === "fr";
+        const text = facts.textContent?.replace(/\s+/g, " ");
+        expect(text).toContain("Commits");
+        expect(text).toContain(french ? "12 345" : "12,345");
+        expect(text).toContain(french ? "Dernier commit" : "Latest commit");
+        const context = french
+          ? "Historique de la branche par défaut"
+          : "Default branch history";
+        if (style === "text") {
+          expect(facts.hasAttribute("title")).toBe(false);
+          expect(facts.querySelector(".sr-only")?.textContent).toBe(
+            `${context}: `,
+          );
+        } else {
+          expect(facts.getAttribute("aria-label")).toBe(context);
+        }
+        const time = facts.querySelector("time")!;
+        expect(time.getAttribute("datetime")).toBe("2026-10-22T03:30:00.000Z");
+        expect(time.textContent).toBe(french ? "22 oct. 2026" : "Oct 22, 2026");
+        expect(time.closest('[aria-hidden="true"]')).toBeNull();
+      }
+    },
+  );
+
+  it.each(["text", "bar", "card"])(
+    "renders independent %s commit states",
+    (style) => {
+      const section = html("repository-integration").getElementById(
+        `commits-${style}`,
+      )!;
+      for (const [state, count, latest] of [
+        ["empty", "0", "No commits"],
+        ["partial", "Unavailable", "Oct 22, 2026"],
+        ["unavailable", "Unavailable", "Unavailable"],
+        ["language-unavailable", "12,345", "Oct 22, 2026"],
+        ["language-empty", "12,345", "Oct 22, 2026"],
+      ]) {
+        const block = section.querySelector(`[data-commit-state="${state}"]`)!;
+        const facts = block.querySelector("[data-commit-facts]")!;
+        const renderedCount =
+          style === "text"
+            ? facts.textContent?.match(/Commits:\s*([^·]+)/)?.[1].trim()
+            : facts.querySelector("[data-commit-count]")?.textContent;
+        expect(renderedCount).toBe(count);
+        expect(facts.textContent).toContain(latest);
+        expect(
+          facts.querySelector("time")?.getAttribute("datetime") ?? null,
+        ).toBe(latest === "Oct 22, 2026" ? "2026-10-22T03:30:00.000Z" : null);
+        if (state === "empty" || state === "language-empty") {
+          expect(block.textContent).toContain("No languages detected");
+        } else if (state === "language-unavailable") {
+          expect(block.textContent).toContain(
+            "Language statistics unavailable",
+          );
+        } else {
+          expect(block.textContent).toMatch(/Ruby\s+100%/);
+          expect(block.textContent).not.toContain(
+            "Language statistics unavailable",
+          );
+        }
+      }
+    },
+  );
+
+  it.each(["text", "bar", "card"])(
+    "builds accessible %s disclosure fallback",
+    (style) => {
+      const document = html("repository-integration");
+      const section = document.getElementById(`disclosure-${style}`)!;
+      const localized: [HTMLButtonElement, string][] = [];
+      for (const lang of ["en", "fr"]) {
+        const sample = section.querySelector(
+          `[data-disclosure-case="${lang}"]`,
+        )!;
+        const tag = "repository-language-disclosure";
+        const disclosure = sample.querySelector(tag)!;
+        const button = disclosure.querySelector<HTMLButtonElement>("button")!;
+        localized.push([button, lang]);
+        expect(button.hidden).toBe(true);
+        expect(button.getAttribute("aria-expanded")).toBe("false");
+        const target = button.getAttribute("aria-controls")!;
+        const secondary = document.getElementById(target)!;
+        expect(secondary.closest(tag)).toBe(disclosure);
+        expect(secondary.closest("[hidden], [aria-hidden=true]")).toBeNull();
+        const primaryTag = style === "text" ? "span" : "ul";
+        const primary = disclosure.querySelector(primaryTag)!;
+        expect(primary.textContent).toMatch(/Ruby.*Boundary/s);
+        expect(primary.textContent).not.toMatch(/Almost|Tiny/);
+        expect(secondary.textContent).toMatch(/Almost\s+1\s*%/);
+        expect(secondary.textContent).toContain("Tiny");
+        expect(
+          disclosure.querySelector("[data-language-secondary][hidden]"),
+        ).toBeNull();
+        if (style !== "text") {
+          const bars = disclosure.querySelectorAll<HTMLElement>(
+            "[data-language-chart] > span",
+          );
+          const widths = [...bars].map((bar) => bar.style.width);
+          expect(widths).toEqual(["98%", "1%", "0.9999%", "0.0001%"]);
+        }
+        if (style === "bar") {
+          const small = disclosure.querySelectorAll(
+            "[data-language-chart] > [data-language-secondary]",
+          );
+          expect(
+            [...small].map((bar) => bar.getAttribute("data-language")),
+          ).toEqual(["Almost", "Tiny"]);
+        }
+      }
+      // Nothing reaches 1%, so every share stays visible without a toggle.
+      const small = section.querySelector('[data-disclosure-case="small"]')!;
+      expect(small.querySelector("[data-language-toggle]")).toBeNull();
+      expect(small.querySelector("[data-language-secondary]")).toBeNull();
+      expect(small.textContent).toMatch(/Almost.*Tiny/s);
+      expect(
+        section.querySelector('[data-disclosure-case="large"] button'),
+      ).toBeNull();
+      expect(
+        document.querySelector('[id^="repo-"] [data-language-toggle]'),
+      ).toBeNull();
+      const ids = [...document.querySelectorAll("[data-language-toggle]")].map(
+        (button) => button.getAttribute("aria-controls"),
+      );
+      expect(ids).toHaveLength(6);
+      expect(new Set(ids).size).toBe(ids.length);
+      for (const [button, lang] of localized) {
+        const labels = JSON.parse(
+          readFileSync(join(root, "src/i18n/ui", `${lang}.json`), "utf8"),
+        )["repository-facts"];
+        expect(button.textContent).toBe(labels["show-more"]);
+        expect(button.getAttribute("data-show-less")).toBe(labels["show-less"]);
+      }
+    },
+  );
+
+  it.each(["text", "bar", "card"])(
+    "toggles %s disclosure after hydration",
+    (style) => {
+      const section = html("repository-integration").getElementById(
+        `disclosure-${style}`,
+      )!;
+      for (const lang of ["en", "fr"]) {
+        const labels = JSON.parse(
+          readFileSync(join(root, "src/i18n/ui", `${lang}.json`), "utf8"),
+        )["repository-facts"];
+        const disclosure = section.querySelector<HTMLElement>(
+          `[data-disclosure-case="${lang}"] repository-language-disclosure`,
+        )!;
+        const cleanup = attachLanguageDisclosure(disclosure);
+        const button = disclosure.querySelector<HTMLButtonElement>(
+          "[data-language-toggle]",
+        )!;
+        const secondary = [
+          ...disclosure.querySelectorAll<HTMLElement>(
+            "[data-language-secondary]",
+          ),
+        ];
+        expect(secondary.length).toBe(style === "bar" ? 3 : 1);
+        const assertState = (expanded: boolean) => {
+          expect(button.getAttribute("aria-expanded")).toBe(String(expanded));
+          expect(button.textContent).toBe(
+            labels[expanded ? "show-less" : "show-more"],
+          );
+          for (const item of secondary) expect(item.hidden).toBe(!expanded);
+        };
+        expect(button.hidden).toBe(false);
+        assertState(false);
+        button.click();
+        assertState(true);
+        expect(
+          disclosure.ownerDocument.getElementById(
+            button.getAttribute("aria-controls")!,
+          )?.textContent,
+        ).toContain("Tiny");
+        button.click();
+        assertState(false);
+        cleanup();
+        button.click();
+        assertState(false);
+      }
+    },
+  );
+
+  it("distinguishes empty pinned data from unavailable statistics without exposing errors", () => {
+    const document = html("repository-integration");
+    const empty = document.querySelector("#repo-empty [data-repository-facts]");
+    const unavailable = document.querySelector(
+      "#repo-unavailable [data-repository-facts]",
+    );
+    expect(empty?.textContent).toContain("No languages detected");
+    expect(empty?.getAttribute("data-language-unit")).toBe("bytes");
+    expect(unavailable?.textContent).toContain(
+      "Language statistics unavailable",
+    );
+    expect(unavailable?.hasAttribute("data-language-unit")).toBe(false);
+    expect(unavailable?.querySelector("a")?.getAttribute("href")).toBe(
+      "https://github.com/team/private",
+    );
+    expect(document.body.textContent).not.toContain(missingRepoToken);
+    expect(document.body.textContent).not.toContain(
+      "Missing repository API token",
+    );
+    expect(buildLog).toContain(
+      "[RepositoryFacts] Language statistics unavailable for " +
+        "https://github.com/team/private (Error)",
+    );
+    expect(buildLog).not.toContain(missingRepoToken);
+    expect(buildLog).not.toContain("Missing repository API token");
+  });
 });
 
 describe("rendered origin fallback auth interstitials", () => {

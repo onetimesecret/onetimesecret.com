@@ -1,0 +1,29 @@
+---
+/**
+ * Attribution is secondary context, not evidence that visitors should trust
+ * this page. Keep it after the safety instructions. Language navigation lives
+ * in the header in NoticeLayout.astro so reading English is not a prerequisite.
+ * This component fills the layout's footer slot directly; a nested slot inside
+ * Notice.astro would not reach NoticeLayout.
+ */
+import { createLocaleI18n, type MessageSchema } from "@/i18n";
+import { type SupportedLanguage } from "@config/astro/i18n";
+
+export interface Props {
+  lang: SupportedLanguage;
+  initialMessages: Record<string, MessageSchema>;
+}
+
+const { lang, initialMessages } = Astro.props;
+const t = (await createLocaleI18n(lang, initialMessages)).global.t;
+
+// Filled in the browser by the inline script in NoticeLayout, like the lead.
+const hostnameSlot = `<span data-lookalike-hostname dir="ltr" class="break-all">${t(
+  "web.lookalike.hostnameFallback",
+)}</span>`;
+const ownership = t("web.lookalike.ownership", { hostname: hostnameSlot });
+---
+
+<div class="border-surface-3 space-y-2 border-t pt-6 text-sm text-gray-600 dark:text-gray-400">
+  <p set:html={ownership} />
+</div>

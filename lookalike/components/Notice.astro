@@ -1,0 +1,188 @@
+---
+/**
+ * lookalike/components/Notice.astro
+ *
+ * The main content of a lookalike-domain notice page (the footer is
+ * NoticeFooter.astro). Every string comes
+ * from the shared locale files under `web.lookalike`, so the four languages
+ * ship from the same build and `pnpm i18n:scan` covers them.
+ *
+ * Order by the visitor's next safe decision, not by explanatory completeness:
+ * orient, help recipients and senders, offer recovery, then explain. Opening
+ * the homepage cannot recover a recipient's secret, so both tasks stay visible.
+ * Recovery is for everyone; workplace reporting is only a conditional addition.
+ * Native disclosures defer lessons and detailed steps, never the exposure warning.
+ * These source-only comments explain the design without adding public-facing copy.
+ */
+import DomainDiff from "./DomainDiff.astro";
+import { createLocaleI18n, type MessageSchema } from "@/i18n";
+import { jurisdictions } from "@/data/ops/jurisdictions";
+import { type SupportedLanguage } from "@config/astro/i18n";
+import { CANONICAL_ORIGIN } from "@config/domains";
+
+export interface Props {
+  lang: SupportedLanguage;
+  initialMessages: Record<string, MessageSchema>;
+}
+
+const { lang, initialMessages } = Astro.props;
+
+const pageI18n = await createLocaleI18n(lang, initialMessages);
+const t = pageI18n.global.t;
+
+// The regional domains a real secret is created on. comingSoon regions have
+// no live service and would teach visitors to trust a hostname that does not
+// answer yet.
+const regionalDomains = jurisdictions
+  .filter((j) => !j.comingSoon)
+  .map((j) => j.domain);
+
+// The hostname is only known in the browser. Rendered as a placeholder with
+// a generic fallback and filled in by the inline script in NoticeLayout.
+const hostnameSlot = `<strong data-lookalike-hostname dir="ltr" class="font-semibold break-all text-gray-900 dark:text-gray-100">${t(
+  "web.lookalike.hostnameFallback",
+)}</strong>`;
+const lead = t("web.lookalike.lead", { hostname: hostnameSlot });
+
+// The address senders should type, from the same source as DomainDiff. Only a
+// hostname that starts with the brand's first word gets the bold split; any
+// other canonical hostname renders as one plain part.
+const officialHostname = new URL(CANONICAL_ORIGIN).hostname;
+const brandWord = "onetime";
+const officialAddressParts =
+  officialHostname.startsWith(brandWord) && officialHostname !== brandWord
+    ? [
+        { text: brandWord, bold: true },
+        { text: officialHostname.slice(brandWord.length), bold: false },
+      ]
+    : [{ text: officialHostname, bold: false }];
+---
+
+<article class="mx-auto w-full max-w-3xl px-4 pt-24 pb-10 sm:px-6 sm:pt-16">
+  <p class="text-brand-600 dark:text-brand-400 mb-3 text-sm font-semibold tracking-wide uppercase">
+    {t("web.lookalike.eyebrow")}
+  </p>
+  {/* wrap-anywhere only engages when "onetimesecret.com" cannot fit the line,
+      e.g. under user text-spacing overrides on a phone; the body clips overflow. */}
+  <h1
+    class="font-brand mb-6 text-4xl font-bold wrap-anywhere text-gray-900 sm:text-5xl
+      dark:text-gray-100">
+    {t("web.lookalike.heading")}
+  </h1>
+  <p
+    class="mb-4 text-xl leading-relaxed text-gray-700 dark:text-gray-300"
+    set:html={lead}
+  />
+  <p class="mb-8 text-lg leading-relaxed text-gray-700 dark:text-gray-300">
+    {t("web.lookalike.purpose")}
+  </p>
+
+  {/* Aligned task rows separate questions from guidance without ranking any task. */}
+  <div class="my-10 space-y-6">
+    <section class="min-w-0 wrap-anywhere md:grid md:grid-cols-[1fr_2fr] md:gap-8">
+      <h2 class="mb-3 font-sans text-xl font-semibold text-gray-900 dark:text-gray-100">
+        {t("web.lookalike.recipient.heading")}
+      </h2>
+      <p class="text-base leading-relaxed text-gray-700 dark:text-gray-300">
+        {t("web.lookalike.recipient.body")}
+      </p>
+    </section>
+
+    <section
+      class="min-w-0 border-t border-gray-300 pt-6 wrap-anywhere md:grid md:grid-cols-[1fr_2fr]
+        md:gap-8 dark:border-gray-700">
+      <h2 class="mb-3 font-sans text-xl font-semibold text-gray-900 dark:text-gray-100">
+        {t("web.lookalike.sender.heading")}
+      </h2>
+      <div>
+        {/* Weight, not space, marks the brand's own word boundary (Onetime | Secret).
+            A visible gap gets typed as a space, which turns the address into a
+            search query, and "one time" primes hyphenated lookalikes. Mapped so
+            Prettier cannot put whitespace between the parts. */}
+        <p
+          data-official-address
+          class="mb-3 font-sans text-[clamp(1.25rem,3vw,1.5rem)] leading-tight font-normal
+            tracking-[0.01em] whitespace-nowrap text-gray-900 dark:text-gray-100"
+          dir="ltr">
+          {officialAddressParts.map((part) => (
+            <span class:list={{ "font-bold": part.bold }}>{part.text}</span>
+          ))}
+        </p>
+        <p class="text-base leading-relaxed text-gray-700 dark:text-gray-300">
+          {t("web.lookalike.sender.body")}
+        </p>
+        <p class="mt-3 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+          {t("web.lookalike.sender.https")}
+        </p>
+      </div>
+    </section>
+
+    <section
+      class="min-w-0 border-t border-gray-300 pt-6 wrap-anywhere md:grid md:grid-cols-[1fr_2fr]
+        md:gap-8 dark:border-gray-700">
+      <h2 class="mb-3 font-sans text-xl font-semibold text-gray-900 dark:text-gray-100">
+        {t("web.lookalike.exposed.heading")}
+      </h2>
+      <div>
+        <p class="text-base leading-relaxed text-gray-700 dark:text-gray-300">
+          {t("web.lookalike.exposed.body")}
+        </p>
+        <details class="mt-2 text-base leading-relaxed text-gray-700 dark:text-gray-300">
+          <summary
+            class="cursor-pointer py-2 font-medium underline underline-offset-4
+              hover:text-gray-950 focus-visible:outline-2 focus-visible:outline-offset-4
+              focus-visible:outline-current dark:hover:text-white">
+            {t("web.lookalike.exposed.stepsHeading")}
+          </summary>
+          <ul class="mt-3 list-disc space-y-3 pl-6">
+            <li>{t("web.lookalike.exposed.passwords")}</li>
+            <li>{t("web.lookalike.exposed.tokens")}</li>
+            <li>{t("web.lookalike.exposed.other")}</li>
+            <li>{t("web.lookalike.exposed.work")}</li>
+          </ul>
+          <p class="mt-4">{t("web.lookalike.exposed.reporting")}</p>
+        </details>
+      </div>
+    </section>
+  </div>
+
+  <section class="border-t border-gray-300 pt-6 sm:pt-8 dark:border-gray-700">
+    <h2 class="mb-3 font-sans text-lg font-semibold text-gray-900 dark:text-gray-100">
+      {t("web.lookalike.recognise.heading")}
+    </h2>
+    <p class="text-base leading-relaxed text-gray-600 dark:text-gray-400">
+      {t("web.lookalike.recognise.exact")}
+    </p>
+    <DomainDiff
+      lang={lang}
+      initialMessages={initialMessages}
+    />
+    <details class="mt-4 text-base leading-relaxed text-gray-700 dark:text-gray-300">
+      <summary
+        class="cursor-pointer py-2 font-semibold underline underline-offset-4
+          focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current">
+        {t("web.lookalike.recognise.regionalHeading")}
+      </summary>
+      <p class="mt-3">{t("web.lookalike.recognise.regional")}</p>
+      <ul class="mt-3 list-disc space-y-2 pl-6">
+        {regionalDomains.map((domain) => (
+          <li>
+            <bdi
+              dir="ltr"
+              class="break-all">
+              {domain}
+            </bdi>
+          </li>
+        ))}
+      </ul>
+    </details>
+    <details class="mt-4 text-base leading-relaxed text-gray-700 dark:text-gray-300">
+      <summary
+        class="cursor-pointer py-2 font-semibold underline underline-offset-4
+          focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current">
+        {t("web.lookalike.recognise.noLinksHeading")}
+      </summary>
+      <p class="mt-3">{t("web.lookalike.recognise.noLinks")}</p>
+    </details>
+  </section>
+</article>
