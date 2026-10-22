@@ -144,6 +144,9 @@ explicit preview remain links with no preview.
 Previews are static, checked-in metadata. A small Astro script handles accessible
 hover/focus tooltips, Escape dismissal, and positioning, without Vue hydration or
 external API requests at build time or runtime. The link works without JavaScript.
+Previews are for mouse and keyboard users only: a tap on a touch screen follows the
+link to CVE.org, so do not put information in a preview that the surrounding text
+does not also give.
 
 Use an explicit preview to override the snapshot, including for translated content:
 

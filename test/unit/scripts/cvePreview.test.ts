@@ -19,6 +19,21 @@ function pointer(
   element.dispatchEvent(event);
 }
 
+function moveTrigger(top: number): void {
+  vi.mocked(trigger.getBoundingClientRect).mockReturnValue(
+    new DOMRect(100, top, 150, 30),
+  );
+}
+
+function escape(): KeyboardEvent {
+  const event = new KeyboardEvent("keydown", {
+    key: "Escape",
+    cancelable: true,
+  });
+  document.dispatchEvent(event);
+  return event;
+}
+
 beforeEach(() => {
   vi.useFakeTimers();
   document.body.innerHTML = `<cve-reference>
@@ -76,6 +91,14 @@ describe("CVE preview interactions", () => {
     expect(show).not.toHaveBeenCalled();
   });
 
+  it("cancels a pending hover preview on Escape", () => {
+    pointer(trigger, "pointerenter");
+    vi.advanceTimersByTime(100);
+    expect(escape().defaultPrevented).toBe(false);
+    vi.advanceTimersByTime(500);
+    expect(show).not.toHaveBeenCalled();
+  });
+
   it("opens immediately on focus and closes after blur", () => {
     trigger.focus();
     expect(show).toHaveBeenCalledTimes(1);
@@ -89,7 +112,7 @@ describe("CVE preview interactions", () => {
 
   it("dismisses with Escape without moving focus or reopening", () => {
     trigger.focus();
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(escape().defaultPrevented).toBe(true);
     vi.advanceTimersByTime(500);
     expect(hide).toHaveBeenCalledTimes(1);
     expect(show).toHaveBeenCalledTimes(1);
@@ -116,6 +139,70 @@ describe("CVE preview interactions", () => {
     );
     trigger.dispatchEvent(new Event("scroll"));
     expect(hide).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows a badge focused below the fold once focus scrolls it into view", () => {
+    moveTrigger(window.innerHeight + 200);
+    trigger.focus();
+    expect(show).not.toHaveBeenCalled();
+    expect(hide).not.toHaveBeenCalled();
+
+    moveTrigger(400);
+    document.dispatchEvent(new Event("scroll"));
+    expect(show).toHaveBeenCalledTimes(1);
+    expect(tooltip.style.top).toBe("438px");
+  });
+
+  it("restores the preview when a focused badge scrolls back into view", () => {
+    trigger.focus();
+    moveTrigger(-100);
+    document.dispatchEvent(new Event("scroll"));
+    expect(hide).toHaveBeenCalledTimes(1);
+
+    moveTrigger(200);
+    document.dispatchEvent(new Event("scroll"));
+    expect(show).toHaveBeenCalledTimes(2);
+    expect(tooltip.style.top).toBe("238px");
+  });
+
+  it("keeps an Escape-dismissed preview closed through scrolling until refocus", () => {
+    trigger.focus();
+    escape();
+    document.dispatchEvent(new Event("scroll"));
+    moveTrigger(-100);
+    document.dispatchEvent(new Event("scroll"));
+    moveTrigger(200);
+    window.dispatchEvent(new Event("resize"));
+    expect(show).toHaveBeenCalledTimes(1);
+    expect(hide).toHaveBeenCalledTimes(1);
+
+    trigger.blur();
+    trigger.focus();
+    expect(show).toHaveBeenCalledTimes(2);
+  });
+
+  it("drops off-screen intent on Escape so the badge stays closed on return", () => {
+    trigger.focus();
+    moveTrigger(-100);
+    document.dispatchEvent(new Event("scroll"));
+    const event = escape();
+    expect(event.defaultPrevented).toBe(false);
+
+    moveTrigger(200);
+    document.dispatchEvent(new Event("scroll"));
+    expect(show).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not reopen on scroll after hover intent has closed", () => {
+    pointer(trigger, "pointerenter");
+    vi.advanceTimersByTime(180);
+    pointer(trigger, "pointerleave");
+    vi.advanceTimersByTime(120);
+    expect(hide).toHaveBeenCalledTimes(1);
+
+    document.dispatchEvent(new Event("scroll"));
+    window.dispatchEvent(new Event("resize"));
+    expect(show).toHaveBeenCalledTimes(1);
   });
 
   it("cancels pending work and removes event listeners on disconnect", () => {
