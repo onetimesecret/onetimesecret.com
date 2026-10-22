@@ -102,7 +102,7 @@
     "prettier-plugin-astro": "1.0.1",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "prettier-plugin-vue": "1.1.6",
-    "spotnote": "^0.5.0",
+    "spotnote": "0.5.0",
     "topojson-client": "^3.1.0",
     "topojson-simplify": "^3.0.3",
     "vite": "^8.3.4",

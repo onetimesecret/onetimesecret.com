@@ -27,8 +27,10 @@ const DEBUG = process.env.VITE_DEBUG === "true";
  * astro.lookalike.config.ts get it through this file.
  * https://github.com/harukikuri/spotnote
  *
- * It is a devDependency, loaded only when installed: a --prod install, or
- * removing the package, leaves this config working.
+ * It is a devDependency, loaded only when installed: after a --prod install, or
+ * with the package removed, `astro dev` and `astro build` still run. The pin
+ * is exact because `apply` keeping it out of builds is upstream code. Type
+ * checks (`pnpm type-check`, `pnpm check`) cover config/ and still need it.
  *
  * MCP server (optional, once per machine) so a local agent picks up notes as
  * you write them and can reply on them:
