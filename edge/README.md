@@ -346,20 +346,35 @@ one region at a time:
 2. Uses the public hostname if attached to the selected zone; otherwise,
    for Shield zones, automatically uses an attached `*.b-cdn.net` hostname.
    It never guesses a hostname. The existing `region=hostname` probe
-   override remains available, but that hostname must be attached to the
-   selected zone.
+   override remains available, but it never selects the zone: the zone is
+   still found by the public hostname or `BUNNY_PULL_ZONE_<REGION>`, and the
+   override must be attached to it (compared case-insensitively). A Shield
+   zone therefore needs `BUNNY_PULL_ZONE_<REGION>` even when an override is
+   given. Overrides are checked against the zone list before any region is
+   written, and again against each zone's fresh read.
 3. Creates and reads back a persistent edge rule matching only
    `https://<host>/.well-known/ots-error-page-probe/<random-UUID>/*`, or reuses
    the existing managed rule for that hostname after validating its scope and
    actions. Duplicate or malformed managed rules stop the command before writes.
    The UUID is a URL token, not the rule's ID. Creation omits `Guid`: Bunny
-   assigns it and returns it with HTTP `201`. Its `OriginUrl` action points to
+   assigns it and returns it with HTTP `201`. A new rule is created
+   **disabled**, read back, and enabled (an update by its GUID) only once its
+   stored triggers and actions match what was sent, so a trigger stored
+   differently never matches live traffic. Read-back accepts a sent value
+   echoed in another form (`"0"` as `0`, `""` as `null`) and a renumbered
+   `OrderIndex`. Its `OriginUrl` action points to
    `https://error-page-probe.invalid`, a reserved `.invalid` domain. Scoped
    actions disable caching and bypass Perma-Cache. The zone's configured
-   `OriginUrl`, existing rules and normal traffic are not changed; read-back
-   also checks for collateral changes.
+   `OriginUrl`, existing rules and normal traffic are not changed. Both
+   read-backs check for collateral changes: any field other than the traffic
+   counters, or any pre-existing rule modified, removed or moved relative to
+   the others, compared by GUID. A renumbered `OrderIndex` that keeps the
+   existing rules' precedence, list order, and rules someone else adds
+   meanwhile are not collateral.
 4. Makes up to 12 serving attempts with five-second waits between attempts,
-   within a 90-second per-region serving deadline. Each attempt uses a fresh
+   within a 90-second per-region serving deadline; each request times out
+   after 10 seconds. The deadline expiring, during a request or a wait, is a
+   failed serving check (exit `1`). Each attempt uses a fresh
    path under the UUID, with a new run token on every invocation, to avoid
    cached responses. Success requires HTTP
    `5xx`, the expected `CDN-PullZone` ID, and the **full local template** with
@@ -372,8 +387,14 @@ one region at a time:
    then uses a fresh `GET` to verify absence. If the create response was lost,
    cleanup discovers the rule by its unique `OTS error-page probe <token>`
    Description, excluding all pre-existing IDs. It retries up to three times
-   and never restores a saved rule list over concurrent edits. Any failure
-   stops the command before the next region.
+   and never restores a saved rule list over concurrent edits. Three empty
+   discovery reads do not prove absence, since a lost create can still
+   commit, so they are reported as unconfirmed cleanup with the Description
+   to search for. Such a late rule was created disabled and matches no
+   traffic, but the next `probe` for that zone stops on it and prints its
+   GUID to delete; it is never reused or enabled. If an enable added a second
+   rule instead of updating the first, cleanup deletes every new rule with
+   that Description. Any failure stops the command before the next region.
 
 Output is grouped by region, serving hostname and pull zone. Open the **Manual
 preview URL** ending in `/manual` to inspect the page in a browser. Each numbered
