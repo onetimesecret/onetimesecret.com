@@ -188,6 +188,14 @@ const page = await getEntry("useCases", "en/${group}/private");
 />
 `,
     );
+    fixture(
+      "src/pages/cve-integration.mdx",
+      `import Cve from "@/components/Cve.astro";
+
+A four-digit ID: <Cve id="CVE-2024-4577" /> and a longer ID:
+<Cve id="CVE-2026-109618" class="cve-reference" />.
+`,
+    );
     // Do not inherit deployment credentials or upload fixture source maps.
     const env = {
       ...process.env,
@@ -216,6 +224,35 @@ const page = await getEntry("useCases", "en/${group}/private");
 
 afterAll(() => {
   if (workspace) rmSync(workspace, { recursive: true, force: true });
+});
+
+describe("rendered CVE references", () => {
+  it("renders inline nofollow links for four-digit and longer CVE IDs", () => {
+    const document = html("cve-integration");
+    const links = document.querySelectorAll("a");
+
+    expect(links).toHaveLength(2);
+    for (const [index, id] of ["CVE-2024-4577", "CVE-2026-109618"].entries()) {
+      expect(links[index].textContent).toBe(id);
+      expect(links[index].getAttribute("href")).toBe(
+        `https://www.cve.org/CVERecord?id=${id}`,
+      );
+      expect(links[index].getAttribute("rel")).toBe("nofollow");
+      expect(links[index].hasAttribute("target")).toBe(false);
+      expect(links[index].parentElement?.tagName).toBe("P");
+      for (const className of [
+        "not-prose",
+        "font-mono",
+        "border",
+        "no-underline",
+      ]) {
+        expect(links[index].classList.contains(className)).toBe(true);
+      }
+    }
+    expect(links[1].classList.contains("cve-reference")).toBe(true);
+    expect(document.body.textContent).toContain("CVE-2026-109618.");
+    expect(document.querySelector("astro-island")).toBeNull();
+  });
 });
 
 describe("rendered origin fallback auth interstitials", () => {

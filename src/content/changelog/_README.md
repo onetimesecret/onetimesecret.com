@@ -90,12 +90,15 @@ highlights:                            # optional; max 6 items; string OR {icon,
   - { icon: ask,   text: "use for planned/unconfirmed items" }
 ---
 
+import Cve from "@/components/Cve.astro";
 import Callout from "@/components/changelog/Callout.astro";
 import ScreenshotFrame from "@/components/changelog/ScreenshotFrame.astro";
 import BeforeAfter from "@/components/changelog/BeforeAfter.astro";
 import VideoEmbed from "@/components/changelog/VideoEmbed.astro";
 
 Prose, headings, lists — all standard MDX/Markdown.
+
+Reference a vulnerability inline with <Cve id="CVE-2026-109618" />.
 
 <Callout type="info">
   type?: "info" | "warning" | "tip" (default "info"). Slot is the body.
@@ -126,6 +129,12 @@ Prose, headings, lists — all standard MDX/Markdown.
 />
 ```
 
+
+`Cve` requires an uppercase `CVE-YYYY-NNNN` identifier with four or more digits
+in the final segment. It renders an inline monospace badge linking to CVE.org with
+`rel="nofollow"`, light/dark styling, and an optional `class` prop. Malformed IDs fail
+the build; valid syntax does not verify that a CVE record exists. The component
+does not fetch advisory metadata or require client-side JavaScript.
 
 ## Refer to the visual guide
 
