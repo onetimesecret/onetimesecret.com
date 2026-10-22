@@ -140,6 +140,25 @@ export function normalizeLanguages(
   };
 }
 
+export function requestRepositoryApi(
+  repository: Repository,
+  url: string,
+  token?: string,
+): Promise<Response> {
+  const headers: Record<string, string> = { Accept: "application/json" };
+  if (token) {
+    if (repository.provider === "gitlab") headers["PRIVATE-TOKEN"] = token;
+    else headers.Authorization = `Bearer ${token}`;
+  }
+  return fetch(url, {
+    headers,
+    signal: AbortSignal.timeout(8000),
+    // Do not forward private repository credentials through API redirects.
+    redirect: "error",
+    credentials: "omit",
+  });
+}
+
 // Share in-flight requests across repeated MDX uses and localized static pages.
 const requests = new Map<string, Promise<RepositoryLanguages>>();
 
@@ -151,18 +170,11 @@ export function fetchRepositoryLanguages(
   let request = requests.get(key);
   if (!request) {
     request = (async () => {
-      const headers: Record<string, string> = { Accept: "application/json" };
-      if (token) {
-        if (repository.provider === "gitlab") headers["PRIVATE-TOKEN"] = token;
-        else headers.Authorization = `Bearer ${token}`;
-      }
-      const response = await fetch(repository.languagesUrl, {
-        headers,
-        signal: AbortSignal.timeout(8000),
-        // Do not forward private repository credentials through API redirects.
-        redirect: "error",
-        credentials: "omit",
-      });
+      const response = await requestRepositoryApi(
+        repository,
+        repository.languagesUrl,
+        token,
+      );
       if (!response.ok) {
         throw new Error(
           `Repository language API returned HTTP ${response.status}.`,

@@ -209,43 +209,76 @@ An explicit preview: <Cve id="CVE-2024-4577" preview={{
       "src/pages/repository-integration.astro",
       `---
 import RepositoryFacts from "@/components/RepositoryFacts.astro";
+const commitRepo = "https://github.com/team/activity";
+const pinned = { count: 12345, latestCommitAt: "2026-10-21T23:30:00-04:00" };
 ---
 <section id="repo-bytes">
-  <RepositoryFacts repo="https://github.com/team/project.git/"
+  <RepositoryFacts repo="https://github.com/team/project.git/" commits={false}
     languages={{ "<em>Ruby & Co</em>": 300, TypeScript: 100 }} />
 </section>
 <section id="repo-percent">
-  <RepositoryFacts repo="https://gitlab.com/group/sub/project"
+  <RepositoryFacts repo="https://gitlab.com/group/sub/project" commits={false}
     languages={{ Ruby: 62.5, TypeScript: 12.5 }} />
 </section>
 <section id="repo-forgejo">
-  <RepositoryFacts repo="https://forge.fixture.invalid/team/project"
+  <RepositoryFacts repo="https://forge.fixture.invalid/team/project" commits={false}
     provider="forgejo" label="Forge fixture" languages={{ Go: 1, Rust: 3 }} />
 </section>
 <section id="repo-empty">
-  <RepositoryFacts repo="https://github.com/team/empty" languages={{}} />
+  <RepositoryFacts repo="https://github.com/team/empty" commits={false} languages={{}} />
 </section>
 <section id="repo-french">
-  <RepositoryFacts repo="https://github.com/team/french" lang="fr"
+  <RepositoryFacts repo="https://github.com/team/french" lang="fr" commits={false}
     languages={{ Ruby: 125, TypeScript: 875 }} />
 </section>
 <section id="repo-unavailable">
-  <RepositoryFacts repo="https://github.com/team/private" tokenEnv="${missingRepoToken}" />
+  <RepositoryFacts repo="https://github.com/team/private" commits={false}
+    tokenEnv="${missingRepoToken}" />
 </section>
 <section id="repo-text">
-  <RepositoryFacts repo="https://github.com/team/project.git/" style="text"
+  <RepositoryFacts repo="https://github.com/team/project.git/" style="text" commits={false}
     languages={{ "<em>Ruby & Co</em>": 300, TypeScript: 100 }} />
 </section>
 {(["bar", "card"] as const).map((style) => (
   <section id={\`repo-\${style}\`}>
-    <RepositoryFacts repo="https://gitlab.com/group/sub/project" style={style}
+    <RepositoryFacts repo="https://gitlab.com/group/sub/project" style={style} commits={false}
       languages={{ "<em>Ruby & Co</em>": 12.5, Ruby: 62.5 }} />
     <div data-state="empty">
-      <RepositoryFacts repo="https://gitlab.com/team/empty" style={style} languages={{}} />
+      <RepositoryFacts repo="https://gitlab.com/team/empty" style={style}
+        commits={false} languages={{}} />
     </div>
     <div data-state="unavailable">
-      <RepositoryFacts repo="https://gitlab.com/team/private" style={style}
+      <RepositoryFacts repo="https://gitlab.com/team/private" style={style} commits={false}
         tokenEnv="${missingRepoToken}" />
+    </div>
+  </section>
+))}
+{(["text", "bar", "card"] as const).map((style) => (
+  <section id={\`commits-\${style}\`}>
+    {(["en", "fr"] as const).map((lang) => (
+      <div data-commit-state={lang}>
+        <RepositoryFacts repo={commitRepo} style={style} lang={lang}
+          languages={{ Ruby: 100 }} commits={pinned} />
+      </div>
+    ))}
+    <div data-commit-state="empty">
+      <RepositoryFacts repo={commitRepo} style={style} languages={{}}
+        commits={{ count: 0, latestCommitAt: null }} />
+    </div>
+    <div data-commit-state="partial">
+      <RepositoryFacts repo={commitRepo} style={style} languages={{ Ruby: 100 }}
+        commits={{ ...pinned, count: null }} />
+    </div>
+    <div data-commit-state="unavailable">
+      <RepositoryFacts repo={commitRepo} style={style} languages={{ Ruby: 100 }}
+        tokenEnv="${missingRepoToken}" />
+    </div>
+    <div data-commit-state="language-unavailable">
+      <RepositoryFacts repo={commitRepo} style={style} commits={pinned}
+        tokenEnv="${missingRepoToken}" />
+    </div>
+    <div data-commit-state="language-empty">
+      <RepositoryFacts repo={commitRepo} style={style} languages={{}} commits={pinned} />
     </div>
   </section>
 ))}
@@ -256,6 +289,7 @@ import RepositoryFacts from "@/components/RepositoryFacts.astro";
       ...process.env,
       VITE_BASE_URL: origin,
       SENTRY_AUTH_TOKEN: "",
+      TZ: "America/New_York",
     };
     delete env[missingRepoToken];
     await run(
@@ -343,8 +377,11 @@ describe("rendered repository facts", () => {
   it("renders repository links and source units without client hydration", () => {
     const document = html("repository-integration");
     expect(document.querySelectorAll("[data-repository-facts]")).toHaveLength(
-      13,
+      34,
     );
+    expect(
+      document.querySelector('[id^="repo-"] [data-commit-facts]'),
+    ).toBeNull();
     const implicit = document.querySelector(
       "#repo-bytes [data-repository-facts]",
     );
@@ -460,6 +497,76 @@ describe("rendered repository facts", () => {
         expect(fallback.getAttribute("data-language-unit")).toBe(
           state === "empty" ? "percent" : null,
         );
+      }
+    },
+  );
+
+  it.each(["text", "bar", "card"])(
+    "localizes %s commit counts and UTC dates",
+    (style) => {
+      const section = html("repository-integration").getElementById(
+        `commits-${style}`,
+      )!;
+      for (const lang of ["en", "fr"]) {
+        const facts = section.querySelector(
+          `[data-commit-state="${lang}"] [data-commit-facts]`,
+        )!;
+        const french = lang === "fr";
+        const text = facts.textContent?.replace(/\s+/g, " ");
+        expect(text).toContain("Commits");
+        expect(text).toContain(french ? "12 345" : "12,345");
+        expect(text).toContain(french ? "Dernier commit" : "Latest commit");
+        expect(
+          facts.getAttribute(style === "text" ? "title" : "aria-label"),
+        ).toBe(
+          french
+            ? "Historique de la branche par défaut"
+            : "Default branch history",
+        );
+        const time = facts.querySelector("time")!;
+        expect(time.getAttribute("datetime")).toBe("2026-10-22T03:30:00.000Z");
+        expect(time.textContent).toBe(french ? "22 oct. 2026" : "Oct 22, 2026");
+        expect(time.closest('[aria-hidden="true"]')).toBeNull();
+      }
+    },
+  );
+
+  it.each(["text", "bar", "card"])(
+    "renders independent %s commit states",
+    (style) => {
+      const section = html("repository-integration").getElementById(
+        `commits-${style}`,
+      )!;
+      for (const [state, count, latest] of [
+        ["empty", "0", "No commits"],
+        ["partial", "Unavailable", "Oct 22, 2026"],
+        ["unavailable", "Unavailable", "Unavailable"],
+        ["language-unavailable", "12,345", "Oct 22, 2026"],
+        ["language-empty", "12,345", "Oct 22, 2026"],
+      ]) {
+        const block = section.querySelector(`[data-commit-state="${state}"]`)!;
+        const facts = block.querySelector("[data-commit-facts]")!;
+        const renderedCount =
+          style === "text"
+            ? facts.textContent?.match(/Commits:\s*([^·]+)/)?.[1].trim()
+            : facts.querySelector("[data-commit-count]")?.textContent;
+        expect(renderedCount).toBe(count);
+        expect(facts.textContent).toContain(latest);
+        expect(
+          facts.querySelector("time")?.getAttribute("datetime") ?? null,
+        ).toBe(latest === "Oct 22, 2026" ? "2026-10-22T03:30:00.000Z" : null);
+        if (state === "empty" || state === "language-empty") {
+          expect(block.textContent).toContain("No languages detected");
+        } else if (state === "language-unavailable") {
+          expect(block.textContent).toContain(
+            "Language statistics unavailable",
+          );
+        } else {
+          expect(block.textContent).toMatch(/Ruby\s+100%/);
+          expect(block.textContent).not.toContain(
+            "Language statistics unavailable",
+          );
+        }
       }
     },
   );

@@ -18,7 +18,12 @@
   "repository-facts": {
     "languages": "Codebase languages",
     "unavailable": "Language statistics unavailable",
-    "empty": "No languages detected"
+    "empty": "No languages detected",
+    "commits": "Commits",
+    "latest-commit": "Latest commit",
+    "default-branch": "Default branch history",
+    "unavailable-value": "Unavailable",
+    "no-commits": "No commits"
   },
   "$config": {
     "layout-footer-style": "horizontal"

@@ -18,7 +18,12 @@
   "repository-facts": {
     "languages": "Langages du code source",
     "unavailable": "Statistiques des langages indisponibles",
-    "empty": "Aucun langage détecté"
+    "empty": "Aucun langage détecté",
+    "commits": "Commits",
+    "latest-commit": "Dernier commit",
+    "default-branch": "Historique de la branche par défaut",
+    "unavailable-value": "Indisponible",
+    "no-commits": "Aucun commit"
   },
   "$config": {
     "layout-footer-style": "grid"

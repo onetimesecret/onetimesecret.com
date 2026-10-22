@@ -18,7 +18,12 @@
   "repository-facts": {
     "languages": "Programmiersprachen der Codebasis",
     "unavailable": "Sprachstatistik nicht verfügbar",
-    "empty": "Keine Programmiersprachen erkannt"
+    "empty": "Keine Programmiersprachen erkannt",
+    "commits": "Commits",
+    "latest-commit": "Letzter Commit",
+    "default-branch": "Verlauf des Standardbranches",
+    "unavailable-value": "Nicht verfügbar",
+    "no-commits": "Keine Commits"
   },
   "$config": {
     "layout-footer-style": "grid"

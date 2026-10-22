@@ -7,9 +7,13 @@ import {
   fetchRepositoryLanguages,
   normalizeLanguages,
   resolveRepository,
-  type RepositoryLanguages,
   type RepositoryOptions,
 } from "@/utils/repository";
+import {
+  fetchRepositoryCommits,
+  normalizeRepositoryCommits,
+  type RepositoryCommits,
+} from "@/utils/repository-commits";
 
 export interface Props extends RepositoryOptions {
   label?: string;
@@ -18,6 +22,8 @@ export interface Props extends RepositoryOptions {
   style?: "text" | "bar" | "card";
   /** Optional pinned API response: bytes for GitHub/Forgejo/Gitea, percentages for GitLab. */
   languages?: Record<string, number>;
+  /** Pin commit facts for offline builds, or hide them with false. */
+  commits?: RepositoryCommits | false;
   /** Build-only environment variable name; never pass a token literal through MDX. */
   tokenEnv?: string;
 }
@@ -26,6 +32,7 @@ const {
   label,
   lang = getLocaleFromUrl(Astro.url),
   languages,
+  commits,
   tokenEnv,
   style: displayStyle = "text",
 } = Astro.props;
@@ -37,22 +44,47 @@ const percent = new Intl.NumberFormat(lang, {
   style: "percent",
   maximumSignificantDigits: 3,
 });
-let breakdown: RepositoryLanguages | undefined;
-
-if (languages !== undefined) {
-  breakdown = normalizeLanguages(languages, repository.unit);
-} else {
+const token = tokenEnv ? process.env[tokenEnv] : undefined;
+async function load<T>(
+  name: string,
+  fetcher: () => Promise<T>,
+): Promise<T | undefined> {
   try {
-    const token = tokenEnv ? process.env[tokenEnv] : undefined;
     if (tokenEnv && !token) throw new Error("Missing repository API token.");
-    breakdown = await fetchRepositoryLanguages(repository, token);
+    return await fetcher();
   } catch {
     // Keep API errors and credentials out of generated HTML and build logs.
-    console.warn(
-      `[RepositoryFacts] Language statistics unavailable for ${repository.url}`,
-    );
+    console.warn(`[RepositoryFacts] ${name} unavailable for ${repository.url}`);
+    return undefined;
   }
 }
+const [breakdown, commitFacts] = await Promise.all([
+  languages !== undefined
+    ? normalizeLanguages(languages, repository.unit)
+    : load("Language statistics", () =>
+        fetchRepositoryLanguages(repository, token),
+      ),
+  commits === false
+    ? undefined
+    : commits !== undefined
+      ? normalizeRepositoryCommits(commits)
+      : load("Commit statistics", () =>
+          fetchRepositoryCommits(repository, token),
+        ),
+]);
+const formattedCount =
+  commitFacts?.count != null
+    ? new Intl.NumberFormat(lang).format(commitFacts.count)
+    : text["unavailable-value"];
+const latestCommitAt = commitFacts?.latestCommitAt;
+const formattedDate = latestCommitAt
+  ? new Intl.DateTimeFormat(lang, {
+      dateStyle: "medium",
+      timeZone: "UTC",
+    }).format(new Date(latestCommitAt))
+  : commitFacts?.count === 0
+    ? text["no-commits"]
+    : text["unavailable-value"];
 
 // Colors identify languages consistently across repositories and display styles.
 const hues = new Map([
@@ -114,6 +146,25 @@ const status = breakdown ? text.empty : text.unavailable;
       )}
     </span>
     {")"}
+    {commits !== false && (
+      <span
+        class="repository-inline-activity"
+        title={text["default-branch"]}
+        data-commit-facts>
+        {" · "}
+        {text.commits}: {formattedCount}
+        {" · "}
+        {text["latest-commit"]}:{" "}
+        {latestCommitAt ? (
+          <time
+            datetime={latestCommitAt}
+            set:text={formattedDate}
+          />
+        ) : (
+          formattedDate
+        )}
+      </span>
+    )}
   </span>
 ) : (
   <figure
@@ -136,6 +187,33 @@ const status = breakdown ? text.empty : text.unavailable;
         set:text={new URL(repository.url).host}
       />
     </figcaption>
+    {commits !== false && (
+      <dl
+        class="repository-activity"
+        aria-label={text["default-branch"]}
+        data-commit-facts>
+        <div>
+          <dt set:text={text.commits} />
+          <dd
+            data-commit-count
+            set:text={formattedCount}
+          />
+        </div>
+        <div>
+          <dt set:text={text["latest-commit"]} />
+          <dd>
+            {latestCommitAt ? (
+              <time
+                datetime={latestCommitAt}
+                set:text={formattedDate}
+              />
+            ) : (
+              formattedDate
+            )}
+          </dd>
+        </div>
+      </dl>
+    )}
     {rows?.length ? (
       <Fragment>
         <p
@@ -319,5 +397,35 @@ const status = breakdown ? text.empty : text.unavailable;
 
   .repository-status {
     margin: 0.75rem 0 0;
+  }
+
+  .repository-inline-activity,
+  .repository-activity dt {
+    color: var(--color-text-secondary);
+  }
+
+  .repository-activity {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 2rem;
+    margin: 1rem 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .repository-activity > div {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.5rem;
+  }
+
+  .repository-activity dd {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .repository-card .repository-activity {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-surface-3);
   }
 </style>
