@@ -211,6 +211,8 @@ An explicit preview: <Cve id="CVE-2024-4577" preview={{
 import RepositoryFacts from "@/components/RepositoryFacts.astro";
 const commitRepo = "https://github.com/team/activity";
 const pinned = { count: 12345, latestCommitAt: "2026-10-21T23:30:00-04:00" };
+const disclosureRepo = "https://gitlab.com/team/disclosure";
+const boundary = { Ruby: 98, Boundary: 1, Almost: 0.9999, Tiny: 0.0001 };
 ---
 <section id="repo-bytes">
   <RepositoryFacts repo="https://github.com/team/project.git/" commits={false}
@@ -279,6 +281,24 @@ const pinned = { count: 12345, latestCommitAt: "2026-10-21T23:30:00-04:00" };
     </div>
     <div data-commit-state="language-empty">
       <RepositoryFacts repo={commitRepo} style={style} languages={{}} commits={pinned} />
+    </div>
+  </section>
+))}
+{(["text", "bar", "card"] as const).map((style) => (
+  <section id={\`disclosure-\${style}\`}>
+    {(["en", "fr"] as const).map((lang) => (
+      <div data-disclosure-case={lang}>
+        <RepositoryFacts repo={disclosureRepo} style={style} lang={lang}
+          languages={boundary} commits={false} />
+      </div>
+    ))}
+    <div data-disclosure-case="large">
+      <RepositoryFacts repo={disclosureRepo} style={style} commits={false}
+        languages={{ Ruby: 99, Boundary: 1 }} />
+    </div>
+    <div data-disclosure-case="small">
+      <RepositoryFacts repo={disclosureRepo} style={style} commits={false}
+        languages={{ Almost: 0.9999, Tiny: 0.0001 }} />
     </div>
   </section>
 ))}
@@ -377,7 +397,7 @@ describe("rendered repository facts", () => {
   it("renders repository links and source units without client hydration", () => {
     const document = html("repository-integration");
     expect(document.querySelectorAll("[data-repository-facts]")).toHaveLength(
-      34,
+      46,
     );
     expect(
       document.querySelector('[id^="repo-"] [data-commit-facts]'),
@@ -404,10 +424,16 @@ describe("rendered repository facts", () => {
       expect(facts?.querySelector("a")?.getAttribute("href")).toBe(href);
       expect(facts?.getAttribute("data-language-unit")).toBe(unit);
     }
-    // The build injects one shared page script; RepositoryFacts adds none.
-    expect(document.querySelectorAll("script")).toHaveLength(1);
-    expect(document.querySelector("script")?.getAttribute("src")).toMatch(
-      /^\/assets\/page\.[\w-]+\.js$/,
+    // One shared page script and one bundled disclosure script, not an island.
+    const sources = [...document.querySelectorAll("script")].map(
+      (script) => script.src,
+    );
+    expect(sources).toHaveLength(2);
+    expect(sources).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/\/assets\/page\.[\w-]+\.js$/),
+        expect.stringMatching(/\/assets\/RepositoryFacts\.astro_.*\.js$/),
+      ]),
     );
     expect(
       document.querySelector("astro-island, [data-repository-facts] script"),
@@ -567,6 +593,80 @@ describe("rendered repository facts", () => {
             "Language statistics unavailable",
           );
         }
+      }
+    },
+  );
+
+  it.each(["text", "bar", "card"])(
+    "builds accessible %s disclosure fallback",
+    (style) => {
+      const document = html("repository-integration");
+      const section = document.getElementById(`disclosure-${style}`)!;
+      const localized: [HTMLButtonElement, string][] = [];
+      for (const lang of ["en", "fr"]) {
+        const sample = section.querySelector(
+          `[data-disclosure-case="${lang}"]`,
+        )!;
+        const tag = "repository-language-disclosure";
+        const disclosure = sample.querySelector(tag)!;
+        const button = disclosure.querySelector<HTMLButtonElement>("button")!;
+        localized.push([button, lang]);
+        expect(button.hidden).toBe(true);
+        expect(button.getAttribute("aria-expanded")).toBe("false");
+        const target = button.getAttribute("aria-controls")!;
+        const secondary = document.getElementById(target)!;
+        expect(secondary.closest(tag)).toBe(disclosure);
+        expect(secondary.closest("[hidden], [aria-hidden=true]")).toBeNull();
+        const primaryTag = style === "text" ? "span" : "ul";
+        const primary = disclosure.querySelector(primaryTag)!;
+        expect(primary.textContent).toMatch(/Ruby.*Boundary/s);
+        expect(primary.textContent).not.toMatch(/Almost|Tiny/);
+        expect(secondary.textContent).toMatch(/Almost\s+1\s*%/);
+        expect(secondary.textContent).toContain("Tiny");
+        expect(
+          disclosure.querySelector("[data-language-secondary][hidden]"),
+        ).toBeNull();
+        if (style !== "text") {
+          const bars = disclosure.querySelectorAll<HTMLElement>(
+            "[data-language-chart] > span",
+          );
+          const widths = [...bars].map((bar) => bar.style.width);
+          expect(widths).toEqual(["98%", "1%", "0.9999%", "0.0001%"]);
+        }
+        if (style === "bar") {
+          const small = disclosure.querySelectorAll(
+            "[data-language-chart] > [data-language-secondary]",
+          );
+          expect(
+            [...small].map((bar) => bar.getAttribute("data-language")),
+          ).toEqual(["Almost", "Tiny"]);
+        }
+      }
+      const small = section.querySelector('[data-disclosure-case="small"]')!;
+      expect(small.querySelector("[data-language-toggle]")).not.toBeNull();
+      expect(
+        small.querySelector("[data-language-secondary][id]")?.textContent,
+      ).toContain("Almost");
+      expect(
+        small.querySelector("ul:not([data-language-secondary])"),
+      ).toBeNull();
+      expect(
+        section.querySelector('[data-disclosure-case="large"] button'),
+      ).toBeNull();
+      expect(
+        document.querySelector('[id^="repo-"] [data-language-toggle]'),
+      ).toBeNull();
+      const ids = [...document.querySelectorAll("[data-language-toggle]")].map(
+        (button) => button.getAttribute("aria-controls"),
+      );
+      expect(ids).toHaveLength(9);
+      expect(new Set(ids).size).toBe(ids.length);
+      for (const [button, lang] of localized) {
+        const labels = JSON.parse(
+          readFileSync(join(root, "src/i18n/ui", `${lang}.json`), "utf8"),
+        )["repository-facts"];
+        expect(button.textContent).toBe(labels["show-more"]);
+        expect(button.getAttribute("data-show-less")).toBe(labels["show-less"]);
       }
     },
   );

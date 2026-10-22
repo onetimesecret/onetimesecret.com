@@ -23,7 +23,9 @@
     "latest-commit": "Último commit",
     "default-branch": "Historial de la rama predeterminada",
     "unavailable-value": "No disponible",
-    "no-commits": "Sin commits"
+    "no-commits": "Sin commits",
+    "show-more": "Mostrar más",
+    "show-less": "Mostrar menos"
   },
   "$config": {
     "layout-footer-style": "grid"

@@ -1,4 +1,6 @@
 ---
+import { randomUUID } from "node:crypto";
+
 import type { SupportedLanguage } from "@config/astro/i18n";
 
 import en from "@/i18n/ui/en.json";
@@ -114,9 +116,16 @@ const rows = breakdown?.languages.map(({ language, share }) => {
     color: `hsl(${hues.get(language) ?? hash % 360} 65% 55%)`,
   };
 });
-const summary = rows
-  ?.map(({ language, formatted }) => `${language} ${formatted}`)
-  .join(", ");
+const primaryRows = rows?.filter(({ share }) => share >= 1) ?? [];
+const secondaryRows = rows?.filter(({ share }) => share < 1) ?? [];
+const disclosureId = secondaryRows.length
+  ? `repository-languages-${randomUUID()}`
+  : undefined;
+const summarize = (group: typeof primaryRows) =>
+  group.map(({ language, formatted }) => `${language} ${formatted}`).join(", ");
+const rowGroups = secondaryRows.length
+  ? [primaryRows, secondaryRows]
+  : [primaryRows];
 const status = breakdown ? text.empty : text.unavailable;
 ---
 
@@ -139,7 +148,30 @@ const status = breakdown ? text.empty : text.unavailable;
             class="sr-only"
             set:text={`${text.languages}: `}
           />
-          <span set:text={summary} />
+          <repository-language-disclosure>
+            <span set:text={summarize(primaryRows)} />
+            {secondaryRows.length > 0 && (
+              <Fragment>
+                <span
+                  id={disclosureId}
+                  data-language-secondary>
+                  {primaryRows.length > 0 && ", "}
+                  <span set:text={summarize(secondaryRows)} />
+                </span>
+                <button
+                  type="button"
+                  class="language-toggle"
+                  data-language-toggle
+                  data-show-more={text["show-more"]}
+                  data-show-less={text["show-less"]}
+                  aria-expanded="false"
+                  aria-controls={disclosureId}
+                  hidden
+                  set:text={text["show-more"]}
+                />
+              </Fragment>
+            )}
+          </repository-language-disclosure>
         </Fragment>
       ) : (
         status
@@ -220,48 +252,72 @@ const status = breakdown ? text.empty : text.unavailable;
           class="repository-label"
           set:text={text.languages}
         />
-        {displayStyle === "bar" && (
-          <span
-            class="language-strip"
-            aria-hidden="true"
-            data-language-chart>
-            {rows.map(({ language, share, color }) => (
-              <span
-                data-language={language}
-                style={`width: ${share}%; background-color: ${color}`}
-              />
-            ))}
-          </span>
-        )}
-        <ul
-          class="language-list"
-          role="list">
-          {rows.map(({ language, share, formatted, color }) => (
-            <li
-              class="language-item"
-              style={`--language-color: ${color}`}>
-              <span class="language-name">
+        <repository-language-disclosure class="language-disclosure-visual">
+          {displayStyle === "bar" && (
+            <span
+              class="language-strip"
+              aria-hidden="true"
+              data-language-chart>
+              {rows.map(({ language, share, color }) => (
                 <span
-                  class="language-swatch"
-                  aria-hidden="true"
+                  data-language={language}
+                  data-language-secondary={share < 1 ? "" : undefined}
+                  style={`width: ${share}%; background-color: ${color}`}
                 />
-                <span set:text={language} />
-              </span>
-              <span
-                class="language-share"
-                set:text={formatted}
-              />
-              {displayStyle === "card" && (
-                <span
-                  class="language-track"
-                  aria-hidden="true"
-                  data-language-chart>
-                  <span style={`width: ${share}%`} />
-                </span>
+              ))}
+            </span>
+          )}
+          {rowGroups.map((group, index) => (
+            <Fragment>
+              {index === 1 && (
+                <button
+                  type="button"
+                  class="language-toggle"
+                  data-language-toggle
+                  data-show-more={text["show-more"]}
+                  data-show-less={text["show-less"]}
+                  aria-expanded="false"
+                  aria-controls={disclosureId}
+                  hidden
+                  set:text={text["show-more"]}
+                />
               )}
-            </li>
+              {group.length > 0 && (
+                <ul
+                  class="language-list"
+                  role="list"
+                  id={index === 1 ? disclosureId : undefined}
+                  data-language-secondary={index === 1 ? "" : undefined}>
+                  {group.map(({ language, share, formatted, color }) => (
+                    <li
+                      class="language-item"
+                      style={`--language-color: ${color}`}>
+                      <span class="language-name">
+                        <span
+                          class="language-swatch"
+                          aria-hidden="true"
+                        />
+                        <span set:text={language} />
+                      </span>
+                      <span
+                        class="language-share"
+                        set:text={formatted}
+                      />
+                      {displayStyle === "card" && (
+                        <span
+                          class="language-track"
+                          aria-hidden="true"
+                          data-language-chart>
+                          <span style={`width: ${share}%`} />
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Fragment>
           ))}
-        </ul>
+        </repository-language-disclosure>
       </Fragment>
     ) : (
       <p
@@ -272,7 +328,83 @@ const status = breakdown ? text.empty : text.unavailable;
   </figure>
 )}
 
+<script>
+  class RepositoryLanguageDisclosure extends HTMLElement {
+    private cleanup?: () => void;
+
+    connectedCallback() {
+      this.cleanup?.();
+      const button = this.querySelector<HTMLButtonElement>(
+        "[data-language-toggle]",
+      );
+      const secondary = this.querySelectorAll<HTMLElement>(
+        "[data-language-secondary]",
+      );
+      if (!button || !secondary.length) return;
+
+      const setExpanded = (expanded: boolean) => {
+        secondary.forEach((element) => {
+          element.hidden = !expanded;
+        });
+        button.setAttribute("aria-expanded", String(expanded));
+        button.textContent = expanded
+          ? button.dataset.showLess!
+          : button.dataset.showMore!;
+      };
+      const toggle = () =>
+        setExpanded(button.getAttribute("aria-expanded") !== "true");
+      button.addEventListener("click", toggle);
+      this.cleanup = () => button.removeEventListener("click", toggle);
+      setExpanded(false);
+      button.hidden = false;
+    }
+
+    disconnectedCallback() {
+      this.cleanup?.();
+    }
+  }
+
+  if (!customElements.get("repository-language-disclosure")) {
+    customElements.define(
+      "repository-language-disclosure",
+      RepositoryLanguageDisclosure,
+    );
+  }
+</script>
+
 <style>
+  .repository-facts [hidden] {
+    display: none !important;
+  }
+
+  .language-disclosure-visual {
+    display: block;
+  }
+
+  .language-toggle {
+    margin-inline-start: 0.5rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+
+  .language-toggle:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+    border-radius: 0.125rem;
+  }
+
+  .language-disclosure-visual > .language-toggle {
+    margin-top: 0.875rem;
+    margin-inline-start: 0;
+    color: var(--color-text-secondary);
+  }
+
   .repository-link {
     color: inherit;
     font-weight: 600;

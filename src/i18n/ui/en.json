@@ -23,7 +23,9 @@
     "latest-commit": "Latest commit",
     "default-branch": "Default branch history",
     "unavailable-value": "Unavailable",
-    "no-commits": "No commits"
+    "no-commits": "No commits",
+    "show-more": "Show more",
+    "show-less": "Show less"
   },
   "$config": {
     "layout-footer-style": "horizontal"

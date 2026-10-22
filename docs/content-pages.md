@@ -99,11 +99,11 @@ Factory functions to standardize content page creation:
 
 ### RepositoryFacts.astro (MDX)
 
-Display a repository link and its codebase language percentages as inline text or a
-static chart. The component fetches statistics during static generation, not in the
-visitor's browser. It adds no
-client JavaScript or dependencies. Statistics refresh on the next build; they describe
-the repository's analyzed code, not its deployed services or dependencies.
+Display a repository link, codebase language percentages, commit count, and latest
+commit date as inline text or a static chart. The component fetches statistics during
+static generation, not in the visitor's browser. A small client-side disclosure toggle
+adds no API requests or dependencies. Statistics refresh on the next build; they describe the repository's
+analyzed code, not its deployed services or dependencies.
 
 ```mdx
 import RepositoryFacts from "@/components/RepositoryFacts.astro";
@@ -130,10 +130,35 @@ single-language breakdown.
 
 The adapter preserves source units: GitHub/Forgejo/Gitea return **bytes** and the
 component calculates shares; GitLab returns **percentages**, used directly without
-inventing byte counts. All detected languages are shown, ordered by share. An empty
+inventing byte counts. Languages are ordered by share. Only shares **at least 1%** are
+shown initially; smaller shares appear behind a localized “Show more” / “Show less”
+button in every display style. The cutoff uses the unrounded share, so 0.9999% stays
+collapsed even if its formatted percentage rounds to 1%. Percentages and chart widths
+are never renormalized. Collapsed bar segments leave unused track space. The button
+supports keyboard activation and exposes its state through `aria-expanded`; it is
+omitted when there are no smaller shares. Without JavaScript, all languages remain
+visible and the inactive toggle stays hidden. An empty
 response displays “No languages detected”; a failed request displays “Language
 statistics unavailable” alongside the repository link and emits a build warning.
 Requests have an eight-second timeout and are shared within the build process.
+
+Commit facts are included in every style by default. The count covers the default
+branch's reachable history, including merged commits, not commits exclusive to other
+branches. “Latest commit” is the branch tip's **committer timestamp**, not the author
+date or repository activity date. Dates are localized, displayed in UTC, and retain
+the full timestamp in a semantic `<time datetime="…">` element.
+
+Counts come from GitHub's last-page link (`per_page=1`), Forgejo/Gitea's total-count
+header, or GitLab's commit sequence endpoint pinned to the returned commit SHA.
+GitLab sequence support requires version 16.9 or later. If that endpoint or a count
+header is unavailable, the date can still appear with an unavailable count. The
+component does not walk an entire history to reconstruct a missing count. Confirmed
+empty repositories show zero commits and “No commits” for the date; failed requests
+are never treated as zero. Language and commit requests fail independently.
+
+Fetching commit facts adds one API request for GitHub and two for GitLab or
+Forgejo/Gitea. Each request has the same eight-second timeout and build-process cache
+as language statistics. Private repositories use the same `tokenEnv` setting.
 
 Display styles:
 
@@ -143,7 +168,7 @@ Display styles:
 
 Use `text` inside prose. Place `bar` and `card` on their own line, outside paragraphs;
 they render a `<figure>` with the repository link as its caption. Both charts use
-consistent language colors, retain every language in the text legend, and preserve
+consistent language colors, retain every language in the expandable text legend, and preserve
 actual percentages rather than enlarging small segments. GitLab totals below 100%
 leave unused track space. Decorative charts are hidden from assistive technology;
 names and percentages remain readable text. Styling follows the site's light/dark
@@ -155,14 +180,30 @@ Optional props:
 - `lang`: one of the site's supported locales (defaults to the page URL's locale).
 - `class`: additional CSS classes.
 - `languages`: a pinned language-to-number object, in the provider's source unit.
-  Supplying it avoids the network entirely, including when it is empty. For example,
+  Supplying it skips the **language API** request, including when it is empty. For example,
   `languages={{ Ruby: 7500, Vue: 2500 }}` with GitHub or Forgejo, or
   `languages={{ Ruby: 75, Vue: 25 }}` with GitLab. Invalid pinned data fails the build.
+- `commits`: pin `{ count, latestCommitAt }` to skip commit API requests, or use
+  `commits={false}` to hide commit facts and skip fetching them. `count` is a
+  nonnegative integer or `null` when unknown; `latestCommitAt` is an ISO timestamp
+  with a timezone or `null`. Invalid pinned data fails the build. **For offline
+  builds, pin languages and commits, or pin languages and set `commits={false}`.**
 - `tokenEnv`: the name of a **build-only** environment variable for private repos or
   higher API limits, e.g. `tokenEnv="REPO_STATS_TOKEN"`. Set that secret in the build
   environment, never in MDX or a `PUBLIC_` variable. GitLab uses `PRIVATE-TOKEN`;
   other adapters use bearer auth. API redirects are rejected to avoid forwarding
   credentials. A configured but missing token produces the unavailable state.
+
+Example with a fully pinned snapshot (no API requests):
+
+```mdx
+<RepositoryFacts
+  repo="https://codeberg.org/team/project"
+  style="card"
+  languages={{ Go: 7500, Rust: 2500 }}
+  commits={{ count: 1234, latestCommitAt: "2026-10-22T10:30:00Z" }}
+/>
+```
 
 Only use trusted repository/API URLs in authored content: build-time requests can
 reach hosts available to the build machine. Publishing statistics from a private
