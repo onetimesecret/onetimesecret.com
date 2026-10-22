@@ -99,17 +99,19 @@ Factory functions to standardize content page creation:
 
 ### RepositoryFacts.astro (MDX)
 
-Display a repository link and its codebase language percentages inline. The component
-fetches statistics during static generation, not in the visitor's browser. It adds no
+Display a repository link and its codebase language percentages as inline text or a
+static chart. The component fetches statistics during static generation, not in the
+visitor's browser. It adds no
 client JavaScript or dependencies. Statistics refresh on the next build; they describe
 the repository's analyzed code, not its deployed services or dependencies.
 
 ```mdx
 import RepositoryFacts from "@/components/RepositoryFacts.astro";
 
-Source: <RepositoryFacts repo="https://github.com/onetimesecret/onetimesecret" />.
+Source: <RepositoryFacts repo="https://github.com/onetimesecret/onetimesecret" style="text" />.
 
-<RepositoryFacts repo="https://gitlab.com/group/subgroup/project" />
+<RepositoryFacts repo="https://github.com/onetimesecret/onetimesecret" style="bar" />
+<RepositoryFacts repo="https://gitlab.com/group/subgroup/project" style="card" />
 <RepositoryFacts repo="https://codeberg.org/team/project" />
 <RepositoryFacts
   repo="https://forge.example/team/project"
@@ -132,6 +134,20 @@ inventing byte counts. All detected languages are shown, ordered by share. An em
 response displays “No languages detected”; a failed request displays “Language
 statistics unavailable” alongside the repository link and emits a build warning.
 Requests have an eight-second timeout and are shared within the build process.
+
+Display styles:
+
+- `style="text"` (default): inline repository link and comma-separated percentages.
+- `style="bar"`: a stacked language strip with a wrapping legend and percentages.
+- `style="card"`: a bordered panel with ranked languages and individual share bars.
+
+Use `text` inside prose. Place `bar` and `card` on their own line, outside paragraphs;
+they render a `<figure>` with the repository link as its caption. Both charts use
+consistent language colors, retain every language in the text legend, and preserve
+actual percentages rather than enlarging small segments. GitLab totals below 100%
+leave unused track space. Decorative charts are hidden from assistive technology;
+names and percentages remain readable text. Styling follows the site's light/dark
+surface and text tokens. All styles retain the same empty/unavailable states.
 
 Optional props:
 

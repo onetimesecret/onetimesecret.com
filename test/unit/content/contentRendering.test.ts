@@ -232,6 +232,23 @@ import RepositoryFacts from "@/components/RepositoryFacts.astro";
 <section id="repo-unavailable">
   <RepositoryFacts repo="https://github.com/team/private" tokenEnv="${missingRepoToken}" />
 </section>
+<section id="repo-text">
+  <RepositoryFacts repo="https://github.com/team/project.git/" style="text"
+    languages={{ "<em>Ruby & Co</em>": 300, TypeScript: 100 }} />
+</section>
+{(["bar", "card"] as const).map((style) => (
+  <section id={\`repo-\${style}\`}>
+    <RepositoryFacts repo="https://gitlab.com/group/sub/project" style={style}
+      languages={{ "<em>Ruby & Co</em>": 12.5, Ruby: 62.5 }} />
+    <div data-state="empty">
+      <RepositoryFacts repo="https://gitlab.com/team/empty" style={style} languages={{}} />
+    </div>
+    <div data-state="unavailable">
+      <RepositoryFacts repo="https://gitlab.com/team/private" style={style}
+        tokenEnv="${missingRepoToken}" />
+    </div>
+  </section>
+))}
 `,
     );
     // Do not inherit deployment credentials or upload fixture source maps.
@@ -326,8 +343,17 @@ describe("rendered repository facts", () => {
   it("renders repository links and source units without client hydration", () => {
     const document = html("repository-integration");
     expect(document.querySelectorAll("[data-repository-facts]")).toHaveLength(
-      6,
+      13,
     );
+    const implicit = document.querySelector(
+      "#repo-bytes [data-repository-facts]",
+    );
+    const explicit = document.querySelector(
+      "#repo-text [data-repository-facts]",
+    );
+    expect(implicit?.tagName).toBe("SPAN");
+    expect(implicit?.getAttribute("data-style")).toBe("text");
+    expect(explicit?.outerHTML).toBe(implicit?.outerHTML);
     const cases = [
       ["bytes", "https://github.com/team/project", "bytes"],
       ["percent", "https://gitlab.com/group/sub/project", "percent"],
@@ -341,7 +367,14 @@ describe("rendered repository facts", () => {
       expect(facts?.querySelector("a")?.getAttribute("href")).toBe(href);
       expect(facts?.getAttribute("data-language-unit")).toBe(unit);
     }
-    expect(document.querySelector("script, astro-island")).toBeNull();
+    // The build injects one shared page script; RepositoryFacts adds none.
+    expect(document.querySelectorAll("script")).toHaveLength(1);
+    expect(document.querySelector("script")?.getAttribute("src")).toMatch(
+      /^\/assets\/page\.[\w-]+\.js$/,
+    );
+    expect(
+      document.querySelector("astro-island, [data-repository-facts] script"),
+    ).toBeNull();
   });
 
   it("preserves percentages, localizes French, and escapes pinned language names", () => {
@@ -351,8 +384,6 @@ describe("rendered repository facts", () => {
         .getElementById(`repo-${id}`)
         ?.textContent?.replace(/\s+/g, " ")
         .trim();
-    expect(text("bytes")).toContain("team/project");
-    expect(text("bytes")).toContain("Codebase languages:");
     expect(text("bytes")).toContain("<em>Ruby & Co</em> 75%, TypeScript 25%");
     expect(document.querySelector("#repo-bytes em")).toBeNull();
     expect(text("percent")).toContain("Ruby 62.5%, TypeScript 12.5%");
@@ -361,6 +392,77 @@ describe("rendered repository facts", () => {
     expect(text("french")).toContain("Langages du code source:");
     expect(text("french")).toContain("TypeScript 87,5 %, Ruby 12,5 %");
   });
+
+  it.each(["bar", "card"])(
+    "renders accessible %s charts without renormalizing",
+    (style) => {
+      const document = html("repository-integration");
+      const section = document.getElementById(`repo-${style}`)!;
+      const visual = section.querySelector("figure")!;
+      expect(visual.getAttribute("data-style")).toBe(style);
+      expect(visual.getAttribute("data-language-unit")).toBe("percent");
+      expect(visual.querySelector("a")?.getAttribute("href")).toBe(
+        "https://gitlab.com/group/sub/project",
+      );
+      expect(visual.querySelector(".repository-label")?.textContent).toBe(
+        "Codebase languages",
+      );
+      const list = visual.querySelector('ul[role="list"]')!;
+      expect(list.closest('[aria-hidden="true"]')).toBeNull();
+      const rows = [...list.querySelectorAll<HTMLElement>("li")];
+      expect(
+        rows.map((row) =>
+          row.querySelector(".language-name")?.textContent?.trim(),
+        ),
+      ).toEqual(["Ruby", "<em>Ruby & Co</em>"]);
+      expect(
+        rows.map((row) => row.querySelector(".language-share")?.textContent),
+      ).toEqual(["62.5%", "12.5%"]);
+      expect(visual.querySelector("em")).toBeNull();
+      const charts = [...visual.querySelectorAll("[data-language-chart]")];
+      expect(charts).toHaveLength(style === "bar" ? 1 : 2);
+      for (const chart of charts)
+        expect(chart.getAttribute("aria-hidden")).toBe("true");
+      const bars = [
+        ...visual.querySelectorAll<HTMLElement>("[data-language-chart] > span"),
+      ];
+      expect(bars.map((bar) => bar.style.width)).toEqual(["62.5%", "12.5%"]);
+      const colors = rows.map((row) =>
+        row.style.getPropertyValue("--language-color"),
+      );
+      expect(colors.every(Boolean)).toBe(true);
+      const other = style === "bar" ? "card" : "bar";
+      const peers = document.querySelectorAll<HTMLElement>(
+        `#repo-${other} > figure li`,
+      );
+      expect(colors).toEqual(
+        [...peers].map((row) => row.style.getPropertyValue("--language-color")),
+      );
+      if (style === "bar") {
+        expect(bars.map((bar) => bar.getAttribute("data-language"))).toEqual([
+          "Ruby",
+          "<em>Ruby & Co</em>",
+        ]);
+        bars.forEach((bar, index) => {
+          expect(bar.getAttribute("style")).toContain(colors[index]);
+        });
+      }
+      for (const [state, message] of [
+        ["empty", "No languages detected"],
+        ["unavailable", "Language statistics unavailable"],
+      ]) {
+        const fallback = section.querySelector(
+          `[data-state="${state}"] figure`,
+        )!;
+        expect(fallback.getAttribute("data-style")).toBe(style);
+        expect(fallback.textContent).toContain(message);
+        expect(fallback.querySelector("[data-language-chart], ul")).toBeNull();
+        expect(fallback.getAttribute("data-language-unit")).toBe(
+          state === "empty" ? "percent" : null,
+        );
+      }
+    },
+  );
 
   it("distinguishes empty pinned data from unavailable statistics without exposing errors", () => {
     const document = html("repository-integration");

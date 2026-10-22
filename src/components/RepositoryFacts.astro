@@ -15,6 +15,7 @@ export interface Props extends RepositoryOptions {
   label?: string;
   lang?: SupportedLanguage;
   class?: string;
+  style?: "text" | "bar" | "card";
   /** Optional pinned API response: bytes for GitHub/Forgejo/Gitea, percentages for GitLab. */
   languages?: Record<string, number>;
   /** Build-only environment variable name; never pass a token literal through MDX. */
@@ -26,6 +27,7 @@ const {
   lang = getLocaleFromUrl(Astro.url),
   languages,
   tokenEnv,
+  style: displayStyle = "text",
 } = Astro.props;
 const repository = resolveRepository(Astro.props);
 const messages =
@@ -51,38 +53,271 @@ if (languages !== undefined) {
     );
   }
 }
+
+// Colors identify languages consistently across repositories and display styles.
+const hues = new Map([
+  ["Ruby", 355],
+  ["TypeScript", 210],
+  ["Vue", 153],
+  ["Shell", 95],
+  ["Python", 45],
+  ["JavaScript", 55],
+  ["HTML", 16],
+  ["Dockerfile", 195],
+  ["CSS", 275],
+  ["PLpgSQL", 225],
+  ["HCL", 255],
+  ["Go", 185],
+  ["Rust", 25],
+]);
+const rows = breakdown?.languages.map(({ language, share }) => {
+  const hash = Array.from(language).reduce(
+    (value, char) => (value * 31 + char.codePointAt(0)!) >>> 0,
+    0,
+  );
+  return {
+    language,
+    share,
+    formatted: percent.format(share / 100),
+    color: `hsl(${hues.get(language) ?? hash % 360} 65% 55%)`,
+  };
+});
+const summary = rows
+  ?.map(({ language, formatted }) => `${language} ${formatted}`)
+  .join(", ");
+const status = breakdown ? text.empty : text.unavailable;
 ---
 
-<span
-  class:list={["repository-facts not-prose text-sm", Astro.props.class]}
-  data-repository-facts
-  data-language-unit={breakdown?.unit}>
-  <a
-    href={repository.url}
-    class="font-medium underline decoration-current/40 underline-offset-2 hover:decoration-current">
-    {label ?? repository.name}
-  </a>{" "}
-  <span class="text-text-secondary">
-    {"("}
-    {breakdown ? (
-      breakdown.languages.length ? (
-        <span>
-          <span class="sr-only">{text.languages}: </span>
-          {breakdown.languages.map(({ language, share }, index) => (
-            <Fragment>
-              {index > 0 && ", "}
-              <span class="whitespace-nowrap">
-                {language} {percent.format(share / 100)}
-              </span>
-            </Fragment>
-          ))}
-        </span>
+{displayStyle === "text" ? (
+  <span
+    class:list={["repository-facts not-prose text-sm", Astro.props.class]}
+    data-repository-facts
+    data-style="text"
+    data-language-unit={breakdown?.unit}>
+    <a
+      href={repository.url}
+      class="repository-link"
+      set:text={label ?? repository.name}
+    />
+    {" ("}
+    <span class="text-text-secondary">
+      {rows?.length ? (
+        <Fragment>
+          <span
+            class="sr-only"
+            set:text={`${text.languages}: `}
+          />
+          <span set:text={summary} />
+        </Fragment>
       ) : (
-        text.empty
-      )
-    ) : (
-      text.unavailable
-    )}
+        status
+      )}
+    </span>
     {")"}
   </span>
-</span>
+) : (
+  <figure
+    class:list={[
+      "repository-facts repository-visual not-prose",
+      `repository-${displayStyle}`,
+      Astro.props.class,
+    ]}
+    data-repository-facts
+    data-style={displayStyle}
+    data-language-unit={breakdown?.unit}>
+    <figcaption class="repository-heading">
+      <a
+        href={repository.url}
+        class="repository-link"
+        set:text={label ?? repository.name}
+      />
+      <span
+        class="repository-host"
+        set:text={new URL(repository.url).host}
+      />
+    </figcaption>
+    {rows?.length ? (
+      <Fragment>
+        <p
+          class="repository-label"
+          set:text={text.languages}
+        />
+        {displayStyle === "bar" && (
+          <span
+            class="language-strip"
+            aria-hidden="true"
+            data-language-chart>
+            {rows.map(({ language, share, color }) => (
+              <span
+                data-language={language}
+                style={`width: ${share}%; background-color: ${color}`}
+              />
+            ))}
+          </span>
+        )}
+        <ul
+          class="language-list"
+          role="list">
+          {rows.map(({ language, share, formatted, color }) => (
+            <li
+              class="language-item"
+              style={`--language-color: ${color}`}>
+              <span class="language-name">
+                <span
+                  class="language-swatch"
+                  aria-hidden="true"
+                />
+                <span set:text={language} />
+              </span>
+              <span
+                class="language-share"
+                set:text={formatted}
+              />
+              {displayStyle === "card" && (
+                <span
+                  class="language-track"
+                  aria-hidden="true"
+                  data-language-chart>
+                  <span style={`width: ${share}%`} />
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </Fragment>
+    ) : (
+      <p
+        class="repository-status"
+        set:text={status}
+      />
+    )}
+  </figure>
+)}
+
+<style>
+  .repository-link {
+    color: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+    text-underline-offset: 0.2em;
+    overflow-wrap: anywhere;
+  }
+
+  .repository-link:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .repository-visual {
+    margin: 1.5rem 0;
+    color: var(--color-text-primary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .repository-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+  }
+
+  .repository-host,
+  .repository-label,
+  .repository-status,
+  .language-share {
+    color: var(--color-text-secondary);
+  }
+
+  .repository-host {
+    font-size: 0.75rem;
+  }
+
+  .repository-label {
+    margin: 0.75rem 0 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .language-strip,
+  .language-track {
+    display: flex;
+    overflow: hidden;
+    background: var(--color-surface-3);
+    border-radius: 999px;
+  }
+
+  .language-strip {
+    height: 0.625rem;
+  }
+
+  .language-strip > span {
+    flex-shrink: 0;
+  }
+
+  .language-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .language-item,
+  .language-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .language-name > span:last-child {
+    overflow-wrap: anywhere;
+  }
+
+  .language-swatch {
+    width: 0.5rem;
+    height: 0.5rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--language-color);
+  }
+
+  .language-share {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .repository-card {
+    padding: clamp(1rem, 3vw, 1.5rem);
+    border: 1px solid var(--color-surface-3);
+    border-radius: 0.875rem;
+    background: var(--color-surface-1);
+  }
+
+  .repository-card .language-list {
+    display: grid;
+    gap: 0.875rem;
+  }
+
+  .repository-card .language-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.25rem 0.75rem;
+  }
+
+  .language-track {
+    grid-column: 1 / -1;
+    height: 0.25rem;
+  }
+
+  .language-track > span {
+    background: var(--language-color);
+    border-radius: inherit;
+  }
+
+  .repository-status {
+    margin: 0.75rem 0 0;
+  }
+</style>
