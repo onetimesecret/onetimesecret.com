@@ -1,7 +1,6 @@
 ---
-import { randomUUID } from "node:crypto";
-
 import { cvePreviews, type CvePreview } from "@/data/cves";
+import { renderScopedId } from "@/utils/elementId";
 
 export interface Props {
   id: string;
@@ -9,7 +8,7 @@ export interface Props {
   preview?: CvePreview;
 }
 
-const { id, class: className, preview = cvePreviews[id] } = Astro.props;
+const { id, class: className } = Astro.props;
 
 if (!/^CVE-\d{4}-\d{4,}$/.test(id)) {
   throw new Error(
@@ -17,8 +16,11 @@ if (!/^CVE-\d{4}-\d{4,}$/.test(id)) {
   );
 }
 
+const preview = Astro.props.preview ?? cvePreviews[id];
 const href = `https://www.cve.org/CVERecord?id=${id}`;
-const previewId = preview ? `cve-preview-${randomUUID()}` : undefined;
+const previewId = preview
+  ? renderScopedId(Astro.locals, "cve-preview")
+  : undefined;
 ---
 
 <style>
