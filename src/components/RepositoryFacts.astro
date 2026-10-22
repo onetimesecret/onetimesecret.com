@@ -54,8 +54,8 @@ const percent = new Intl.NumberFormat(lang, {
   style: "percent",
   maximumSignificantDigits: 3,
 });
-// process.env: import.meta.env cannot resolve a runtime key and inlines private values
-// into the build output.
+// process.env: in builds, import.meta.env only resolves keys named literally in this
+// file (tokenEnv is a runtime value) and inlines their values into the server bundle.
 const token = tokenEnv ? process.env[tokenEnv] : undefined;
 async function load<T>(
   name: string,

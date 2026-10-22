@@ -1,4 +1,5 @@
-// Count per render scope so ids stay unique on a page and identical across builds.
+// Count per render scope so ids are unique on a page. Astro starts sibling components
+// in document order, so ids taken before a component's first await match across builds.
 // The colon keeps them out of the heading slug namespace (github-slugger strips it).
 const counters = new WeakMap<object, Map<string, number>>();
 

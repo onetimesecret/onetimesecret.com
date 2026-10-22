@@ -59,7 +59,7 @@ async function json(
   try {
     response = await requestRepositoryApi(repository, url, token);
   } catch {
-    // Transport errors can contain URLs or credentials; do not expose their messages.
+    // Transport errors can carry hostnames and network addresses; do not expose them.
     throw new Error("Repository commit API request failed.");
   }
   if (response.status === 409 && allowEmpty) {

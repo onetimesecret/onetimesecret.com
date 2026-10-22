@@ -100,10 +100,11 @@ Factory functions to standardize content page creation:
 ### RepositoryFacts.astro (MDX)
 
 Display a repository link, codebase language percentages, commit count, and latest
-commit date as inline text or a static chart. The component fetches statistics during
-static generation, not in the visitor's browser. A small client-side disclosure toggle
-adds no API requests or dependencies. Statistics refresh on the next build; they describe the repository's
-analyzed code, not its deployed services or dependencies.
+commit date as inline text or a static chart. Unless pinned, the component fetches
+statistics during static generation, not in the visitor's browser. A small client-side
+disclosure toggle adds no API requests or dependencies. Unpinned statistics refresh on
+the next build; they describe the repository's analyzed code, not its deployed
+services or dependencies.
 
 ```mdx
 import RepositoryFacts from "@/components/RepositoryFacts.astro";
