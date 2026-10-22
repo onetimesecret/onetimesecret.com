@@ -132,9 +132,41 @@ Reference a vulnerability inline with <Cve id="CVE-2026-109618" />.
 
 `Cve` requires an uppercase `CVE-YYYY-NNNN` identifier with four or more digits
 in the final segment. It renders an inline monospace badge linking to CVE.org with
-`rel="nofollow"`, light/dark styling, and an optional `class` prop. Malformed IDs fail
-the build; valid syntax does not verify that a CVE record exists. The component
-does not fetch advisory metadata or require client-side JavaScript.
+`rel="nofollow"` and light/dark styling. Malformed IDs fail the build; valid syntax
+does not verify that a CVE record exists.
+
+Props: `id: string`, `class?: string`, and `preview?: CvePreview` (an explicit
+metadata override). `CvePreview` is exported from `src/data/cves.ts` and contains
+`title: string`, `summary: string`, and optional `lang?: string`. By default,
+previews come from the `cvePreviews` lookup in that file. Unknown IDs without an
+explicit preview remain links with no preview.
+
+Previews are static, checked-in metadata. A small Astro script handles accessible
+hover/focus tooltips, Escape dismissal, and positioning, without Vue hydration or
+external API requests at build time or runtime. The link works without JavaScript.
+
+Use an explicit preview to override the snapshot, including for translated content:
+
+```mdx
+import Cve from "@/components/Cve.astro";
+
+<Cve
+  id="CVE-2026-109618"
+  preview={{
+    title: "RCE via OOM corruption",
+    summary:
+      "PHP out-of-memory handling can leave request memory uninitialized. " +
+      "Cleanup may use this memory, potentially allowing remote code execution.",
+    lang: "en",
+  }}
+/>
+```
+
+For translations, translate both `title` and `summary` and set the optional `lang`
+to the preview's language tag. To add or refresh a shared snapshot, check the
+official CVE record first, then update `src/data/cves.ts` with the official title,
+a concise paraphrased summary, language, source URL, and verification date. ID
+syntax alone does not establish that the record exists.
 
 ## Refer to the visual guide
 

@@ -194,6 +194,14 @@ const page = await getEntry("useCases", "en/${group}/private");
 
 A four-digit ID: <Cve id="CVE-2024-4577" /> and a longer ID:
 <Cve id="CVE-2026-109618" class="cve-reference" />.
+
+A repeated reference: <Cve id="CVE-2026-109618" />.
+
+An explicit preview: <Cve id="CVE-2024-4577" preview={{
+  title: "Custom advisory title",
+  summary: "Custom <em>summary</em>.",
+  lang: "en",
+}} />.
 `,
     );
     // Do not inherit deployment credentials or upload fixture source maps.
@@ -231,15 +239,21 @@ describe("rendered CVE references", () => {
     const document = html("cve-integration");
     const links = document.querySelectorAll("a");
 
-    expect(links).toHaveLength(2);
-    for (const [index, id] of ["CVE-2024-4577", "CVE-2026-109618"].entries()) {
+    expect(links).toHaveLength(4);
+    const ids = [
+      "CVE-2024-4577",
+      "CVE-2026-109618",
+      "CVE-2026-109618",
+      "CVE-2024-4577",
+    ];
+    for (const [index, id] of ids.entries()) {
       expect(links[index].textContent).toBe(id);
       expect(links[index].getAttribute("href")).toBe(
         `https://www.cve.org/CVERecord?id=${id}`,
       );
       expect(links[index].getAttribute("rel")).toBe("nofollow");
       expect(links[index].hasAttribute("target")).toBe(false);
-      expect(links[index].parentElement?.tagName).toBe("P");
+      expect(links[index].closest("p")).not.toBeNull();
       for (const className of [
         "not-prose",
         "font-mono",
@@ -250,8 +264,30 @@ describe("rendered CVE references", () => {
       }
     }
     expect(links[1].classList.contains("cve-reference")).toBe(true);
-    expect(document.body.textContent).toContain("CVE-2026-109618.");
+    expect(links[1].parentElement?.nextSibling?.textContent).toMatch(/^\./);
     expect(document.querySelector("astro-island")).toBeNull();
+  });
+
+  it("embeds static previews with unique accessible associations and safe text", () => {
+    const document = html("cve-integration");
+    const links = document.querySelectorAll("a");
+    const tooltips = document.querySelectorAll('[role="tooltip"]');
+    expect(tooltips).toHaveLength(3);
+    expect(new Set([...tooltips].map((tooltip) => tooltip.id)).size).toBe(3);
+    expect(links[0].hasAttribute("aria-describedby")).toBe(false);
+
+    for (const link of [...links].slice(1)) {
+      const tooltip = document.getElementById(
+        link.getAttribute("aria-describedby")!,
+      );
+      expect(tooltip?.getAttribute("role")).toBe("tooltip");
+      expect(tooltip?.getAttribute("popover")).toBe("manual");
+      expect(tooltip?.getAttribute("lang")).toBe("en");
+    }
+    expect(tooltips[0].textContent).toContain("RCE via OOM corruption");
+    expect(tooltips[0].textContent).toContain("remote code execution");
+    expect(tooltips[2].textContent).toContain("Custom <em>summary</em>.");
+    expect(tooltips[2].querySelector("em")).toBeNull();
   });
 });
 

@@ -1,10 +1,15 @@
 ---
+import { randomUUID } from "node:crypto";
+
+import { cvePreviews, type CvePreview } from "@/data/cves";
+
 export interface Props {
   id: string;
   class?: string;
+  preview?: CvePreview;
 }
 
-const { id, class: className } = Astro.props;
+const { id, class: className, preview = cvePreviews[id] } = Astro.props;
 
 if (!/^CVE-\d{4}-\d{4,}$/.test(id)) {
   throw new Error(
@@ -13,21 +18,87 @@ if (!/^CVE-\d{4}-\d{4,}$/.test(id)) {
 }
 
 const href = `https://www.cve.org/CVERecord?id=${id}`;
+const previewId = preview ? `cve-preview-${randomUUID()}` : undefined;
 ---
 
-<a
-  href={href}
-  rel="nofollow"
-  class:list={[
-    "not-prose inline-block rounded-md border px-1.5 py-0.5 align-baseline",
-    "font-mono text-[0.85em] leading-normal font-medium whitespace-nowrap no-underline",
-    "border-brandcomp-200 bg-brandcomp-50 text-brandcomp-800",
-    "hover:border-brandcomp-300 hover:bg-brandcomp-100",
-    "dark:border-brandcomp-800 dark:bg-brandcomp-950/50 dark:text-brandcomp-300",
-    "dark:hover:border-brandcomp-700 dark:hover:bg-brandcomp-900/50",
-    "transition-colors focus-visible:outline-2 focus-visible:outline-offset-2",
-    "focus-visible:outline-brandcomp-600 dark:focus-visible:outline-brandcomp-400",
-    className,
-  ]}
-  set:text={id}
-/>
+<style>
+  .cve-preview {
+    display: none;
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    width: min(22rem, calc(100vw - 1.5rem));
+    max-height: calc(100dvh - 1.5rem);
+    overflow: auto;
+    white-space: normal;
+    text-align: left;
+  }
+
+  .cve-preview:popover-open {
+    display: block;
+  }
+</style>
+
+<script>
+  import { attachCvePreview } from "@/scripts/cve-preview";
+
+  class CveReference extends HTMLElement {
+    private cleanup?: () => void;
+
+    connectedCallback() {
+      this.cleanup?.();
+      this.cleanup = attachCvePreview(this);
+    }
+
+    disconnectedCallback() {
+      this.cleanup?.();
+    }
+  }
+
+  if (!customElements.get("cve-reference")) {
+    customElements.define("cve-reference", CveReference);
+  }
+</script>
+
+<cve-reference class="not-prose inline-flex align-baseline">
+  <a
+    href={href}
+    rel="nofollow"
+    data-cve-trigger
+    aria-describedby={previewId}
+    class:list={[
+      "not-prose inline-block rounded-md border px-1.5 py-0.5 align-baseline",
+      "font-mono text-[0.85em] leading-normal font-medium whitespace-nowrap no-underline",
+      "border-brandcomp-200 bg-brandcomp-50 text-brandcomp-800",
+      "hover:border-brandcomp-300 hover:bg-brandcomp-100",
+      "dark:border-brandcomp-800 dark:bg-brandcomp-950/50 dark:text-brandcomp-300",
+      "dark:hover:border-brandcomp-700 dark:hover:bg-brandcomp-900/50",
+      "transition-colors focus-visible:outline-2 focus-visible:outline-offset-2",
+      "focus-visible:outline-brandcomp-600 dark:focus-visible:outline-brandcomp-400",
+      className,
+    ]}
+    set:text={id}
+  />
+  {preview && (
+    <span
+      id={previewId}
+      role="tooltip"
+      popover="manual"
+      data-cve-preview
+      lang={preview.lang}
+      class="cve-preview not-prose border-surface-3 bg-surface-1 text-text-primary rounded-xl border p-4 font-sans text-sm leading-relaxed shadow-xl">
+      <span
+        class="text-brandcomp-800 dark:text-brandcomp-300 mb-2 block font-mono text-xs font-medium"
+        set:text={id}
+      />
+      <span
+        class="mb-2 block text-base leading-snug font-semibold"
+        set:text={preview.title}
+      />
+      <span
+        class="text-text-secondary block"
+        set:text={preview.summary}
+      />
+    </span>
+  )}
+</cve-reference>
