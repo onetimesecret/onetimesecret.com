@@ -79,6 +79,7 @@ const LANGS: Lang[] = ["de", "es", "fr"];
 const ALLOWED_COMMON = [
   "onetime-secret-literal",
   "navigation.docs",
+  "repository-facts.commits", // "Commits" — Git terminology retained in all locales
   "LABELS.blog",
   "web.pricing.tiers.identity.name", // "Identity Plus" — product name
   "web.pricing.tiers.team.name", // "Team Plus" — product name

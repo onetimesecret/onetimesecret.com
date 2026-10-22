@@ -15,6 +15,18 @@
   "read-our-privacy-policy": "Lea nuestra Política de Privacidad",
   "view-our-terms-and-conditions": "Consulte nuestros Términos y Condiciones",
   "status": "Estado",
+  "repository-facts": {
+    "languages": "Lenguajes del código fuente",
+    "unavailable": "Estadísticas de lenguajes no disponibles",
+    "empty": "No se detectaron lenguajes",
+    "commits": "Commits",
+    "latest-commit": "Último commit",
+    "default-branch": "Historial de la rama predeterminada",
+    "unavailable-value": "No disponible",
+    "no-commits": "Sin commits",
+    "show-more": "Mostrar más",
+    "show-less": "Mostrar menos"
+  },
   "$config": {
     "layout-footer-style": "grid"
   },
