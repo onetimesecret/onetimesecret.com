@@ -1,33 +1,44 @@
 ---
-title: "Documentation reorganized around tasks"
+title: "Expanded and reorganized documentation"
 date: 2026-10-30
-description: "docs.onetimesecret.com is reorganized into task-based guides, with new install guides and a generated config reference."
+description: >-
+  Find guides for sharing secrets, managing your account, and running your own Onetime Secret
+  instance in our reorganized documentation.
 category: release
 planned: false
 highlightedLinkUrl: "https://docs.onetimesecret.com"
 highlightedLinkText: "Visit docs.onetimesecret.com"
 highlights:
-  - { icon: check, text: "Task-based sections: Start, Share, Account, Organizations, Billing, Custom domains, Security, Self-hosting" }
-  - { icon: check, text: "Six installation guides replace the single install page" }
-  - { icon: check, text: "Environment variable reference generated from the app's `.env.reference`, checked weekly for drift" }
-  - { icon: check, text: "\"Highlight AI edits\" switch shows prose recorded as AI-written" }
-  - { icon: info, text: "Legacy URLs redirect in all 17 configured locales" }
-  - { icon: warn, text: "New and consolidated pages fall back to English until translations catch up" }
+  - icon: check
+    text: "Guides organized around sharing secrets, accounts, organizations, and more"
+  - icon: check
+    text: "Six focused guides for installing and running your own instance"
+  - icon: check
+    text: "Expanded configuration guides and an environment variable reference"
+  - icon: check
+    text: "Optional highlighting for text labelled as AI-written"
+  - icon: info
+    text: "Redirects for pages moved or combined in this update"
+  - icon: warn
+    text: "Some new and updated pages are available in English only"
 ---
 
-The [documentation site](https://docs.onetimesecret.com) is now organized by task: sending a
-secret, managing your account, running an organization, setting up a custom domain, or
-installing and configuring your own instance. Task pages that cite the application source they
-describe replace the old placeholder and outdated pages. The full change is in
-[PR #459](https://github.com/onetimesecret/docs.onetimesecret.com/pull/459).
+We've reorganized the [documentation site](https://docs.onetimesecret.com) around how
+people use the site: share secrets, manage your account, set up a custom domain,
+or run your own instance. Updated guides replace outdated pages and fill gaps in
+the documentation, with sections for getting started, billing, and security too.
 
-For self-hosters, the single installation page is now six guides: Docker, Linux, images and
-variants, reverse proxy and TLS, running as a service, and verifying the install. The
+If you self-host Onetime Secret, focused guides now cover Docker, Linux,
+setting up a reverse proxy and TLS, running as a service, and a few others. Expanded
+configuration guides cover authentication, email, sessions and cookies, secrets and keys,
+and security headers. The
 [environment variable reference](https://docs.onetimesecret.com/en/reference/environment-variables/)
-is generated from the application's `.env.reference`, and a weekly job reports when the two
-drift apart. Configuration guides for authentication, email, sessions and cookies, secrets and
-keys, and security headers are also live.
+is generated from the application's own documented settings.
 
-Pages now include a **Highlight AI edits** switch that marks prose recorded as AI-written. The
-record is self-declared, so text without highlights may also be AI-written. See
+The optional **Highlight AI edits** switch lets you see text labelled as AI-written during the
+writing and editing process. These labels do not indicate accuracy or whether that text has been
+reviewed by a person. And text without highlights may also be AI-written. Read more about
 [how and why we use AI in these docs](https://docs.onetimesecret.com/en/contribute/text-provenance/).
+
+We've added redirects for pages moved or combined in this update. Some new and updated
+pages are available in English only while translations are in progress.
