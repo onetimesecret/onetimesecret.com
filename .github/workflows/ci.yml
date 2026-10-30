@@ -210,6 +210,13 @@ jobs:
       - name: Verify sitemap
         run: pnpm build:verify:sitemap
 
+      # llms.txt has to stay well-formed, link only pages that exist, match the
+      # tiers, prices and regions the site renders, and carry a review date no
+      # older than 180 days; every page has to link it and its markdown copy
+      # (see scripts/verify-llms.mjs). The old file went ten months stale.
+      - name: Verify llms.txt
+        run: pnpm build:verify:llms
+
       # The second build: the notice site for the lookalike domains, which
       # shares styles, fonts and locale files with the main site and so can be
       # broken by a change to any of them. verify-lookalike fails the build if
