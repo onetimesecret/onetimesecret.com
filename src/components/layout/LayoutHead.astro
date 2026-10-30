@@ -128,6 +128,23 @@ const pageAlternateLanguages = pageNoindex
 // `alternateLanguages` only, and no caller passes either today.
 const xDefaultUrl = `${siteOrigin}${resolveXDefaultPath(currentPath)}`;
 
+// llms.txt discovery, using the link relations from the llmstxt.org v2 spec:
+// rel="describedby" names the llms.txt that covers this page, and the
+// text/markdown alternate names a markdown copy of the page itself. Agents do
+// not go looking for /llms.txt unprompted, so these are how one finds it from a
+// page it was sent to.
+//
+// The markdown copies are not built here. The production CDN zone renders one
+// for any page at <path>/index.md; the staging zone does not, which is one more
+// reason both URLs sit on the canonical origin like the canonical itself. Only an
+// indexable page advertises a copy, as only an indexable page carries hreflang.
+// Audited over the whole build by scripts/verify-llms.mjs.
+const llmsTxtUrl = `${siteOrigin}/llms.txt`;
+const markdownUrl =
+  !pageNoindex && pageCanonicalUrl.endsWith("/")
+    ? `${pageCanonicalUrl}index.md`
+    : undefined;
+
 const pageStructuredData =
   propsStructuredData ||
   routeSpecificSeo.structuredData ||
@@ -201,6 +218,19 @@ const connectSrcDirective = generateCspConnectSrc(apiUrl, isDebugMode);
     rel="sitemap"
     href="/sitemap-index.xml"
   />
+  <link
+    rel="describedby"
+    href={llmsTxtUrl}
+  />
+  {
+    markdownUrl && (
+      <link
+        rel="alternate"
+        type="text/markdown"
+        href={markdownUrl}
+      />
+    )
+  }
   {/* x-default stays on every indexable page, with or without per-locale
       alternates. A noindex page emits no annotations: see pageAlternateLanguages. */}
   {
