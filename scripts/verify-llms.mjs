@@ -29,8 +29,11 @@
 //     8. The expiration ceiling each tier's pricing copy states.
 //     9. Every region's link and location, and no regional link that is not one.
 //    10. A "last reviewed on" date that is a real date, not in the future, and
-//        at most MAX_REVIEW_AGE_DAYS old. Checks 7-9 cover what can be derived;
-//        this is the prompt to re-read what cannot, such as the API details.
+//        no older than the review window: LLMS_MAX_REVIEW_AGE_DAYS when set,
+//        else DEFAULT_MAX_REVIEW_AGE_DAYS. Checks 7-9 cover what can be
+//        derived; this is the prompt to re-read what cannot, such as the API
+//        details. ci.yml passes the repository variable of the same name, so
+//        the window can change without a commit.
 //   Discovery, on every page LayoutHead.astro rendered:
 //    11. A rel="describedby" link naming the canonical llms.txt.
 //    12. On an indexable page, a text/markdown alternate at its canonical plus
@@ -81,7 +84,7 @@ export const MAX_BYTES = 32 * 1024;
 
 // Long enough that an ordinary quarter never trips it, short enough that the
 // ten-month gap behind the old file cannot happen again unnoticed.
-export const MAX_REVIEW_AGE_DAYS = 180;
+export const DEFAULT_MAX_REVIEW_AGE_DAYS = 180;
 
 const REVIEW_DATE = /last reviewed on (\d{4}-\d{2}-\d{2})/i;
 const LINK_ITEM = /^- \[[^\]]+\]\([^)\s]+\): \S/;
@@ -282,8 +285,30 @@ export function checkFacts(text, messages = EN_MESSAGES) {
   return problems;
 }
 
+/**
+ * The review window in days, from LLMS_MAX_REVIEW_AGE_DAYS when it is set.
+ * Unset or empty means the default; ci.yml passes an unset repository variable
+ * through as "". Anything else must be a positive whole number, and is
+ * reported rather than replaced: a typo silently restoring the default would
+ * leave whoever set the variable believing it took effect.
+ */
+export function resolveMaxReviewAge(env = process.env) {
+  const raw = env.LLMS_MAX_REVIEW_AGE_DAYS?.trim();
+  if (!raw) return { days: DEFAULT_MAX_REVIEW_AGE_DAYS };
+  if (!/^[1-9]\d*$/.test(raw)) {
+    return {
+      problem: `LLMS_MAX_REVIEW_AGE_DAYS is "${raw}", not a positive whole number of days.`,
+    };
+  }
+  return { days: Number(raw) };
+}
+
 /** Check 10. `today` is a Date; only its UTC calendar day is used. */
-export function checkReviewDate(text, today = new Date()) {
+export function checkReviewDate(
+  text,
+  today = new Date(),
+  maxAgeDays = DEFAULT_MAX_REVIEW_AGE_DAYS,
+) {
   const stamp = REVIEW_DATE.exec(text)?.[1];
   if (!stamp) return ['llms.txt has no "last reviewed on YYYY-MM-DD" date.'];
 
@@ -298,11 +323,12 @@ export function checkReviewDate(text, today = new Date()) {
 
   // One day of slack: whoever reviewed it may be a day ahead of UTC.
   if (age < -1) return [`llms.txt's review date ${stamp} is in the future.`];
-  if (age > MAX_REVIEW_AGE_DAYS) {
+  if (age > maxAgeDays) {
     return [
       `llms.txt was last reviewed ${age} days ago (${stamp}); the limit is ` +
-        `${MAX_REVIEW_AGE_DAYS}. Re-read it against the site, the API docs and the ` +
-        "changelog, fix what has changed, and update the date.",
+        `${maxAgeDays}. Re-read it against the site, the API docs and the ` +
+        "changelog, fix what has changed, and update the date. The limit is " +
+        "LLMS_MAX_REVIEW_AGE_DAYS, a repository variable.",
     ];
   }
   return [];
@@ -368,7 +394,10 @@ export function checkDiscovery(distDir) {
   }
   if (wrongDescribedby.length > 0) {
     problems.push(
-      summarize(wrongDescribedby, (n) => `${n} page(s) point rel="describedby" somewhere other than ${LLMS_TXT_URL}`),
+      summarize(
+        wrongDescribedby,
+        (n) => `${n} page(s) point rel="describedby" somewhere other than ${LLMS_TXT_URL}`,
+      ),
     );
   }
   if (noMarkdown.length > 0) {
@@ -378,7 +407,12 @@ export function checkDiscovery(distDir) {
   }
   if (wrongMarkdown.length > 0) {
     problems.push(
-      summarize(wrongMarkdown, (n) => `${n} page(s) have a text/markdown alternate other than their canonical plus index.md`),
+      summarize(
+        wrongMarkdown,
+        (n) =>
+          `${n} page(s) have a text/markdown alternate other than their canonical ` +
+          "plus index.md",
+      ),
     );
   }
   if (noindexMarkdown.length > 0) {
@@ -390,9 +424,17 @@ export function checkDiscovery(distDir) {
   return { problems, audited };
 }
 
-export function verifyLlms({ distDir, today = new Date(), messages = EN_MESSAGES }) {
+export function verifyLlms({
+  distDir,
+  today = new Date(),
+  env = process.env,
+  messages = EN_MESSAGES,
+}) {
   const problems = [];
   const text = read(join(distDir, "llms.txt"));
+  const reviewWindow = resolveMaxReviewAge(env);
+
+  if (reviewWindow.problem) problems.push(reviewWindow.problem);
 
   if (text === undefined) {
     problems.push(`${join(distDir, "llms.txt")} does not exist.`);
@@ -401,7 +443,9 @@ export function verifyLlms({ distDir, today = new Date(), messages = EN_MESSAGES
       ...checkFormat(text),
       ...checkSiteLinks(distDir, text),
       ...checkFacts(text, messages),
-      ...checkReviewDate(text, today),
+      ...(reviewWindow.days === undefined
+        ? []
+        : checkReviewDate(text, today, reviewWindow.days)),
     );
   }
 
@@ -412,12 +456,13 @@ export function verifyLlms({ distDir, today = new Date(), messages = EN_MESSAGES
     problems,
     audited: discovery.audited,
     links: text === undefined ? 0 : new Set(linkTargets(text)).size,
+    maxAgeDays: reviewWindow.days,
   };
 }
 
-export function main(argv = process.argv.slice(2), today = new Date()) {
+export function main(argv = process.argv.slice(2), env = process.env, today = new Date()) {
   const distDir = resolve(argv[0] ?? "dist");
-  const { problems, audited, links } = verifyLlms({ distDir, today });
+  const { problems, audited, links, maxAgeDays } = verifyLlms({ distDir, today, env });
 
   if (problems.length > 0) {
     const lines = [`${problems.length} problem(s):`, ...problems];
@@ -429,7 +474,8 @@ export function main(argv = process.argv.slice(2), today = new Date()) {
   console.log(
     `[verify-llms] OK: llms.txt is well-formed, its ${links} link(s) are https and ` +
       "those into this site name built pages, it matches the tiers, prices and " +
-      `regions the site renders, and its review date is current. All ${audited} ` +
+      `regions the site renders, and it was reviewed within ${maxAgeDays} days. ` +
+      `All ${audited} ` +
       "page(s) rendered by LayoutHead link it, and the indexable ones link their " +
       "markdown copy.",
   );

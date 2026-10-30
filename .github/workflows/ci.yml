@@ -211,10 +211,14 @@ jobs:
         run: pnpm build:verify:sitemap
 
       # llms.txt has to stay well-formed, link only pages that exist, match the
-      # tiers, prices and regions the site renders, and carry a review date no
-      # older than 180 days; every page has to link it and its markdown copy
-      # (see scripts/verify-llms.mjs). The old file went ten months stale.
+      # tiers, prices and regions the site renders, and carry a recent review
+      # date; every page has to link it and its markdown copy (see
+      # scripts/verify-llms.mjs). The old file went ten months stale. The review
+      # window is the LLMS_MAX_REVIEW_AGE_DAYS repository variable, 180 days
+      # when unset, so it can change without a commit.
       - name: Verify llms.txt
+        env:
+          LLMS_MAX_REVIEW_AGE_DAYS: ${{ vars.LLMS_MAX_REVIEW_AGE_DAYS }}
         run: pnpm build:verify:llms
 
       # The second build: the notice site for the lookalike domains, which

@@ -21,11 +21,13 @@ import {
   EN_MESSAGES,
   LLMS_TXT_URL,
   MAX_BYTES,
-  MAX_REVIEW_AGE_DAYS,
+  DEFAULT_MAX_REVIEW_AGE_DAYS,
   checkDiscovery,
   checkFacts,
   checkFormat,
   checkReviewDate,
+  resolveMaxReviewAge,
+  verifyLlms,
   checkSiteLinks,
   expectedFacts,
   linkTargets,
@@ -258,11 +260,12 @@ describe("checkReviewDate", () => {
     expect(checkReviewDate(COMMITTED, REVIEW_DAY)).toEqual([]);
   });
 
-  it(`passes at ${MAX_REVIEW_AGE_DAYS} days and flags the day after`, () => {
+  it(`passes at ${DEFAULT_MAX_REVIEW_AGE_DAYS} days and flags the day after`, () => {
     const text = stamped("2026-01-01");
-    expect(checkReviewDate(text, daysAfter("2026-01-01", MAX_REVIEW_AGE_DAYS))).toEqual([]);
-    expect(checkReviewDate(text, daysAfter("2026-01-01", MAX_REVIEW_AGE_DAYS + 1)).join(" "))
-      .toContain(`the limit is ${MAX_REVIEW_AGE_DAYS}`);
+    const limit = DEFAULT_MAX_REVIEW_AGE_DAYS;
+    expect(checkReviewDate(text, daysAfter("2026-01-01", limit))).toEqual([]);
+    expect(checkReviewDate(text, daysAfter("2026-01-01", limit + 1)).join(" "))
+      .toContain(`the limit is ${limit}`);
   });
 
   it("allows one day ahead of UTC and flags anything further", () => {
@@ -278,6 +281,46 @@ describe("checkReviewDate", () => {
 
   it("flags a file with no review date", () => {
     expect(checkReviewDate("# x\n", REVIEW_DAY).join(" ")).toContain("no \"last reviewed on");
+  });
+});
+
+describe("resolveMaxReviewAge", () => {
+  it("uses the default when the variable is unset or empty", () => {
+    expect(resolveMaxReviewAge({})).toEqual({ days: DEFAULT_MAX_REVIEW_AGE_DAYS });
+    // How ci.yml passes a repository variable that does not exist.
+    expect(resolveMaxReviewAge({ LLMS_MAX_REVIEW_AGE_DAYS: "" })).toEqual({
+      days: DEFAULT_MAX_REVIEW_AGE_DAYS,
+    });
+  });
+
+  it("uses a positive whole number", () => {
+    expect(resolveMaxReviewAge({ LLMS_MAX_REVIEW_AGE_DAYS: " 90 " })).toEqual({ days: 90 });
+  });
+
+  it.each(["0", "-30", "90d", "1.5", "ninety"])("reports %j rather than falling back", (raw) => {
+    expect(resolveMaxReviewAge({ LLMS_MAX_REVIEW_AGE_DAYS: raw }).problem)
+      .toContain("not a positive whole number");
+  });
+});
+
+describe("verifyLlms review window", () => {
+  /** The committed file, reviewed 100 days before `today`. */
+  const run = (env: Record<string, string>) =>
+    verifyLlms({
+      distDir: dist({}, COMMITTED),
+      today: new Date(Date.parse(`${REVIEWED}T12:00:00Z`) + 100 * 86_400_000),
+      env,
+    }).problems.join(" ");
+
+  it("fails a file older than the window the variable sets", () => {
+    expect(run({ LLMS_MAX_REVIEW_AGE_DAYS: "90" })).toContain("the limit is 90");
+    expect(run({ LLMS_MAX_REVIEW_AGE_DAYS: "120" })).not.toContain("last reviewed");
+  });
+
+  it("fails on an invalid value instead of checking against the default", () => {
+    const problems = run({ LLMS_MAX_REVIEW_AGE_DAYS: "soon" });
+    expect(problems).toContain('LLMS_MAX_REVIEW_AGE_DAYS is "soon"');
+    expect(problems).not.toContain("last reviewed");
   });
 });
 
@@ -361,7 +404,7 @@ describe("main", () => {
     const exit = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
 
     // Pinned to the review day so the test does not age out with the file.
-    main([committedDist()], REVIEW_DAY);
+    main([committedDist()], {}, REVIEW_DAY);
 
     expect(exit).not.toHaveBeenCalled();
     expect(log.mock.calls.join(" ")).toContain("[verify-llms] OK");
