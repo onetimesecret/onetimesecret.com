@@ -12,6 +12,7 @@
     "build:verify:live": "node scripts/verify-live.mjs",
     "build:verify:hreflang": "node scripts/verify-hreflang.mjs",
     "build:verify:sitemap": "node scripts/verify-sitemap.mjs",
+    "build:verify:llms": "node scripts/verify-llms.mjs",
     "build:lookalike": "astro build --config astro.lookalike.config.ts",
     "build:verify:lookalike": "node scripts/verify-lookalike.mjs",
     "build:verify:lookalike:live": "node scripts/verify-lookalike-live.mjs",
