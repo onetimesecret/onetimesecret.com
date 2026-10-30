@@ -1,6 +1,6 @@
 # Onetime Secret
 
-> Onetime Secret shares passwords and other sensitive information through links that work only once. After the recipient opens a link, the secret is permanently deleted. The service is open source, has a free plan, and stores each account's data in the region it chooses.
+> Onetime Secret shares passwords and other sensitive information through links that work only once. After the recipient opens a link, the secret is permanently deleted. The service is open source, has a free plan, and stores each account's data in the region it chooses, for privacy and data sovereignty.
 
 Use it to send passwords, API keys, login details and private messages without leaving a copy in email, chat or ticket history. Secrets are encrypted, expire on a timer if nobody opens them, and can be burned by the sender before they are read. Organizations can send and receive links from their own domain, so recipients see a sender they already know.
 
