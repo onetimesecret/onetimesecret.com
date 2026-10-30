@@ -7,11 +7,11 @@ Onetime Secret lets you share passwords, credentials, private messages, and sens
 ## Key Features
 
 - **One-time viewing**: Secrets auto-delete after being read
-- **Passphrase protection**: Optional encryption with bcrypt-hashed passphrases
-- **Time limits**: Set expiration from minutes to 14 days
+- **Passphrase protection**: Optional passphrase the recipient must enter, stored only as an Argon2 hash
+- **Time limits**: Set expiration from minutes up to 14 days (30 days on paid plans)
 - **Burn before reading**: Delete secrets before they're received
-- **Custom domains**: Brand your secret links (paid plans)
-- **Regional hosting**: US, Canada, EU, NZ data residency options
+- **Custom domains**: Share secret links from your own domain (one domain free, unlimited on paid plans)
+- **Regional hosting**: US, Canada, EU, UK, NZ data residency options
 
 ## Docs
 
@@ -22,10 +22,14 @@ Onetime Secret lets you share passwords, credentials, private messages, and sens
 
 ## Pages
 
-- [About](https://onetimesecret.com/about): Background, FAQ, and how the service works
-- [Security Policy](https://onetimesecret.com/security): Vulnerability reporting and supported versions
-- [Privacy Policy](https://onetimesecret.com/privacy): Data handling and retention practices
-- [Pricing](https://onetimesecret.com/pricing): Free tier and subscription plans
+- [About](https://onetimesecret.com/en/about/): Background, FAQ, and how the service works
+- [Use Cases](https://onetimesecret.com/en/use-cases/): Common scenarios for sharing sensitive information
+- [Pricing](https://onetimesecret.com/en/pricing/): Free tier and subscription plans
+- [Changelog](https://onetimesecret.com/en/changelog/): Product updates, region launches, and incident reports
+- [Security Policy](https://onetimesecret.com/en/security/): Vulnerability reporting and supported versions
+- [Privacy Policy](https://onetimesecret.com/privacy/): Data handling and retention practices
+- [Terms of Service](https://onetimesecret.com/terms/): Conditions for using the service
+- [Accessibility Statement](https://onetimesecret.com/en/accessibility/): Accessibility conformance and feedback contact
 
 ## Examples
 
@@ -41,6 +45,7 @@ Onetime Secret operates regional instances for data sovereignty:
 - [Canada](https://ca.onetimesecret.com): Canada
 - [EU](https://eu.onetimesecret.com): European Union
 - [New Zealand](https://nz.onetimesecret.com): Aotearoa New Zealand
+- [UK](https://uk.onetimesecret.com): United Kingdom
 
 ## Optional
 
