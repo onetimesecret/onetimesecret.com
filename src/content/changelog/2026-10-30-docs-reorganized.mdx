@@ -1,0 +1,33 @@
+---
+title: "Documentation reorganized around tasks"
+date: 2026-10-30
+description: "docs.onetimesecret.com is reorganized into task-based guides, with new install guides and a generated config reference."
+category: release
+planned: false
+highlightedLinkUrl: "https://docs.onetimesecret.com"
+highlightedLinkText: "Visit docs.onetimesecret.com"
+highlights:
+  - { icon: check, text: "Task-based sections: Start, Share, Account, Organizations, Billing, Custom domains, Security, Self-hosting" }
+  - { icon: check, text: "Six installation guides replace the single install page" }
+  - { icon: check, text: "Environment variable reference generated from the app's `.env.reference`, checked weekly for drift" }
+  - { icon: check, text: "\"Highlight AI edits\" switch shows prose recorded as AI-written" }
+  - { icon: info, text: "Legacy URLs redirect in all 17 configured locales" }
+  - { icon: warn, text: "New and consolidated pages fall back to English until translations catch up" }
+---
+
+The [documentation site](https://docs.onetimesecret.com) is now organized by task: sending a
+secret, managing your account, running an organization, setting up a custom domain, or
+installing and configuring your own instance. Task pages that cite the application source they
+describe replace the old placeholder and outdated pages. The full change is in
+[PR #459](https://github.com/onetimesecret/docs.onetimesecret.com/pull/459).
+
+For self-hosters, the single installation page is now six guides: Docker, Linux, images and
+variants, reverse proxy and TLS, running as a service, and verifying the install. The
+[environment variable reference](https://docs.onetimesecret.com/en/reference/environment-variables/)
+is generated from the application's `.env.reference`, and a weekly job reports when the two
+drift apart. Configuration guides for authentication, email, sessions and cookies, secrets and
+keys, and security headers are also live.
+
+Pages now include a **Highlight AI edits** switch that marks prose recorded as AI-written. The
+record is self-declared, so text without highlights may also be AI-written. See
+[how and why we use AI in these docs](https://docs.onetimesecret.com/en/contribute/text-provenance/).
