@@ -1,64 +1,67 @@
 # Onetime Secret
 
-> A privacy-first service for sharing sensitive information through self-destructing links. Create secrets that can only be viewed once, then they're gone forever.
+> Onetime Secret shares passwords and other sensitive information through links that work only once. After the recipient opens a link, the secret is permanently deleted. The service is open source, has a free plan, and stores each account's data in the region it chooses.
 
-Onetime Secret lets you share passwords, credentials, private messages, and sensitive data securely. When you create a secret link, the information persists for a single viewing—the recipient sees it once, and then it's permanently deleted. No copies stored, no access logs retained beyond the minimum necessary.
+Use it to send passwords, API keys, login details and private messages without leaving a copy in email, chat or ticket history. Secrets are encrypted, expire on a timer if nobody opens them, and can be burned by the sender before they are read. Organizations can send and receive links from their own domain, so recipients see a sender they already know.
 
-## Key Features
+Every plan, including the free one, includes:
 
-- **One-time viewing**: Secrets auto-delete after being read
-- **Passphrase protection**: Optional passphrase the recipient must enter, stored only as an Argon2 hash
-- **Time limits**: Set expiration from minutes up to 14 days (30 days on paid plans)
-- **Burn before reading**: Delete secrets before they're received
-- **Custom domains**: Share secret links from your own domain (one domain free, unlimited on paid plans)
-- **Regional hosting**: US, Canada, EU, UK, NZ data residency options
+- One-time links: a secret is deleted as soon as it is viewed
+- Passphrase protection: an optional passphrase the recipient must enter, stored only as an Argon2 hash
+- Expiration from minutes up to 14 days, and burn before reading
+- Sending links by email directly to recipients
+- REST API access
+- Incoming secrets: a private request page where clients and vendors send secrets directly to you
+- One custom domain, such as secrets.example.com
+- Homepage privacy controls
+- Data residency in the region you choose: Aotearoa New Zealand, Canada, the EU, the UK or the US, with no cross-border replication
+
+Plans (prices in USD; the pricing page also lists regional currencies):
+
+- Basic, free: everything above
+- Identity Plus, $35/month or $356/year: unlimited custom domains, custom branding with your logo, expiration up to 30 days, unlimited members, a custom email sender and no rate limits
+- Team Plus, $125/month or $1,200/year: everything in Identity Plus, plus single sign-on (SSO), role-based access control, organizations with teams and member management, and email delivery from a domain you choose (such as support@example.com). The security audit trail is in beta. Workspace branding and IP address allowlisting are coming soon.
+
+Single sign-on works with Microsoft Entra ID and OIDC providers. SAML 2.0 is available for self-hosted instances and is coming to the hosted regions. Eligible nonprofits, charities and educational institutions get 50% off Identity Plus and Team Plus.
+
+## Plans
+
+- [Pricing](https://onetimesecret.com/en/pricing/): Plan comparison with prices in regional currencies
+- [Plan details](https://docs.onetimesecret.com/en/pricing/): What each plan includes, in the documentation
+- [Nonprofit discount](https://onetimesecret.com/en/changelog/2026-10-08-nonprofit-discount-program/): Eligibility and how to apply for 50% off
 
 ## Docs
 
-- [API Documentation](https://docs.onetimesecret.com/en/rest-api/): REST API for creating, retrieving, and managing secrets programmatically
-- [Self-Hosting Guide](https://docs.onetimesecret.com/en/self-hosting/): Run your own Onetime Secret instance
-- [Custom Domains](https://docs.onetimesecret.com/en/custom-domains/): Set up branded secret links for your organization
-- [Core Principles](https://docs.onetimesecret.com/en/principles/): Our privacy and security design philosophy
+- [Sharing secrets](https://docs.onetimesecret.com/en/share/): Create a link, choose its lifetime and passphrase, send it, and check its receipt
+- [API and client libraries](https://docs.onetimesecret.com/en/api/): Create, retrieve and burn secrets from your own code, with regional base URLs and authentication
+- [Custom domains](https://docs.onetimesecret.com/en/custom-domains/): Share secret links from an address you own, and see which domain settings each plan includes
+- [Where your data lives](https://docs.onetimesecret.com/en/security/where-your-data-lives/): Each region's location, endpoint, hosting provider and regulatory environment, and how to choose between them
+- [Self-hosting](https://docs.onetimesecret.com/en/self-hosting/): Run your own Onetime Secret instance
+- [Our principles](https://docs.onetimesecret.com/en/security/our-principles/): Privacy and security values, including how little the service stores and emails
 
 ## Pages
 
+- [Create a secret](https://onetimesecret.com/): Main interface for creating one-time links
 - [About](https://onetimesecret.com/en/about/): Background, FAQ, and how the service works
-- [Use Cases](https://onetimesecret.com/en/use-cases/): Common scenarios for sharing sensitive information
-- [Pricing](https://onetimesecret.com/en/pricing/): Free tier and subscription plans
+- [Use cases](https://onetimesecret.com/en/use-cases/): Common scenarios for sharing sensitive information
 - [Changelog](https://onetimesecret.com/en/changelog/): Product updates, region launches, and incident reports
-- [Security Policy](https://onetimesecret.com/en/security/): Vulnerability reporting and supported versions
-- [Privacy Policy](https://onetimesecret.com/privacy/): Data handling and retention practices
-- [Terms of Service](https://onetimesecret.com/terms/): Conditions for using the service
-- [Accessibility Statement](https://onetimesecret.com/en/accessibility/): Accessibility conformance and feedback contact
-
-## Examples
-
-- [Create a Secret](https://onetimesecret.com/): Main interface for creating one-time links
-- [GitHub Repository](https://github.com/onetimesecret/onetimesecret): Open source codebase (Ruby backend)
+- [Security policy](https://onetimesecret.com/en/security/): Vulnerability reporting and supported versions
+- [Privacy policy](https://onetimesecret.com/privacy/): Data handling and retention practices
+- [Terms of service](https://onetimesecret.com/terms/): Conditions for using the service
+- [Accessibility statement](https://onetimesecret.com/en/accessibility/): Accessibility conformance and feedback contact
+- [GitHub repository](https://github.com/onetimesecret/onetimesecret): Open source codebase (Ruby backend)
 - [Blog](https://blog.onetimesecret.com/): Updates, use cases, and development notes
 
 ## Regional Domains
 
-Onetime Secret operates regional instances for data sovereignty:
-
-- [Aotearoa New Zealand](https://nz.onetimesecret.com): Aotearoa New Zealand
-- [Canada](https://ca.onetimesecret.com): Canada
-- [EU](https://eu.onetimesecret.com): European Union
-- [UK](https://uk.onetimesecret.com): United Kingdom
-- [US](https://us.onetimesecret.com): United States
+- [Aotearoa New Zealand](https://nz.onetimesecret.com): Hosted in Porirua, New Zealand
+- [Canada](https://ca.onetimesecret.com): Hosted in Toronto, Canada
+- [EU](https://eu.onetimesecret.com): Hosted in Nuremberg, Germany
+- [UK](https://uk.onetimesecret.com): Hosted in London, United Kingdom
+- [US](https://us.onetimesecret.com): Hosted in Hillsboro, United States
 
 ## Optional
 
-### Agent Network (Experimental)
-
-Onetime Secret provides an experimental coordination layer for AI agents.
-
-- [Agent Network Manifest](https://onetimesecret.com/.well-known/agent-network.json): Discovery endpoint for agent authentication and capabilities
+- [Agent Network Manifest](https://onetimesecret.com/.well-known/agent-network.json): Discovery endpoint for the experimental agent network: CIBA-style authentication (submit a public key, await human approval), ephemeral agent-to-agent messaging with self-destructing payloads, burn-after-reading task handoffs, and peer discovery
 - [Agent Network Schema](https://onetimesecret.com/agent-network.schema.json): JSON Schema for the discovery manifest
 - [Agent Message Schema](https://onetimesecret.com/agent-message.schema.json): JSON Schema for inter-agent message format
-
-The agent network enables:
-- CIBA-style authentication (submit public key, await human approval)
-- Ephemeral agent-to-agent messaging with self-destructing payloads
-- Task handoffs with burn-after-reading context
-- Peer discovery and capability advertisement
