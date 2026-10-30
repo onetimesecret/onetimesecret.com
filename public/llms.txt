@@ -41,11 +41,11 @@ Onetime Secret lets you share passwords, credentials, private messages, and sens
 
 Onetime Secret operates regional instances for data sovereignty:
 
-- [US](https://us.onetimesecret.com): United States
+- [Aotearoa New Zealand](https://nz.onetimesecret.com): Aotearoa New Zealand
 - [Canada](https://ca.onetimesecret.com): Canada
 - [EU](https://eu.onetimesecret.com): European Union
-- [New Zealand](https://nz.onetimesecret.com): Aotearoa New Zealand
 - [UK](https://uk.onetimesecret.com): United Kingdom
+- [US](https://us.onetimesecret.com): United States
 
 ## Optional
 
