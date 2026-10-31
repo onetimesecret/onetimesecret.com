@@ -41,14 +41,20 @@ afterEach(() => {
 });
 
 /** A browser double that records what the capture loop asks of it. */
-function fakeBrowser(options: { failOn?: string } = {}) {
+function fakeBrowser(options: { failOn?: string; failOnce?: string; closeThrows?: boolean } = {}) {
   const calls: string[] = [];
+  let failedOnce = false;
   const page = {
     goto: vi.fn(async (url: string) => {
       calls.push(`goto ${url}`);
-      if (options.failOn && url.includes(options.failOn)) {
+      const once = options.failOnce && url.includes(options.failOnce) && !failedOnce;
+      if (once) failedOnce = true;
+      if (once || (options.failOn && url.includes(options.failOn))) {
         throw new Error(`page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to "${url}"`);
       }
+    }),
+    evaluate: vi.fn(async () => {
+      calls.push("evaluate");
     }),
     waitForSelector: vi.fn(async (selector: string) => {
       calls.push(`waitForSelector ${selector}`);
@@ -73,7 +79,9 @@ function fakeBrowser(options: { failOn?: string } = {}) {
       contexts.push(opts);
       return { newPage: async () => page, close: vi.fn(async () => {}) };
     }),
-    close: vi.fn(async () => {}),
+    close: vi.fn(async () => {
+      if (options.closeThrows) throw new Error("Target page, context or browser has been closed");
+    }),
   };
   return { browser, calls, contexts };
 }
@@ -157,8 +165,9 @@ describe("captureAll", () => {
     expect(JSON.parse(readFileSync(join(outDir, MANIFEST), "utf8"))).toEqual(manifest);
 
     // The homepage entries run their steps after the wait, before the shot.
-    expect(calls.slice(0, 5)).toEqual([
+    expect(calls.slice(0, 6)).toEqual([
       "goto http://localhost:4321/fr/",
+      "evaluate",
       "waitForSelector footer",
       "click textarea",
       "fill textarea sandman",
@@ -179,6 +188,35 @@ describe("captureAll", () => {
     expect(manifest.failed.map((f) => f.name)).toEqual(["pricing-desktop", "pricing-mobile"]);
     expect(manifest.failed[0].error).toMatch(/Timeout 30000ms/);
     expect(browser.close).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries an entry once before recording it as failed", async () => {
+    const outDir = join(tempDir(), "out");
+    const config = loadConfig(DEFAULT_CONFIG, { lang: "en" });
+    const { browser, calls } = fakeBrowser({ failOnce: "/pricing" });
+    const log = vi.fn();
+
+    const manifest = await captureAll(config, { outDir, log, launch: async () => browser });
+
+    expect(manifest.failed).toEqual([]);
+    expect(manifest.screenshots).toHaveLength(4);
+    // pricing-desktop navigates twice (fail, retry); pricing-mobile once.
+    expect(calls.filter((c) => c === "goto http://localhost:4321/en/pricing")).toHaveLength(3);
+    expect(log).toHaveBeenCalledWith(expect.stringMatching(/retrying pricing-desktop after: .*Timeout/));
+    expect(log.mock.calls.map((c) => c[0]).join("\n")).not.toContain("Call log");
+  });
+
+  it("still writes the manifest when the browser will not close", async () => {
+    const outDir = join(tempDir(), "out");
+    const config = loadConfig(DEFAULT_CONFIG, { lang: "en" });
+    const { browser } = fakeBrowser({ closeThrows: true });
+    const log = vi.fn();
+
+    const manifest = await captureAll(config, { outDir, log, launch: async () => browser });
+
+    expect(manifest.screenshots).toHaveLength(4);
+    expect(JSON.parse(readFileSync(join(outDir, MANIFEST), "utf8"))).toEqual(manifest);
+    expect(log).toHaveBeenCalledWith(expect.stringContaining("browser.close"));
   });
 });
 

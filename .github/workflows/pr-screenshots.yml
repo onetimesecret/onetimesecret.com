@@ -183,9 +183,16 @@ jobs:
       # The branch is checked out into a second worktree so the PR checkout
       # stays untouched. The push is retried from the branch's new tip when
       # another PR's run pushed first.
+      #
+      # Skipped for a PR from a fork: GITHUB_TOKEN is read-only there whatever
+      # the permissions block says, so the push could only fail. The capture
+      # above still runs and still fails loud; only the publishing is skipped.
       - name: Push screenshots to branch
         id: upload
-        if: ${{ !cancelled() && hashFiles(format('{0}/manifest.json', env.SCREENSHOTS_DIR)) != '' }}
+        if: >-
+          ${{ !cancelled() &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          hashFiles(format('{0}/manifest.json', env.SCREENSHOTS_DIR)) != '' }}
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
@@ -200,8 +207,17 @@ jobs:
           target="pr-${PR_NUMBER}/${timestamp}"
           worktree="${RUNNER_TEMP}/${SCREENSHOTS_BRANCH}"
 
-          git fetch --depth 1 origin "$SCREENSHOTS_BRANCH"
-          git worktree add -B "$SCREENSHOTS_BRANCH" "$worktree" "origin/$SCREENSHOTS_BRANCH"
+          if git fetch --depth 1 origin "$SCREENSHOTS_BRANCH"; then
+            git worktree add -B "$SCREENSHOTS_BRANCH" "$worktree" "origin/$SCREENSHOTS_BRANCH"
+          else
+            # No such branch yet: start it empty rather than from a copy of
+            # the site, which is what the old action did and what the branch
+            # still carries.
+            echo "Branch $SCREENSHOTS_BRANCH not found, creating it"
+            git worktree add --detach "$worktree"
+            git -C "$worktree" checkout -q --orphan "$SCREENSHOTS_BRANCH"
+            git -C "$worktree" rm -rfq .
+          fi
 
           stage() {
             mkdir -p "$worktree/$target"

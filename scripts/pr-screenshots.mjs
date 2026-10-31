@@ -52,6 +52,9 @@ export const LANGUAGE_NAMES = {
 
 const NAVIGATION_TIMEOUT_MS = 30_000;
 const DEFAULT_WAIT_TIMEOUT_MS = 10_000;
+// A capture that fails once is retried once: a navigation timeout under
+// runner load should not turn an unrelated PR red.
+export const ATTEMPTS_PER_ENTRY = 2;
 
 /**
  * @typedef {object} Step
@@ -152,7 +155,11 @@ async function captureOne(browser, entry, outDir) {
   });
   try {
     const page = await context.newPage();
-    await page.goto(entry.url, { waitUntil: "networkidle", timeout: NAVIGATION_TIMEOUT_MS });
+    // "load" plus the fonts promise is deterministic where "networkidle" is a
+    // heuristic that stalls on any long-lived request. The config's wait_for
+    // selector then covers the page's own rendering.
+    await page.goto(entry.url, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT_MS });
+    await page.evaluate(() => document.fonts.ready);
     if (entry.waitFor) {
       await page.waitForSelector(entry.waitFor, { state: "visible", timeout: entry.waitTimeout });
     }
@@ -165,9 +172,23 @@ async function captureOne(browser, entry, outDir) {
   }
 }
 
+async function captureWithRetry(browser, entry, outDir, log) {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await captureOne(browser, entry, outDir);
+    } catch (error) {
+      if (attempt >= ATTEMPTS_PER_ENTRY) throw error;
+      const message = error instanceof Error ? error.message : String(error);
+      log(`[pr-screenshots] retrying ${entry.name} after: ${shortError(message)}`);
+    }
+  }
+}
+
 /**
  * Capture every entry in `config` with Chromium. Returns the manifest that
- * `comment` reads: what was captured, what failed and why.
+ * `comment` reads: what was captured, what failed and why. The manifest is
+ * written whatever happens after the browser launched, so the workflow can
+ * post the captures that did succeed.
  * @param {Config} config
  * @param {{ outDir: string, log?: (line: string) => void, launch?: () => Promise<any> }} options
  * @returns {Promise<Manifest>}
@@ -187,7 +208,7 @@ export async function captureAll(config, { outDir, log = console.log, launch }) 
     for (const entry of config.screenshots) {
       log(`[pr-screenshots] capturing ${entry.name} (${entry.url})`);
       try {
-        const file = await captureOne(browser, entry, outDir);
+        const file = await captureWithRetry(browser, entry, outDir, log);
         manifest.screenshots.push({ name: entry.name, file, steps: entry.steps });
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
@@ -196,9 +217,11 @@ export async function captureAll(config, { outDir, log = console.log, launch }) 
       }
     }
   } finally {
-    await browser.close();
+    writeFileSync(join(outDir, MANIFEST), `${JSON.stringify(manifest, null, 2)}\n`);
+    // The PNGs and manifest are on disk; a browser that will not close is
+    // worth a log line, not a lost run.
+    await browser.close().catch((error) => log(`[pr-screenshots] browser.close: ${error}`));
   }
-  writeFileSync(join(outDir, MANIFEST), `${JSON.stringify(manifest, null, 2)}\n`);
   return manifest;
 }
 
