@@ -7,32 +7,20 @@
 # - Only runs when UI code changes (src/**)
 # - Only runs on ready_for_review, or when the 'screenshots' label is added
 # - Uses shallow clones for faster checkout
-# - Pre-installs the Playwright browser build the screenshot action uses, so the
-#   action's own `playwright install` finds it and skips its download
+# - Caches the Chromium build the project's Playwright uses
 # - Randomly selects one language to balance coverage vs. speed
 #
-# Node versions (workaround for #217):
-# - The site is built and served with Node 26 (the engines floor).
-# - The screenshot action installs browsers with its own pinned
-#   `npx playwright@1.56.0 install`, using whatever Node is on PATH. Playwright
-#   before 1.60 hangs forever while extracting the Chromium zip on Node 26 and
-#   on Node 24.16+ (microsoft/playwright#40724, #41000), and the action has no
-#   input to skip that install. So PATH is switched to Node 22 after the preview
-#   server is up and before any Playwright install runs.
-# - Two independent layers keep that install harmless, because the PATH switch
-#   alone is fragile: the action's own JavaScript runs on the runner's bundled
-#   Node (`runs: using: node24`), so switching PATH only helps while the action
-#   shells out to `npx`. Pre-installing the browser build it looks for makes its
-#   install a no-op even if a future version installs in-process.
-# - Anything added between the Node 22 switch and the end of the job must stay
-#   pnpm-free: package.json requires Node >= 26, so pnpm would refuse to run.
-# - REMOVE the Node 22 switch once the action ships Playwright >= 1.60. The
-#   action is unmaintained (no release since Oct 2025); capturing with the
-#   project's own Playwright would retire this whole workaround.
+# Capture runs on the project's own Playwright (scripts/pr-screenshots.mjs),
+# the same version and runner image the e2e suite in ci.yml uses. It replaced
+# yoavf/auto-pr-screenshots-action, which pinned Playwright 1.56: that version
+# has no Chromium build for Ubuntu 26.04 (the `ubuntu-latest` image), hung
+# while extracting browser archives on Node 26 (#217), and the action has had
+# no release since October 2025. Everything here runs on Node 26.
 #
 # Security:
 # - Screenshots stored only in GitHub (gh-screenshots branch)
-# - Action pinned to specific commit hash to prevent supply chain attacks
+# - No third-party capture action; the PR comment is posted with the job's own
+#   GITHUB_TOKEN through actions/github-script
 
 name: PR Screenshots
 
@@ -47,6 +35,7 @@ on:
     paths:
       - 'src/**'
       - 'public/**'
+      - 'scripts/pr-screenshots.mjs'
       - '.github/workflows/pr-screenshots.yml'
       - '.github/screenshots.config.yml'
 
@@ -61,11 +50,8 @@ jobs:
     timeout-minutes: 15
 
     env:
-      # Must match the version yoavf/auto-pr-screenshots-action pins in its own
-      # `npx playwright@<version> install` call. Update it when bumping the
-      # action. The browser build this version needs is what gets cached and
-      # pre-installed below, which makes the action's install a no-op.
-      ACTION_PLAYWRIGHT_VERSION: "1.56.0"
+      SCREENSHOTS_BRANCH: gh-screenshots
+      SCREENSHOTS_DIR: screenshots
 
     # Explicit permissions for GITHUB_TOKEN
     permissions:
@@ -124,16 +110,35 @@ jobs:
             console.log(`🌐 Selected language for screenshots: ${selected}`);
             core.setOutput('selected', selected);
 
-      # Process the config template to inject the selected language
-      - name: Generate screenshot config
-        run: |
-          sed "s/__LANG__/${{ steps.lang.outputs.selected }}/g" \
-            .github/screenshots.config.yml > .github/screenshots.config.processed.yml
-          echo "📝 Generated config for language: ${{ steps.lang.outputs.selected }}"
-          cat .github/screenshots.config.processed.yml
+      # Same cache key as the e2e job in ci.yml, so the two share a browser
+      # build. Keyed on the lockfile because that is what pins the Playwright
+      # version, and the Playwright version is what picks the Chromium build.
+      # Expect a miss on the first run after a Playwright bump; the install
+      # below is what makes a miss harmless.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
 
-      # Start the preview server in the background. This runs under Node 26 and
-      # keeps running after PATH is switched below.
+      # Chromium's shared libraries are apt packages under /usr/lib, which the
+      # cache above does not cover, so they are installed on every runner.
+      # Keeping this separate from the cached browser download means a cache
+      # hit cannot leave Chromium present but unable to launch.
+      - name: Install Playwright system dependencies
+        timeout-minutes: 5
+        run: pnpm exec playwright install-deps chromium
+
+      # Bounded because this is the step that once hung for six hours at a
+      # time (#217).
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 5
+        run: pnpm exec playwright install chromium
+
       - name: Start preview server
         run: |
           # setsid puts the server in its own process group, so cleanup can
@@ -147,81 +152,18 @@ jobs:
           timeout 60 bash -c 'until curl -s http://localhost:4321 > /dev/null; do sleep 2; done'
           echo "✅ Server is ready"
 
-      # Playwright 1.56 cannot extract browser archives on Node 26 (see the
-      # header comment). Everything from here on that runs Playwright's
-      # installer does so on Node 22.
-      - name: Use Node 22 for Playwright browser installs
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      # `ImageOS`/`ImageVersion` are set in the runner's process environment, not
-      # in a workflow `env:` block, so they are not reachable through the `env`
-      # context and have to be read in a shell step to be usable in a cache key.
-      - name: Identify runner image
-        id: runner-image
-        # ImageOS only, e.g. "ubuntu24". ImageVersion would add nothing but a
-        # cache miss every time the image gets a weekly patch bump.
-        run: echo "id=${ImageOS:-unknown}" >> "$GITHUB_OUTPUT"
-
-      # Cache the browser build the screenshot action's pinned Playwright uses.
-      # The key is that Playwright version, not the lockfile: the project's own
-      # Playwright is a different version with a different browser build. The
-      # runner image and arch are in the key because browser binaries are built
-      # per platform: an `ubuntu-latest` roll can change the C library under a
-      # cached Chromium.
-      #
-      # Expect this to miss on the first run of each new PR branch: the workflow
-      # only triggers on `pull_request`, so no run ever writes a cache on the
-      # base branch for later runs to restore. The pre-install below is what
-      # makes the action's own install safe; the cache only makes it faster.
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.arch }}-${{ steps.runner-image.outputs.id }}-${{ env.ACTION_PLAYWRIGHT_VERSION }}
-
-      # Chromium's shared libraries are apt packages under /usr/lib, which the
-      # cache above does not cover, so they have to be installed on every
-      # runner. Keeping this separate from the cached browser download means a
-      # cache hit cannot leave Chromium present but unable to launch.
-      #
-      # The action's own `install --with-deps` covers these too, so this repeats
-      # a few seconds of apt on purpose: it keeps the job correct on its own
-      # rather than relying on a third-party action's internals.
-      - name: Install Playwright system dependencies
-        timeout-minutes: 5
-        run: npx -y "playwright@${ACTION_PLAYWRIGHT_VERSION}" install-deps chromium
-
-      # Pre-install the exact browser build the action looks for, so its own
-      # `playwright install` finds it and skips the download. Bounded because
-      # this is the step that hung for six hours at a time (#217).
-      - name: Install Playwright browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        timeout-minutes: 5
-        run: |
-          echo "📦 Installing Chromium for Playwright ${ACTION_PLAYWRIGHT_VERSION}..."
-          npx -y "playwright@${ACTION_PLAYWRIGHT_VERSION}" install chromium
-
-      # Capture screenshots using the action (pinned to specific commit).
-      # Bounded so a hang fails visibly instead of holding the runner (#217).
-      #
-      # `fail-on-error: false` below keeps a screenshot problem from blocking
-      # the PR, but it also means the action exits 0 when capture fails, and it
-      # declares no outputs, so this job cannot tell success from failure. The
-      # PR comment at the end is therefore worded to claim only what is known.
-      # Flip it to true if a silent capture failure is worse than a red check.
+      # Writes the PNGs and a manifest.json to $SCREENSHOTS_DIR. Exits 1 when
+      # any configured screenshot fails, so a capture problem shows as a red
+      # check; the manifest still lists what succeeded, and the steps below
+      # post that along with the failures.
       - name: Capture screenshots
+        id: capture
         timeout-minutes: 8
-        uses: yoavf/auto-pr-screenshots-action@74e4d55a87b1fd6bfc3cfbeefeb2831a04f0851c  # v1.4.0-beta
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          config-file: .github/screenshots.config.processed.yml
-          browsers: chromium
-          branch: gh-screenshots
-          show-attribution: false
-          fail-on-error: false  # Don't fail the entire workflow if screenshots fail
+        run: >
+          node scripts/pr-screenshots.mjs capture
+          --lang "${{ steps.lang.outputs.selected }}"
+          --config .github/screenshots.config.yml
+          --out "$SCREENSHOTS_DIR"
 
       # Stop the preview server
       - name: Stop preview server
@@ -236,64 +178,132 @@ jobs:
             rm -f preview.pid
           fi
 
-      # Add a custom comment with language info
-      - name: Add language info to PR
-        if: success()
+      # Commit the PNGs to the screenshots branch under pr-<number>/<timestamp>/
+      # with a pr-<number>/latest pointer, the layout the branch already has.
+      # The branch is checked out into a second worktree so the PR checkout
+      # stays untouched. The push is retried from the branch's new tip when
+      # another PR's run pushed first.
+      #
+      # Skipped for a PR from a fork: GITHUB_TOKEN is read-only there whatever
+      # the permissions block says, so the push could only fail. The capture
+      # above still runs and still fails loud; only the publishing is skipped.
+      - name: Push screenshots to branch
+        id: upload
+        if: >-
+          ${{ !cancelled() &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          hashFiles(format('{0}/manifest.json', env.SCREENSHOTS_DIR)) != '' }}
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          if ! ls "$SCREENSHOTS_DIR"/*.png >/dev/null 2>&1; then
+            echo "No screenshots to push"
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          timestamp="$(date -u +%Y-%m-%dT%H-%M-%S-%3NZ)"
+          target="pr-${PR_NUMBER}/${timestamp}"
+          worktree="${RUNNER_TEMP}/${SCREENSHOTS_BRANCH}"
+
+          if git fetch --depth 1 origin "$SCREENSHOTS_BRANCH"; then
+            git worktree add -B "$SCREENSHOTS_BRANCH" "$worktree" "origin/$SCREENSHOTS_BRANCH"
+          else
+            # No such branch yet: start it empty rather than from a copy of
+            # the site, which is what the old action did and what the branch
+            # still carries.
+            echo "Branch $SCREENSHOTS_BRANCH not found, creating it"
+            git worktree add --detach "$worktree"
+            git -C "$worktree" checkout -q --orphan "$SCREENSHOTS_BRANCH"
+            git -C "$worktree" rm -rfq .
+          fi
+
+          stage() {
+            mkdir -p "$worktree/$target"
+            cp "$SCREENSHOTS_DIR"/*.png "$worktree/$target/"
+            {
+              echo "# Screenshots for PR #${PR_NUMBER}"
+              echo
+              echo "Generated on: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+              echo
+              echo "## Screenshots"
+              for f in "$SCREENSHOTS_DIR"/*.png; do echo "- $(basename "$f" .png)"; done
+            } > "$worktree/$target/README.md"
+            printf '%s' "$timestamp" > "$worktree/pr-${PR_NUMBER}/latest"
+            git -C "$worktree" add "pr-${PR_NUMBER}"
+            git -C "$worktree" \
+              -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -q -m "Screenshots for PR #${PR_NUMBER} (${timestamp})"
+          }
+
+          stage
+          for attempt in 1 2 3; do
+            if git -C "$worktree" push origin "$SCREENSHOTS_BRANCH"; then
+              echo "pushed=true" >> "$GITHUB_OUTPUT"
+              echo "dir=$target" >> "$GITHUB_OUTPUT"
+              echo "✅ Pushed $target to $SCREENSHOTS_BRANCH"
+              exit 0
+            fi
+            echo "Push attempt $attempt rejected, retrying from the branch's new tip"
+            git fetch --depth 1 origin "$SCREENSHOTS_BRANCH"
+            git -C "$worktree" reset -q --hard "origin/$SCREENSHOTS_BRANCH"
+            stage
+          done
+          echo "::error::Could not push screenshots to $SCREENSHOTS_BRANCH after 3 attempts"
+          exit 1
+
+      # One comment per PR, updated in place on later runs. Posted even when
+      # capture failed partway, so the failures are visible on the PR and not
+      # only in the log.
+      - name: Comment on PR
+        if: ${{ !cancelled() && steps.upload.outputs.pushed == 'true' }}
+        env:
+          IMAGE_BASE: https://github.com/${{ github.repository }}/blob/${{ env.SCREENSHOTS_BRANCH }}/${{ steps.upload.outputs.dir }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: >
+          node scripts/pr-screenshots.mjs comment
+          --manifest "$SCREENSHOTS_DIR/manifest.json"
+          --image-base "$IMAGE_BASE"
+          --sha "${HEAD_SHA:0:7}"
+          --run-url "$RUN_URL"
+          > "$SCREENSHOTS_DIR/comment.md"
+
+      - name: Post comment
+        if: ${{ !cancelled() && steps.upload.outputs.pushed == 'true' }}
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const lang = '${{ steps.lang.outputs.selected }}';
-            const langNames = {
-              en: 'English',
-              fr: 'Français',
-              de: 'Deutsch',
-              es: 'Español'
-            };
+            const fs = require('node:fs');
+            const body = fs.readFileSync(`${process.env.SCREENSHOTS_DIR}/comment.md`, 'utf8');
+            const marker = '<!-- pr-screenshots -->';
 
-            // Built as an array because a template literal would keep this
-            // file's indentation, and markdown renders indented lines as code.
-            const comment = [
-              '## 📸 Visual Snapshot',
-              '',
-              `Language selected for this run: **${langNames[lang]}** (${lang})`,
-              '',
-              'The screenshots themselves are posted as a separate comment. If none',
-              'appears, capture produced nothing: the capture step is non-blocking,',
-              'so check the workflow log rather than assuming the UI is unchanged.',
-              '',
-              '---',
-              '💡 **Note:** We test one randomly selected language per PR to balance coverage with speed. Screenshots cover:',
-              '- 🏠 Homepage (desktop + mobile)',
-              '- 💰 Pricing page (desktop + mobile)',
-            ].join('\n');
-
-            // Find existing bot comments
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
+              per_page: 100,
             });
 
-            const botComment = comments.find(comment =>
-              comment.user.type === 'Bot' &&
-              comment.body.includes('📸 Visual Snapshot')
+            const existing = comments.find(comment =>
+              comment.user.type === 'Bot' && comment.body.includes(marker)
             );
 
-            if (botComment) {
-              // Update existing comment
+            if (existing) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                comment_id: botComment.id,
-                body: comment
+                comment_id: existing.id,
+                body,
               });
             } else {
-              // Create new comment
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
-                body: comment
+                body,
               });
             }

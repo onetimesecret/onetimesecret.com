@@ -94,3 +94,6 @@ playwright-report/
 blob-report/
 playwright/.cache/
 .qodo
+
+# Output of scripts/pr-screenshots.mjs (PR Screenshots workflow)
+/screenshots/
