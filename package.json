@@ -111,6 +111,7 @@
     "vue-eslint-parser": "^10.4.1",
     "vue-i18n-extract": "^2.0.7",
     "vue-tsc": "^3.3.11",
-    "world-atlas": "^2.0.2"
+    "world-atlas": "^2.0.2",
+    "yaml": "^2.9.0"
   }
 }
