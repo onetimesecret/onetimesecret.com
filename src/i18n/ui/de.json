@@ -363,10 +363,10 @@
       },
       "links": {
         "api": "API",
-        "changelog": "Changelog",
+        "changelog": "Änderungsprotokoll",
         "github": "GitHub",
         "contact": "Kontakt",
-        "dpa": "DPA",
+        "dpa": "AVV",
         "guides": "Anleitungen",
         "selfHosting": "Self-Hosting"
       }

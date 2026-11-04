@@ -305,7 +305,7 @@
       "complianceInfo": "Informations de conformité",
       "privacyNote": "Vos secrets sont chiffrés, jamais stockés dans les journaux et automatiquement supprimés après consultation.",
       "itdevops": {
-        "title": "IT & DevOps",
+        "title": "Informatique et DevOps",
         "description": "Renouvelez les identifiants de production en toute sécurité, partagez les clés d'API lors de l'intégration et gardez les configurations sensibles hors de Slack et des fils d'e-mails."
       },
       "consultants": {
@@ -363,7 +363,7 @@
       },
       "links": {
         "api": "API",
-        "changelog": "Changelog",
+        "changelog": "Journal des modifications",
         "github": "GitHub",
         "contact": "Contact",
         "dpa": "DPA",
