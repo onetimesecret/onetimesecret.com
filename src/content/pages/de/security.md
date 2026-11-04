@@ -1,118 +1,48 @@
 ---
-title: Security Policy
+title: Sicherheitsrichtlinie
 ---
 
-<article class="prose dark:prose-invert">
-  <h2 class="mb-4 text-2xl font-bold dark:text-white">
-    Security Policy
-  </h2>
-  <p class="mb-4 dark:text-gray-300">
-    We take the security of this project seriously and appreciate your efforts to responsibly disclose vulnerabilities. This document outlines our security policy and provides guidelines on how to report vulnerabilities.
-  </p>
-  <h3 class="mb-2 text-xl font-semibold dark:text-white">
-    Supported Versions
-  </h3>
-  <p class="mb-4 dark:text-gray-300">
-    We provide security updates for the following versions:
-  </p>
-  <table class="mb-4 w-full">
-    <thead>
-      <tr class="bg-gray-100 dark:bg-gray-700">
-        <th class="p-2 text-left dark:text-white">
-          Version
-        </th>
-        <th class="p-2 text-left dark:text-white">
-          Unterstützt
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr class="border-b dark:border-gray-600">
-        <td class="p-2 dark:text-gray-300">
-          0.21.x+
-        </td>
-        <td class="p-2 dark:text-gray-300">
-          ✅
-        </td>
-      </tr>
-      <tr class="border-b dark:border-gray-600">
-        <td class="p-2 dark:text-gray-300">
-          0.20.x
-        </td>
-        <td class="p-2 dark:text-gray-300">
-          ✅
-        </td>
-      </tr>
-      <tr>
-        <td class="p-2 dark:text-gray-300">
-          &lt; 0.19.x
-        </td>
-        <td class="p-2 dark:text-gray-300">
-          ❌
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <p class="mb-4 dark:text-gray-300">
-    If you are using an unsupported version, we strongly recommend upgrading to a supported version to ensure you receive the latest security updates.
-  </p>
-  <h3 class="mb-2 text-xl font-semibold dark:text-white">
-    Reporting a Vulnerability
-  </h3>
-  <p class="mb-4 dark:text-gray-300">
-    If you discover a security vulnerability within our project, we appreciate your help in disclosing it to us in a responsible manner.
-  </p>
-  <h4 class="mb-2 text-lg font-semibold dark:text-white">
-    How to Report
-  </h4>
-  <ol class="mb-4 list-decimal pl-6 dark:text-gray-300">
-    <li class="mb-2">
-      <strong>E-Mail</strong> : Send an email to
-      <a href="mailto:security@onetimesecret.com?subject=Vulnerability%20Report%3A%20%5BBrief%20Description%5D">security@onetimesecret.com</a>
-       with the subject line "Vulnerability Report: [Brief Description]"
-    </li>
-    <li>
-      <strong>Details</strong> : Include as much information as possible about the vulnerability. This should include:
-      <ul class="mt-2 list-disc pl-6">
-        <li>A detailed description of the vulnerability</li>
-        <li>Steps to reproduce the issue</li>
-        <li>Any potential impact</li>
-        <li>Your contact information for follow-up questions</li>
-      </ul>
-    </li>
-  </ol>
-  <h4 class="mb-2 text-lg font-semibold dark:text-white">
-    What to Expect
-  </h4>
-  <ol class="dark:text-gray-300">
-    <li>
-      <strong>Acknowledgment</strong> : You will receive an acknowledgment of your report within 5 business days.
-    </li>
-    <li>
-      <strong>Initial Assessment</strong> : We will conduct an initial assessment of the vulnerability within 14 business days.
-    </li>
-    <li>
-      <strong>Updates</strong> : You can expect to receive updates on the status of your report at least once every 7 days until the issue is resolved or a decision is made.
-    </li>
-  </ol>
-  <h4 class="mb-2 text-lg font-semibold dark:text-white">
-    Resolution Process
-  </h4>
-  <ol class="dark:text-gray-300">
-    <li>
-      <strong>Accepted Vulnerabilities</strong> : If the vulnerability is accepted, we will work on a fix and aim to release it as soon as possible. You will be notified once the fix is deployed.
-    </li>
-    <li>
-      <strong>Declined Vulnerabilities</strong> : If the vulnerability is declined, we will provide a detailed explanation as to why it was not accepted.
-    </li>
-  </ol>
-  <h4 class="mb-2 text-lg font-semibold dark:text-white">
-    Confidentiality
-  </h4>
-  <p class="prose dark:text-gray-300">
-    We take your privacy seriously. All reports will be kept confidential, and we will work with you to ensure that any details of the vulnerability are not disclosed until a fix is in place.
-  </p>
-  <p class="prose dark:text-gray-300">
-    Thank you for helping us keep Onetime Secret secure and excellent!
-  </p>
-</article>
+
+Wir nehmen die Sicherheit dieses Projekts ernst und wissen Ihre Bemühungen zu schätzen, Schwachstellen verantwortungsvoll offenzulegen. Dieses Dokument beschreibt unsere Sicherheitsrichtlinie und erläutert, wie Sie Schwachstellen melden können.
+
+## Unterstützte Versionen
+
+Für die folgenden Versionen unseres Projekts stellen wir Sicherheitsupdates bereit:
+
+| Version  | Unterstützt |
+|----------|-------------|
+| 0.22.x+  | ✅          |
+| 0.21.x   | ✅          |
+| < 0.20.x | ❌          |
+
+Wenn Sie eine nicht unterstützte Version verwenden, empfehlen wir Ihnen dringend ein Upgrade auf eine der unterstützten Versionen, damit Sie die neuesten Sicherheitsupdates erhalten.
+
+## Schwachstelle melden
+
+Wenn Sie in diesem Projekt eine Sicherheitslücke entdecken, bitten wir Sie, diese so schnell wie möglich zu melden.
+
+### So melden Sie eine Schwachstelle
+
+1. **E-Mail:** Senden Sie eine E-Mail an [security@onetimesecret.com](mailto:security@onetimesecret.com?subject=Vulnerability%20Report%3A%20%5BBrief%20Description%5D) mit dem Betreff „Vulnerability Report: [Brief Description]“.
+2. **Details:** Geben Sie so viele Informationen wie möglich zur Schwachstelle an:
+   - Eine ausführliche Beschreibung der Schwachstelle.
+   - Schritte zum Reproduzieren des Problems.
+   - Mögliche Auswirkungen.
+   - Ihre Kontaktdaten für Rückfragen.
+
+### Was Sie erwarten können
+
+1. **Eingangsbestätigung:** Sie erhalten innerhalb von 5 Arbeitstagen eine Eingangsbestätigung.
+2. **Erste Bewertung:** Wir nehmen innerhalb von 14 Arbeitstagen eine erste Bewertung vor.
+3. **Statusmeldungen:** Sie erhalten mindestens alle 7 Tage eine Statusmeldung, bis das Problem behoben ist oder eine Entscheidung getroffen wurde.
+
+### Ablauf der Behebung
+
+1. **Akzeptierte Schwachstellen:** Wir beheben die Schwachstelle und benachrichtigen Sie, sobald die Korrektur bereitgestellt ist.
+2. **Abgelehnte Schwachstellen:** Wird eine Schwachstelle nicht akzeptiert, erhalten Sie von uns eine ausführliche Begründung.
+
+### Vertraulichkeit
+
+Wir nehmen Ihre Privatsphäre ernst. Meldungen werden vertraulich behandelt, und wir koordinieren die Offenlegung, sobald eine Korrektur vorliegt.
+
+Vielen Dank, dass Sie uns helfen, Onetime Secret sicher und zuverlässig zu halten!
